@@ -26,14 +26,14 @@ impl Pdfium {
     /// by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
     #[inline]
-    pub fn bind_to_system_library() -> Result<impl PdfiumLibraryBindings, PdfiumError> {
+    pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         let bindings = NativePdfiumBindings::new(
             unsafe { Library::new(Self::pdfium_platform_library_name()) }
                 .map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
 
-        Ok(bindings)
+        Ok(Box::new(bindings))
     }
 
     /// Binds to the external pdfium WASM module. The pdfium module must already be
@@ -42,8 +42,8 @@ impl Pdfium {
     /// functions exposed by the pdfium module, or an error if the library could not be loaded.
     #[cfg(target_arch = "wasm32")]
     #[inline]
-    pub fn bind_to_system_library() -> Result<impl PdfiumLibraryBindings, PdfiumError> {
-        Ok(WasmPdfiumBindings::new())
+    pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
+        Ok(Box::new(WasmPdfiumBindings::new()))
     }
 
     /// Initializes the external pdfium library, loading it from the given path.
@@ -51,14 +51,16 @@ impl Pdfium {
     /// exposed by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
     #[inline]
-    pub fn bind_to_library(path: impl ToString) -> Result<impl PdfiumLibraryBindings, PdfiumError> {
+    pub fn bind_to_library(
+        path: impl ToString,
+    ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         let bindings = NativePdfiumBindings::new(
             unsafe { Library::new(OsString::from(path.to_string())) }
                 .map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
 
-        Ok(bindings)
+        Ok(Box::new(bindings))
     }
 
     /// Returns the name of the external Pdfium library on the currently running platform.
@@ -70,20 +72,37 @@ impl Pdfium {
         libloading::library_filename("pdfium")
     }
 
+    /// Returns the name of the external Pdfium library on the currently running platform,
+    /// prefixed with the given path string.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[inline]
+    pub fn pdfium_platform_library_name_at_path(path: impl ToString) -> String {
+        let mut path = path.to_string();
+
+        path.push_str(Pdfium::pdfium_platform_library_name().to_str().unwrap());
+
+        path
+    }
+
     /// Creates a new Pdfium object from the given external pdfium library bindings.
     #[inline]
-    pub fn new(bindings: impl PdfiumLibraryBindings + 'static) -> Self {
+    pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
         bindings.FPDF_InitLibrary();
 
-        Self {
-            bindings: Box::new(bindings),
-        }
+        Self { bindings }
     }
 
     /// Attempts to open a PdfDocument from the given file path.
     ///
     /// If the document is password protected, the given password will be used
     /// to unlock it.
+    ///
+    /// This function is not available when compiling to WASM. Either embed the bytes of
+    /// the target PDF document directly into the compiled WASM module using the
+    /// `include_bytes!()` macro, or use Javascript's `fetch()` API to retrieve the bytes
+    /// of the target document over the network, then load those bytes into Pdfium using
+    /// the `load_pdf_from_bytes()` function.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_file(
         &self,
         path: &str,

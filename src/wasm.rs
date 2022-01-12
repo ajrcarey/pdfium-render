@@ -123,13 +123,15 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[inline]
+    #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
-    fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT {
-        // It is doubtful that loading a document directly from a file path
-        // can ever succeed from within a browser context. I suppose it might
-        // conceivably work from within a node.js context.
+    fn FPDF_LoadDocument(&self, _file_path: &str, _password: Option<&str>) -> FPDF_DOCUMENT {
+        // FPDF_LoadDocument is not available on WASM. When compiling to WASM,
+        // this function definition in the PdfiumLibraryBindings trait will be
+        // entirely omitted, so calling code that attempts to call FPDF_LoadDocument
+        // will fail at compile-time, not run-time.
 
-        LoadDocument(file_path, password.unwrap_or(""))
+        unimplemented!()
     }
 
     #[inline]

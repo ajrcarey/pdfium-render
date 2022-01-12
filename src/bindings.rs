@@ -1,10 +1,16 @@
 use crate::bindgen::{FPDF_BITMAP, FPDF_DOCUMENT, FPDF_DWORD, FPDF_PAGE};
 use crate::PdfiumInternalError;
 
-/// Platform-independent function bindings to an external libpdfium provider.
+/// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
-/// at runtime; on WASM, this will be a set of Javascript functions exposed by a
+/// at runtime, either bundled alongside the compiled Rust application or provided
+/// by the platform; on WASM, this will be a set of Javascript functions exposed by a
 /// separate WASM import into the same browser context.
+///
+/// Note that the `FPDF_LoadDocument()` function is not available when compiling to WASM.
+/// Either embed the target PDF document directly using the `include_bytes!()` macro,
+/// or use Javascript's `fetch()` API to retrieve the bytes of the target document over
+/// the network, then load those bytes into Pdfium using the `FPDF_LoadMemDocument()` function.
 pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_InitLibrary(&self);
@@ -15,6 +21,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetLastError(&self) -> ::std::os::raw::c_ulong;
 
+    #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
 

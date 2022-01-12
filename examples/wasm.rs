@@ -1,32 +1,28 @@
+#[cfg(target_arch = "wasm32")]
 use pdfium_render::pdfium::Pdfium;
+#[cfg(target_arch = "wasm32")]
 use pdfium_render::PdfPageIndex;
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-// To build this example:
+// See https://github.com/ajrcarey/pdfium-render/tree/master/examples for information
+// on how to build and package this example alongside a WASM build of Pdfium, suitable
+// for running in a browser.
 
-// wasm-pack build examples/wasm --target no-modules
+// We embed the sample PDF file directly into our WASM binary.
 
-// To run this example:
-
-// * Download PDFium compiled to WASM release tarball from https://github.com/paulo-coutinho/pdfium-lib/releases
-// * Extract the files release/node/pdfium.js and release/node/pdfium.wasm from the downloaded tarball
-// * Copy extracted files into same folder as build artifacts from wasm-pack build
-// * Copy examples/wasm/index.html and examples/wasm/serve.sh into same folder as build artifacts from wasm-pack build
-// * Run serve.sh to spin up a server, then visit localhost:4000 in your browser
-
-// Embed the sample PDF file directly into our WASM binary.
-
+#[cfg(target_arch = "wasm32")]
 const PDF: &[u8] = include_bytes!("../test/test.pdf");
 
 /// Logs the width and height of each page in the sample PDF to the Javascript console.
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn log_page_metrics_to_console() {
+    #[cfg(target_arch = "wasm32")]
     console_log::init().expect("Error initializing console-based logging.");
 
-    // Bind to the system library when targeting WASM. The hosting page
-    // must have already loaded a pdfium.wasm assembly (e.g. from
-    // https://github.com/paulo-coutinho/pdfium-lib/releases) prior to calling
-    // this function, or binding will fail.
+    // Our only option when targeting WASM is to bind to the "system library"
+    // (a separate WASM build of Pdfium).
 
     let bindings = Pdfium::bind_to_system_library().unwrap();
 
@@ -48,6 +44,7 @@ pub fn log_page_metrics_to_console() {
 
 /// Returns the raw JPEG byte data for the first page in the PDF file. This can be used
 /// to populate an HTML <img> tag.
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn get_image_data_for_page(index: PdfPageIndex, width: u16, height: u16) -> Vec<u8> {
     Pdfium::new(Pdfium::bind_to_system_library().unwrap())

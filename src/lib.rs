@@ -59,18 +59,23 @@ pub mod tests {
 
     #[test]
     fn test() {
-        let bitmap_settings = PdfBitmapConfig::new()
+        let bindings = Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+            .or_else(|_| Pdfium::bind_to_system_library());
+
+        assert!(bindings.is_ok());
+
+        let render_config = PdfBitmapConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
             .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
 
-        Pdfium::new(Pdfium::bind_to_library("./libpdfium.so").unwrap())
+        Pdfium::new(bindings.unwrap())
             .load_pdf_from_file("./test/test.pdf", None)
             .unwrap()
             .pages()
             .for_each(|page| {
                 let result = page
-                    .get_bitmap_with_config(&bitmap_settings)
+                    .get_bitmap_with_config(&render_config)
                     .unwrap()
                     .as_image()
                     .as_bgra8()
