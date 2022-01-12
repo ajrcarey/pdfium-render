@@ -1,0 +1,24 @@
+[package]
+name = "pdfium-render"
+version = "0.4.0"
+edition = "2018"
+authors = ["Alastair Carey <alastair@duetto.dev>"]
+publish = true
+
+[lib]
+name = "pdfium_render"
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[dependencies]
+image = "^0"
+log = "^0"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "^0"
+js-sys = "^0"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+libloading = "^0"
+
+[build-dependencies]
+bindgen = {version = "^0" }

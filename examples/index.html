@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <script src="pdfium.js"></script>
+        <script src="pdfium_render.js"></script>
+        <script src="pdfium_render_wasm_example.js"></script>
+    </head>
+
+    <body>
+        <canvas id="canvas" style="max-width: 100%; height: auto; border: 1px solid black;"></canvas>
+
+        <script>
+            Module.onRuntimeInitialized = async _ => {
+                // pdfium's WASM module has been loaded and initialized. We can now
+                // initialize pdfium-render's bindings to pdfium's WASM module.
+
+                initializePdfiumRender();
+
+                // Now, we bind to the functions exported by the Rust example/wasm.rs file.
+                // These functions are exposed by wasm_bindgen.
+
+                const { log_page_metrics_to_console, get_image_data_for_page } = wasm_bindgen;
+
+                wasm_bindgen('pdfium_render_wasm_example_bg.wasm').then(function () {
+                    // With all WASM modules loaded and initialized, we can now call
+                    // the Rust functions from Javascript.
+
+                    // First, dump sizing metrics for each page to the console.
+
+                    log_page_metrics_to_console();
+
+                    // Next, render a single page to a canvas.
+
+                    const pageIndex = 2;
+                    const width = 1414;
+                    const height = 1999;
+
+                    const bytes = get_image_data_for_page(pageIndex, width, height);
+
+                    const canvas = document.getElementById("canvas");
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const context = canvas.getContext("2d");
+                    const image = context.createImageData(width, height);
+
+                    image.data.set(bytes);
+                    context.putImageData(image, 0, 0);
+                });
+            };
+        </script>
+    </body>
+</html>
