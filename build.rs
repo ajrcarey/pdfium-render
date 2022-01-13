@@ -13,34 +13,41 @@
 extern crate bindgen;
 
 fn main() {
-    // Tell cargo to invalidate the built crate whenever the wrapper changes
-    println!("cargo:rerun-if-changed=wrapper.h");
+    // AJRC - 13/1/22 - docs.rs runs cargo doc in a read-only sandbox, so we can't
+    // generate bindings. Skip bindings generation entirely if the DOCS_RS environment
+    // variable is set, as per https://docs.rs/about/builds#detecting-docsrs.
 
-    let bindings = bindgen::Builder::default()
-        // The input header we would like to generate
-        // bindings for.
-        .header("wrapper.h")
-        // Tell cargo to invalidate the built crate whenever any of the
-        // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        // Try to keep original comments for docs
-        .clang_args(
-            [
-                "-fretain-comments-from-system-headers",
-                "-fparse-all-comments",
-            ]
-            .iter(),
-        )
-        .generate_comments(true)
-        // Finish the builder and generate the bindings.
-        .generate()
-        // Unwrap the Result and panic on failure.
-        .expect("Unable to generate bindings");
+    if let Err(_) = std::env::var("DOCS_RS") {
+        // The DOCS_RS environment variable is _not_ set.
 
-    // Write the bindings to the src/bindgen.rs file.
-    let out_path = std::path::PathBuf::from("src");
+        // Tell cargo to invalidate the built crate whenever the wrapper changes.
+        println!("cargo:rerun-if-changed=wrapper.h");
 
-    bindings
-        .write_to_file(out_path.join("bindgen.rs"))
-        .expect("Couldn't write bindings!");
+        let bindings = bindgen::Builder::default()
+            // The input header we would like to generate bindings for.
+            .header("wrapper.h")
+            // Tell cargo to invalidate the built crate whenever any of the
+            // included header files changed.
+            .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+            // Try to keep original C++ comments for docs.
+            .clang_args(
+                [
+                    "-fretain-comments-from-system-headers",
+                    "-fparse-all-comments",
+                ]
+                .iter(),
+            )
+            .generate_comments(true)
+            // Finish the builder and generate the bindings.
+            .generate()
+            // Unwrap the Result and panic on failure.
+            .expect("Unable to generate bindings");
+
+        // Write the bindings to the src/bindgen.rs file.
+        let out_path = std::path::PathBuf::from("src");
+
+        bindings
+            .write_to_file(out_path.join("bindgen.rs"))
+            .expect("Couldn't write bindings!");
+    }
 }

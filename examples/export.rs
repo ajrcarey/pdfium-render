@@ -9,7 +9,7 @@ pub fn main() {
 
     // The library name will differ depending on the current platform. On Linux,
     // the library will be named libpdfium.so by default; on Windows, pdfium.dll; and on
-    // MacOS libpdfium.dylib. We can use the Pdfium::pdfium_platform_library_name_at_path()
+    // MacOS, libpdfium.dylib. We can use the Pdfium::pdfium_platform_library_name_at_path()
     // function to append the correct library name for the current platform to a path we specify.
 
     let bindings = Pdfium::bind_to_library(
@@ -28,7 +28,8 @@ pub fn main() {
             // than just unwrapping them :)
 
             // First, create a set of shared settings that we'll apply to each page in the
-            // sample file when rendering.
+            // sample file when rendering. Sharing the same rendering configuration is a good way
+            // to ensure homogenous output across all pages in the document.
 
             let render_config = PdfBitmapConfig::new()
                 .set_target_width(2000)
@@ -41,9 +42,7 @@ pub fn main() {
                 .pages() // ... get an iterator across all pages ...
                 .for_each(|page| {
                     // ... and export each page to a JPEG in the current working directory,
-                    // using the rendering configuration we created earlier. Sharing the
-                    // same rendering configuration is a good way to ensure homogenous output
-                    // across all pages in the document.
+                    // using the rendering configuration we created earlier.
 
                     let result = page
                         .get_bitmap_with_config(&render_config) // Initializes a bitmap with the given configuration for this page ...

@@ -1,3 +1,6 @@
+//! Defines the [PdfiumLibraryBindings] trait, which exposes the raw FPDF_* functions
+//! exported by the Pdfium library.
+
 use crate::bindgen::{FPDF_BITMAP, FPDF_DOCUMENT, FPDF_DWORD, FPDF_PAGE};
 use crate::PdfiumInternalError;
 

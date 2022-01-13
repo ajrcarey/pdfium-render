@@ -50,8 +50,8 @@ impl PdfBitmapConfig {
 
     /// Converts the width of a PdfPage from points to pixels, scaling the source page
     /// width to the given target pixel width. The aspect ratio of the source page
-    /// will be maintained so long as there is no call to [scale_page_height_to_pixels()]
-    /// or [scale_page_to_pixels()] that overrides it.
+    /// will be maintained so long as there is no call to [PdfBitmapConfig::set_target_size()]
+    /// or [PdfBitmapConfig::set_target_height()] that overrides it.
     #[inline]
     pub fn set_target_width(mut self, width: u16) -> Self {
         self.target_width = Some(width);
@@ -61,8 +61,8 @@ impl PdfBitmapConfig {
 
     /// Converts the height of a PdfPage from points to pixels, scaling the source page
     /// height to the given target pixel height. The aspect ratio of the source page
-    /// will be maintained so long as there is no call to [scale_page_width_to_pixels()]
-    /// or [scale_page_to_pixels()] that overrides it.
+    /// will be maintained so long as there is no call to [PdfBitmapConfig::set_target_size()]
+    /// or [PdfBitmapConfig::set_target_width()] that overrides it.
     #[inline]
     pub fn set_target_height(mut self, height: u16) -> Self {
         self.target_height = Some(height);
@@ -93,8 +93,8 @@ impl PdfBitmapConfig {
 
     /// Converts the width and height of a PdfPage from points to pixels by applying
     /// the given scale factor to both dimensions. The aspect ratio of the source page
-    /// will be maintained. Overrides any previous call to [scale()], [scale_width()], or
-    /// [scale_height()].
+    /// will be maintained. Overrides any previous call to [PdfBitmapConfig::scale_page_by_factor()],
+    /// [PdfBitmapConfig::scale_page_width_by_factor()], or [PdfBitmapConfig::scale_page_height_by_factor()].
     #[inline]
     pub fn scale_page_by_factor(self, scale: f32) -> Self {
         let result = self.scale_page_width_by_factor(scale);
@@ -105,7 +105,8 @@ impl PdfBitmapConfig {
     /// Converts the width of the PdfPage from points to pixels by applying the given
     /// scale factor. The aspect ratio of the source page will not be maintained if a
     /// different scale factor is applied to the height. Overrides any previous call to
-    /// [scale()] or [scale_width()].
+    /// [PdfBitmapConfig::scale_page_by_factor()], [PdfBitmapConfig::scale_page_width_by_factor()],
+    /// or [PdfBitmapConfig::scale_page_height_by_factor()].
     #[inline]
     pub fn scale_page_width_by_factor(mut self, scale: f32) -> Self {
         self.scale_width_factor = Some(scale);
@@ -116,7 +117,8 @@ impl PdfBitmapConfig {
     /// Converts the height of the PdfPage from points to pixels by applying the given
     /// scale factor. The aspect ratio of the source page will not be maintained if a
     /// different scale factor is applied to the width. Overrides any previous call to
-    /// [scale()] or [scale_height()].
+    /// [PdfBitmapConfig::scale_page_by_factor()], [PdfBitmapConfig::scale_page_width_by_factor()],
+    /// or [PdfBitmapConfig::scale_page_height_by_factor()].
     #[inline]
     pub fn scale_page_height_by_factor(mut self, scale: f32) -> Self {
         self.scale_height_factor = Some(scale);
@@ -142,9 +144,9 @@ impl PdfBitmapConfig {
 
     /// Applies the given rotation setting to the PdfPage during rendering, irrespective
     /// of its orientation. If the given flag is set to [true], then any maximum
-    /// constraint on the final pixel width set by a call to [set_maximum_width()]
+    /// constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height, and any
-    /// maximum constraint on the final pixel height set by a call to [set_maximum_height()]
+    /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate(self, rotation: PdfBitmapRotation, do_rotate_constraints: bool) -> Self {
@@ -156,9 +158,9 @@ impl PdfBitmapConfig {
     /// Applies the given rotation settings to the PdfPage during rendering, if the page
     /// is in portrait orientation. If the given flag is set to [true] and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
-    /// then any maximum constraint on the final pixel width set by a call to [set_maximum_width()]
+    /// then any maximum constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
-    /// maximum constraint on the final pixel height set by a call to [set_maximum_height()]
+    /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate_if_portait(
@@ -178,9 +180,9 @@ impl PdfBitmapConfig {
     /// Applies the given rotation settings to the PdfPage during rendering, if the page
     /// is in landscape orientation. If the given flag is set to [true] and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
-    /// then any maximum constraint on the final pixel width set by a call to [set_maximum_width()]
+    /// then any maximum constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
-    /// maximum constraint on the final pixel height set by a call to [set_maximum_height()]
+    /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate_if_landscape(
@@ -260,23 +262,28 @@ impl PdfBitmapConfig {
 
         // Apply constraints on maximum width and height, if any.
 
-        let width_constraint = if do_rotate_constraints {
-            self.maximum_height
-        } else {
-            self.maximum_width
-        };
-
-        let height_constraint = if do_rotate_constraints {
-            self.maximum_width
-        } else {
-            self.maximum_height
-        };
+        let (source_width, source_height, width_constraint, height_constraint) =
+            if do_rotate_constraints {
+                (
+                    source_height,
+                    source_width,
+                    self.maximum_height,
+                    self.maximum_width,
+                )
+            } else {
+                (
+                    source_width,
+                    source_height,
+                    self.maximum_width,
+                    self.maximum_height,
+                )
+            };
 
         if let Some(maximum) = width_constraint {
             let maximum = maximum as f32;
 
             if source_width * width_scale > maximum {
-                // Constrain the width so it does not exceed the maximum.
+                // Constrain the width, so it does not exceed the maximum.
 
                 width_scale = maximum / source_width;
 
@@ -290,7 +297,7 @@ impl PdfBitmapConfig {
             let maximum = maximum as f32;
 
             if source_height * height_scale > maximum {
-                // Constrain the height so it does not exceed the maximum.
+                // Constrain the height, so it does not exceed the maximum.
 
                 height_scale = maximum / source_height;
 

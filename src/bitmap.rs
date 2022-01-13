@@ -44,7 +44,7 @@ pub enum PdfBitmapRotation {
 ///
 /// By default, PdfBitmap is lazy; it will not render its page into a bitmap until
 /// it is required to do so in order to return a byte buffer or a DynamicImage.
-/// If preferred, rendering can be initiated manually by calling the [render()] function.
+/// If preferred, rendering can be initiated manually by calling the [PdfBitmap::render()] function.
 /// Once rendered, the page will not be re-rendered.
 pub struct PdfBitmap<'a> {
     width: u16,
@@ -127,7 +127,7 @@ impl<'a> PdfBitmap<'a> {
     ///
     /// It is generally unnecessary to call this function directly, since PdfBitmap
     /// will automatically initiate rendering itself on the first call to either
-    /// the [as_bytes()] function or the [as_image()] function.
+    /// the [PdfBitmap::as_bytes()] function or the [PdfBitmap::as_image()] function.
     pub fn render(&mut self) {
         if self.is_rendered {
             // The page has already been rendered.

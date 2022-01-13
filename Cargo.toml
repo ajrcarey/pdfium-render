@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2018"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
@@ -8,7 +8,6 @@ readme = "README.md"
 homepage = "https://github.com/ajrcarey/pdfium-render"
 repository = "https://github.com/ajrcarey/pdfium-render"
 license = "MIT OR Apache-2.0"
-license-file = "LICENSE.md"
 keywords = ["pdf", "pdfium"]
 categories = ["api-bindings", "multimedia::images", "visualization", "wasm"]
 authors = ["Alastair Carey <alastair@duetto.dev>"]

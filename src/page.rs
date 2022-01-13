@@ -59,20 +59,20 @@ impl<'a> PdfPage<'a> {
         self.bindings.FPDF_GetPageHeightF(self.handle)
     }
 
-    /// Returns PdfPageOrientation::Landscape if the width of this PdfPage
-    /// is greater than its height; otherwise returns PdfPageOrientation::Portrait.
+    /// Returns [PdfPageOrientation::Landscape] if the width of this PdfPage
+    /// is greater than its height; otherwise returns [PdfPageOrientation::Portrait].
     #[inline]
     pub fn orientation(&self) -> PdfPageOrientation {
         PdfPageOrientation::from_width_and_height(self.width(), self.height())
     }
 
-    /// Returns true if this PdfPage has orientation PdfPageOrientation::Portait.
+    /// Returns true if this PdfPage has orientation [PdfPageOrientation::Portrait].
     #[inline]
     pub fn is_portrait(&self) -> bool {
         self.orientation() == PdfPageOrientation::Portrait
     }
 
-    /// Returns true if this PdfPage has orientation PdfPageOrientation::Landscape.
+    /// Returns true if this PdfPage has orientation [PdfPageOrientation::Landscape].
     #[inline]
     pub fn is_landscape(&self) -> bool {
         self.orientation() == PdfPageOrientation::Landscape
@@ -81,7 +81,7 @@ impl<'a> PdfPage<'a> {
     /// Returns a PdfBitmap using sizing and rotation settings configured in the given
     /// PdfBitmapConfig.
     ///
-    /// See also [get_bitmap()], which directly creates a PdfBitmap object from this page
+    /// See also [PdfPage::get_bitmap()], which directly creates a PdfBitmap object from this page
     /// using caller-specified pixel dimensions and page rotation settings.
     #[inline]
     pub fn get_bitmap_with_config(
@@ -99,7 +99,7 @@ impl<'a> PdfPage<'a> {
     /// It is the responsibility of the caller to ensure the given pixel width and height
     /// correctly maintain the page's aspect ratio.
     ///
-    /// See also [get_bitmap_with_config()], which calculates the correct pixel dimensions
+    /// See also [PdfPage::get_bitmap_with_config()], which calculates the correct pixel dimensions
     /// and rotation settings to use from a PdfBitmapConfig object.
     pub fn get_bitmap(
         &self,

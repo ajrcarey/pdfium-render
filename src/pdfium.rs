@@ -1,3 +1,5 @@
+//! Defines the [Pdfium] struct, a high-level idiomatic Rust wrapper around Pdfium.
+
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::{PdfiumError, PdfiumInternalError};
