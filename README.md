@@ -7,19 +7,25 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
     // Iterates over each page in the given test PDF file and renders each page
     // as a separate JPEG image in the current working directory.
 
-    Pdfium::new(Pdfium::bind_to_system_library()?)
-        .load_pdf_from_file("test.pdf", None)
-        .pages()
-        .for_each(|page| {
-            page
-                .get_bitmap_with_config(&PdfBitmapConfig::new()
+    use pdfium_render::{Pdfium, PdfBitmapConfig, PdfBitmapRotation, PdfiumError};
+    use image::ImageFormat;
+    
+    fn export_pages() -> Result<(), PdfiumError> {
+        let document = Pdfium::new(Pdfium::bind_to_system_library()?)
+            .load_pdf_from_file("test.pdf", None)?;
+            
+        for page in document.pages() {
+            page.get_bitmap_with_config(&PdfBitmapConfig::new()
                     .set_target_width(2000)
                     .set_maximum_height(2000)
                     .rotate_if_landscape(PdfBitmapRotation::Degrees90, true))?
                 .as_image() // Renders this page to an Image::DynamicImage
                 .as_bgra8()?
                 .save_with_format(format!("test-page-{}.jpg", page.index()), ImageFormat::Jpeg)?;
-        });
+        }
+        
+        Ok(())
+    }
 ```
 
 In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from

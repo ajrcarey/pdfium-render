@@ -285,7 +285,7 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetLastError(&self) -> u64 {
+    fn FPDF_GetLastError(&self) -> ::std::os::raw::c_ulong {
         unsafe { self.extern_FPDF_GetLastError().unwrap()() }
     }
 
