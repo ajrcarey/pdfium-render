@@ -12,3 +12,4 @@
 #endif
 
 #include "fpdfview.h"
+#include "fpdf_formfill.h"

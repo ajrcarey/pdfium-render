@@ -1,4 +1,4 @@
-use crate::bindgen::{FPDFBitmap_BGRA, FPDF_PAGE};
+use crate::bindgen::{FPDFBitmap_BGRA, FPDF_PAGE, FPDF_FORMHANDLE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
 use crate::bitmap_config::PdfBitmapConfig;
@@ -87,10 +87,11 @@ impl<'a> PdfPage<'a> {
     pub fn get_bitmap_with_config(
         &self,
         config: &PdfBitmapConfig,
+        form_handle: Option<FPDF_FORMHANDLE>,
     ) -> Result<PdfBitmap, PdfiumError> {
         let (width, height, rotation) = config.apply_to_page(self);
 
-        self.get_bitmap(width, height, rotation)
+        self.get_bitmap(width, height, rotation, form_handle)
     }
 
     /// Returns a PdfBitmap with the given pixel dimensions and render-time rotation
@@ -106,6 +107,7 @@ impl<'a> PdfPage<'a> {
         width: u16,
         height: u16,
         rotation: Option<PdfBitmapRotation>,
+        form_handle: Option<FPDF_FORMHANDLE>,
     ) -> Result<PdfBitmap, PdfiumError> {
         let handle = self.bindings.FPDFBitmap_CreateEx(
             width as i32,
@@ -133,6 +135,7 @@ impl<'a> PdfPage<'a> {
                 PdfBitmapFormat::from_pdfium(FPDFBitmap_BGRA)?,
                 rotation.unwrap_or(PdfBitmapRotation::None),
                 handle,
+                form_handle,
                 &self.handle,
                 self.bindings,
             ))

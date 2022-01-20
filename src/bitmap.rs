@@ -1,7 +1,4 @@
-use crate::bindgen::{
-    FPDFBitmap_BGR, FPDFBitmap_BGRA, FPDFBitmap_BGRx, FPDFBitmap_Gray, FPDFBitmap_Unknown,
-    FPDF_BITMAP, FPDF_PAGE,
-};
+use crate::bindgen::{FPDFBitmap_BGR, FPDFBitmap_BGRA, FPDFBitmap_BGRx, FPDFBitmap_Gray, FPDFBitmap_Unknown, FPDF_BITMAP, FPDF_PAGE, FPDF_FORMHANDLE, FPDF_ANNOT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::PdfiumError;
 use image::{DynamicImage, ImageBuffer};
@@ -53,6 +50,7 @@ pub struct PdfBitmap<'a> {
     rotation: PdfBitmapRotation,
     bitmap_handle: FPDF_BITMAP,
     page_handle: &'a FPDF_PAGE,
+    form_handle: Option<FPDF_FORMHANDLE>,
     is_rendered: bool,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
@@ -64,6 +62,7 @@ impl<'a> PdfBitmap<'a> {
         format: PdfBitmapFormat,
         rotation: PdfBitmapRotation,
         handle: FPDF_BITMAP,
+        form_handle: Option<FPDF_FORMHANDLE>,
         page: &'a FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
@@ -73,6 +72,7 @@ impl<'a> PdfBitmap<'a> {
             format,
             rotation,
             bitmap_handle: handle,
+            form_handle,
             page_handle: page,
             is_rendered: false,
             bindings,
@@ -162,7 +162,46 @@ impl<'a> PdfBitmap<'a> {
             0,
         );
 
+        if let Some(form_handle) = self.form_handle {
+            self.bindings.FPDF_FFLDraw(
+                form_handle,
+                self.bitmap_handle,
+                *self.page_handle,
+                0,
+                0,
+                width,
+                height,
+                match self.rotation {
+                    PdfBitmapRotation::None => 0,
+                    PdfBitmapRotation::Degrees90 => 1,
+                    PdfBitmapRotation::Degrees180 => 2,
+                    PdfBitmapRotation::Degrees270 => 3,
+                },
+                0);
+        }
+
         self.is_rendered = true;
+    }
+
+    pub fn draw_annotations(&mut self, form_handle: FPDF_FORMHANDLE) {
+        let width = self.width as i32;
+        let height = self.height as i32;
+
+        self.bindings.FPDF_FFLDraw(
+            form_handle,
+            self.bitmap_handle,
+            *self.page_handle,
+            0,
+            0,
+            width,
+            height,
+            match self.rotation {
+                PdfBitmapRotation::None => 0,
+                PdfBitmapRotation::Degrees90 => 1,
+                PdfBitmapRotation::Degrees180 => 2,
+                PdfBitmapRotation::Degrees270 => 3,
+                },
+            0);
     }
 }
 

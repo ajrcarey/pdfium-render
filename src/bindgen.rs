@@ -37,6 +37,53 @@ pub const FPDFBitmap_Gray: u32 = 1;
 pub const FPDFBitmap_BGR: u32 = 2;
 pub const FPDFBitmap_BGRx: u32 = 3;
 pub const FPDFBitmap_BGRA: u32 = 4;
+pub const FORMTYPE_NONE: u32 = 0;
+pub const FORMTYPE_ACRO_FORM: u32 = 1;
+pub const FORMTYPE_XFA_FULL: u32 = 2;
+pub const FORMTYPE_XFA_FOREGROUND: u32 = 3;
+pub const FORMTYPE_COUNT: u32 = 4;
+pub const JSPLATFORM_ALERT_BUTTON_OK: u32 = 0;
+pub const JSPLATFORM_ALERT_BUTTON_OKCANCEL: u32 = 1;
+pub const JSPLATFORM_ALERT_BUTTON_YESNO: u32 = 2;
+pub const JSPLATFORM_ALERT_BUTTON_YESNOCANCEL: u32 = 3;
+pub const JSPLATFORM_ALERT_BUTTON_DEFAULT: u32 = 0;
+pub const JSPLATFORM_ALERT_ICON_ERROR: u32 = 0;
+pub const JSPLATFORM_ALERT_ICON_WARNING: u32 = 1;
+pub const JSPLATFORM_ALERT_ICON_QUESTION: u32 = 2;
+pub const JSPLATFORM_ALERT_ICON_STATUS: u32 = 3;
+pub const JSPLATFORM_ALERT_ICON_ASTERISK: u32 = 4;
+pub const JSPLATFORM_ALERT_ICON_DEFAULT: u32 = 0;
+pub const JSPLATFORM_ALERT_RETURN_OK: u32 = 1;
+pub const JSPLATFORM_ALERT_RETURN_CANCEL: u32 = 2;
+pub const JSPLATFORM_ALERT_RETURN_NO: u32 = 3;
+pub const JSPLATFORM_ALERT_RETURN_YES: u32 = 4;
+pub const JSPLATFORM_BEEP_ERROR: u32 = 0;
+pub const JSPLATFORM_BEEP_WARNING: u32 = 1;
+pub const JSPLATFORM_BEEP_QUESTION: u32 = 2;
+pub const JSPLATFORM_BEEP_STATUS: u32 = 3;
+pub const JSPLATFORM_BEEP_DEFAULT: u32 = 4;
+pub const FXCT_ARROW: u32 = 0;
+pub const FXCT_NESW: u32 = 1;
+pub const FXCT_NWSE: u32 = 2;
+pub const FXCT_VBEAM: u32 = 3;
+pub const FXCT_HBEAM: u32 = 4;
+pub const FXCT_HAND: u32 = 5;
+pub const FPDFDOC_AACTION_WC: u32 = 16;
+pub const FPDFDOC_AACTION_WS: u32 = 17;
+pub const FPDFDOC_AACTION_DS: u32 = 18;
+pub const FPDFDOC_AACTION_WP: u32 = 19;
+pub const FPDFDOC_AACTION_DP: u32 = 20;
+pub const FPDFPAGE_AACTION_OPEN: u32 = 0;
+pub const FPDFPAGE_AACTION_CLOSE: u32 = 1;
+pub const FPDF_FORMFIELD_UNKNOWN: u32 = 0;
+pub const FPDF_FORMFIELD_PUSHBUTTON: u32 = 1;
+pub const FPDF_FORMFIELD_CHECKBOX: u32 = 2;
+pub const FPDF_FORMFIELD_RADIOBUTTON: u32 = 3;
+pub const FPDF_FORMFIELD_COMBOBOX: u32 = 4;
+pub const FPDF_FORMFIELD_LISTBOX: u32 = 5;
+pub const FPDF_FORMFIELD_TEXTFIELD: u32 = 6;
+pub const FPDF_FORMFIELD_SIGNATURE: u32 = 7;
+pub const FPDF_FORMFIELD_COUNT: u32 = 8;
 pub type size_t = ::std::os::raw::c_ulong;
 pub type wchar_t = ::std::os::raw::c_int;
 #[doc = " Define 'max_align_t' to match the GCC definition."]
@@ -1944,4 +1991,2479 @@ extern "C" {
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _IPDF_JsPlatform {
+    #[doc = " Version number of the interface. Currently must be 2."]
+    pub version: ::std::os::raw::c_int,
+    #[doc = " Method: app_alert"]
+    #[doc = "       Pop up a dialog to show warning or hint."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       Msg         -   A string containing the message to be displayed."]
+    #[doc = "       Title       -   The title of the dialog."]
+    #[doc = "       Type        -   The type of button group, one of the"]
+    #[doc = "                       JSPLATFORM_ALERT_BUTTON_* values above."]
+    #[doc = "       nIcon       -   The type of the icon, one of the"]
+    #[doc = "                       JSPLATFORM_ALERT_ICON_* above."]
+    #[doc = " Return Value:"]
+    #[doc = "       Option selected by user in dialogue, one of the"]
+    #[doc = "       JSPLATFORM_ALERT_RETURN_* values above."]
+    pub app_alert: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            Msg: FPDF_WIDESTRING,
+            Title: FPDF_WIDESTRING,
+            Type: ::std::os::raw::c_int,
+            Icon: ::std::os::raw::c_int,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: app_beep"]
+    #[doc = "       Causes the system to play a sound."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = "       nType       -   The sound type, see JSPLATFORM_BEEP_TYPE_*"]
+    #[doc = "                       above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None"]
+    pub app_beep: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _IPDF_JsPlatform, nType: ::std::os::raw::c_int),
+    >,
+    #[doc = " Method: app_response"]
+    #[doc = "       Displays a dialog box containing a question and an entry field for"]
+    #[doc = "       the user to reply to the question."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = "       Question    -   The question to be posed to the user."]
+    #[doc = "       Title       -   The title of the dialog box."]
+    #[doc = "       Default     -   A default value for the answer to the question. If"]
+    #[doc = "                       not specified, no default value is presented."]
+    #[doc = "       cLabel      -   A short string to appear in front of and on the"]
+    #[doc = "                       same line as the edit text field."]
+    #[doc = "       bPassword   -   If true, indicates that the user's response should"]
+    #[doc = "                       be shown as asterisks (*) or bullets (?) to mask"]
+    #[doc = "                       the response, which might be sensitive information."]
+    #[doc = "       response    -   A string buffer allocated by PDFium, to receive the"]
+    #[doc = "                       user's response."]
+    #[doc = "       length      -   The length of the buffer in bytes. Currently, it is"]
+    #[doc = "                       always 2048."]
+    #[doc = " Return Value:"]
+    #[doc = "       Number of bytes the complete user input would actually require, not"]
+    #[doc = "       including trailing zeros, regardless of the value of the length"]
+    #[doc = "       parameter or the presence of the response buffer."]
+    #[doc = " Comments:"]
+    #[doc = "       No matter on what platform, the response buffer should be always"]
+    #[doc = "       written using UTF-16LE encoding. If a response buffer is"]
+    #[doc = "       present and the size of the user input exceeds the capacity of the"]
+    #[doc = "       buffer as specified by the length parameter, only the"]
+    #[doc = "       first \"length\" bytes of the user input are to be written to the"]
+    #[doc = "       buffer."]
+    pub app_response: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            Question: FPDF_WIDESTRING,
+            Title: FPDF_WIDESTRING,
+            Default: FPDF_WIDESTRING,
+            cLabel: FPDF_WIDESTRING,
+            bPassword: FPDF_BOOL,
+            response: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: Doc_getFilePath"]
+    #[doc = "       Get the file path of the current document."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = "       filePath    -   The string buffer to receive the file path. Can"]
+    #[doc = "                       be NULL."]
+    #[doc = "       length      -   The length of the buffer, number of bytes. Can"]
+    #[doc = "                       be 0."]
+    #[doc = " Return Value:"]
+    #[doc = "       Number of bytes the filePath consumes, including trailing zeros."]
+    #[doc = " Comments:"]
+    #[doc = "       The filePath should always be provided in the local encoding."]
+    #[doc = "       The return value always indicated number of bytes required for"]
+    #[doc = "       the buffer, even when there is no buffer specified, or the buffer"]
+    #[doc = "       size is less than required. In this case, the buffer will not"]
+    #[doc = "       be modified."]
+    pub Doc_getFilePath: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            filePath: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: Doc_mail"]
+    #[doc = "       Mails the data buffer as an attachment to all recipients, with or"]
+    #[doc = "       without user interaction."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = "       mailData    -   Pointer to the data buffer to be sent. Can be NULL."]
+    #[doc = "       length      -   The size,in bytes, of the buffer pointed by"]
+    #[doc = "                       mailData parameter. Can be 0."]
+    #[doc = "       bUI         -   If true, the rest of the parameters are used in a"]
+    #[doc = "                       compose-new-message window that is displayed to the"]
+    #[doc = "                       user. If false, the cTo parameter is required and"]
+    #[doc = "                       all others are optional."]
+    #[doc = "       To          -   A semicolon-delimited list of recipients for the"]
+    #[doc = "                       message."]
+    #[doc = "       Subject     -   The subject of the message. The length limit is"]
+    #[doc = "                       64 KB."]
+    #[doc = "       CC          -   A semicolon-delimited list of CC recipients for"]
+    #[doc = "                       the message."]
+    #[doc = "       BCC         -   A semicolon-delimited list of BCC recipients for"]
+    #[doc = "                       the message."]
+    #[doc = "       Msg         -   The content of the message. The length limit is"]
+    #[doc = "                       64 KB."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       If the parameter mailData is NULL or length is 0, the current"]
+    #[doc = "       document will be mailed as an attachment to all recipients."]
+    pub Doc_mail: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            mailData: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+            bUI: FPDF_BOOL,
+            To: FPDF_WIDESTRING,
+            Subject: FPDF_WIDESTRING,
+            CC: FPDF_WIDESTRING,
+            BCC: FPDF_WIDESTRING,
+            Msg: FPDF_WIDESTRING,
+        ),
+    >,
+    #[doc = " Method: Doc_print"]
+    #[doc = "       Prints all or a specific number of pages of the document."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis         -   Pointer to the interface structure itself."]
+    #[doc = "       bUI           -   If true, will cause a UI to be presented to the"]
+    #[doc = "                         user to obtain printing information and confirm"]
+    #[doc = "                         the action."]
+    #[doc = "       nStart        -   A 0-based index that defines the start of an"]
+    #[doc = "                         inclusive range of pages."]
+    #[doc = "       nEnd          -   A 0-based index that defines the end of an"]
+    #[doc = "                         inclusive page range."]
+    #[doc = "       bSilent       -   If true, suppresses the cancel dialog box while"]
+    #[doc = "                         the document is printing. The default is false."]
+    #[doc = "       bShrinkToFit  -   If true, the page is shrunk (if necessary) to"]
+    #[doc = "                         fit within the imageable area of the printed page."]
+    #[doc = "       bPrintAsImage -   If true, print pages as an image."]
+    #[doc = "       bReverse      -   If true, print from nEnd to nStart."]
+    #[doc = "       bAnnotations  -   If true (the default), annotations are"]
+    #[doc = "                         printed."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub Doc_print: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            bUI: FPDF_BOOL,
+            nStart: ::std::os::raw::c_int,
+            nEnd: ::std::os::raw::c_int,
+            bSilent: FPDF_BOOL,
+            bShrinkToFit: FPDF_BOOL,
+            bPrintAsImage: FPDF_BOOL,
+            bReverse: FPDF_BOOL,
+            bAnnotations: FPDF_BOOL,
+        ),
+    >,
+    #[doc = " Method: Doc_submitForm"]
+    #[doc = "       Send the form data to a specified URL."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = "       formData    -   Pointer to the data buffer to be sent."]
+    #[doc = "       length      -   The size,in bytes, of the buffer pointed by"]
+    #[doc = "                       formData parameter."]
+    #[doc = "       URL         -   The URL to send to."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub Doc_submitForm: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            formData: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+            URL: FPDF_WIDESTRING,
+        ),
+    >,
+    #[doc = " Method: Doc_gotoPage"]
+    #[doc = "       Jump to a specified page."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = "       nPageNum    -   The specified page number, zero for the first page."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = ""]
+    pub Doc_gotoPage: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _IPDF_JsPlatform, nPageNum: ::std::os::raw::c_int),
+    >,
+    #[doc = " Method: Field_browse"]
+    #[doc = "       Show a file selection dialog, and return the selected file path."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       filePath    -   Pointer to the data buffer to receive the file"]
+    #[doc = "                       path. Can be NULL."]
+    #[doc = "       length      -   The length of the buffer, in bytes. Can be 0."]
+    #[doc = " Return Value:"]
+    #[doc = "       Number of bytes the filePath consumes, including trailing zeros."]
+    #[doc = " Comments:"]
+    #[doc = "       The filePath shoule always be provided in local encoding."]
+    pub Field_browse: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _IPDF_JsPlatform,
+            filePath: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Pointer to FPDF_FORMFILLINFO interface."]
+    pub m_pFormfillinfo: *mut ::std::os::raw::c_void,
+    #[doc = " Unused in v3, retain for compatibility."]
+    pub m_isolate: *mut ::std::os::raw::c_void,
+    #[doc = " Unused in v3, retain for compatibility."]
+    pub m_v8EmbedderSlot: ::std::os::raw::c_uint,
+}
+#[test]
+fn bindgen_test_layout__IPDF_JsPlatform() {
+    assert_eq!(
+        ::std::mem::size_of::<_IPDF_JsPlatform>(),
+        104usize,
+        concat!("Size of: ", stringify!(_IPDF_JsPlatform))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<_IPDF_JsPlatform>(),
+        8usize,
+        concat!("Alignment of ", stringify!(_IPDF_JsPlatform))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).version as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(version)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).app_alert as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(app_alert)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).app_beep as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(app_beep)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).app_response as *const _ as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(app_response)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_getFilePath as *const _ as usize
+        },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(Doc_getFilePath)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_mail as *const _ as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(Doc_mail)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_print as *const _ as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(Doc_print)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_submitForm as *const _ as usize },
+        56usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(Doc_submitForm)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_gotoPage as *const _ as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(Doc_gotoPage)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Field_browse as *const _ as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(Field_browse)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_IPDF_JsPlatform>())).m_pFormfillinfo as *const _ as usize
+        },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(m_pFormfillinfo)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).m_isolate as *const _ as usize },
+        88usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(m_isolate)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_IPDF_JsPlatform>())).m_v8EmbedderSlot as *const _ as usize
+        },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_IPDF_JsPlatform),
+            "::",
+            stringify!(m_v8EmbedderSlot)
+        )
+    );
+}
+pub type IPDF_JSPLATFORM = _IPDF_JsPlatform;
+#[doc = " Function signature for the callback function passed to the FFI_SetTimer"]
+#[doc = " method."]
+#[doc = " Parameters:"]
+#[doc = "          idEvent     -   Identifier of the timer."]
+#[doc = " Return value:"]
+#[doc = "          None."]
+pub type TimerCallback =
+    ::std::option::Option<unsafe extern "C" fn(idEvent: ::std::os::raw::c_int)>;
+#[doc = " Declares of a struct type to the local system time."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FPDF_SYSTEMTIME {
+    #[doc = " years since 1900"]
+    pub wYear: ::std::os::raw::c_ushort,
+    #[doc = " months since January - [0,11]"]
+    pub wMonth: ::std::os::raw::c_ushort,
+    #[doc = " days since Sunday - [0,6]"]
+    pub wDayOfWeek: ::std::os::raw::c_ushort,
+    #[doc = " day of the month - [1,31]"]
+    pub wDay: ::std::os::raw::c_ushort,
+    #[doc = " hours since midnight - [0,23]"]
+    pub wHour: ::std::os::raw::c_ushort,
+    #[doc = " minutes after the hour - [0,59]"]
+    pub wMinute: ::std::os::raw::c_ushort,
+    #[doc = " seconds after the minute - [0,59]"]
+    pub wSecond: ::std::os::raw::c_ushort,
+    #[doc = " milliseconds after the second - [0,999]"]
+    pub wMilliseconds: ::std::os::raw::c_ushort,
+}
+#[test]
+fn bindgen_test_layout__FPDF_SYSTEMTIME() {
+    assert_eq!(
+        ::std::mem::size_of::<_FPDF_SYSTEMTIME>(),
+        16usize,
+        concat!("Size of: ", stringify!(_FPDF_SYSTEMTIME))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<_FPDF_SYSTEMTIME>(),
+        2usize,
+        concat!("Alignment of ", stringify!(_FPDF_SYSTEMTIME))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wYear as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wYear)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wMonth as *const _ as usize },
+        2usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wMonth)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wDayOfWeek as *const _ as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wDayOfWeek)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wDay as *const _ as usize },
+        6usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wDay)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wHour as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wHour)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wMinute as *const _ as usize },
+        10usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wMinute)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wSecond as *const _ as usize },
+        12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wSecond)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_SYSTEMTIME>())).wMilliseconds as *const _ as usize },
+        14usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_SYSTEMTIME),
+            "::",
+            stringify!(wMilliseconds)
+        )
+    );
+}
+#[doc = " Declares of a struct type to the local system time."]
+pub type FPDF_SYSTEMTIME = _FPDF_SYSTEMTIME;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FPDF_FORMFILLINFO {
+    #[doc = " Version number of the interface."]
+    #[doc = " Version 1 contains stable interfaces. Version 2 has additional"]
+    #[doc = " experimental interfaces."]
+    #[doc = " When PDFium is built without the XFA module, version can be 1 or 2."]
+    #[doc = " With version 1, only stable interfaces are called. With version 2,"]
+    #[doc = " additional experimental interfaces are also called."]
+    #[doc = " When PDFium is built with the XFA module, version must be 2."]
+    #[doc = " All the XFA related interfaces are experimental. If PDFium is built with"]
+    #[doc = " the XFA module and version 1 then none of the XFA related interfaces"]
+    #[doc = " would be called. When PDFium is built with XFA module then the version"]
+    #[doc = " must be 2."]
+    pub version: ::std::os::raw::c_int,
+    #[doc = " Version 1. */"]
+    #[doc = " Method: Release"]
+    #[doc = "       Give the implementation a chance to release any resources after the"]
+    #[doc = "       interface is no longer used."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       No"]
+    #[doc = " Comments:"]
+    #[doc = "       Called by PDFium during the final cleanup process."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself"]
+    #[doc = " Return Value:"]
+    #[doc = "       None"]
+    pub Release: ::std::option::Option<unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO)>,
+    #[doc = " Method: FFI_Invalidate"]
+    #[doc = "       Invalidate the client area within the specified rectangle."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = "       left        -   Left position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = "       top         -   Top position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = "       right       -   Right position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = "       bottom      -   Bottom position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       All positions are measured in PDF \"user space\"."]
+    #[doc = "       Implementation should call FPDF_RenderPageBitmap() for repainting"]
+    #[doc = "       the specified page area."]
+    pub FFI_Invalidate: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page: FPDF_PAGE,
+            left: f64,
+            top: f64,
+            right: f64,
+            bottom: f64,
+        ),
+    >,
+    #[doc = " Method: FFI_OutputSelectedRect"]
+    #[doc = "       When the user selects text in form fields with the mouse, this"]
+    #[doc = "       callback function will be invoked with the selected areas."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       No"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       page        -   Handle to the page. Returned by FPDF_LoadPage()/"]
+    #[doc = "       left        -   Left position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = "       top         -   Top position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = "       right       -   Right position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = "       bottom      -   Bottom position of the client area in PDF page"]
+    #[doc = "                       coordinates."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This callback function is useful for implementing special text"]
+    #[doc = "       selection effects. An implementation should first record the"]
+    #[doc = "       returned rectangles, then draw them one by one during the next"]
+    #[doc = "       painting period. Lastly, it should remove all the recorded"]
+    #[doc = "       rectangles when finished painting."]
+    pub FFI_OutputSelectedRect: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page: FPDF_PAGE,
+            left: f64,
+            top: f64,
+            right: f64,
+            bottom: f64,
+        ),
+    >,
+    #[doc = " Method: FFI_SetCursor"]
+    #[doc = "       Set the Cursor shape."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       nCursorType -   Cursor type, see Flags for Cursor type for details."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_SetCursor: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO, nCursorType: ::std::os::raw::c_int),
+    >,
+    #[doc = " Method: FFI_SetTimer"]
+    #[doc = "       This method installs a system timer. An interval value is specified,"]
+    #[doc = "       and every time that interval elapses, the system must call into the"]
+    #[doc = "       callback function with the timer ID as returned by this function."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       uElapse     -   Specifies the time-out value, in milliseconds."]
+    #[doc = "       lpTimerFunc -   A pointer to the callback function-TimerCallback."]
+    #[doc = " Return value:"]
+    #[doc = "       The timer identifier of the new timer if the function is successful."]
+    #[doc = "       An application passes this value to the FFI_KillTimer method to kill"]
+    #[doc = "       the timer. Nonzero if it is successful; otherwise, it is zero."]
+    pub FFI_SetTimer: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            uElapse: ::std::os::raw::c_int,
+            lpTimerFunc: TimerCallback,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: FFI_KillTimer"]
+    #[doc = "       This method uninstalls a system timer, as set by an earlier call to"]
+    #[doc = "       FFI_SetTimer."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       nTimerID    -   The timer ID returned by FFI_SetTimer function."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_KillTimer: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO, nTimerID: ::std::os::raw::c_int),
+    >,
+    #[doc = " Method: FFI_GetLocalTime"]
+    #[doc = "       This method receives the current local time on the system."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = " Return value:"]
+    #[doc = "       The local time. See FPDF_SYSTEMTIME above for details."]
+    #[doc = " Note: Unused."]
+    pub FFI_GetLocalTime: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO) -> FPDF_SYSTEMTIME,
+    >,
+    #[doc = " Method: FFI_OnChange"]
+    #[doc = "       This method will be invoked to notify the implementation when the"]
+    #[doc = "       value of any FormField on the document had been changed."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       no"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_OnChange: ::std::option::Option<unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO)>,
+    #[doc = " Method: FFI_GetPage"]
+    #[doc = "       This method receives the page handle associated with a specified"]
+    #[doc = "       page index."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       document    -   Handle to document. Returned by FPDF_LoadDocument()."]
+    #[doc = "       nPageIndex  -   Index number of the page. 0 for the first page."]
+    #[doc = " Return value:"]
+    #[doc = "       Handle to the page, as previously returned to the implementation by"]
+    #[doc = "       FPDF_LoadPage()."]
+    #[doc = " Comments:"]
+    #[doc = "       The implementation is expected to keep track of the page handles it"]
+    #[doc = "       receives from PDFium, and their mappings to page numbers. In some"]
+    #[doc = "       cases, the document-level JavaScript action may refer to a page"]
+    #[doc = "       which hadn't been loaded yet. To successfully run the Javascript"]
+    #[doc = "       action, the implementation needs to load the page."]
+    pub FFI_GetPage: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            document: FPDF_DOCUMENT,
+            nPageIndex: ::std::os::raw::c_int,
+        ) -> FPDF_PAGE,
+    >,
+    #[doc = " Method: FFI_GetCurrentPage"]
+    #[doc = "       This method receives the handle to the current page."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Yes when V8 support is present, otherwise unused."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       document    -   Handle to document. Returned by FPDF_LoadDocument()."]
+    #[doc = " Return value:"]
+    #[doc = "       Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = " Comments:"]
+    #[doc = "       PDFium doesn't keep keep track of the \"current page\" (e.g. the one"]
+    #[doc = "       that is most visible on screen), so it must ask the embedder for"]
+    #[doc = "       this information."]
+    pub FFI_GetCurrentPage: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO, document: FPDF_DOCUMENT) -> FPDF_PAGE,
+    >,
+    #[doc = " Method: FFI_GetRotation"]
+    #[doc = "       This method receives currently rotation of the page view."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis       -   Pointer to the interface structure itself."]
+    #[doc = "       page        -   Handle to page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "       A number to indicate the page rotation in 90 degree increments"]
+    #[doc = "       in a clockwise direction:"]
+    #[doc = "         0 - 0 degrees"]
+    #[doc = "         1 - 90 degrees"]
+    #[doc = "         2 - 180 degrees"]
+    #[doc = "         3 - 270 degrees"]
+    #[doc = " Note: Unused."]
+    pub FFI_GetRotation: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page: FPDF_PAGE,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: FFI_ExecuteNamedAction"]
+    #[doc = "       This method will execute a named action."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       yes"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       namedAction     -   A byte string which indicates the named action,"]
+    #[doc = "                           terminated by 0."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       See the named actions description of <<PDF Reference, version 1.7>>"]
+    #[doc = "       for more details."]
+    pub FFI_ExecuteNamedAction: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO, namedAction: FPDF_BYTESTRING),
+    >,
+    #[doc = " Method: FFI_SetTextFieldFocus"]
+    #[doc = "       Called when a text field is getting or losing focus."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       no"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       value           -   The string value of the form field, in UTF-16LE"]
+    #[doc = "                           format."]
+    #[doc = "       valueLen        -   The length of the string value. This is the"]
+    #[doc = "                           number of characters, not bytes."]
+    #[doc = "       is_focus        -   True if the form field is getting focus, false"]
+    #[doc = "                           if the form field is losing focus."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       Only supports text fields and combobox fields."]
+    pub FFI_SetTextFieldFocus: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            value: FPDF_WIDESTRING,
+            valueLen: FPDF_DWORD,
+            is_focus: FPDF_BOOL,
+        ),
+    >,
+    #[doc = " Method: FFI_DoURIAction"]
+    #[doc = "       Ask the implementation to navigate to a uniform resource identifier."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       No"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       bsURI           -   A byte string which indicates the uniform"]
+    #[doc = "                           resource identifier, terminated by 0."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       If the embedder is version 2 or higher and have implementation for"]
+    #[doc = "       FFI_DoURIActionWithKeyboardModifier, then"]
+    #[doc = "       FFI_DoURIActionWithKeyboardModifier takes precedence over"]
+    #[doc = "       FFI_DoURIAction."]
+    #[doc = "       See the URI actions description of <<PDF Reference, version 1.7>>"]
+    #[doc = "       for more details."]
+    pub FFI_DoURIAction: ::std::option::Option<
+        unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO, bsURI: FPDF_BYTESTRING),
+    >,
+    #[doc = " Method: FFI_DoGoToAction"]
+    #[doc = "       This action changes the view to a specified destination."]
+    #[doc = " Interface Version:"]
+    #[doc = "       1"]
+    #[doc = " Implementation Required:"]
+    #[doc = "       No"]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       nPageIndex      -   The index of the PDF page."]
+    #[doc = "       zoomMode        -   The zoom mode for viewing page. See below."]
+    #[doc = "       fPosArray       -   The float array which carries the position info."]
+    #[doc = "       sizeofArray     -   The size of float array."]
+    #[doc = " PDFZoom values:"]
+    #[doc = "         - XYZ = 1"]
+    #[doc = "         - FITPAGE = 2"]
+    #[doc = "         - FITHORZ = 3"]
+    #[doc = "         - FITVERT = 4"]
+    #[doc = "         - FITRECT = 5"]
+    #[doc = "         - FITBBOX = 6"]
+    #[doc = "         - FITBHORZ = 7"]
+    #[doc = "         - FITBVERT = 8"]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       See the Destinations description of <<PDF Reference, version 1.7>>"]
+    #[doc = "       in 8.2.1 for more details."]
+    pub FFI_DoGoToAction: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            nPageIndex: ::std::os::raw::c_int,
+            zoomMode: ::std::os::raw::c_int,
+            fPosArray: *mut f32,
+            sizeofArray: ::std::os::raw::c_int,
+        ),
+    >,
+    #[doc = " Pointer to IPDF_JSPLATFORM interface."]
+    #[doc = " Unused if PDFium is built without V8 support. Otherwise, if NULL, then"]
+    #[doc = " JavaScript will be prevented from executing while rendering the document."]
+    pub m_pJsPlatform: *mut IPDF_JSPLATFORM,
+    #[doc = " Version 2 - Experimental. */"]
+    #[doc = " Whether the XFA module is disabled when built with the XFA module."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    pub xfa_disabled: FPDF_BOOL,
+    #[doc = " Method: FFI_DisplayCaret"]
+    #[doc = "       This method will show the caret at specified position."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       page            -   Handle to page. Returned by FPDF_LoadPage()."]
+    #[doc = "       left            -   Left position of the client area in PDF page"]
+    #[doc = "                           coordinates."]
+    #[doc = "       top             -   Top position of the client area in PDF page"]
+    #[doc = "                           coordinates."]
+    #[doc = "       right           -   Right position of the client area in PDF page"]
+    #[doc = "                           coordinates."]
+    #[doc = "       bottom          -   Bottom position of the client area in PDF page"]
+    #[doc = "                           coordinates."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_DisplayCaret: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page: FPDF_PAGE,
+            bVisible: FPDF_BOOL,
+            left: f64,
+            top: f64,
+            right: f64,
+            bottom: f64,
+        ),
+    >,
+    #[doc = " Method: FFI_GetCurrentPageIndex"]
+    #[doc = "       This method will get the current page index."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       document        -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = " Return value:"]
+    #[doc = "       The index of current page."]
+    pub FFI_GetCurrentPageIndex: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            document: FPDF_DOCUMENT,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: FFI_SetCurrentPage"]
+    #[doc = "       This method will set the current page."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       document        -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = "       iCurPage        -   The index of the PDF page."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_SetCurrentPage: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            document: FPDF_DOCUMENT,
+            iCurPage: ::std::os::raw::c_int,
+        ),
+    >,
+    #[doc = " Method: FFI_GotoURL"]
+    #[doc = "       This method will navigate to the specified URL."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis            -   Pointer to the interface structure itself."]
+    #[doc = "       document         -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = "       wsURL            -   The string value of the URL, in UTF-16LE format."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_GotoURL: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            document: FPDF_DOCUMENT,
+            wsURL: FPDF_WIDESTRING,
+        ),
+    >,
+    #[doc = " Method: FFI_GetPageViewRect"]
+    #[doc = "       This method will get the current page view rectangle."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       page            -   Handle to page. Returned by FPDF_LoadPage()."]
+    #[doc = "       left            -   The pointer to receive left position of the page"]
+    #[doc = "                           view area in PDF page coordinates."]
+    #[doc = "       top             -   The pointer to receive top position of the page"]
+    #[doc = "                           view area in PDF page coordinates."]
+    #[doc = "       right           -   The pointer to receive right position of the"]
+    #[doc = "                           page view area in PDF page coordinates."]
+    #[doc = "       bottom          -   The pointer to receive bottom position of the"]
+    #[doc = "                           page view area in PDF page coordinates."]
+    #[doc = " Return value:"]
+    #[doc = "     None."]
+    pub FFI_GetPageViewRect: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page: FPDF_PAGE,
+            left: *mut f64,
+            top: *mut f64,
+            right: *mut f64,
+            bottom: *mut f64,
+        ),
+    >,
+    #[doc = " Method: FFI_PageEvent"]
+    #[doc = "       This method fires when pages have been added to or deleted from"]
+    #[doc = "       the XFA document."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       page_count      -   The number of pages to be added or deleted."]
+    #[doc = "       event_type      -   See FXFA_PAGEVIEWEVENT_* above."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       The pages to be added or deleted always start from the last page"]
+    #[doc = "       of document. This means that if parameter page_count is 2 and"]
+    #[doc = "       event type is FXFA_PAGEVIEWEVENT_POSTADDED, 2 new pages have been"]
+    #[doc = "       appended to the tail of document; If page_count is 2 and"]
+    #[doc = "       event type is FXFA_PAGEVIEWEVENT_POSTREMOVED, the last 2 pages"]
+    #[doc = "       have been deleted."]
+    pub FFI_PageEvent: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page_count: ::std::os::raw::c_int,
+            event_type: FPDF_DWORD,
+        ),
+    >,
+    #[doc = " Method: FFI_PopupMenu"]
+    #[doc = "       This method will track the right context menu for XFA fields."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       page            -   Handle to page. Returned by FPDF_LoadPage()."]
+    #[doc = "       hWidget         -   Always null, exists for compatibility."]
+    #[doc = "       menuFlag        -   The menu flags. Please refer to macro definition"]
+    #[doc = "                           of FXFA_MENU_XXX and this can be one or a"]
+    #[doc = "                           combination of these macros."]
+    #[doc = "       x               -   X position of the client area in PDF page"]
+    #[doc = "                           coordinates."]
+    #[doc = "       y               -   Y position of the client area in PDF page"]
+    #[doc = "                           coordinates."]
+    #[doc = " Return value:"]
+    #[doc = "       TRUE indicates success; otherwise false."]
+    pub FFI_PopupMenu: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            page: FPDF_PAGE,
+            hWidget: FPDF_WIDGET,
+            menuFlag: ::std::os::raw::c_int,
+            x: f32,
+            y: f32,
+        ) -> FPDF_BOOL,
+    >,
+    #[doc = " Method: FFI_OpenFile"]
+    #[doc = "       This method will open the specified file with the specified mode."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       fileFlag        -   The file flag. Please refer to macro definition"]
+    #[doc = "                           of FXFA_SAVEAS_XXX and use one of these macros."]
+    #[doc = "       wsURL           -   The string value of the file URL, in UTF-16LE"]
+    #[doc = "                           format."]
+    #[doc = "       mode            -   The mode for open file, e.g. \"rb\" or \"wb\"."]
+    #[doc = " Return value:"]
+    #[doc = "       The handle to FPDF_FILEHANDLER."]
+    pub FFI_OpenFile: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            fileFlag: ::std::os::raw::c_int,
+            wsURL: FPDF_WIDESTRING,
+            mode: *const ::std::os::raw::c_char,
+        ) -> *mut FPDF_FILEHANDLER,
+    >,
+    #[doc = " Method: FFI_EmailTo"]
+    #[doc = "       This method will email the specified file stream to the specified"]
+    #[doc = "       contact."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       pFileHandler    -   Handle to the FPDF_FILEHANDLER."]
+    #[doc = "       pTo             -   A semicolon-delimited list of recipients for the"]
+    #[doc = "                           message,in UTF-16LE format."]
+    #[doc = "       pSubject        -   The subject of the message,in UTF-16LE format."]
+    #[doc = "       pCC             -   A semicolon-delimited list of CC recipients for"]
+    #[doc = "                           the message,in UTF-16LE format."]
+    #[doc = "       pBcc            -   A semicolon-delimited list of BCC recipients for"]
+    #[doc = "                           the message,in UTF-16LE format."]
+    #[doc = "       pMsg            -   Pointer to the data buffer to be sent.Can be"]
+    #[doc = "                           NULL,in UTF-16LE format."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_EmailTo: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            fileHandler: *mut FPDF_FILEHANDLER,
+            pTo: FPDF_WIDESTRING,
+            pSubject: FPDF_WIDESTRING,
+            pCC: FPDF_WIDESTRING,
+            pBcc: FPDF_WIDESTRING,
+            pMsg: FPDF_WIDESTRING,
+        ),
+    >,
+    #[doc = " Method: FFI_UploadTo"]
+    #[doc = "       This method will upload the specified file stream to the"]
+    #[doc = "       specified URL."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       pFileHandler    -   Handle to the FPDF_FILEHANDLER."]
+    #[doc = "       fileFlag        -   The file flag. Please refer to macro definition"]
+    #[doc = "                           of FXFA_SAVEAS_XXX and use one of these macros."]
+    #[doc = "       uploadTo        -   Pointer to the URL path, in UTF-16LE format."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    pub FFI_UploadTo: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            fileHandler: *mut FPDF_FILEHANDLER,
+            fileFlag: ::std::os::raw::c_int,
+            uploadTo: FPDF_WIDESTRING,
+        ),
+    >,
+    #[doc = " Method: FFI_GetPlatform"]
+    #[doc = "       This method will get the current platform."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       platform        -   Pointer to the data buffer to receive the"]
+    #[doc = "                           platform,in UTF-16LE format. Can be NULL."]
+    #[doc = "       length          -   The length of the buffer in bytes. Can be"]
+    #[doc = "                           0 to query the required size."]
+    #[doc = " Return value:"]
+    #[doc = "       The length of the buffer, number of bytes."]
+    pub FFI_GetPlatform: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            platform: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: FFI_GetLanguage"]
+    #[doc = "       This method will get the current language."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       language        -   Pointer to the data buffer to receive the"]
+    #[doc = "                           current language. Can be NULL."]
+    #[doc = "       length          -   The length of the buffer in bytes. Can be"]
+    #[doc = "                           0 to query the required size."]
+    #[doc = " Return value:"]
+    #[doc = "       The length of the buffer, number of bytes."]
+    pub FFI_GetLanguage: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            language: *mut ::std::os::raw::c_void,
+            length: ::std::os::raw::c_int,
+        ) -> ::std::os::raw::c_int,
+    >,
+    #[doc = " Method: FFI_DownloadFromURL"]
+    #[doc = "       This method will download the specified file from the URL."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       URL             -   The string value of the file URL, in UTF-16LE"]
+    #[doc = "                           format."]
+    #[doc = " Return value:"]
+    #[doc = "       The handle to FPDF_FILEHANDLER."]
+    pub FFI_DownloadFromURL: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            URL: FPDF_WIDESTRING,
+        ) -> *mut FPDF_FILEHANDLER,
+    >,
+    #[doc = " Method: FFI_PostRequestURL"]
+    #[doc = "       This method will post the request to the server URL."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       wsURL           -   The string value of the server URL, in UTF-16LE"]
+    #[doc = "                           format."]
+    #[doc = "       wsData          -   The post data,in UTF-16LE format."]
+    #[doc = "       wsContentType   -   The content type of the request data, in"]
+    #[doc = "                           UTF-16LE format."]
+    #[doc = "       wsEncode        -   The encode type, in UTF-16LE format."]
+    #[doc = "       wsHeader        -   The request header,in UTF-16LE format."]
+    #[doc = "       response        -   Pointer to the FPDF_BSTR to receive the response"]
+    #[doc = "                           data from the server, in UTF-16LE format."]
+    #[doc = " Return value:"]
+    #[doc = "       TRUE indicates success, otherwise FALSE."]
+    pub FFI_PostRequestURL: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            wsURL: FPDF_WIDESTRING,
+            wsData: FPDF_WIDESTRING,
+            wsContentType: FPDF_WIDESTRING,
+            wsEncode: FPDF_WIDESTRING,
+            wsHeader: FPDF_WIDESTRING,
+            response: *mut FPDF_BSTR,
+        ) -> FPDF_BOOL,
+    >,
+    #[doc = " Method: FFI_PutRequestURL"]
+    #[doc = "       This method will put the request to the server URL."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       Required for XFA, otherwise set to NULL."]
+    #[doc = " Parameters:"]
+    #[doc = "       pThis           -   Pointer to the interface structure itself."]
+    #[doc = "       wsURL           -   The string value of the server URL, in UTF-16LE"]
+    #[doc = "                           format."]
+    #[doc = "       wsData          -   The put data, in UTF-16LE format."]
+    #[doc = "       wsEncode        -   The encode type, in UTR-16LE format."]
+    #[doc = " Return value:"]
+    #[doc = "       TRUE indicates success, otherwise FALSE."]
+    pub FFI_PutRequestURL: ::std::option::Option<
+        unsafe extern "C" fn(
+            pThis: *mut _FPDF_FORMFILLINFO,
+            wsURL: FPDF_WIDESTRING,
+            wsData: FPDF_WIDESTRING,
+            wsEncode: FPDF_WIDESTRING,
+        ) -> FPDF_BOOL,
+    >,
+    #[doc = " Method: FFI_OnFocusChange"]
+    #[doc = "     Called when the focused annotation is updated."]
+    #[doc = " Interface Version:"]
+    #[doc = "     Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "     No"]
+    #[doc = " Parameters:"]
+    #[doc = "     param           -   Pointer to the interface structure itself."]
+    #[doc = "     annot           -   The focused annotation."]
+    #[doc = "     page_index      -   Index number of the page which contains the"]
+    #[doc = "                         focused annotation. 0 for the first page."]
+    #[doc = " Return value:"]
+    #[doc = "     None."]
+    #[doc = " Comments:"]
+    #[doc = "     This callback function is useful for implementing any view based"]
+    #[doc = "     action such as scrolling the annotation rect into view. The"]
+    #[doc = "     embedder should not copy and store the annot as its scope is"]
+    #[doc = "     limited to this call only."]
+    pub FFI_OnFocusChange: ::std::option::Option<
+        unsafe extern "C" fn(
+            param: *mut _FPDF_FORMFILLINFO,
+            annot: FPDF_ANNOTATION,
+            page_index: ::std::os::raw::c_int,
+        ),
+    >,
+    #[doc = " Method: FFI_DoURIActionWithKeyboardModifier"]
+    #[doc = "       Ask the implementation to navigate to a uniform resource identifier"]
+    #[doc = "       with the specified modifiers."]
+    #[doc = " Interface Version:"]
+    #[doc = "       Ignored if |version| < 2."]
+    #[doc = " Implementation Required:"]
+    #[doc = "       No"]
+    #[doc = " Parameters:"]
+    #[doc = "       param           -   Pointer to the interface structure itself."]
+    #[doc = "       uri             -   A byte string which indicates the uniform"]
+    #[doc = "                           resource identifier, terminated by 0."]
+    #[doc = "       modifiers       -   Keyboard modifier that indicates which of"]
+    #[doc = "                           the virtual keys are down, if any."]
+    #[doc = " Return value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       If the embedder who is version 2 and does not implement this API,"]
+    #[doc = "       then a call will be redirected to FFI_DoURIAction."]
+    #[doc = "       See the URI actions description of <<PDF Reference, version 1.7>>"]
+    #[doc = "       for more details."]
+    pub FFI_DoURIActionWithKeyboardModifier: ::std::option::Option<
+        unsafe extern "C" fn(
+            param: *mut _FPDF_FORMFILLINFO,
+            uri: FPDF_BYTESTRING,
+            modifiers: ::std::os::raw::c_int,
+        ),
+    >,
+}
+#[test]
+fn bindgen_test_layout__FPDF_FORMFILLINFO() {
+    assert_eq!(
+        ::std::mem::size_of::<_FPDF_FORMFILLINFO>(),
+        280usize,
+        concat!("Size of: ", stringify!(_FPDF_FORMFILLINFO))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<_FPDF_FORMFILLINFO>(),
+        8usize,
+        concat!("Alignment of ", stringify!(_FPDF_FORMFILLINFO))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).version as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(version)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).Release as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(Release)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_Invalidate as *const _ as usize
+        },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_Invalidate)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OutputSelectedRect as *const _
+                as usize
+        },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_OutputSelectedRect)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetCursor as *const _ as usize
+        },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_SetCursor)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetTimer as *const _ as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_SetTimer)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_KillTimer as *const _ as usize
+        },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_KillTimer)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetLocalTime as *const _ as usize
+        },
+        56usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetLocalTime)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OnChange as *const _ as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_OnChange)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetPage as *const _ as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetPage)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetCurrentPage as *const _ as usize
+        },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetCurrentPage)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetRotation as *const _ as usize
+        },
+        88usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetRotation)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_ExecuteNamedAction as *const _
+                as usize
+        },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_ExecuteNamedAction)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetTextFieldFocus as *const _
+                as usize
+        },
+        104usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_SetTextFieldFocus)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DoURIAction as *const _ as usize
+        },
+        112usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_DoURIAction)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DoGoToAction as *const _ as usize
+        },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_DoGoToAction)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).m_pJsPlatform as *const _ as usize
+        },
+        128usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(m_pJsPlatform)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).xfa_disabled as *const _ as usize },
+        136usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(xfa_disabled)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DisplayCaret as *const _ as usize
+        },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_DisplayCaret)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetCurrentPageIndex as *const _
+                as usize
+        },
+        152usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetCurrentPageIndex)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetCurrentPage as *const _ as usize
+        },
+        160usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_SetCurrentPage)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GotoURL as *const _ as usize },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GotoURL)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetPageViewRect as *const _ as usize
+        },
+        176usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetPageViewRect)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PageEvent as *const _ as usize
+        },
+        184usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_PageEvent)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PopupMenu as *const _ as usize
+        },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_PopupMenu)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OpenFile as *const _ as usize },
+        200usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_OpenFile)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_EmailTo as *const _ as usize },
+        208usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_EmailTo)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_UploadTo as *const _ as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_UploadTo)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetPlatform as *const _ as usize
+        },
+        224usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetPlatform)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetLanguage as *const _ as usize
+        },
+        232usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_GetLanguage)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DownloadFromURL as *const _ as usize
+        },
+        240usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_DownloadFromURL)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PostRequestURL as *const _ as usize
+        },
+        248usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_PostRequestURL)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PutRequestURL as *const _ as usize
+        },
+        256usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_PutRequestURL)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OnFocusChange as *const _ as usize
+        },
+        264usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_OnFocusChange)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DoURIActionWithKeyboardModifier
+                as *const _ as usize
+        },
+        272usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(_FPDF_FORMFILLINFO),
+            "::",
+            stringify!(FFI_DoURIActionWithKeyboardModifier)
+        )
+    );
+}
+pub type FPDF_FORMFILLINFO = _FPDF_FORMFILLINFO;
+extern "C" {
+    #[doc = " Function: FPDFDOC_InitFormFillEnvironment"]
+    #[doc = "       Initialize form fill environment."]
+    #[doc = " Parameters:"]
+    #[doc = "       document        -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = "       pFormFillInfo   -   Pointer to a FPDF_FORMFILLINFO structure."]
+    #[doc = " Return Value:"]
+    #[doc = "       Handle to the form fill module, or NULL on failure."]
+    #[doc = " Comments:"]
+    #[doc = "       This function should be called before any form fill operation."]
+    pub fn FPDFDOC_InitFormFillEnvironment(
+        document: FPDF_DOCUMENT,
+        formInfo: *mut FPDF_FORMFILLINFO,
+    ) -> FPDF_FORMHANDLE;
+}
+extern "C" {
+    #[doc = " Function: FPDFDOC_ExitFormFillEnvironment"]
+    #[doc = "       Take ownership of |hHandle| and exit form fill environment."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This function is a no-op when |hHandle| is null."]
+    pub fn FPDFDOC_ExitFormFillEnvironment(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_OnAfterLoadPage"]
+    #[doc = "       This method is required for implementing all the form related"]
+    #[doc = "       functions. Should be invoked after user successfully loaded a"]
+    #[doc = "       PDF page, and FPDFDOC_InitFormFillEnvironment() has been invoked."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub fn FORM_OnAfterLoadPage(page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_OnBeforeClosePage"]
+    #[doc = "       This method is required for implementing all the form related"]
+    #[doc = "       functions. Should be invoked before user closes the PDF page."]
+    #[doc = " Parameters:"]
+    #[doc = "        page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "        hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                        FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "        None."]
+    pub fn FORM_OnBeforeClosePage(page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoDocumentJSAction"]
+    #[doc = "       This method is required for performing document-level JavaScript"]
+    #[doc = "       actions. It should be invoked after the PDF document has been loaded."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       If there is document-level JavaScript action embedded in the"]
+    #[doc = "       document, this method will execute the JavaScript action. Otherwise,"]
+    #[doc = "       the method will do nothing."]
+    pub fn FORM_DoDocumentJSAction(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoDocumentOpenAction"]
+    #[doc = "       This method is required for performing open-action when the document"]
+    #[doc = "       is opened."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This method will do nothing if there are no open-actions embedded"]
+    #[doc = "       in the document."]
+    pub fn FORM_DoDocumentOpenAction(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoDocumentAAction"]
+    #[doc = "       This method is required for performing the document's"]
+    #[doc = "       additional-action."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "       aaType      -   The type of the additional-actions which defined"]
+    #[doc = "                       above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This method will do nothing if there is no document"]
+    #[doc = "       additional-action corresponding to the specified |aaType|."]
+    pub fn FORM_DoDocumentAAction(hHandle: FPDF_FORMHANDLE, aaType: ::std::os::raw::c_int);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoPageAAction"]
+    #[doc = "       This method is required for performing the page object's"]
+    #[doc = "       additional-action when opened or closed."]
+    #[doc = " Parameters:"]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       aaType      -   The type of the page object's additional-actions"]
+    #[doc = "                       which defined above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This method will do nothing if no additional-action corresponding"]
+    #[doc = "       to the specified |aaType| exists."]
+    pub fn FORM_DoPageAAction(
+        page: FPDF_PAGE,
+        hHandle: FPDF_FORMHANDLE,
+        aaType: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Function: FORM_OnMouseMove"]
+    #[doc = "       Call this member function when the mouse cursor moves."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnMouseMove(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_OnMouseWheel"]
+    #[doc = "       Call this member function when the user scrolls the mouse wheel."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_coord  -   Specifies the coordinates of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       delta_x     -   Specifies the amount of wheel movement on the x-axis,"]
+    #[doc = "                       in units of platform-agnostic wheel deltas. Negative"]
+    #[doc = "                       values mean left."]
+    #[doc = "       delta_y     -   Specifies the amount of wheel movement on the y-axis,"]
+    #[doc = "                       in units of platform-agnostic wheel deltas. Negative"]
+    #[doc = "                       values mean down."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    #[doc = " Comments:"]
+    #[doc = "       For |delta_x| and |delta_y|, the caller must normalize"]
+    #[doc = "       platform-specific wheel deltas. e.g. On Windows, a delta value of 240"]
+    #[doc = "       for a WM_MOUSEWHEEL event normalizes to 2, since Windows defines"]
+    #[doc = "       WHEEL_DELTA as 120."]
+    pub fn FORM_OnMouseWheel(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_coord: *const FS_POINTF,
+        delta_x: ::std::os::raw::c_int,
+        delta_y: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnFocus"]
+    #[doc = "       This function focuses the form annotation at a given point. If the"]
+    #[doc = "       annotation at the point already has focus, nothing happens. If there"]
+    #[doc = "       is no annotation at the point, removes form focus."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if there is an annotation at the given point and it has focus."]
+    pub fn FORM_OnFocus(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnLButtonDown"]
+    #[doc = "       Call this member function when the user presses the left"]
+    #[doc = "       mouse button."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnLButtonDown(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnRButtonDown"]
+    #[doc = "       Same as above, execpt for the right mouse button."]
+    #[doc = " Comments:"]
+    #[doc = "       At the present time, has no effect except in XFA builds, but is"]
+    #[doc = "       included for the sake of symmetry."]
+    pub fn FORM_OnRButtonDown(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnLButtonUp"]
+    #[doc = "       Call this member function when the user releases the left"]
+    #[doc = "       mouse button."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in device."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in device."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnLButtonUp(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnRButtonUp"]
+    #[doc = "       Same as above, execpt for the right mouse button."]
+    #[doc = " Comments:"]
+    #[doc = "       At the present time, has no effect except in XFA builds, but is"]
+    #[doc = "       included for the sake of symmetry."]
+    pub fn FORM_OnRButtonUp(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnLButtonDoubleClick"]
+    #[doc = "       Call this member function when the user double clicks the"]
+    #[doc = "       left mouse button."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnLButtonDoubleClick(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnKeyDown"]
+    #[doc = "       Call this member function when a nonsystem key is pressed."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, aseturned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       nKeyCode    -   Indicates whether various virtual keys are down."]
+    #[doc = "       modifier    -   Contains the scan code, key-transition code,"]
+    #[doc = "                       previous key state, and context code."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnKeyDown(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: ::std::os::raw::c_int,
+        modifier: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnKeyUp"]
+    #[doc = "       Call this member function when a nonsystem key is released."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       nKeyCode    -   The virtual-key code of the given key."]
+    #[doc = "       modifier    -   Contains the scan code, key-transition code,"]
+    #[doc = "                       previous key state, and context code."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnKeyUp(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: ::std::os::raw::c_int,
+        modifier: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnChar"]
+    #[doc = "       Call this member function when a keystroke translates to a"]
+    #[doc = "       nonsystem character."]
+    #[doc = " Parameters:"]
+    #[doc = "        hHandle    -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "        page       -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "        nChar      -   The character code value of the key."]
+    #[doc = "        modifier   -   Contains the scan code, key-transition code,"]
+    #[doc = "                       previous key state, and context code."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnChar(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nChar: ::std::os::raw::c_int,
+        modifier: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_GetFocusedText"]
+    #[doc = "       Call this function to obtain the text within the current focused"]
+    #[doc = "       field, if any."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       buffer      -   Buffer for holding the form text, encoded in"]
+    #[doc = "                       UTF-16LE. If NULL, |buffer| is not modified."]
+    #[doc = "       buflen      -   Length of |buffer| in bytes. If |buflen| is less"]
+    #[doc = "                       than the length of the form text string, |buffer| is"]
+    #[doc = "                       not modified."]
+    #[doc = " Return Value:"]
+    #[doc = "       Length in bytes for the text in the focused field."]
+    pub fn FORM_GetFocusedText(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FORM_GetSelectedText"]
+    #[doc = "       Call this function to obtain selected text within a form text"]
+    #[doc = "       field or form combobox text field."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       buffer      -   Buffer for holding the selected text, encoded in"]
+    #[doc = "                       UTF-16LE. If NULL, |buffer| is not modified."]
+    #[doc = "       buflen      -   Length of |buffer| in bytes. If |buflen| is less"]
+    #[doc = "                       than the length of the selected text string,"]
+    #[doc = "                       |buffer| is not modified."]
+    #[doc = " Return Value:"]
+    #[doc = "       Length in bytes of selected text in form text field or form combobox"]
+    #[doc = "       text field."]
+    pub fn FORM_GetSelectedText(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FORM_ReplaceSelection"]
+    #[doc = "       Call this function to replace the selected text in a form"]
+    #[doc = "       text field or user-editable form combobox text field with another"]
+    #[doc = "       text string (which can be empty or non-empty). If there is no"]
+    #[doc = "       selected text, this function will append the replacement text after"]
+    #[doc = "       the current caret position."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as Returned by FPDF_LoadPage()."]
+    #[doc = "       wsText      -   The text to be inserted, in UTF-16LE format."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub fn FORM_ReplaceSelection(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        wsText: FPDF_WIDESTRING,
+    );
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_SelectAllText"]
+    #[doc = "       Call this function to select all the text within the currently focused"]
+    #[doc = "       form text field or form combobox text field."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       Whether the operation succeeded or not."]
+    pub fn FORM_SelectAllText(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_CanUndo"]
+    #[doc = "       Find out if it is possible for the current focused widget in a given"]
+    #[doc = "       form to perform an undo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if it is possible to undo."]
+    pub fn FORM_CanUndo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_CanRedo"]
+    #[doc = "       Find out if it is possible for the current focused widget in a given"]
+    #[doc = "       form to perform a redo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if it is possible to redo."]
+    pub fn FORM_CanRedo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_Undo"]
+    #[doc = "       Make the current focussed widget perform an undo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if the undo operation succeeded."]
+    pub fn FORM_Undo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_Redo"]
+    #[doc = "       Make the current focussed widget perform a redo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if the redo operation succeeded."]
+    pub fn FORM_Redo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_ForceToKillFocus."]
+    #[doc = "       Call this member function to force to kill the focus of the form"]
+    #[doc = "       field which has focus. If it would kill the focus of a form field,"]
+    #[doc = "       save the value of form field if was changed by theuser."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_ForceToKillFocus(hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FORM_GetFocusedAnnot."]
+    #[doc = "       Call this member function to get the currently focused annotation."]
+    #[doc = " Parameters:"]
+    #[doc = "       handle      -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page_index  -   Buffer to hold the index number of the page which"]
+    #[doc = "                       contains the focused annotation. 0 for the first page."]
+    #[doc = "                       Can't be NULL."]
+    #[doc = "       annot       -   Buffer to hold the focused annotation. Can't be NULL."]
+    #[doc = " Return Value:"]
+    #[doc = "       On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = "       false and leave the out parameters unmodified."]
+    #[doc = " Comments:"]
+    #[doc = "       Not currently supported for XFA forms - will report no focused"]
+    #[doc = "       annotation."]
+    #[doc = "       Must call FPDFPage_CloseAnnot() when the annotation returned in |annot|"]
+    #[doc = "       by this function is no longer needed."]
+    #[doc = "       This will return true and set |page_index| to -1 and |annot| to NULL, if"]
+    #[doc = "       there is no focused annotation."]
+    pub fn FORM_GetFocusedAnnot(
+        handle: FPDF_FORMHANDLE,
+        page_index: *mut ::std::os::raw::c_int,
+        annot: *mut FPDF_ANNOTATION,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FORM_SetFocusedAnnot."]
+    #[doc = "       Call this member function to set the currently focused annotation."]
+    #[doc = " Parameters:"]
+    #[doc = "       handle      -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       annot       -   Handle to an annotation."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    #[doc = " Comments:"]
+    #[doc = "       |annot| can't be NULL. To kill focus, use FORM_ForceToKillFocus()"]
+    #[doc = "       instead."]
+    pub fn FORM_SetFocusedAnnot(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFPage_HasFormFieldAtPoint"]
+    #[doc = "     Get the form field type by point."]
+    #[doc = " Parameters:"]
+    #[doc = "     hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                     FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "     page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = "     page_x      -   X position in PDF \"user space\"."]
+    #[doc = "     page_y      -   Y position in PDF \"user space\"."]
+    #[doc = " Return Value:"]
+    #[doc = "     Return the type of the form field; -1 indicates no field."]
+    #[doc = "     See field types above."]
+    pub fn FPDFPage_HasFormFieldAtPoint(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFPage_FormFieldZOrderAtPoint"]
+    #[doc = "     Get the form field z-order by point."]
+    #[doc = " Parameters:"]
+    #[doc = "     hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                     FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "     page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = "     page_x      -   X position in PDF \"user space\"."]
+    #[doc = "     page_y      -   Y position in PDF \"user space\"."]
+    #[doc = " Return Value:"]
+    #[doc = "     Return the z-order of the form field; -1 indicates no field."]
+    #[doc = "     Higher numbers are closer to the front."]
+    pub fn FPDFPage_FormFieldZOrderAtPoint(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_SetFormFieldHighlightColor"]
+    #[doc = "       Set the highlight color of the specified (or all) form fields"]
+    #[doc = "       in the document."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       doc         -   Handle to the document, as returned by"]
+    #[doc = "                       FPDF_LoadDocument()."]
+    #[doc = "       fieldType   -   A 32-bit integer indicating the type of a form"]
+    #[doc = "                       field (defined above)."]
+    #[doc = "       color       -   The highlight color of the form field. Constructed by"]
+    #[doc = "                       0xxxrrggbb."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       When the parameter fieldType is set to FPDF_FORMFIELD_UNKNOWN, the"]
+    #[doc = "       highlight color will be applied to all the form fields in the"]
+    #[doc = "       document."]
+    #[doc = "       Please refresh the client window to show the highlight immediately"]
+    #[doc = "       if necessary."]
+    pub fn FPDF_SetFormFieldHighlightColor(
+        hHandle: FPDF_FORMHANDLE,
+        fieldType: ::std::os::raw::c_int,
+        color: ::std::os::raw::c_ulong,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_SetFormFieldHighlightAlpha"]
+    #[doc = "       Set the transparency of the form field highlight color in the"]
+    #[doc = "       document."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       doc         -   Handle to the document, as returaned by"]
+    #[doc = "                       FPDF_LoadDocument()."]
+    #[doc = "       alpha       -   The transparency of the form field highlight color,"]
+    #[doc = "                       between 0-255."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub fn FPDF_SetFormFieldHighlightAlpha(
+        hHandle: FPDF_FORMHANDLE,
+        alpha: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_RemoveFormFieldHighlight"]
+    #[doc = "       Remove the form field highlight color in the document."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       Please refresh the client window to remove the highlight immediately"]
+    #[doc = "       if necessary."]
+    pub fn FPDF_RemoveFormFieldHighlight(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FPDF_FFLDraw"]
+    #[doc = "       Render FormFields and popup window on a page to a device independent"]
+    #[doc = "       bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle      -   Handle to the form fill module, as returned by"]
+    #[doc = "                        FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       bitmap       -   Handle to the device independent bitmap (as the"]
+    #[doc = "                        output buffer). Bitmap handles can be created by"]
+    #[doc = "                        FPDFBitmap_Create()."]
+    #[doc = "       page         -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       start_x      -   Left pixel position of the display area in the"]
+    #[doc = "                        device coordinates."]
+    #[doc = "       start_y      -   Top pixel position of the display area in the device"]
+    #[doc = "                        coordinates."]
+    #[doc = "       size_x       -   Horizontal size (in pixels) for displaying the page."]
+    #[doc = "       size_y       -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "       rotate       -   Page orientation: 0 (normal), 1 (rotated 90 degrees"]
+    #[doc = "                        clockwise), 2 (rotated 180 degrees), 3 (rotated 90"]
+    #[doc = "                        degrees counter-clockwise)."]
+    #[doc = "       flags        -   0 for normal display, or combination of flags"]
+    #[doc = "                        defined above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This function is designed to render annotations that are"]
+    #[doc = "       user-interactive, which are widget annotations (for FormFields) and"]
+    #[doc = "       popup annotations."]
+    #[doc = "       With the FPDF_ANNOT flag, this function will render a popup annotation"]
+    #[doc = "       when users mouse-hover on a non-widget annotation. Regardless of"]
+    #[doc = "       FPDF_ANNOT flag, this function will always render widget annotations"]
+    #[doc = "       for FormFields."]
+    #[doc = "       In order to implement the FormFill functions, implementation should"]
+    #[doc = "       call this function after rendering functions, such as"]
+    #[doc = "       FPDF_RenderPageBitmap() or FPDF_RenderPageBitmap_Start(), have"]
+    #[doc = "       finished rendering the page contents."]
+    pub fn FPDF_FFLDraw(
+        hHandle: FPDF_FORMHANDLE,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        flags: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FPDF_GetFormType"]
+    #[doc = "           Returns the type of form contained in the PDF document."]
+    #[doc = " Parameters:"]
+    #[doc = "           document - Handle to document."]
+    #[doc = " Return Value:"]
+    #[doc = "           Integer value representing one of the FORMTYPE_ values."]
+    #[doc = " Comments:"]
+    #[doc = "           If |document| is NULL, then the return value is FORMTYPE_NONE."]
+    pub fn FPDF_GetFormType(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_SetIndexSelected"]
+    #[doc = "           Selects/deselects the value at the given |index| of the focused"]
+    #[doc = "           annotation."]
+    #[doc = " Parameters:"]
+    #[doc = "           hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                           FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "           page        -   Handle to the page. Returned by FPDF_LoadPage"]
+    #[doc = "           index       -   0-based index of value to be set as"]
+    #[doc = "                           selected/unselected"]
+    #[doc = "           selected    -   true to select, false to deselect"]
+    #[doc = " Return Value:"]
+    #[doc = "           TRUE if the operation succeeded."]
+    #[doc = "           FALSE if the operation failed or widget is not a supported type."]
+    #[doc = " Comments:"]
+    #[doc = "           Intended for use with listbox/combobox widget types. Comboboxes"]
+    #[doc = "           have at most a single value selected at a time which cannot be"]
+    #[doc = "           deselected. Deselect on a combobox is a no-op that returns false."]
+    #[doc = "           Default implementation is a no-op that will return false for"]
+    #[doc = "           other types."]
+    #[doc = "           Not currently supported for XFA forms - will return false."]
+    pub fn FORM_SetIndexSelected(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: ::std::os::raw::c_int,
+        selected: FPDF_BOOL,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_IsIndexSelected"]
+    #[doc = "           Returns whether or not the value at |index| of the focused"]
+    #[doc = "           annotation is currently selected."]
+    #[doc = " Parameters:"]
+    #[doc = "           hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                           FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "           page        -   Handle to the page. Returned by FPDF_LoadPage"]
+    #[doc = "           index       -   0-based Index of value to check"]
+    #[doc = " Return Value:"]
+    #[doc = "           TRUE if value at |index| is currently selected."]
+    #[doc = "           FALSE if value at |index| is not selected or widget is not a"]
+    #[doc = "           supported type."]
+    #[doc = " Comments:"]
+    #[doc = "           Intended for use with listbox/combobox widget types. Default"]
+    #[doc = "           implementation is a no-op that will return false for other types."]
+    #[doc = "           Not currently supported for XFA forms - will return false."]
+    pub fn FORM_IsIndexSelected(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_LoadXFA"]
+    #[doc = "          If the document consists of XFA fields, call this method to"]
+    #[doc = "          attempt to load XFA fields."]
+    #[doc = " Parameters:"]
+    #[doc = "          document     -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = " Return Value:"]
+    #[doc = "          TRUE upon success, otherwise FALSE. If XFA support is not built"]
+    #[doc = "          into PDFium, performs no action and always returns FALSE."]
+    pub fn FPDF_LoadXFA(document: FPDF_DOCUMENT) -> FPDF_BOOL;
 }

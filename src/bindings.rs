@@ -1,7 +1,7 @@
 //! Defines the [PdfiumLibraryBindings] trait, which exposes the raw FPDF_* functions
 //! exported by the Pdfium library.
 
-use crate::bindgen::{FPDF_BITMAP, FPDF_DOCUMENT, FPDF_DWORD, FPDF_PAGE};
+use crate::bindgen::{FPDF_BITMAP, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_PAGE};
 use crate::PdfiumInternalError;
 
 /// Platform-independent function bindings to an external Pdfium library.
@@ -103,6 +103,42 @@ pub trait PdfiumLibraryBindings {
         flags: ::std::os::raw::c_int,
     );
 
+    #[allow(non_snake_case)]
+    fn FPDFDOC_InitFormFillEnvironment(
+        &self,
+        document: FPDF_DOCUMENT,
+        form_info: *mut FPDF_FORMFILLINFO,
+    ) -> FPDF_FORMHANDLE;
+
+    #[allow(non_snake_case)]
+    fn FPDF_SetFormFieldHighlightColor(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        field_type: ::std::os::raw::c_int,
+        color: ::std::os::raw::c_ulong,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDF_SetFormFieldHighlightAlpha(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        alpha: ::std::os::raw::c_uchar,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDF_FFLDraw(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        flags: ::std::os::raw::c_int,
+    );
+
     /// Retrieves the error code of the last error, if any, recorded by the external
     /// libpdfium provider and maps it to a PdfiumInternalError enum value.
     #[inline]
@@ -120,4 +156,5 @@ pub trait PdfiumLibraryBindings {
             _ => Some(PdfiumInternalError::Unknown),
         }
     }
+
 }
