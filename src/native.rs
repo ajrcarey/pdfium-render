@@ -1,6 +1,5 @@
-use crate::bindgen::{
-    FPDF_BITMAP, FPDF_BYTESTRING, FPDF_DOCUMENT, FPDF_DWORD, FPDF_PAGE, FPDF_STRING,
-};
+use std::os::raw::{c_int, c_uchar, c_ulong};
+use crate::bindgen::{FPDF_BITMAP, FPDF_BYTESTRING, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_PAGE, FPDF_STRING};
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
 
@@ -33,6 +32,7 @@ impl NativePdfiumBindings {
         result.extern_FPDFBitmap_GetHeight()?;
         result.extern_FPDFBitmap_GetStride()?;
         result.extern_FPDF_RenderPageBitmap()?;
+        result.extern_FPDFDOC_InitFormFillEnvironment()?;
 
         Ok(result)
     }
@@ -264,7 +264,76 @@ impl NativePdfiumBindings {
     > {
         unsafe { self.library.get(b"FPDF_RenderPageBitmap") }
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
+    fn extern_FPDFDOC_InitFormFillEnvironment(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT, form_info: *mut FPDF_FORMFILLINFO
+            ) -> FPDF_FORMHANDLE,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFDOC_InitFormFillEnvironment") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
+    fn extern_FPDF_SetFormFieldHighlightColor(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                handle: FPDF_FORMHANDLE, field_type: c_int, color: c_ulong
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_SetFormFieldHighlightColor") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
+    fn extern_FPDF_SetFormFieldHighlightAlpha(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                handle: FPDF_FORMHANDLE, alpha: c_uchar
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_SetFormFieldHighlightAlpha") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
+    fn extern_FPDF_FFLDraw(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                handle: FPDF_FORMHANDLE, bitmap: FPDF_BITMAP, page: FPDF_PAGE, start_x: c_int, start_y: c_int, size_x: c_int, size_y: c_int, rotate: c_int, flags: c_int
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_FFLDraw") }
+    }
 }
+
+/*
+
+FPDF_FFLDraw(handle: FPDF_FORMHANDLE, bitmap: FPDF_BITMAP, page: FPDF_PAGE, start_x: c_int, start_y: c_int, size_x: c_int, size_y: c_int, rotate: c_int, flags: c_int)
+ */
 
 impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[inline]
@@ -436,6 +505,38 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
             self.extern_FPDF_RenderPageBitmap().unwrap()(
                 bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
             );
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDOC_InitFormFillEnvironment(&self, document: FPDF_DOCUMENT, form_info: *mut FPDF_FORMFILLINFO) -> FPDF_FORMHANDLE {
+        unsafe {
+            self.extern_FPDFDOC_InitFormFillEnvironment().unwrap()(document, form_info)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SetFormFieldHighlightColor(&self, handle: FPDF_FORMHANDLE, field_type: c_int, color: c_ulong) {
+        unsafe {
+            self.extern_FPDF_SetFormFieldHighlightColor().unwrap()(handle, field_type, color)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SetFormFieldHighlightAlpha(&self, handle: FPDF_FORMHANDLE, alpha: c_uchar) {
+        unsafe {
+            self.extern_FPDF_SetFormFieldHighlightAlpha().unwrap()(handle, alpha)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_FFLDraw(&self, handle: FPDF_FORMHANDLE, bitmap: FPDF_BITMAP, page: FPDF_PAGE, start_x: c_int, start_y: c_int, size_x: c_int, size_y: c_int, rotate: c_int, flags: c_int) {
+        unsafe {
+            self.extern_FPDF_FFLDraw().unwrap()(handle, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags)
         }
     }
 }

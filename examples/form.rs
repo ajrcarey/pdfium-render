@@ -31,23 +31,29 @@ pub fn main() {
             // sample file when rendering. Sharing the same rendering configuration is a good way
             // to ensure homogenous output across all pages in the document.
 
-            let render_config = PdfBitmapConfig::new()
-                .set_target_width(2000)
-                .set_maximum_height(2000)
-                .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+            let dpi = 200.0;
+            let scale = dpi as f32 / 72.0;
 
-            Pdfium::new(bindings)
-                .load_pdf_from_file("test/test.pdf", None) // Load the sample file...
-                .unwrap()
-                .pages() // ... get an iterator across all pages ...
+            let render_config = PdfBitmapConfig::new()
+                .scale_page_by_factor(scale);
+
+            let pdfium = Pdfium::new(bindings);
+            let mut doc = pdfium
+                .load_pdf_from_file("test/form.pdf", None) // Load the sample file...
+                .unwrap();
+
+            let handle = doc.load_form_data();
+
+            doc.pages() // ... get an iterator across all pages ...
                 .for_each(|page| {
                     // ... and export each page to a JPEG in the current working directory,
                     // using the rendering configuration we created earlier.
 
-                    let result = page
-                        .get_bitmap_with_config(&render_config, None) // Initializes a bitmap with the given configuration for this page ...
-                        .unwrap()
-                        .as_image() // ... renders it to an Image::DynamicImage ...
+                    let mut bitmap = page
+                        .get_bitmap_with_config(&render_config, Some(handle)) // Initializes a bitmap with the given configuration for this page ...
+                        .unwrap();
+
+                    let result = bitmap.as_image() // ... renders it to an Image::DynamicImage ...
                         .as_bgra8() // ... sets the correct color space ...
                         .unwrap()
                         .save_with_format(
