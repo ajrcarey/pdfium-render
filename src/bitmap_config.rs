@@ -1,13 +1,23 @@
-use crate::bitmap::PdfBitmapRotation;
+//! Defines the [PdfBitmapConfig] struct, a builder-based approach to configuring
+//! the rendering of `PdfBitmap` objects from one or more `PdfPage` objects.
+
+use crate::bindgen::{
+    FPDF_ANNOT, FPDF_CONVERT_FILL_TO_STROKE, FPDF_DWORD, FPDF_GRAYSCALE, FPDF_LCD_TEXT,
+    FPDF_NO_NATIVETEXT, FPDF_PRINTING, FPDF_RENDER_FORCEHALFTONE, FPDF_RENDER_LIMITEDIMAGECACHE,
+    FPDF_RENDER_NO_SMOOTHIMAGE, FPDF_RENDER_NO_SMOOTHPATH, FPDF_RENDER_NO_SMOOTHTEXT,
+    FPDF_REVERSE_BYTE_ORDER,
+};
+use crate::bitmap::{PdfBitmapFormat, PdfBitmapRotation};
+use crate::color::PdfColor;
+use crate::form::PdfFormFieldType;
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation};
 
-/// Configures the scaling and rotation settings that should be applied to a PdfPage
-/// to create a PdfBitmap for that page. PdfBitmapConfig can accommodate pages of
-/// different sizes while correctly maintaining each page's aspect ratio,
-/// automatically rotate portrait or landscape pages, generate page thumbnails,
-/// and apply maximum and minimum pixel sizes to the scaled width and height of the
-/// final bitmap.
+/// Configures the scaling, rotation, and rendering settings that should be applied to
+/// a PdfPage to create a PdfBitmap for that page. PdfBitmapConfig can accommodate pages of
+/// different sizes while correctly maintaining each page's aspect ratio, automatically
+/// rotate portrait or landscape pages, generate page thumbnails, and apply maximum and
+/// minimum pixel sizes to the scaled width and height of the final bitmap.
 pub struct PdfBitmapConfig {
     target_width: Option<u16>,
     target_height: Option<u16>,
@@ -19,6 +29,24 @@ pub struct PdfBitmapConfig {
     portrait_rotation_do_rotate_constraints: bool,
     landscape_rotation: PdfBitmapRotation,
     landscape_rotation_do_rotate_constraints: bool,
+    format: PdfBitmapFormat,
+    do_render_form_data: bool,
+    form_field_highlight: Vec<(PdfFormFieldType, PdfColor)>,
+
+    // The fields below set Pdfium's page rendering flags. Coverage for the
+    // FPDF_DEBUG_INFO and FPDF_NO_CATCH flags is omitted since they are obsolete.
+    do_set_flag_render_annotations: bool,     // Sets FPDF_ANNOT
+    do_set_flag_use_lcd_text_rendering: bool, // Sets FPDF_LCD_TEXT
+    do_set_flag_no_native_text: bool,         // Sets FPDF_NO_NATIVETEXT
+    do_set_flag_grayscale: bool,              // Sets FPDF_GRAYSCALE
+    do_set_flag_render_limited_image_cache: bool, // Sets FPDF_RENDER_LIMITEDIMAGECACHE
+    do_set_flag_render_force_half_tone: bool, // Sets FPDF_RENDER_FORCEHALFTONE
+    do_set_flag_render_for_printing: bool,    // Sets FPDF_PRINTING
+    do_set_flag_render_no_smooth_text: bool,  // Sets FPDF_RENDER_NO_SMOOTHTEXT
+    do_set_flag_render_no_smooth_image: bool, // Sets FPDF_RENDER_NO_SMOOTHIMAGE
+    do_set_flag_render_no_smooth_path: bool,  // Sets FPDF_RENDER_NO_SMOOTHPATH
+    do_set_flag_reverse_byte_order: bool,     // Sets FPDF_REVERSE_BYTE_ORDER
+    do_set_flag_convert_fill_to_stroke: bool, // Sets FPDF_CONVERT_FILL_TO_STROKE
 }
 
 impl PdfBitmapConfig {
@@ -35,6 +63,21 @@ impl PdfBitmapConfig {
             portrait_rotation_do_rotate_constraints: false,
             landscape_rotation: PdfBitmapRotation::None,
             landscape_rotation_do_rotate_constraints: false,
+            format: PdfBitmapFormat::BGRA,
+            do_render_form_data: true,
+            form_field_highlight: vec![],
+            do_set_flag_render_annotations: true,
+            do_set_flag_use_lcd_text_rendering: false,
+            do_set_flag_no_native_text: false,
+            do_set_flag_grayscale: false,
+            do_set_flag_render_limited_image_cache: false,
+            do_set_flag_render_force_half_tone: false,
+            do_set_flag_render_for_printing: false,
+            do_set_flag_render_no_smooth_text: false,
+            do_set_flag_render_no_smooth_image: false,
+            do_set_flag_render_no_smooth_path: false,
+            do_set_flag_reverse_byte_order: false,
+            do_set_flag_convert_fill_to_stroke: false,
         }
     }
 
@@ -199,10 +242,216 @@ impl PdfBitmapConfig {
         self
     }
 
+    /// Sets the pixel format that will be used during rendering of the PdfPage.
+    /// The default is [PdfBitmapFormat::BGRA].
+    #[inline]
+    pub fn set_format(mut self, format: PdfBitmapFormat) -> Self {
+        self.format = format;
+
+        self
+    }
+
+    /// Controls whether form data widgets and user-supplied form data should be included
+    /// during rendering of the PdfPage. The default is true. The setting has no effect
+    /// if the PdfDocument containing the PdfPage does not include an embedded PdfForm.
+    #[inline]
+    pub fn render_form_data(mut self, do_render: bool) -> Self {
+        self.do_render_form_data = do_render;
+
+        self
+    }
+
+    /// Controls whether user-supplied annotations should be included during rendering of
+    /// the PdfPage. The default is true.
+    #[inline]
+    pub fn render_annotations(mut self, do_render: bool) -> Self {
+        self.do_set_flag_render_annotations = do_render;
+
+        self
+    }
+
+    /// Controls whether text rendering should be optimized for LCD display.
+    /// The default is false.
+    /// Has no effect if anti-aliasing of text has been disabled by a call to
+    /// [PdfBitmapConfig::set_text_smoothing(false)].
+    #[inline]
+    pub fn use_lcd_text_rendering(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_use_lcd_text_rendering = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether platform text rendering should be disabled on platforms that support it.
+    /// The alternative is for Pdfium to render all text internally, which may give more
+    /// consistent rendering results across platforms but may also be slower.
+    /// The default is false.
+    #[inline]
+    pub fn disable_native_text_rendering(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_no_native_text = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether rendering output should be grayscale rather than full color.
+    /// The default is false.
+    #[inline]
+    pub fn use_grayscale_rendering(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_grayscale = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether Pdfium should limit its image cache size during rendering.
+    /// A smaller cache size may result in lower memory usage at the cost of slower rendering.
+    /// The default is false.
+    #[inline]
+    pub fn limit_render_image_cache_size(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_render_limited_image_cache = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether Pdfium should always use halftone for image stretching.
+    /// Halftone image stretching is often higher quality than linear image stretching
+    /// but is much slower. The default is false.
+    #[inline]
+    pub fn force_half_tone(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_render_force_half_tone = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether Pdfium should render for printing. The default is false.
+    #[inline]
+    pub fn use_print_quality(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_render_for_printing = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether rendered text should be anti-aliased.
+    /// The default is true.
+    /// The enabling of LCD-optimized text rendering via a call to
+    /// [PdfiumBitmapConfig::use_lcd_text_rendering(true)] has no effect if this flag
+    /// is set to true.
+    #[inline]
+    pub fn set_text_smoothing(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_render_no_smooth_text = !do_set_flag;
+
+        self
+    }
+
+    /// Controls whether rendered images should be anti-aliased.
+    /// The default is true.
+    #[inline]
+    pub fn set_image_smoothing(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_render_no_smooth_image = !do_set_flag;
+
+        self
+    }
+
+    /// Controls whether rendered vector paths should be anti-aliased.
+    /// The default is true.
+    #[inline]
+    pub fn set_path_smoothing(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_render_no_smooth_path = !do_set_flag;
+
+        self
+    }
+
+    /// Controls whether the byte order of generated image data should be reversed
+    /// during rendering. The default is false. There should generally be no need
+    /// to set this flag, unless you want to do raw image processing and specifically
+    /// need the byte data returned by [crate::bitmap::PdfBitmap::as_bytes()] to be reversed.
+    #[inline]
+    pub fn set_reverse_byte_order(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_reverse_byte_order = do_set_flag;
+
+        self
+    }
+
+    /// Controls whether rendered vector fill paths need to be stroked.
+    /// The default is false.
+    #[inline]
+    pub fn render_fills_as_strokes(mut self, do_set_flag: bool) -> Self {
+        self.do_set_flag_convert_fill_to_stroke = do_set_flag;
+
+        self
+    }
+
+    /// Highlights all rendered form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_all_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::Unknown, color)
+    }
+
+    /// Highlights all rendered push button form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_button_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::PushButton, color)
+    }
+
+    /// Highlights all rendered checkbox form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_checkbox_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::Checkbox, color)
+    }
+
+    /// Highlights all rendered radio button form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_radio_button_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::RadioButton, color)
+    }
+
+    /// Highlights all rendered combobox form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_combobox_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::ComboBox, color)
+    }
+
+    /// Highlights all rendered listbox form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_listbox_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::ListBox, color)
+    }
+
+    /// Highlights all rendered text entry form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_text_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::TextField, color)
+    }
+
+    /// Highlights all rendered signature form fields with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_signature_form_fields(self, color: PdfColor) -> Self {
+        self.highlight_form_fields_of_type(PdfFormFieldType::Signature, color)
+    }
+
+    /// Highlights all rendered form fields matching the given type with the given color.
+    /// Note that specifying a solid color with no opacity will overprint any user data in the field.
+    #[inline]
+    pub fn highlight_form_fields_of_type(
+        mut self,
+        form_field_type: PdfFormFieldType,
+        color: PdfColor,
+    ) -> Self {
+        self.form_field_highlight.push((form_field_type, color));
+
+        self
+    }
+
     /// Computes the pixel dimensions and rotation settings for the given PdfPage
     /// based on the configuration of this PdfBitmapConfig.
     #[inline]
-    pub(crate) fn apply_to_page(&self, page: &PdfPage) -> (u16, u16, Option<PdfBitmapRotation>) {
+    pub(crate) fn apply_to_page(&self, page: &PdfPage) -> PdfBitmapRenderSettings {
         let source_width = page.width();
 
         let source_height = page.height();
@@ -307,15 +556,76 @@ impl PdfBitmapConfig {
             }
         }
 
-        (
-            (source_width * width_scale) as u16,
-            (source_height * height_scale) as u16,
-            if target_rotation == PdfBitmapRotation::None {
-                None
-            } else {
-                Some(target_rotation)
-            },
-        )
+        // Compose render flags.
+
+        let mut render_flags = 0;
+
+        if self.do_set_flag_render_annotations {
+            render_flags |= FPDF_ANNOT;
+        }
+
+        if self.do_set_flag_use_lcd_text_rendering {
+            render_flags |= FPDF_LCD_TEXT;
+        }
+
+        if self.do_set_flag_no_native_text {
+            render_flags |= FPDF_NO_NATIVETEXT;
+        }
+
+        if self.do_set_flag_grayscale {
+            render_flags |= FPDF_GRAYSCALE;
+        }
+
+        if self.do_set_flag_render_limited_image_cache {
+            render_flags |= FPDF_RENDER_LIMITEDIMAGECACHE;
+        }
+
+        if self.do_set_flag_render_force_half_tone {
+            render_flags |= FPDF_RENDER_FORCEHALFTONE;
+        }
+
+        if self.do_set_flag_render_for_printing {
+            render_flags |= FPDF_PRINTING;
+        }
+
+        if self.do_set_flag_render_no_smooth_text {
+            render_flags |= FPDF_RENDER_NO_SMOOTHTEXT;
+        }
+
+        if self.do_set_flag_render_no_smooth_image {
+            render_flags |= FPDF_RENDER_NO_SMOOTHIMAGE;
+        }
+
+        if self.do_set_flag_render_no_smooth_path {
+            render_flags |= FPDF_RENDER_NO_SMOOTHPATH;
+        }
+
+        if self.do_set_flag_reverse_byte_order {
+            render_flags |= FPDF_REVERSE_BYTE_ORDER;
+        }
+
+        if self.do_set_flag_convert_fill_to_stroke {
+            render_flags |= FPDF_CONVERT_FILL_TO_STROKE;
+        }
+
+        PdfBitmapRenderSettings {
+            width: (source_width * width_scale) as i32,
+            height: (source_height * height_scale) as i32,
+            format: self.format.as_pdfium() as i32,
+            rotate: target_rotation.as_pdfium(),
+            do_render_form_data: self.do_render_form_data,
+            form_field_highlight: self
+                .form_field_highlight
+                .iter()
+                .map(|(form_field_type, color)| {
+                    (
+                        form_field_type.as_pdfium() as i32,
+                        color.as_pdfium_color_with_alpha(),
+                    )
+                })
+                .collect::<Vec<_>>(),
+            render_flags: render_flags as i32,
+        }
     }
 }
 
@@ -324,4 +634,15 @@ impl Default for PdfBitmapConfig {
     fn default() -> Self {
         PdfBitmapConfig::new()
     }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct PdfBitmapRenderSettings {
+    pub(crate) width: i32,
+    pub(crate) height: i32,
+    pub(crate) format: i32,
+    pub(crate) rotate: i32,
+    pub(crate) do_render_form_data: bool,
+    pub(crate) form_field_highlight: Vec<(i32, (FPDF_DWORD, u8))>,
+    pub(crate) render_flags: i32,
 }

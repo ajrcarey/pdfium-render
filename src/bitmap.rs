@@ -1,6 +1,14 @@
-use crate::bindgen::{FPDFBitmap_BGR, FPDFBitmap_BGRA, FPDFBitmap_BGRx, FPDFBitmap_Gray, FPDFBitmap_Unknown, FPDF_BITMAP, FPDF_PAGE, FPDF_FORMHANDLE, FPDF_ANNOT};
+//! Defines the [PdfBitmap] struct, a lazily-generated bitmap rendering of a single
+//! `PdfPage`.
+
+use crate::bindgen::{
+    FPDFBitmap_BGR, FPDFBitmap_BGRA, FPDFBitmap_BGRx, FPDFBitmap_Gray, FPDFBitmap_Unknown,
+    FPDF_BITMAP, FPDF_FORMHANDLE, FPDF_PAGE,
+};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::PdfiumError;
+use crate::bitmap_config::PdfBitmapRenderSettings;
+use crate::color::PdfColor;
+use crate::error::PdfiumError;
 use image::{DynamicImage, ImageBuffer};
 
 /// The pixel format of the rendered image data in the backing buffer of a PdfBitmap.
@@ -15,7 +23,7 @@ pub enum PdfBitmapFormat {
 impl PdfBitmapFormat {
     #[inline]
     #[allow(non_upper_case_globals)]
-    pub(crate) fn from_pdfium(format: u32) -> Result<PdfBitmapFormat, PdfiumError> {
+    pub(crate) fn from_pdfium(format: u32) -> Result<Self, PdfiumError> {
         match format {
             FPDFBitmap_Unknown => Err(PdfiumError::UnknownBitmapFormat),
             FPDFBitmap_Gray => Ok(PdfBitmapFormat::Gray),
@@ -23,6 +31,16 @@ impl PdfBitmapFormat {
             FPDFBitmap_BGRx => Ok(PdfBitmapFormat::BRGx),
             FPDFBitmap_BGRA => Ok(PdfBitmapFormat::BGRA),
             _ => Err(PdfiumError::UnknownBitmapFormat),
+        }
+    }
+
+    #[inline]
+    pub(crate) fn as_pdfium(&self) -> u32 {
+        match self {
+            PdfBitmapFormat::Gray => FPDFBitmap_Gray,
+            PdfBitmapFormat::BGR => FPDFBitmap_BGR,
+            PdfBitmapFormat::BRGx => FPDFBitmap_BGRx,
+            PdfBitmapFormat::BGRA => FPDFBitmap_BGRA,
         }
     }
 }
@@ -37,6 +55,29 @@ pub enum PdfBitmapRotation {
     Degrees270,
 }
 
+impl PdfBitmapRotation {
+    #[inline]
+    pub(crate) fn from_pdfium(rotate: i32) -> Result<Self, PdfiumError> {
+        match rotate {
+            0 => Ok(PdfBitmapRotation::None),
+            1 => Ok(PdfBitmapRotation::Degrees90),
+            2 => Ok(PdfBitmapRotation::Degrees180),
+            3 => Ok(PdfBitmapRotation::Degrees270),
+            _ => Err(PdfiumError::UnknownBitmapRotation),
+        }
+    }
+
+    #[inline]
+    pub(crate) fn as_pdfium(&self) -> i32 {
+        match self {
+            PdfBitmapRotation::None => 0,
+            PdfBitmapRotation::Degrees90 => 1,
+            PdfBitmapRotation::Degrees180 => 2,
+            PdfBitmapRotation::Degrees270 => 3,
+        }
+    }
+}
+
 /// A rendered image of a single PdfPage at a specific width and height.
 ///
 /// By default, PdfBitmap is lazy; it will not render its page into a bitmap until
@@ -44,36 +85,28 @@ pub enum PdfBitmapRotation {
 /// If preferred, rendering can be initiated manually by calling the [PdfBitmap::render()] function.
 /// Once rendered, the page will not be re-rendered.
 pub struct PdfBitmap<'a> {
-    width: u16,
-    height: u16,
-    format: PdfBitmapFormat,
-    rotation: PdfBitmapRotation,
+    config: PdfBitmapRenderSettings,
     bitmap_handle: FPDF_BITMAP,
     page_handle: &'a FPDF_PAGE,
-    form_handle: Option<FPDF_FORMHANDLE>,
+    form_handle: Option<&'a FPDF_FORMHANDLE>,
     is_rendered: bool,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfBitmap<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn from_pdfium(
-        width: u16,
-        height: u16,
-        format: PdfBitmapFormat,
-        rotation: PdfBitmapRotation,
-        handle: FPDF_BITMAP,
-        form_handle: Option<FPDF_FORMHANDLE>,
-        page: &'a FPDF_PAGE,
+        config: PdfBitmapRenderSettings,
+        bitmap_handle: FPDF_BITMAP,
+        form_handle: Option<&'a FPDF_FORMHANDLE>,
+        page_handle: &'a FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfBitmap {
-            width,
-            height,
-            format,
-            rotation,
-            bitmap_handle: handle,
+            config,
+            bitmap_handle,
             form_handle,
-            page_handle: page,
+            page_handle,
             is_rendered: false,
             bindings,
         }
@@ -81,28 +114,34 @@ impl<'a> PdfBitmap<'a> {
 
     /// Returns the width of the image in this PdfBitmap, in pixels.
     #[inline]
-    pub fn width(&self) -> u16 {
-        self.width
+    pub fn width(&self) -> u32 {
+        self.config.width as u32
     }
 
     /// Returns the height of the image in this PdfBitmap, in pixels.
     #[inline]
-    pub fn height(&self) -> u16 {
-        self.height
+    pub fn height(&self) -> u32 {
+        self.config.height as u32
     }
 
     /// Returns the pixel format of the image in this PdfBitmap.
     #[inline]
     pub fn format(&self) -> PdfBitmapFormat {
-        self.format
+        PdfBitmapFormat::from_pdfium(self.config.format as u32).unwrap()
+    }
+
+    /// Returns the rotation setting that will be applied to this page during rendering.
+    #[inline]
+    pub fn rotation(&self) -> PdfBitmapRotation {
+        PdfBitmapRotation::from_pdfium(self.config.rotate).unwrap()
     }
 
     /// Returns a new DynamicImage created from the bitmap buffer backing
     /// this PdfBitmap, rendering the referenced page if necessary.
     pub fn as_image(&mut self) -> DynamicImage {
         ImageBuffer::from_raw(
-            self.width as u32,
-            self.height as u32,
+            self.config.width as u32,
+            self.config.height as u32,
             self.as_bytes().to_owned(),
         )
         .map(DynamicImage::ImageBgra8)
@@ -135,14 +174,16 @@ impl<'a> PdfBitmap<'a> {
             return;
         }
 
-        let width = self.width as i32;
-
-        let height = self.height as i32;
-
         // Clear the bitmap buffer by setting every pixel to white.
 
-        self.bindings
-            .FPDFBitmap_FillRect(self.bitmap_handle, 0, 0, width, height, 0xFFFFFFFF);
+        self.bindings.FPDFBitmap_FillRect(
+            self.bitmap_handle,
+            0,
+            0,
+            self.config.width,
+            self.config.height,
+            PdfColor::SOLID_WHITE.as_pdfium_color(),
+        );
 
         // Render the PDF page into the bitmap buffer.
 
@@ -151,57 +192,42 @@ impl<'a> PdfBitmap<'a> {
             *self.page_handle,
             0,
             0,
-            width,
-            height,
-            match self.rotation {
-                PdfBitmapRotation::None => 0,
-                PdfBitmapRotation::Degrees90 => 1,
-                PdfBitmapRotation::Degrees180 => 2,
-                PdfBitmapRotation::Degrees270 => 3,
-            },
-            0,
+            self.config.width,
+            self.config.height,
+            self.config.rotate,
+            self.config.render_flags,
         );
 
         if let Some(form_handle) = self.form_handle {
-            self.bindings.FPDF_FFLDraw(
-                form_handle,
-                self.bitmap_handle,
-                *self.page_handle,
-                0,
-                0,
-                width,
-                height,
-                match self.rotation {
-                    PdfBitmapRotation::None => 0,
-                    PdfBitmapRotation::Degrees90 => 1,
-                    PdfBitmapRotation::Degrees180 => 2,
-                    PdfBitmapRotation::Degrees270 => 3,
-                },
-                0);
+            if self.config.do_render_form_data {
+                // Render user-supplied form data, if any, as an overlay on top of the page.
+
+                for (form_field_type, (color, alpha)) in self.config.form_field_highlight.iter() {
+                    self.bindings.FPDF_SetFormFieldHighlightColor(
+                        *form_handle,
+                        *form_field_type,
+                        *color,
+                    );
+
+                    self.bindings
+                        .FPDF_SetFormFieldHighlightAlpha(*form_handle, *alpha);
+                }
+
+                self.bindings.FPDF_FFLDraw(
+                    *form_handle,
+                    self.bitmap_handle,
+                    *self.page_handle,
+                    0,
+                    0,
+                    self.config.width,
+                    self.config.height,
+                    self.config.rotate,
+                    self.config.render_flags,
+                );
+            }
         }
 
         self.is_rendered = true;
-    }
-
-    pub fn draw_annotations(&mut self, form_handle: FPDF_FORMHANDLE) {
-        let width = self.width as i32;
-        let height = self.height as i32;
-
-        self.bindings.FPDF_FFLDraw(
-            form_handle,
-            self.bitmap_handle,
-            *self.page_handle,
-            0,
-            0,
-            width,
-            height,
-            match self.rotation {
-                PdfBitmapRotation::None => 0,
-                PdfBitmapRotation::Degrees90 => 1,
-                PdfBitmapRotation::Degrees180 => 2,
-                PdfBitmapRotation::Degrees270 => 3,
-                },
-            0);
     }
 }
 

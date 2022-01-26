@@ -16,10 +16,10 @@ pub fn main() {
         // Attempt to bind to a pdfium library in the current working directory...
         Pdfium::pdfium_platform_library_name_at_path("./"),
     )
-        .or_else(
-            // ... and fall back to binding to a system-provided pdfium library.
-            |_| Pdfium::bind_to_system_library(),
-        );
+    .or_else(
+        // ... and fall back to binding to a system-provided pdfium library.
+        |_| Pdfium::bind_to_system_library(),
+    );
 
     match bindings {
         Ok(bindings) => {
@@ -37,21 +37,22 @@ pub fn main() {
                 .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
 
             Pdfium::new(bindings)
-                .load_pdf_from_file("test/test.pdf", None) // Load the sample file...
+                .load_pdf_from_file("test/export-test.pdf", None) // Load the sample file...
                 .unwrap()
-                .pages() // ... get an iterator across all pages ...
+                .pages()
+                .iter() // ... get an iterator across all pages ...
                 .for_each(|page| {
                     // ... and export each page to a JPEG in the current working directory,
                     // using the rendering configuration we created earlier.
 
                     let result = page
-                        .get_bitmap_with_config(&render_config, None) // Initializes a bitmap with the given configuration for this page ...
+                        .get_bitmap_with_config(&render_config) // Initializes a bitmap with the given configuration for this page ...
                         .unwrap()
                         .as_image() // ... renders it to an Image::DynamicImage ...
                         .as_bgra8() // ... sets the correct color space ...
                         .unwrap()
                         .save_with_format(
-                            format!("test-page-{}.jpg", page.index()),
+                            format!("export-test-page-{}.jpg", page.index()),
                             ImageFormat::Jpeg,
                         ); // ... and exports it to a JPEG.
 

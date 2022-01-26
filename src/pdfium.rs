@@ -2,7 +2,7 @@
 
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
-use crate::{PdfiumError, PdfiumInternalError};
+use crate::error::{PdfiumError, PdfiumInternalError};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::ffi::OsString;
@@ -38,10 +38,11 @@ impl Pdfium {
         Ok(Box::new(bindings))
     }
 
-    /// Binds to the external pdfium WASM module. The pdfium module must already be
+    /// Binds to the external Pdfium WASM module. The Pdfium module must already be
     /// loaded and present in the browser context for binding to be successful.
     /// Returns a new PdfiumLibraryBindings object that contains bindings to the
-    /// functions exposed by the pdfium module, or an error if the library could not be loaded.
+    /// functions exposed by the Pdfium module. This function will never return an
+    /// error; the return type is for compatibility with library binding in native code.
     #[cfg(target_arch = "wasm32")]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {

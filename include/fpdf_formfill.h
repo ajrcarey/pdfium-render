@@ -1455,9 +1455,10 @@ FORM_OnLButtonDoubleClick(FPDF_FORMHANDLE hHandle,
  *       hHandle     -   Handle to the form fill module, aseturned by
  *                       FPDFDOC_InitFormFillEnvironment().
  *       page        -   Handle to the page, as returned by FPDF_LoadPage().
- *       nKeyCode    -   Indicates whether various virtual keys are down.
- *       modifier    -   Contains the scan code, key-transition code,
- *                       previous key state, and context code.
+ *       nKeyCode    -   The virtual-key code of the given key (see
+ *                       fpdf_fwlevent.h for virtual key codes).
+ *       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key
+ *                       flag values).
  * Return Value:
  *       True indicates success; otherwise false.
  */
@@ -1473,9 +1474,10 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnKeyDown(FPDF_FORMHANDLE hHandle,
  *       hHandle     -   Handle to the form fill module, as returned by
  *                       FPDFDOC_InitFormFillEnvironment().
  *       page        -   Handle to the page, as returned by FPDF_LoadPage().
- *       nKeyCode    -   The virtual-key code of the given key.
- *       modifier    -   Contains the scan code, key-transition code,
- *                       previous key state, and context code.
+ *       nKeyCode    -   The virtual-key code of the given key (see
+ *                       fpdf_fwlevent.h for virtual key codes).
+ *       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key
+ *                       flag values).
  * Return Value:
  *       True indicates success; otherwise false.
  */
@@ -1489,12 +1491,12 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnKeyUp(FPDF_FORMHANDLE hHandle,
  *       Call this member function when a keystroke translates to a
  *       nonsystem character.
  * Parameters:
- *        hHandle    -   Handle to the form fill module, as returned by
+ *       hHandle     -   Handle to the form fill module, as returned by
  *                       FPDFDOC_InitFormFillEnvironment().
- *        page       -   Handle to the page, as returned by FPDF_LoadPage().
- *        nChar      -   The character code value of the key.
- *        modifier   -   Contains the scan code, key-transition code,
- *                       previous key state, and context code.
+ *       page        -   Handle to the page, as returned by FPDF_LoadPage().
+ *       nChar       -   The character code value itself.
+ *       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key
+ *                       flag values).
  * Return Value:
  *       True indicates success; otherwise false.
  */

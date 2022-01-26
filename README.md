@@ -4,28 +4,27 @@
 Pdfium exposed by the excellent `pdfium-sys` crate.
 
 ```
-    // Iterates over each page in the given test PDF file and renders each page
-    // as a separate JPEG image in the current working directory.
+    // Exports each page in the given test PDF file as a separate JPEG image.
 
-    use pdfium_render::{Pdfium, PdfBitmapConfig, PdfBitmapRotation, PdfiumError};
+    use pdfium_render::{pdfium::Pdfium, bitmap::PdfBitmapRotation, bitmap_config::PdfBitmapConfig};
     use image::ImageFormat;
+
+    let password = None;
     
-    fn export_pages() -> Result<(), PdfiumError> {
-        let document = Pdfium::new(Pdfium::bind_to_system_library()?)
-            .load_pdf_from_file("test.pdf", None)?;
-            
-        for page in document.pages() {
-            page.get_bitmap_with_config(&PdfBitmapConfig::new()
-                    .set_target_width(2000)
-                    .set_maximum_height(2000)
-                    .rotate_if_landscape(PdfBitmapRotation::Degrees90, true))?
-                .as_image() // Renders this page to an Image::DynamicImage
-                .as_bgra8()?
-                .save_with_format(format!("test-page-{}.jpg", page.index()), ImageFormat::Jpeg)?;
-        }
-        
-        Ok(())
-    }
+    let document = Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+        .load_pdf_from_file("test.pdf", password).unwrap();
+    
+    let bitmap_render_config = PdfBitmapConfig::new()
+        .set_target_width(2000)
+        .set_maximum_height(2000)
+        .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+ 
+    document.pages().iter().for_each(|page| {
+        page.get_bitmap_with_config(&bitmap_render_config).unwrap()
+            .as_image() // Renders this page to an Image::DynamicImage
+            .as_bgra8().unwrap()
+            .save_with_format(format!("test-page-{}.jpg", page.index()), ImageFormat::Jpeg).unwrap();
+    });
 ```
 
 In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from
@@ -39,8 +38,18 @@ In addition to providing a more natural interface to Pdfium, `pdfium-render` dif
   a Pdfium library is not available.
 * Late binding to Pdfium means that `pdfium-render` can be compiled to WASM for running in a
   browser; this is not possible with `pdfium-sys`.
+* Pdfium is composed as a set of separate modules, each covering a separate aspects of PDF creation,
+  rendering, and editing. `pdfium-sys` only provides bindings for the subset of functions exposed
+  by Pdfium's view module; `pdfium-render` aims to ultimately provide bindings to all non-interactive
+  functions exposed by all Pdfium modules, including document creation and editing functions.
+  This is a work in progress. 
 * Pages rendered by Pdfium can be exported as instances of `Image::DynamicImage` for easy,
-  idiomatic post-processing. 
+  idiomatic post-processing.
+
+## What's new
+
+Version 0.5.0 of `pdfium-render` adds the rendering of annotations and form field elements,
+thanks to an excellent contribution from <https://github.com/inzanez>.
 
 ## Porting existing Pdfium code from other languages
 
@@ -81,12 +90,12 @@ would translate to the following Rust code:
 or package an external build of Pdfium alongside your Rust application. When compiling to WASM,
 packaging an external build of Pdfium as a WASM module is essential.
 
-* Native builds of Pdfium for all major platforms: `<https://github.com/bblanchon/pdfium-binaries/releases>`
-* WASM builds of Pdfium, suitable for deploying alongside `pdfium-render`: `<https://github.com/paulo-coutinho/pdfium-lib/releases>`
+* Native builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
+* WASM builds of Pdfium, suitable for deploying alongside `pdfium-render`: <https://github.com/paulo-coutinho/pdfium-lib/releases>
 
 ## Compiling to WASM
 
-See `<https://github.com/ajrcarey/pdfium-render/tree/master/examples>` for a full example that shows
+See <https://github.com/ajrcarey/pdfium-render/tree/master/examples> for a full example that shows
 how to bundle a Rust application using `pdfium-render` alongside a pre-built Pdfium WASM module for
 in-browser introspection and rendering of PDF files.
 
@@ -94,6 +103,14 @@ in-browser introspection and rendering of PDF files.
 
 The initial focus of this crate has been on rendering pages in a PDF file; consequently, FPDF_*
 functions related to bitmaps and rendering have been prioritised. By 1.0, the functionality of all
-FPDF_* functions exported by Pdfium will be available.
+FPDF_* functions exported by all Pdfium modules will be available, with the exception of certain
+functions specific to interactive scripting, user interaction, and printing.
 
 If you need a function that is not currently exposed, just raise an issue.
+
+## Version history
+
+* 0.5.0: adds rendering of annotations and form field elements, thanks to an excellent contribution from <https://github.com/inzanez>
+* 0.4.2: bug fixes in PdfBitmapConfig implementation
+* 0.4.1: improvements to documentation and READMEs
+* 0.4.0: initial release

@@ -1,68 +1,71 @@
 use image::ImageFormat;
 use pdfium_render::bitmap::PdfBitmapRotation;
 use pdfium_render::bitmap_config::PdfBitmapConfig;
+use pdfium_render::color::PdfColor;
 use pdfium_render::pdfium::Pdfium;
 
 pub fn main() {
-    // Attempt to bind to a pdfium library in the current working directory; failing that,
-    // attempt to bind to the system-provided library.
+    // This example differs from export.rs in that our sample file now includes
+    // an embedded PDF form, which should also be rendered during image export.
+    // Comments that would duplicate those in export.rs have been removed; only
+    // code that substantively differs is commented.
 
-    // The library name will differ depending on the current platform. On Linux,
-    // the library will be named libpdfium.so by default; on Windows, pdfium.dll; and on
-    // MacOS, libpdfium.dylib. We can use the Pdfium::pdfium_platform_library_name_at_path()
-    // function to append the correct library name for the current platform to a path we specify.
-
-    let bindings = Pdfium::bind_to_library(
-        // Attempt to bind to a pdfium library in the current working directory...
-        Pdfium::pdfium_platform_library_name_at_path("./"),
-    )
-        .or_else(
-            // ... and fall back to binding to a system-provided pdfium library.
-            |_| Pdfium::bind_to_system_library(),
-        );
+    let bindings = Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+        .or_else(|_| Pdfium::bind_to_system_library());
 
     match bindings {
         Ok(bindings) => {
-            // The code below simply unwraps every Result<> returned from Pdfium.
-            // In production code, you would actually want to check the results, rather
-            // than just unwrapping them :)
-
-            // First, create a set of shared settings that we'll apply to each page in the
-            // sample file when rendering. Sharing the same rendering configuration is a good way
-            // to ensure homogenous output across all pages in the document.
-
-            let dpi = 200.0;
-            let scale = dpi as f32 / 72.0;
-
-            let render_config = PdfBitmapConfig::new()
-                .scale_page_by_factor(scale);
-
             let pdfium = Pdfium::new(bindings);
-            let mut doc = pdfium
-                .load_pdf_from_file("test/form.pdf", None) // Load the sample file...
+
+            let document = pdfium
+                .load_pdf_from_file("test/form-test.pdf", None) // Load the sample file...
                 .unwrap();
 
-            let handle = doc.load_form_data();
+            println!("PDF file version: {:#?}", document.version());
 
-            doc.pages() // ... get an iterator across all pages ...
-                .for_each(|page| {
-                    // ... and export each page to a JPEG in the current working directory,
-                    // using the rendering configuration we created earlier.
-
-                    let mut bitmap = page
-                        .get_bitmap_with_config(&render_config, Some(handle)) // Initializes a bitmap with the given configuration for this page ...
-                        .unwrap();
-
-                    let result = bitmap.as_image() // ... renders it to an Image::DynamicImage ...
-                        .as_bgra8() // ... sets the correct color space ...
-                        .unwrap()
-                        .save_with_format(
-                            format!("test-page-{}.jpg", page.index()),
-                            ImageFormat::Jpeg,
-                        ); // ... and exports it to a JPEG.
-
-                    assert!(result.is_ok());
+            println!("PDF metadata tags:");
+            document
+                .metadata()
+                .iter()
+                .enumerate()
+                .for_each(|(index, tag)| {
+                    println!("{}: {:#?} = {}", index, tag.tag_type(), tag.value())
                 });
+
+            match document.form() {
+                Some(form) => println!(
+                    "PDF contains an embedded form of type {:#?}",
+                    form.form_type()
+                ),
+                None => println!("PDF does not contain an embedded form"),
+            };
+
+            let dpi = 200.0;
+
+            let render_config = PdfBitmapConfig::new()
+                .scale_page_by_factor(dpi as f32 / 72.0)
+                .render_form_data(true) // Rendering of form data and annotations is the default...
+                .render_annotations(true) // ... but for the sake of demonstration we are explicit here.
+                .highlight_text_form_fields(PdfColor::SOLID_YELLOW.with_alpha(128))
+                .highlight_checkbox_form_fields(PdfColor::SOLID_BLUE.with_alpha(128));
+
+            document.pages().iter().for_each(|page| {
+                if let Some(label) = page.label() {
+                    println!("Page {} has a label: {}", page.index(), label);
+                }
+
+                let mut bitmap = page
+                    .get_bitmap_with_config(&render_config) // Initializes a bitmap with the given configuration for this page ...
+                    .unwrap();
+
+                let result = bitmap
+                    .as_image()
+                    .as_bgra8()
+                    .unwrap()
+                    .save_with_format(format!("form-page-{}.jpg", page.index()), ImageFormat::Jpeg);
+
+                assert!(result.is_ok());
+            });
         }
         Err(err) => eprintln!("Error loading pdfium library: {:#?}", err),
     }

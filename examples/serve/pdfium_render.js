@@ -143,20 +143,6 @@ function initializePdfiumRender() {
 
 		Module.HEAPU8.set(new Uint8Array(memory, formInfoPtr, formInfoLength), FPDF._formInfoBuffer);
 
-		// TODO: AJRC - 26/1/22 - the heap.set() function call above should be sufficient
-		// to copy the FPDF_FORMFILLINFO structure from pdfium-render's WASM memory heap
-		// to Pdfium's WASM memory heap. However, it does not work; all memory cells in
-		// the range are set to undefined, and Pdfium immediately returns a NULL pointer
-		// from calling FPDF_InitFormFillEnvironment() because the FPDF_FORMFILLINFO.version
-		// is not set. Since we never use the FPDF_FORMFILLINFO structure anyway (its fields
-		// are mostly used for defining callback functions during user interaction with
-		// the form field elements) this need not block the release of pdfium-render 0.5.0,
-		// but it would be good to figure out why the heap.set() function does not work.
-		// Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/5
-
-		// In the meantime, alter the memory heap manually to allow the call to
-		// FPDF_InitFormFillEnvironment() to succeed.
-
 		// Zero out the space occupied by the FPDF_FORMFILLINFO struct...
 
 		for (let i = 0; i < formInfoLength; i ++) {

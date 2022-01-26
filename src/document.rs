@@ -1,12 +1,66 @@
-use crate::bindgen::{_FPDF_FORMFILLINFO, FPDF_DOCUMENT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE};
-use crate::bindings::PdfiumLibraryBindings;
-use crate::page::PdfPage;
-use crate::{PdfPageIndex, PdfiumError, PdfiumInternalError};
-use std::ops::Range;
+//! Defines the [PdfDocument] struct, the entry point to all Pdfium functionality
+//! related to a single PDF file.
 
-/// A collection of PdfPages contained in a single file.
+use crate::bindgen::FPDF_DOCUMENT;
+use crate::bindings::PdfiumLibraryBindings;
+use crate::form::PdfForm;
+use crate::metadata::PdfMetadata;
+use crate::pages::PdfPages;
+
+/// The file version of a [PdfDocument].
+///
+/// A list of PDF file versions is available at <https://en.wikipedia.org/wiki/History_of_PDF>.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum PdfDocumentVersion {
+    /// No version information is available. This is the case if the [PdfDocument]
+    /// was created via a call to [PdfDocument::new()] rather than loaded from a file.
+    Unset,
+
+    /// PDF 1.0, first published in 1993, supported by Acrobat Reader Carousel (1.0) onwards.
+    Pdf1_0,
+
+    /// PDF 1.1, first published in 1994, supported by Acrobat Reader 2.0 onwards.
+    Pdf1_1,
+
+    /// PDF 1.2, first published in 1996, supported by Acrobat Reader 3.0 onwards.
+    Pdf1_2,
+
+    /// PDF 1.3, first published in 2000, supported by Acrobat Reader 4.0 onwards.
+    Pdf1_3,
+
+    /// PDF 1.4, first published in 2001, supported by Acrobat Reader 5.0 onwards.
+    Pdf1_4,
+
+    /// PDF 1.5, first published in 2003, supported by Acrobat Reader 6.0 onwards.
+    Pdf1_5,
+
+    /// PDF 1.6, first published in 2004, supported by Acrobat Reader 7.0 onwards.
+    Pdf1_6,
+
+    /// PDF 1.7, first published in 2006, supported by Acrobat Reader 8.0 onwards,
+    /// adopted as ISO open standard 32000-1 in 2008. Certain proprietary Adobe
+    /// extensions to PDF 1.7 are only fully supported in Acrobat Reader X (10.0)
+    /// and later.
+    Pdf1_7,
+
+    /// PDF 2.0, first published in 2017, ISO open standard 32000-2.
+    Pdf2_0,
+
+    /// A two-digit raw file version number. For instance, a value of 21 would indicate
+    /// PDF version 2.1, a value of 34 would indicate PDF version 3.4, and so on.
+    /// Only used when the file version number is not directly recognized by
+    /// pdfium-render.
+    Other(i32),
+}
+
+/// An entry point to all the various object collections contained in a single PDF file.
+/// These collections include:
+/// * [PdfDocument::pages()], all the [PdfPages] in the document
+/// * [PdfDocument::metadata()], all the [PdfMetadata] tags in the document
+/// * [PdfDocument::form()], the [PdfForm] embedded in the document, if any
 pub struct PdfDocument<'a> {
     handle: FPDF_DOCUMENT,
+    form: Option<PdfForm<'a>>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -16,100 +70,57 @@ impl<'a> PdfDocument<'a> {
         handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        Self { handle, bindings}
-    }
-
-    /// Returns the number of pages in this PdfDocument.
-    pub fn page_count(&self) -> PdfPageIndex {
-        self.bindings.FPDF_GetPageCount(self.handle) as PdfPageIndex
-    }
-
-    pub fn load_form_data(&self) -> FPDF_FORMHANDLE {
-        let mut x = _FPDF_FORMFILLINFO{
-            version: 1,
-            Release: None,
-            FFI_Invalidate: None,
-            FFI_OutputSelectedRect: None,
-            FFI_SetCursor: None,
-            FFI_SetTimer: None,
-            FFI_KillTimer: None,
-            FFI_GetLocalTime: None,
-            FFI_OnChange: None,
-            FFI_GetPage: None,
-            FFI_GetCurrentPage: None,
-            FFI_GetRotation: None,
-            FFI_ExecuteNamedAction: None,
-            FFI_SetTextFieldFocus: None,
-            FFI_DoURIAction: None,
-            FFI_DoGoToAction: None,
-            m_pJsPlatform: std::ptr::null_mut(),
-            xfa_disabled: 0,
-            FFI_DisplayCaret: None,
-            FFI_GetCurrentPageIndex: None,
-            FFI_SetCurrentPage: None,
-            FFI_GotoURL: None,
-            FFI_GetPageViewRect: None,
-            FFI_PageEvent: None,
-            FFI_PopupMenu: None,
-            FFI_OpenFile: None,
-            FFI_EmailTo: None,
-            FFI_UploadTo: None,
-            FFI_GetPlatform: None,
-            FFI_GetLanguage: None,
-            FFI_DownloadFromURL: None,
-            FFI_PostRequestURL: None,
-            FFI_PutRequestURL: None,
-            FFI_OnFocusChange: None,
-            FFI_DoURIActionWithKeyboardModifier: None
-        };
-
-        unsafe {
-            let handle = self.bindings.FPDFDOC_InitFormFillEnvironment(self.handle, &mut x);
-
-          //   self.bindings.FPDF_SetFormFieldHighlightColor(handle, 0,  0xFF0000);
-          //   self.bindings.FPDF_SetFormFieldHighlightAlpha(handle, 100);
-            handle
+        Self {
+            handle,
+            form: PdfForm::from_pdfium(handle, bindings),
+            bindings,
         }
-
-
-
-        //handle
     }
 
-    /// Returns a Range from 0..(number of pages) for this PdfDocument.
+    /// Returns the internal FPDF_DOCUMENT handle for this [PdfDocument].
     #[inline]
-    pub fn page_range(&self) -> Range<PdfPageIndex> {
-        0..self.page_count()
+    pub(crate) fn get_handle(&self) -> &FPDF_DOCUMENT {
+        &self.handle
     }
 
-    /// Returns a single page from this PdfDocument.
-    pub fn get_page(&self, index: PdfPageIndex) -> Result<PdfPage, PdfiumError> {
-        if index >= self.page_count() {
-            return Err(PdfiumError::PageIndexOutOfBounds);
-        }
+    /// Returns the file version of this [PdfDocument].
+    pub fn version(&self) -> PdfDocumentVersion {
+        let mut version: ::std::os::raw::c_int = 0;
 
-        let handle = self.bindings.FPDF_LoadPage(self.handle, index as i32);
-
-        if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
+        if self.bindings.FPDF_GetFileVersion(self.handle, &mut version) {
+            match version {
+                10 => PdfDocumentVersion::Pdf1_0,
+                11 => PdfDocumentVersion::Pdf1_1,
+                12 => PdfDocumentVersion::Pdf1_2,
+                13 => PdfDocumentVersion::Pdf1_3,
+                14 => PdfDocumentVersion::Pdf1_4,
+                15 => PdfDocumentVersion::Pdf1_5,
+                16 => PdfDocumentVersion::Pdf1_6,
+                17 => PdfDocumentVersion::Pdf1_7,
+                20 => PdfDocumentVersion::Pdf2_0,
+                _ => PdfDocumentVersion::Other(version),
             }
         } else {
-            Ok(PdfPage::from_pdfium(index, handle, self.bindings))
+            PdfDocumentVersion::Unset
         }
     }
 
-    /// Returns an iterator over all the pages in this PdfDocument.
+    /// Returns the collection of [PdfPages] in this [PdfDocument].
     #[inline]
-    pub fn pages(&self) -> PdfDocumentPdfPageIterator {
-        PdfDocumentPdfPageIterator::new(self)
+    pub fn pages(&self) -> PdfPages {
+        PdfPages::new(self, self.bindings)
+    }
+
+    /// Returns the collection of [PdfMetadata] tags in this [PdfDocument].
+    #[inline]
+    pub fn metadata(&self) -> PdfMetadata {
+        PdfMetadata::new(self, self.bindings)
+    }
+
+    /// Returns a reference to the [PdfForm] embedded in this [PdfDocument], if any.
+    #[inline]
+    pub fn form(&self) -> Option<&PdfForm> {
+        self.form.as_ref()
     }
 }
 
@@ -119,41 +130,5 @@ impl<'a> Drop for PdfDocument<'a> {
     #[inline]
     fn drop(&mut self) {
         self.bindings.FPDF_CloseDocument(self.handle);
-    }
-}
-
-pub struct PdfDocumentPdfPageIterator<'a> {
-    document: &'a PdfDocument<'a>,
-    page_count: PdfPageIndex,
-    next_index: PdfPageIndex,
-}
-
-impl<'a> PdfDocumentPdfPageIterator<'a> {
-    #[inline]
-    fn new(document: &'a PdfDocument<'a>) -> Self {
-        PdfDocumentPdfPageIterator {
-            document,
-            page_count: document.page_count(),
-            next_index: 0,
-        }
-    }
-}
-
-impl<'a> Iterator for PdfDocumentPdfPageIterator<'a> {
-    type Item = PdfPage<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.next_index >= self.page_count {
-            return None;
-        }
-
-        let next = self.document.get_page(self.next_index);
-
-        self.next_index += 1;
-
-        match next {
-            Ok(next) => Some(next),
-            Err(_) => None,
-        }
     }
 }

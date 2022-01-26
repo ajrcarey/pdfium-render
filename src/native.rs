@@ -1,7 +1,11 @@
-use std::os::raw::{c_int, c_uchar, c_ulong};
-use crate::bindgen::{FPDF_BITMAP, FPDF_BYTESTRING, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_PAGE, FPDF_STRING};
+use crate::bindgen::{
+    FPDF_BITMAP, FPDF_BYTESTRING, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
+    FPDF_PAGE, FPDF_STRING,
+};
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
+use std::ffi::{c_void, CString};
+use std::os::raw::{c_int, c_uchar, c_ulong};
 
 pub(crate) struct NativePdfiumBindings {
     library: Library,
@@ -19,9 +23,13 @@ impl NativePdfiumBindings {
         result.extern_FPDF_LoadDocument()?;
         result.extern_FPDF_LoadMemDocument()?;
         result.extern_FPDF_CloseDocument()?;
+        result.extern_FPDF_GetFileVersion()?;
+        result.extern_FPDF_GetFormType()?;
+        result.extern_FPDF_GetMetaText()?;
         result.extern_FPDF_GetPageCount()?;
         result.extern_FPDF_LoadPage()?;
         result.extern_FPDF_ClosePage()?;
+        result.extern_FPDF_GetPageLabel()?;
         result.extern_FPDF_GetPageWidthF()?;
         result.extern_FPDF_GetPageHeightF()?;
         result.extern_FPDFBitmap_CreateEx()?;
@@ -33,6 +41,10 @@ impl NativePdfiumBindings {
         result.extern_FPDFBitmap_GetStride()?;
         result.extern_FPDF_RenderPageBitmap()?;
         result.extern_FPDFDOC_InitFormFillEnvironment()?;
+        result.extern_FPDFDOC_ExitFormFillEnvironment()?;
+        result.extern_FPDF_SetFormFieldHighlightColor()?;
+        result.extern_FPDF_SetFormFieldHighlightAlpha()?;
+        result.extern_FPDF_FFLDraw()?;
 
         Ok(result)
     }
@@ -55,7 +67,7 @@ impl NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn extern_FPDF_GetLastError(
         &self,
-    ) -> Result<Symbol<unsafe extern "C" fn() -> ::std::os::raw::c_ulong>, libloading::Error> {
+    ) -> Result<Symbol<unsafe extern "C" fn() -> c_ulong>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_GetLastError") }
     }
 
@@ -82,8 +94,8 @@ impl NativePdfiumBindings {
     ) -> Result<
         Symbol<
             unsafe extern "C" fn(
-                data_buf: *const ::std::os::raw::c_void,
-                size: ::std::os::raw::c_int,
+                data_buf: *const c_void,
+                size: c_int,
                 password: FPDF_BYTESTRING,
             ) -> FPDF_DOCUMENT,
         >,
@@ -102,12 +114,39 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn extern_FPDF_GetPageCount(
+    fn extern_FPDF_GetFileVersion(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int>,
+        Symbol<unsafe extern "C" fn(doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> bool>,
         libloading::Error,
     > {
+        unsafe { self.library.get(b"FPDF_GetFileVersion") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetMetaText(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                tag: FPDF_BYTESTRING,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_GetMetaText") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetPageCount(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
         unsafe { self.library.get(b"FPDF_GetPageCount") }
     }
 
@@ -116,12 +155,7 @@ impl NativePdfiumBindings {
     fn extern_FPDF_LoadPage(
         &self,
     ) -> Result<
-        Symbol<
-            unsafe extern "C" fn(
-                document: FPDF_DOCUMENT,
-                page_index: ::std::os::raw::c_int,
-            ) -> FPDF_PAGE,
-        >,
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_LoadPage") }
@@ -133,6 +167,24 @@ impl NativePdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE)>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_ClosePage") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetPageLabel(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                page_index: c_int,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_GetPageLabel") }
     }
 
     #[inline]
@@ -158,11 +210,11 @@ impl NativePdfiumBindings {
     ) -> Result<
         Symbol<
             unsafe extern "C" fn(
-                width: ::std::os::raw::c_int,
-                height: ::std::os::raw::c_int,
-                format: ::std::os::raw::c_int,
-                first_scan: *mut ::std::os::raw::c_void,
-                stride: ::std::os::raw::c_int,
+                width: c_int,
+                height: c_int,
+                format: c_int,
+                first_scan: *mut c_void,
+                stride: c_int,
             ) -> FPDF_BITMAP,
         >,
         libloading::Error,
@@ -186,10 +238,10 @@ impl NativePdfiumBindings {
         Symbol<
             unsafe extern "C" fn(
                 bitmap: FPDF_BITMAP,
-                left: ::std::os::raw::c_int,
-                top: ::std::os::raw::c_int,
-                width: ::std::os::raw::c_int,
-                height: ::std::os::raw::c_int,
+                left: c_int,
+                top: c_int,
+                width: c_int,
+                height: c_int,
                 color: FPDF_DWORD,
             ),
         >,
@@ -202,10 +254,8 @@ impl NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn extern_FPDFBitmap_GetBuffer(
         &self,
-    ) -> Result<
-        Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> *mut ::std::os::raw::c_void>,
-        libloading::Error,
-    > {
+    ) -> Result<Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> *mut c_void>, libloading::Error>
+    {
         unsafe { self.library.get(b"FPDFBitmap_GetBuffer") }
     }
 
@@ -213,10 +263,7 @@ impl NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn extern_FPDFBitmap_GetWidth(
         &self,
-    ) -> Result<
-        Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int>,
-        libloading::Error,
-    > {
+    ) -> Result<Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int>, libloading::Error> {
         unsafe { self.library.get(b"FPDFBitmap_GetWidth") }
     }
 
@@ -224,10 +271,7 @@ impl NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn extern_FPDFBitmap_GetHeight(
         &self,
-    ) -> Result<
-        Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int>,
-        libloading::Error,
-    > {
+    ) -> Result<Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int>, libloading::Error> {
         unsafe { self.library.get(b"FPDFBitmap_GetHeight") }
     }
 
@@ -235,10 +279,7 @@ impl NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn extern_FPDFBitmap_GetStride(
         &self,
-    ) -> Result<
-        Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int>,
-        libloading::Error,
-    > {
+    ) -> Result<Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int>, libloading::Error> {
         unsafe { self.library.get(b"FPDFBitmap_GetStride") }
     }
 
@@ -252,12 +293,12 @@ impl NativePdfiumBindings {
             unsafe extern "C" fn(
                 bitmap: FPDF_BITMAP,
                 page: FPDF_PAGE,
-                start_x: ::std::os::raw::c_int,
-                start_y: ::std::os::raw::c_int,
-                size_x: ::std::os::raw::c_int,
-                size_y: ::std::os::raw::c_int,
-                rotate: ::std::os::raw::c_int,
-                flags: ::std::os::raw::c_int,
+                start_x: c_int,
+                start_y: c_int,
+                size_x: c_int,
+                size_y: c_int,
+                rotate: c_int,
+                flags: c_int,
             ),
         >,
         libloading::Error,
@@ -273,7 +314,8 @@ impl NativePdfiumBindings {
     ) -> Result<
         Symbol<
             unsafe extern "C" fn(
-                document: FPDF_DOCUMENT, form_info: *mut FPDF_FORMFILLINFO
+                document: FPDF_DOCUMENT,
+                form_info: *mut FPDF_FORMFILLINFO,
             ) -> FPDF_FORMHANDLE,
         >,
         libloading::Error,
@@ -284,14 +326,19 @@ impl NativePdfiumBindings {
     #[inline]
     #[allow(non_snake_case)]
     #[allow(clippy::type_complexity)]
+    fn extern_FPDFDOC_ExitFormFillEnvironment(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_FORMHANDLE)>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFDOC_ExitFormFillEnvironment") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
     fn extern_FPDF_SetFormFieldHighlightColor(
         &self,
     ) -> Result<
-        Symbol<
-            unsafe extern "C" fn(
-                handle: FPDF_FORMHANDLE, field_type: c_int, color: c_ulong
-            ),
-        >,
+        Symbol<unsafe extern "C" fn(handle: FPDF_FORMHANDLE, field_type: c_int, color: c_ulong)>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_SetFormFieldHighlightColor") }
@@ -303,11 +350,7 @@ impl NativePdfiumBindings {
     fn extern_FPDF_SetFormFieldHighlightAlpha(
         &self,
     ) -> Result<
-        Symbol<
-            unsafe extern "C" fn(
-                handle: FPDF_FORMHANDLE, alpha: c_uchar
-            ),
-        >,
+        Symbol<unsafe extern "C" fn(handle: FPDF_FORMHANDLE, alpha: c_uchar)>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_SetFormFieldHighlightAlpha") }
@@ -321,19 +364,32 @@ impl NativePdfiumBindings {
     ) -> Result<
         Symbol<
             unsafe extern "C" fn(
-                handle: FPDF_FORMHANDLE, bitmap: FPDF_BITMAP, page: FPDF_PAGE, start_x: c_int, start_y: c_int, size_x: c_int, size_y: c_int, rotate: c_int, flags: c_int
+                handle: FPDF_FORMHANDLE,
+                bitmap: FPDF_BITMAP,
+                page: FPDF_PAGE,
+                start_x: c_int,
+                start_y: c_int,
+                size_x: c_int,
+                size_y: c_int,
+                rotate: c_int,
+                flags: c_int,
             ),
         >,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_FFLDraw") }
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
+    fn extern_FPDF_GetFormType(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_GetFormType") }
+    }
 }
-
-/*
-
-FPDF_FFLDraw(handle: FPDF_FORMHANDLE, bitmap: FPDF_BITMAP, page: FPDF_PAGE, start_x: c_int, start_y: c_int, size_x: c_int, size_y: c_int, rotate: c_int, flags: c_int)
- */
 
 impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[inline]
@@ -354,15 +410,15 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetLastError(&self) -> ::std::os::raw::c_ulong {
+    fn FPDF_GetLastError(&self) -> c_ulong {
         unsafe { self.extern_FPDF_GetLastError().unwrap()() }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT {
-        let c_file_path = std::ffi::CString::new(file_path).unwrap();
-        let c_password = std::ffi::CString::new(password.unwrap_or("")).unwrap();
+        let c_file_path = CString::new(file_path).unwrap();
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
 
         unsafe {
             self.extern_FPDF_LoadDocument().unwrap()(c_file_path.as_ptr(), c_password.as_ptr())
@@ -372,12 +428,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
-        let c_password = std::ffi::CString::new(password.unwrap_or("")).unwrap();
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
 
         unsafe {
             self.extern_FPDF_LoadMemDocument().unwrap()(
-                bytes.as_ptr() as *const std::ffi::c_void,
-                bytes.len() as ::std::os::raw::c_int,
+                bytes.as_ptr() as *const c_void,
+                bytes.len() as c_int,
                 c_password.as_ptr(),
             )
         }
@@ -393,17 +449,39 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> ::std::os::raw::c_int {
+    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> bool {
+        unsafe { self.extern_FPDF_GetFileVersion().unwrap()(doc, fileVersion) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { self.extern_FPDF_GetFormType().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetMetaText(
+        &self,
+        document: FPDF_DOCUMENT,
+        tag: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        let c_tag = CString::new(tag).unwrap();
+
+        unsafe { self.extern_FPDF_GetMetaText().unwrap()(document, c_tag.as_ptr(), buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { self.extern_FPDF_GetPageCount().unwrap()(document) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_LoadPage(
-        &self,
-        document: FPDF_DOCUMENT,
-        page_index: ::std::os::raw::c_int,
-    ) -> FPDF_PAGE {
+    fn FPDF_LoadPage(&self, document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE {
         unsafe { self.extern_FPDF_LoadPage().unwrap()(document, page_index) }
     }
 
@@ -429,13 +507,25 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_GetPageLabel(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDF_GetPageLabel().unwrap()(document, page_index, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
-        width: ::std::os::raw::c_int,
-        height: ::std::os::raw::c_int,
-        format: ::std::os::raw::c_int,
-        first_scan: *mut std::ffi::c_void,
-        stride: ::std::os::raw::c_int,
+        width: c_int,
+        height: c_int,
+        format: c_int,
+        first_scan: *mut c_void,
+        stride: c_int,
     ) -> FPDF_BITMAP {
         unsafe {
             self.extern_FPDFBitmap_CreateEx().unwrap()(width, height, format, first_scan, stride)
@@ -453,10 +543,10 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,
-        left: ::std::os::raw::c_int,
-        top: ::std::os::raw::c_int,
-        width: ::std::os::raw::c_int,
-        height: ::std::os::raw::c_int,
+        left: c_int,
+        top: c_int,
+        width: c_int,
+        height: c_int,
         color: FPDF_DWORD,
     ) {
         unsafe {
@@ -466,25 +556,25 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut std::os::raw::c_void {
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void {
         unsafe { self.extern_FPDFBitmap_GetBuffer().unwrap()(bitmap) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int {
+    fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int {
         unsafe { self.extern_FPDFBitmap_GetWidth().unwrap()(bitmap) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int {
+    fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> c_int {
         unsafe { self.extern_FPDFBitmap_GetHeight().unwrap()(bitmap) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int {
+    fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> c_int {
         unsafe { self.extern_FPDFBitmap_GetStride().unwrap()(bitmap) }
     }
 
@@ -494,12 +584,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
-        start_x: ::std::os::raw::c_int,
-        start_y: ::std::os::raw::c_int,
-        size_x: ::std::os::raw::c_int,
-        size_y: ::std::os::raw::c_int,
-        rotate: ::std::os::raw::c_int,
-        flags: ::std::os::raw::c_int,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
     ) {
         unsafe {
             self.extern_FPDF_RenderPageBitmap().unwrap()(
@@ -510,17 +600,32 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFDOC_InitFormFillEnvironment(&self, document: FPDF_DOCUMENT, form_info: *mut FPDF_FORMFILLINFO) -> FPDF_FORMHANDLE {
+    fn FPDFDOC_InitFormFillEnvironment(
+        &self,
+        document: FPDF_DOCUMENT,
+        form_info: *mut FPDF_FORMFILLINFO,
+    ) -> FPDF_FORMHANDLE {
+        unsafe { self.extern_FPDFDOC_InitFormFillEnvironment().unwrap()(document, form_info) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDOC_ExitFormFillEnvironment(&self, handle: FPDF_FORMHANDLE) {
         unsafe {
-            self.extern_FPDFDOC_InitFormFillEnvironment().unwrap()(document, form_info)
+            self.extern_FPDFDOC_ExitFormFillEnvironment().unwrap()(handle);
         }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightColor(&self, handle: FPDF_FORMHANDLE, field_type: c_int, color: c_ulong) {
+    fn FPDF_SetFormFieldHighlightColor(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        field_type: c_int,
+        color: FPDF_DWORD,
+    ) {
         unsafe {
-            self.extern_FPDF_SetFormFieldHighlightColor().unwrap()(handle, field_type, color)
+            self.extern_FPDF_SetFormFieldHighlightColor().unwrap()(handle, field_type, color);
         }
     }
 
@@ -528,15 +633,28 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightAlpha(&self, handle: FPDF_FORMHANDLE, alpha: c_uchar) {
         unsafe {
-            self.extern_FPDF_SetFormFieldHighlightAlpha().unwrap()(handle, alpha)
+            self.extern_FPDF_SetFormFieldHighlightAlpha().unwrap()(handle, alpha);
         }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_FFLDraw(&self, handle: FPDF_FORMHANDLE, bitmap: FPDF_BITMAP, page: FPDF_PAGE, start_x: c_int, start_y: c_int, size_x: c_int, size_y: c_int, rotate: c_int, flags: c_int) {
+    fn FPDF_FFLDraw(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ) {
         unsafe {
-            self.extern_FPDF_FFLDraw().unwrap()(handle, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags)
+            self.extern_FPDF_FFLDraw().unwrap()(
+                handle, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
+            );
         }
     }
 }
