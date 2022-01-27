@@ -101,7 +101,7 @@ impl PdfColor {
     /// Returns this color as a decimal value equivalent to 32-bit hexadecimal 0xFFRRGGBB.
     #[inline]
     #[cfg(target_arch = "wasm32")]
-    pub fn color(&self) -> FPDF_DWORD {
+    pub(crate) fn color(&self) -> FPDF_DWORD {
         let (f, r, g, b) = self.color_components();
 
         ((f << 24) | (r << 16) | (g << 8) | b) as FPDF_DWORD
@@ -110,7 +110,7 @@ impl PdfColor {
     /// Returns this color as a decimal value equivalent to 32-bit hexadecimal 0xFFRRGGBB.
     #[inline]
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn color(&self) -> FPDF_DWORD {
+    pub(crate) fn color(&self) -> FPDF_DWORD {
         let (f, r, g, b) = self.color_components();
 
         ((f << 24) | (b << 16) | (g << 8) | r) as FPDF_DWORD

@@ -12,7 +12,7 @@ use crate::error::PdfiumError;
 use std::ops::DerefMut;
 use std::pin::Pin;
 
-/// The internal definition type of the form embedded in a PdfDocument.
+/// The internal definition type of a [PdfForm] embedded in a `PdfDocument`.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfFormType {
     // The FORMTYPE_COUNT constant simply specifies the number of form types supported
@@ -97,10 +97,10 @@ impl PdfFormFieldType {
     }
 }
 
-/// The [PdfForm] embedded inside a [crate::document::PdfDocument].
+/// The [PdfForm] embedded inside a `PdfDocument`.
 pub struct PdfForm<'a> {
-    document_handle: FPDF_DOCUMENT,
     form_handle: FPDF_FORMHANDLE,
+    document_handle: FPDF_DOCUMENT,
     #[allow(dead_code)]
     // The form_fill_info field is not currently used, but we expect it to be in future
     form_fill_info: Pin<Box<FPDF_FORMFILLINFO>>,
@@ -176,8 +176,8 @@ impl<'a> PdfForm<'a> {
             // a valid handle to it without error.
 
             Some(PdfForm {
-                document_handle,
                 form_handle,
+                document_handle,
                 form_fill_info,
                 bindings,
             })
@@ -203,7 +203,7 @@ impl<'a> PdfForm<'a> {
 }
 
 impl<'a> Drop for PdfForm<'a> {
-    /// Closes this PdfForm, releasing held memory.
+    /// Closes this [PdfForm], releasing held memory.
     #[inline]
     fn drop(&mut self) {
         self.bindings

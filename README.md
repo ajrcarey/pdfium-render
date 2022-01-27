@@ -110,6 +110,7 @@ If you need a function that is not currently exposed, just raise an issue.
 
 ## Version history
 
+* 0.5.1: adds bindings for FPDFPage_GetRotation() and FPDFPage_SetRotation(), exposes [PdfMetadata] collection  
 * 0.5.0: adds rendering of annotations and form field elements, thanks to an excellent contribution from <https://github.com/inzanez>
 * 0.4.2: bug fixes in PdfBitmapConfig implementation
 * 0.4.1: improvements to documentation and READMEs

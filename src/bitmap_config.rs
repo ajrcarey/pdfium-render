@@ -50,7 +50,7 @@ pub struct PdfBitmapConfig {
 }
 
 impl PdfBitmapConfig {
-    /// Creates a new PdfBitmapConfig with all settings unconfigured.
+    /// Creates a new [PdfBitmapConfig] object with all settings initialized with their default values.
     pub fn new() -> Self {
         PdfBitmapConfig {
             target_width: None,
@@ -81,7 +81,7 @@ impl PdfBitmapConfig {
         }
     }
 
-    /// Converts the width and height of a PdfPage from points to pixels, scaling each
+    /// Converts the width and height of a [PdfPage] from points to pixels, scaling each
     /// dimension to the given target pixel sizes. The aspect ratio of the source page
     /// will not be maintained.
     #[inline]
@@ -91,7 +91,7 @@ impl PdfBitmapConfig {
         result.set_target_height(height)
     }
 
-    /// Converts the width of a PdfPage from points to pixels, scaling the source page
+    /// Converts the width of a [PdfPage] from points to pixels, scaling the source page
     /// width to the given target pixel width. The aspect ratio of the source page
     /// will be maintained so long as there is no call to [PdfBitmapConfig::set_target_size()]
     /// or [PdfBitmapConfig::set_target_height()] that overrides it.
@@ -102,7 +102,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Converts the height of a PdfPage from points to pixels, scaling the source page
+    /// Converts the height of a [PdfPage] from points to pixels, scaling the source page
     /// height to the given target pixel height. The aspect ratio of the source page
     /// will be maintained so long as there is no call to [PdfBitmapConfig::set_target_size()]
     /// or [PdfBitmapConfig::set_target_width()] that overrides it.
@@ -113,7 +113,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Applies settings to this PdfBitmapConfig suitable for filling the given
+    /// Applies settings to this [PdfBitmapConfig] suitable for filling the given
     /// screen display size.
     ///
     /// The source page's dimensions will be scaled so that both width and height attempt
@@ -134,7 +134,7 @@ impl PdfBitmapConfig {
         result.rotate_if_landscape(PdfBitmapRotation::Degrees90, true)
     }
 
-    /// Converts the width and height of a PdfPage from points to pixels by applying
+    /// Converts the width and height of a [PdfPage] from points to pixels by applying
     /// the given scale factor to both dimensions. The aspect ratio of the source page
     /// will be maintained. Overrides any previous call to [PdfBitmapConfig::scale_page_by_factor()],
     /// [PdfBitmapConfig::scale_page_width_by_factor()], or [PdfBitmapConfig::scale_page_height_by_factor()].
@@ -145,7 +145,7 @@ impl PdfBitmapConfig {
         result.scale_page_height_by_factor(scale)
     }
 
-    /// Converts the width of the PdfPage from points to pixels by applying the given
+    /// Converts the width of the [PdfPage] from points to pixels by applying the given
     /// scale factor. The aspect ratio of the source page will not be maintained if a
     /// different scale factor is applied to the height. Overrides any previous call to
     /// [PdfBitmapConfig::scale_page_by_factor()], [PdfBitmapConfig::scale_page_width_by_factor()],
@@ -157,7 +157,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Converts the height of the PdfPage from points to pixels by applying the given
+    /// Converts the height of the [PdfPage] from points to pixels by applying the given
     /// scale factor. The aspect ratio of the source page will not be maintained if a
     /// different scale factor is applied to the width. Overrides any previous call to
     /// [PdfBitmapConfig::scale_page_by_factor()], [PdfBitmapConfig::scale_page_width_by_factor()],
@@ -169,7 +169,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Specifies that the final pixel width of the PdfPage will not exceed the given maximum.
+    /// Specifies that the final pixel width of the [PdfPage] will not exceed the given maximum.
     #[inline]
     pub fn set_maximum_width(mut self, width: u16) -> Self {
         self.maximum_width = Some(width);
@@ -177,7 +177,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Specifies that the final pixel height of the PdfPage will not exceed the given maximum.
+    /// Specifies that the final pixel height of the [PdfPage] will not exceed the given maximum.
     #[inline]
     pub fn set_maximum_height(mut self, height: u16) -> Self {
         self.maximum_height = Some(height);
@@ -185,8 +185,8 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Applies the given rotation setting to the PdfPage during rendering, irrespective
-    /// of its orientation. If the given flag is set to [true], then any maximum
+    /// Applies the given rotation setting to the [PdfPage] during rendering, irrespective
+    /// of its orientation. If the given flag is set to `true` then any maximum
     /// constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height, and any
     /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
@@ -198,8 +198,8 @@ impl PdfBitmapConfig {
         result.rotate_if_landscape(rotation, do_rotate_constraints)
     }
 
-    /// Applies the given rotation settings to the PdfPage during rendering, if the page
-    /// is in portrait orientation. If the given flag is set to [true] and the given
+    /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
+    /// is in portrait orientation. If the given flag is set to `true` and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
     /// then any maximum constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
@@ -220,8 +220,8 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Applies the given rotation settings to the PdfPage during rendering, if the page
-    /// is in landscape orientation. If the given flag is set to [true] and the given
+    /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
+    /// is in landscape orientation. If the given flag is set to `true` and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
     /// then any maximum constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
@@ -242,7 +242,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Sets the pixel format that will be used during rendering of the PdfPage.
+    /// Sets the pixel format that will be used during rendering of the [PdfPage].
     /// The default is [PdfBitmapFormat::BGRA].
     #[inline]
     pub fn set_format(mut self, format: PdfBitmapFormat) -> Self {
@@ -252,8 +252,8 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether form data widgets and user-supplied form data should be included
-    /// during rendering of the PdfPage. The default is true. The setting has no effect
-    /// if the PdfDocument containing the PdfPage does not include an embedded PdfForm.
+    /// during rendering of the [PdfPage]. The default is `true`. The setting has no effect
+    /// if the [PdfDocument] containing the [PdfPage] does not include an embedded [PdfForm].
     #[inline]
     pub fn render_form_data(mut self, do_render: bool) -> Self {
         self.do_render_form_data = do_render;
@@ -262,7 +262,7 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether user-supplied annotations should be included during rendering of
-    /// the PdfPage. The default is true.
+    /// the [PdfPage]. The default is `true`.
     #[inline]
     pub fn render_annotations(mut self, do_render: bool) -> Self {
         self.do_set_flag_render_annotations = do_render;
@@ -271,9 +271,9 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether text rendering should be optimized for LCD display.
-    /// The default is false.
+    /// The default is `false`.
     /// Has no effect if anti-aliasing of text has been disabled by a call to
-    /// [PdfBitmapConfig::set_text_smoothing(false)].
+    /// `PdfBitmapConfig::set_text_smoothing(false)`.
     #[inline]
     pub fn use_lcd_text_rendering(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_use_lcd_text_rendering = do_set_flag;
@@ -284,7 +284,7 @@ impl PdfBitmapConfig {
     /// Controls whether platform text rendering should be disabled on platforms that support it.
     /// The alternative is for Pdfium to render all text internally, which may give more
     /// consistent rendering results across platforms but may also be slower.
-    /// The default is false.
+    /// The default is `false`.
     #[inline]
     pub fn disable_native_text_rendering(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_no_native_text = do_set_flag;
@@ -293,7 +293,7 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether rendering output should be grayscale rather than full color.
-    /// The default is false.
+    /// The default is `false`.
     #[inline]
     pub fn use_grayscale_rendering(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_grayscale = do_set_flag;
@@ -303,7 +303,7 @@ impl PdfBitmapConfig {
 
     /// Controls whether Pdfium should limit its image cache size during rendering.
     /// A smaller cache size may result in lower memory usage at the cost of slower rendering.
-    /// The default is false.
+    /// The default is `false`.
     #[inline]
     pub fn limit_render_image_cache_size(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_limited_image_cache = do_set_flag;
@@ -313,7 +313,7 @@ impl PdfBitmapConfig {
 
     /// Controls whether Pdfium should always use halftone for image stretching.
     /// Halftone image stretching is often higher quality than linear image stretching
-    /// but is much slower. The default is false.
+    /// but is much slower. The default is `false`.
     #[inline]
     pub fn force_half_tone(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_force_half_tone = do_set_flag;
@@ -321,7 +321,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Controls whether Pdfium should render for printing. The default is false.
+    /// Controls whether Pdfium should render for printing. The default is `false`.
     #[inline]
     pub fn use_print_quality(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_for_printing = do_set_flag;
@@ -330,10 +330,10 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether rendered text should be anti-aliased.
-    /// The default is true.
+    /// The default is `true`.
     /// The enabling of LCD-optimized text rendering via a call to
-    /// [PdfiumBitmapConfig::use_lcd_text_rendering(true)] has no effect if this flag
-    /// is set to true.
+    /// `PdfiumBitmapConfig::use_lcd_text_rendering(true)` has no effect if this flag
+    /// is set to `false`.
     #[inline]
     pub fn set_text_smoothing(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_no_smooth_text = !do_set_flag;
@@ -342,7 +342,7 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether rendered images should be anti-aliased.
-    /// The default is true.
+    /// The default is `true`.
     #[inline]
     pub fn set_image_smoothing(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_no_smooth_image = !do_set_flag;
@@ -351,7 +351,7 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether rendered vector paths should be anti-aliased.
-    /// The default is true.
+    /// The default is `true`.
     #[inline]
     pub fn set_path_smoothing(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_no_smooth_path = !do_set_flag;
@@ -360,7 +360,7 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether the byte order of generated image data should be reversed
-    /// during rendering. The default is false. There should generally be no need
+    /// during rendering. The default is `false`. There should generally be no need
     /// to set this flag, unless you want to do raw image processing and specifically
     /// need the byte data returned by [crate::bitmap::PdfBitmap::as_bytes()] to be reversed.
     #[inline]
@@ -371,7 +371,7 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether rendered vector fill paths need to be stroked.
-    /// The default is false.
+    /// The default is `false`.
     #[inline]
     pub fn render_fills_as_strokes(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_convert_fill_to_stroke = do_set_flag;
@@ -448,8 +448,8 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Computes the pixel dimensions and rotation settings for the given PdfPage
-    /// based on the configuration of this PdfBitmapConfig.
+    /// Computes the pixel dimensions and rotation settings for the given [PdfPage]
+    /// based on the configuration of this [PdfBitmapConfig].
     #[inline]
     pub(crate) fn apply_to_page(&self, page: &PdfPage) -> PdfBitmapRenderSettings {
         let source_width = page.width();

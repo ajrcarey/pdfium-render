@@ -30,6 +30,8 @@ impl NativePdfiumBindings {
         result.extern_FPDF_LoadPage()?;
         result.extern_FPDF_ClosePage()?;
         result.extern_FPDF_GetPageLabel()?;
+        result.extern_FPDFPage_GetRotation()?;
+        result.extern_FPDFPage_SetRotation()?;
         result.extern_FPDF_GetPageWidthF()?;
         result.extern_FPDF_GetPageHeightF()?;
         result.extern_FPDFBitmap_CreateEx()?;
@@ -185,6 +187,23 @@ impl NativePdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_GetPageLabel") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetRotation(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> c_int>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFPage_GetRotation") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_SetRotation(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE, rotate: c_int)>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFPage_SetRotation") }
     }
 
     #[inline]
@@ -515,6 +534,18 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { self.extern_FPDF_GetPageLabel().unwrap()(document, page_index, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int {
+        unsafe { self.extern_FPDFPage_GetRotation().unwrap()(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int) {
+        unsafe { self.extern_FPDFPage_SetRotation().unwrap()(page, rotate) }
     }
 
     #[inline]

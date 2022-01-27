@@ -107,6 +107,8 @@ function initializePdfiumRender() {
 	FPDF.GetPageLabel = function(document, page_index, buffer, buflen) {
 		return Module.ccall('FPDF_GetPageLabel', 'number', ['number', 'number', 'number', 'number'], [document, page_index, buffer, buflen]);
 	}
+	FPDF.PageGetRotation = Module.cwrap('FPDFPage_GetRotation', 'number', ['number']);
+	FPDF.PageSetRotation = Module.cwrap('FPDFPage_SetRotation', '', ['number', 'number']);
 	FPDF.GetPageSizeByIndex = Module.cwrap('FPDF_GetPageSizeByIndex', 'number', ['number', 'number', 'number', 'number']);
 	FPDF.GetPageWidthF = Module.cwrap('FPDF_GetPageWidthF', 'number', ['number']);
 	FPDF.GetPageHeightF = Module.cwrap('FPDF_GetPageHeightF', 'number', ['number']);

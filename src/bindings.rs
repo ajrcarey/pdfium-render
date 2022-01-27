@@ -10,9 +10,9 @@ use std::os::raw::{c_int, c_uchar, c_ulong};
 
 /// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
-/// at runtime, either bundled alongside the compiled Rust application or provided
-/// by the platform; on WASM, this will be a set of Javascript functions exposed by a
-/// separate WASM import into the same browser context.
+/// at runtime, either bundled alongside your compiled Rust application or provided as a system
+/// library by the platform. On WASM, this will be a set of Javascript functions exposed by a
+/// separate WASM module that is imported into the same browser context.
 ///
 /// Note that the [PdfiumLibraryBindings::FPDF_LoadDocument()] function is not available when
 /// compiling to WASM. Either embed the target PDF document directly using the [include_bytes!()]
@@ -28,6 +28,10 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetLastError(&self) -> c_ulong;
 
+    /// This function is not available when compiling to WASM. Either embed the target PDF document
+    /// directly using the [include_bytes!()] macro, or use Javascript's `fetch()` API to retrieve
+    /// the bytes of the target document over the network, then load those bytes into Pdfium using
+    /// the [PdfiumLibraryBindings::FPDF_LoadMemDocument()] function.
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
@@ -76,6 +80,12 @@ pub trait PdfiumLibraryBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int);
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
@@ -164,7 +174,7 @@ pub trait PdfiumLibraryBindings {
     );
 
     /// Retrieves the error code of the last error, if any, recorded by the external
-    /// Pdfium library and maps it to a PdfiumInternalError enum value.
+    /// Pdfium library and maps it to a [PdfiumInternalError] enum value.
     #[inline]
     fn get_pdfium_last_error(&self) -> Option<PdfiumInternalError> {
         let result = self.FPDF_GetLastError() as u32;

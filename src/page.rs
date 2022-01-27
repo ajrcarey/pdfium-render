@@ -36,7 +36,7 @@ impl PdfPageOrientation {
 /// A single page in a [PdfDocument].
 pub struct PdfPage<'a> {
     index: PdfPageIndex,
-    page_handle: FPDF_PAGE,
+    handle: FPDF_PAGE,
     document: &'a PdfDocument<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
@@ -45,16 +45,22 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         index: PdfPageIndex,
-        page_handle: FPDF_PAGE,
+        handle: FPDF_PAGE,
         document: &'a PdfDocument<'a>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPage {
             index,
-            page_handle,
+            handle,
             document,
             bindings,
         }
+    }
+
+    /// Returns the internal FPDF_PAGE handle for this [PdfPage].
+    #[inline]
+    pub(crate) fn get_handle(&self) -> &FPDF_PAGE {
+        &self.handle
     }
 
     /// Returns the zero-based page index of this [PdfPage] in its containing [PdfDocument].
@@ -101,14 +107,16 @@ impl<'a> PdfPage<'a> {
         get_string_from_pdfium_utf16le_bytes(buffer)
     }
 
-    /// Returns the width of this [PdfPage] in points.
+    /// Returns the width of this [PdfPage] in device-independent points.
+    /// One point is 1/72 inches, roughly 0.358 mm.
     pub fn width(&self) -> PdfPoints {
-        self.bindings.FPDF_GetPageWidthF(self.page_handle)
+        self.bindings.FPDF_GetPageWidthF(self.handle)
     }
 
-    /// Returns the height of this [PdfPage] in points.
+    /// Returns the height of this [PdfPage] in device-independent points.
+    /// One point is 1/72 inches, roughly 0.358 mm.
     pub fn height(&self) -> PdfPoints {
-        self.bindings.FPDF_GetPageHeightF(self.page_handle)
+        self.bindings.FPDF_GetPageHeightF(self.handle)
     }
 
     /// Returns [PdfPageOrientation::Landscape] if the width of this [PdfPage]
@@ -118,16 +126,30 @@ impl<'a> PdfPage<'a> {
         PdfPageOrientation::from_width_and_height(self.width(), self.height())
     }
 
-    /// Returns true if this [PdfPage] has orientation [PdfPageOrientation::Portrait].
+    /// Returns `true` if this [PdfPage] has orientation [PdfPageOrientation::Portrait].
     #[inline]
     pub fn is_portrait(&self) -> bool {
         self.orientation() == PdfPageOrientation::Portrait
     }
 
-    /// Returns true if this [PdfPage] has orientation [PdfPageOrientation::Landscape].
+    /// Returns `true` if this [PdfPage] has orientation [PdfPageOrientation::Landscape].
     #[inline]
     pub fn is_landscape(&self) -> bool {
         self.orientation() == PdfPageOrientation::Landscape
+    }
+
+    /// Returns any intrinsic rotation encoded into this document indicating a rotation
+    /// should be applied to this [PdfPage] during rendering.
+    #[inline]
+    pub fn rotation(&self) -> Result<PdfBitmapRotation, PdfiumError> {
+        PdfBitmapRotation::from_pdfium(self.bindings.FPDFPage_GetRotation(self.handle))
+    }
+
+    /// Sets the intrinsic rotation that should be applied to this [PdfPage] during rendering.
+    #[inline]
+    pub fn set_rotation(&mut self, rotation: PdfBitmapRotation) {
+        self.bindings
+            .FPDFPage_SetRotation(self.handle, rotation.as_pdfium());
     }
 
     /// Returns a [PdfBitmap] using pixel dimensions, rotation settings, and rendering options
@@ -142,19 +164,18 @@ impl<'a> PdfPage<'a> {
     ) -> Result<PdfBitmap, PdfiumError> {
         let config = config.apply_to_page(self);
 
-        let bitmap_handle =
-            self.create_empty_bitmap_handle(config.width, config.height, config.format)?;
+        let handle = self.create_empty_bitmap_handle(config.width, config.height, config.format)?;
 
         Ok(PdfBitmap::from_pdfium(
+            handle,
             config,
-            bitmap_handle,
-            self.document.form().map(|form| form.get_handle()),
-            &self.page_handle,
+            &self,
+            self.document,
             self.bindings,
         ))
     }
 
-    /// Returns a PdfBitmap with the given pixel dimensions and render-time rotation
+    /// Returns a [PdfBitmap] with the given pixel dimensions and render-time rotation
     /// for this PdfPage containing the rendered content of this [PdfPage].
     ///
     /// It is the responsibility of the caller to ensure the given pixel width and height
@@ -168,10 +189,11 @@ impl<'a> PdfPage<'a> {
         height: u16,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
-        let bitmap_handle =
+        let handle =
             self.create_empty_bitmap_handle(width as i32, height as i32, FPDFBitmap_BGRA as i32)?;
 
         Ok(PdfBitmap::from_pdfium(
+            handle,
             PdfBitmapRenderSettings {
                 width: width as i32,
                 height: height as i32,
@@ -181,9 +203,8 @@ impl<'a> PdfPage<'a> {
                 form_field_highlight: vec![],
                 render_flags: FPDF_ANNOT as i32,
             },
-            bitmap_handle,
-            self.document.form().map(|form| form.get_handle()),
-            &self.page_handle,
+            &self,
+            self.document,
             self.bindings,
         ))
     }
@@ -200,7 +221,7 @@ impl<'a> PdfPage<'a> {
             height,
             format,
             std::ptr::null_mut(),
-            0, // Not relevant because pdfium will create the buffer itself.
+            0, // Not relevant because Pdfium will create the buffer itself.
         );
 
         if handle.is_null() {
@@ -208,7 +229,7 @@ impl<'a> PdfPage<'a> {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
+                // yet Pdfium's error code indicates success.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -224,6 +245,6 @@ impl<'a> Drop for PdfPage<'a> {
     /// Closes the [PdfPage], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings.FPDF_ClosePage(self.page_handle);
+        self.bindings.FPDF_ClosePage(self.handle);
     }
 }

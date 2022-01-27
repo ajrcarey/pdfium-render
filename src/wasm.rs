@@ -75,6 +75,12 @@ extern "C" {
     ) -> c_ulong;
 
     #[wasm_bindgen(js_namespace = FPDF)]
+    fn PageGetRotation(page: FPDF_PAGE) -> c_int;
+
+    #[wasm_bindgen(js_namespace = FPDF)]
+    fn PageSetRotation(page: FPDF_PAGE, rotate: c_int);
+
+    #[wasm_bindgen(js_namespace = FPDF)]
     fn GetPageWidthF(page: FPDF_PAGE) -> f32;
 
     #[wasm_bindgen(js_namespace = FPDF)]
@@ -298,6 +304,18 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         GetPageLabel(document, page_index, buffer, buflen)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int {
+        PageGetRotation(page)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int) {
+        PageSetRotation(page, rotate);
     }
 
     #[inline]

@@ -54,6 +54,16 @@ pub fn main() {
                     println!("Page {} has a label: {}", page.index(), label);
                 }
 
+                if let Ok(rotation) = page.rotation() {
+                    if rotation != PdfBitmapRotation::None {
+                        println!(
+                            "Page {} has embedded rotation of type {:#?}",
+                            page.index(),
+                            rotation
+                        );
+                    }
+                }
+
                 let mut bitmap = page
                     .get_bitmap_with_config(&render_config) // Initializes a bitmap with the given configuration for this page ...
                     .unwrap();

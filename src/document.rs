@@ -6,6 +6,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::form::PdfForm;
 use crate::metadata::PdfMetadata;
 use crate::pages::PdfPages;
+use std::os::raw::c_int;
 
 /// The file version of a [PdfDocument].
 ///
@@ -85,7 +86,7 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns the file version of this [PdfDocument].
     pub fn version(&self) -> PdfDocumentVersion {
-        let mut version: ::std::os::raw::c_int = 0;
+        let mut version: c_int = 0;
 
         if self.bindings.FPDF_GetFileVersion(self.handle, &mut version) {
             match version {
