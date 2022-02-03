@@ -175,12 +175,20 @@ impl<'a> PdfForm<'a> {
             // There is a form embedded in this document, and we retrieved
             // a valid handle to it without error.
 
-            Some(PdfForm {
+            let form = PdfForm {
                 form_handle,
                 document_handle,
                 form_fill_info,
                 bindings,
-            })
+            };
+
+            if form.form_type() != PdfFormType::None {
+                Some(form)
+            } else {
+                // The form is valid, but empty. No point returning it.
+
+                None
+            }
         } else {
             // There is no form embedded in this document.
 

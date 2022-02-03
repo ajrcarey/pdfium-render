@@ -16,6 +16,9 @@ use crate::native::NativePdfiumBindings;
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::WasmPdfiumBindings;
 
+#[cfg(target_arch = "wasm32")]
+use crate::wasm::PdfiumRenderWasmState;
+
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
 pub struct Pdfium {
@@ -23,7 +26,7 @@ pub struct Pdfium {
 }
 
 impl Pdfium {
-    /// Initializes the external pdfium library, loading it from the system libraries.
+    /// Initializes the external Pdfium library, loading it from the system libraries.
     /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions exposed
     /// by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
@@ -38,15 +41,21 @@ impl Pdfium {
         Ok(Box::new(bindings))
     }
 
-    /// Binds to the external Pdfium WASM module. The Pdfium module must already be
-    /// loaded and present in the browser context for binding to be successful.
-    /// Returns a new PdfiumLibraryBindings object that contains bindings to the
-    /// functions exposed by the Pdfium module. This function will never return an
-    /// error; the return type is for compatibility with library binding in native code.
+    /// Initializes the external Pdfium library, binding to an external WASM module.
+    /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions exposed
+    /// by the library, or an error if the library is not available.
+    ///
+    /// It is essential that the exported `initialize_pdfium_render()` function be called
+    /// from Javascript _before_ calling this function from within your Rust code. For an example, see:
+    /// <https://github.com/ajrcarey/pdfium-render/blob/master/examples/index.html>
     #[cfg(target_arch = "wasm32")]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
-        Ok(Box::new(WasmPdfiumBindings::new()))
+        if PdfiumRenderWasmState::lock().is_ready() {
+            Ok(Box::new(WasmPdfiumBindings::new()))
+        } else {
+            Err(PdfiumError::PdfiumWASMModuleNotConfigured)
+        }
     }
 
     /// Initializes the external pdfium library, loading it from the given path.

@@ -23,6 +23,8 @@ pub fn main() {
 
             println!("PDF file version: {:#?}", document.version());
 
+            println!("PDF page mode: {:#?}", document.pages().page_mode());
+
             println!("PDF metadata tags:");
             document
                 .metadata()
@@ -62,6 +64,18 @@ pub fn main() {
                             rotation
                         );
                     }
+                }
+
+                for boundary in page.boundaries().iter() {
+                    println!(
+                        "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
+                        page.index(),
+                        boundary.box_type,
+                        boundary.bounds.left.value,
+                        boundary.bounds.top.value,
+                        boundary.bounds.right.value,
+                        boundary.bounds.bottom.value,
+                    );
                 }
 
                 let mut bitmap = page

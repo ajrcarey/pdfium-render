@@ -17,6 +17,8 @@ pub mod error;
 pub mod form;
 pub mod metadata;
 pub mod page;
+pub mod page_boundaries;
+pub mod page_size;
 pub mod pages;
 pub mod pdfium;
 mod utils;

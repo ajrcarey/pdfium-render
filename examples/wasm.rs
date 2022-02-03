@@ -23,8 +23,6 @@ const PDF: &[u8] = include_bytes!("../test/form-test.pdf");
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn log_page_metrics_to_console() {
-    console_log::init().expect("Error initializing console-based logging.");
-
     // Our only option when targeting WASM is to bind to the "system library"
     // (a separate WASM build of Pdfium).
 
@@ -53,7 +51,7 @@ pub fn log_page_metrics_to_console() {
         None => log::info!("PDF does not contain an embedded form"),
     };
 
-    // Report labels and metrics for each page to the console.
+    // Report labels, boundaries, and metrics for each page to the console.
 
     document.pages().iter().for_each(|page| {
         if let Some(label) = page.label() {
@@ -61,10 +59,28 @@ pub fn log_page_metrics_to_console() {
         }
 
         log::info!(
-            "page index: {}, width: {}, height: {}",
+            "Page {} width: {}, height: {}",
             page.index(),
-            page.width(),
-            page.height()
+            page.width().value,
+            page.height().value
+        );
+
+        for boundary in page.boundaries().iter() {
+            log::info!(
+                "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
+                page.index(),
+                boundary.box_type,
+                boundary.bounds.left.value,
+                boundary.bounds.top.value,
+                boundary.bounds.right.value,
+                boundary.bounds.bottom.value,
+            );
+        }
+
+        log::info!(
+            "Page {} has paper size {:#?}",
+            page.index(),
+            page.paper_size()
         );
     });
 }

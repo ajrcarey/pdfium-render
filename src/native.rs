@@ -1,11 +1,11 @@
 use crate::bindgen::{
-    FPDF_BITMAP, FPDF_BYTESTRING, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_PAGE, FPDF_STRING,
+    FPDF_BITMAP, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_PAGE, FPDF_STRING, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
 use std::ffi::{c_void, CString};
-use std::os::raw::{c_int, c_uchar, c_ulong};
+use std::os::raw::{c_float, c_int, c_uchar, c_ulong};
 
 pub(crate) struct NativePdfiumBindings {
     library: Library,
@@ -30,10 +30,21 @@ impl NativePdfiumBindings {
         result.extern_FPDF_LoadPage()?;
         result.extern_FPDF_ClosePage()?;
         result.extern_FPDF_GetPageLabel()?;
-        result.extern_FPDFPage_GetRotation()?;
-        result.extern_FPDFPage_SetRotation()?;
+        result.extern_FPDF_GetPageBoundingBox()?;
         result.extern_FPDF_GetPageWidthF()?;
         result.extern_FPDF_GetPageHeightF()?;
+        result.extern_FPDFPage_GetRotation()?;
+        result.extern_FPDFPage_SetRotation()?;
+        result.extern_FPDFPage_GetMediaBox()?;
+        result.extern_FPDFPage_GetCropBox()?;
+        result.extern_FPDFPage_GetBleedBox()?;
+        result.extern_FPDFPage_GetTrimBox()?;
+        result.extern_FPDFPage_GetArtBox()?;
+        result.extern_FPDFPage_SetMediaBox()?;
+        result.extern_FPDFPage_SetCropBox()?;
+        result.extern_FPDFPage_SetBleedBox()?;
+        result.extern_FPDFPage_SetTrimBox()?;
+        result.extern_FPDFPage_SetArtBox()?;
         result.extern_FPDFBitmap_CreateEx()?;
         result.extern_FPDFBitmap_Destroy()?;
         result.extern_FPDFBitmap_FillRect()?;
@@ -44,6 +55,7 @@ impl NativePdfiumBindings {
         result.extern_FPDF_RenderPageBitmap()?;
         result.extern_FPDFDOC_InitFormFillEnvironment()?;
         result.extern_FPDFDOC_ExitFormFillEnvironment()?;
+        result.extern_FPDFDoc_GetPageMode()?;
         result.extern_FPDF_SetFormFieldHighlightColor()?;
         result.extern_FPDF_SetFormFieldHighlightAlpha()?;
         result.extern_FPDF_FFLDraw()?;
@@ -119,7 +131,7 @@ impl NativePdfiumBindings {
     fn extern_FPDF_GetFileVersion(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> bool>,
+        Symbol<unsafe extern "C" fn(doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_GetFileVersion") }
@@ -191,6 +203,33 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDF_GetPageBoundingBox(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_GetPageBoundingBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetPageWidthF(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> c_float>, libloading::Error> {
+        unsafe { self.library.get(b"FPDF_GetPageWidthF") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetPageHeightF(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> c_float>, libloading::Error> {
+        unsafe { self.library.get(b"FPDF_GetPageHeightF") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFPage_GetRotation(
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> c_int>, libloading::Error> {
@@ -208,18 +247,192 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn extern_FPDF_GetPageWidthF(
+    fn extern_FPDFPage_GetMediaBox(
         &self,
-    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> f32>, libloading::Error> {
-        unsafe { self.library.get(b"FPDF_GetPageWidthF") }
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: *mut c_float,
+                bottom: *mut c_float,
+                right: *mut c_float,
+                top: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetMediaBox") }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn extern_FPDF_GetPageHeightF(
+    fn extern_FPDFPage_GetCropBox(
         &self,
-    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> f32>, libloading::Error> {
-        unsafe { self.library.get(b"FPDF_GetPageHeightF") }
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: *mut c_float,
+                bottom: *mut c_float,
+                right: *mut c_float,
+                top: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetCropBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetBleedBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: *mut c_float,
+                bottom: *mut c_float,
+                right: *mut c_float,
+                top: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetBleedBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetTrimBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: *mut c_float,
+                bottom: *mut c_float,
+                right: *mut c_float,
+                top: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetTrimBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetArtBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: *mut c_float,
+                bottom: *mut c_float,
+                right: *mut c_float,
+                top: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetArtBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_SetMediaBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: c_float,
+                bottom: c_float,
+                right: c_float,
+                top: c_float,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_SetMediaBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_SetCropBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: c_float,
+                bottom: c_float,
+                right: c_float,
+                top: c_float,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_SetCropBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_SetBleedBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: c_float,
+                bottom: c_float,
+                right: c_float,
+                top: c_float,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_SetBleedBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_SetTrimBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: c_float,
+                bottom: c_float,
+                right: c_float,
+                top: c_float,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_SetTrimBox") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_SetArtBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                left: c_float,
+                bottom: c_float,
+                right: c_float,
+                top: c_float,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_SetArtBox") }
     }
 
     #[inline]
@@ -304,7 +517,6 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
     fn extern_FPDF_RenderPageBitmap(
         &self,
     ) -> Result<
@@ -327,7 +539,6 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
     fn extern_FPDFDOC_InitFormFillEnvironment(
         &self,
     ) -> Result<
@@ -344,7 +555,6 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
     fn extern_FPDFDOC_ExitFormFillEnvironment(
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_FORMHANDLE)>, libloading::Error> {
@@ -353,7 +563,15 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
+    fn extern_FPDFDoc_GetPageMode(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFDoc_GetPageMode") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDF_SetFormFieldHighlightColor(
         &self,
     ) -> Result<
@@ -365,7 +583,6 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
     fn extern_FPDF_SetFormFieldHighlightAlpha(
         &self,
     ) -> Result<
@@ -377,7 +594,6 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
     fn extern_FPDF_FFLDraw(
         &self,
     ) -> Result<
@@ -401,7 +617,6 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    #[allow(clippy::type_complexity)]
     fn extern_FPDF_GetFormType(
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
@@ -468,7 +683,7 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> bool {
+    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL {
         unsafe { self.extern_FPDF_GetFileVersion().unwrap()(doc, fileVersion) }
     }
 
@@ -514,13 +729,13 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> f32 {
+    fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float {
         unsafe { self.extern_FPDF_GetPageWidthF().unwrap()(page) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> f32 {
+    fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float {
         unsafe { self.extern_FPDF_GetPageHeightF().unwrap()(page) }
     }
 
@@ -546,6 +761,142 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int) {
         unsafe { self.extern_FPDFPage_SetRotation().unwrap()(page, rotate) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL {
+        unsafe { self.extern_FPDF_GetPageBoundingBox().unwrap()(page, rect) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetMediaBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_GetMediaBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetCropBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_GetCropBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetBleedBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_GetBleedBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetTrimBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_GetTrimBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetArtBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_GetArtBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetMediaBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    ) {
+        unsafe { self.extern_FPDFPage_SetMediaBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetCropBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    ) {
+        unsafe { self.extern_FPDFPage_SetCropBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetBleedBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    ) {
+        unsafe { self.extern_FPDFPage_SetBleedBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetTrimBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    ) {
+        unsafe { self.extern_FPDFPage_SetTrimBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetArtBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    ) {
+        unsafe { self.extern_FPDFPage_SetArtBox().unwrap()(page, left, bottom, right, top) }
     }
 
     #[inline]
@@ -645,6 +996,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
         unsafe {
             self.extern_FPDFDOC_ExitFormFillEnvironment().unwrap()(handle);
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { self.extern_FPDFDoc_GetPageMode().unwrap()(document) }
     }
 
     #[inline]

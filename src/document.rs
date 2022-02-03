@@ -88,7 +88,7 @@ impl<'a> PdfDocument<'a> {
     pub fn version(&self) -> PdfDocumentVersion {
         let mut version: c_int = 0;
 
-        if self.bindings.FPDF_GetFileVersion(self.handle, &mut version) {
+        if self.bindings.FPDF_GetFileVersion(self.handle, &mut version) != 0 {
             match version {
                 10 => PdfDocumentVersion::Pdf1_0,
                 11 => PdfDocumentVersion::Pdf1_1,

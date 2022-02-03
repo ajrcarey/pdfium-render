@@ -1,12 +1,13 @@
-//! Defines the [PdfiumLibraryBindings] trait, which exposes the raw FPDF_* functions
+//! Defines the [PdfiumLibraryBindings] trait, containing run-time bindings to the FPDF_* functions
 //! exported by the Pdfium library.
 
 use crate::bindgen::{
-    FPDF_BITMAP, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_PAGE,
+    FPDF_BITMAP, FPDF_BOOL, FPDF_DOCUMENT, FPDF_DWORD, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
+    FPDF_PAGE, FS_RECTF,
 };
 use crate::error::PdfiumInternalError;
 use std::ffi::c_void;
-use std::os::raw::{c_int, c_uchar, c_ulong};
+use std::os::raw::{c_float, c_int, c_uchar, c_ulong};
 
 /// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
@@ -43,7 +44,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
 
     #[allow(non_snake_case)]
-    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> bool;
+    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int;
@@ -67,10 +68,10 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_ClosePage(&self, page: FPDF_PAGE);
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> f32;
+    fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> f32;
+    fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float;
 
     #[allow(non_snake_case)]
     fn FPDF_GetPageLabel(
@@ -86,6 +87,109 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int);
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetMediaBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetCropBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetBleedBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetTrimBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetArtBox(
+        &self,
+        page: FPDF_PAGE,
+        left: *mut c_float,
+        bottom: *mut c_float,
+        right: *mut c_float,
+        top: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetMediaBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetCropBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetBleedBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetTrimBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_SetArtBox(
+        &self,
+        page: FPDF_PAGE,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
+    );
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
@@ -146,6 +250,9 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFDOC_ExitFormFillEnvironment(&self, handle: FPDF_FORMHANDLE);
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(

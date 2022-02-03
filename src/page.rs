@@ -1,19 +1,118 @@
 //! Defines the [PdfPage] struct, exposing functionality related to a single page in a
 //! `PdfPages` collection.
 
-use crate::bindgen::{FPDFBitmap_BGRA, FPDF_ANNOT, FPDF_BITMAP, FPDF_PAGE};
+use crate::bindgen::{FPDFBitmap_BGRA, FPDF_ANNOT, FPDF_BITMAP, FPDF_PAGE, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapRotation};
 use crate::bitmap_config::{PdfBitmapConfig, PdfBitmapRenderSettings};
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::page_boundaries::PdfPageBoundaries;
+use crate::page_size::PdfPagePaperSize;
 use crate::pages::PdfPageIndex;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ffi::c_void;
 use std::os::raw::c_int;
 
-pub type PdfPoints = f32;
+/// The internal coordinate system inside a [PdfDocument] is measured in Points, a
+/// device-independent unit equal to 1/72 inches, roughly 0.358 mm. Points are converted to pixels
+/// when a [PdfPage] is rendered to a [PdfBitmap].
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct PdfPoints {
+    pub value: f32,
+}
+
+impl PdfPoints {
+    /// Creates a new [PdfPoints] object with the given value.
+    #[inline]
+    pub const fn new(value: f32) -> Self {
+        Self { value }
+    }
+
+    /// Creates a new [PdfPoints] object from the given measurement in inches.
+    #[inline]
+    pub fn from_inches(inches: f32) -> Self {
+        Self::new(inches * 72.0)
+    }
+
+    /// Creates a new [PdfPoints] object from the given measurement in centimeters.
+    #[inline]
+    pub fn from_cm(cm: f32) -> Self {
+        Self::from_inches(cm / 2.54)
+    }
+
+    /// Creates a new [PdfPoints] object from the given measurement in millimeters.
+    #[inline]
+    pub fn from_mm(mm: f32) -> Self {
+        Self::from_cm(mm / 10.0)
+    }
+
+    /// Converts the value of this [PdfPoints] object to inches.
+    #[inline]
+    pub fn to_inches(&self) -> f32 {
+        self.value / 72.0
+    }
+
+    /// Converts the value of this [PdfPoints] object to centimeters.
+    #[inline]
+    pub fn to_cm(&self) -> f32 {
+        self.to_inches() * 2.54
+    }
+
+    /// Converts the value of this [PdfPoints] object to millimeters.
+    #[inline]
+    pub fn to_mm(self) -> f32 {
+        self.to_cm() * 10.0
+    }
+}
+
+/// A rectangle measured in [PdfPoints].
+///
+/// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
+/// with x values increasing as coordinates move horizontally to the right and
+/// y values increasing as coordinates move vertically up.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct PdfRect {
+    pub top: PdfPoints,
+    pub left: PdfPoints,
+    pub bottom: PdfPoints,
+    pub right: PdfPoints,
+}
+
+impl PdfRect {
+    #[inline]
+    pub(crate) fn from_pdfium(rect: FS_RECTF) -> Self {
+        Self {
+            top: PdfPoints::new(rect.top),
+            left: PdfPoints::new(rect.left),
+            bottom: PdfPoints::new(rect.bottom),
+            right: PdfPoints::new(rect.right),
+        }
+    }
+
+    #[inline]
+    /// Creates a new [PdfRect] from the given [PdfPoints] measurements.
+    pub fn new(top: PdfPoints, left: PdfPoints, bottom: PdfPoints, right: PdfPoints) -> Self {
+        Self {
+            top,
+            left,
+            bottom,
+            right,
+        }
+    }
+
+    #[inline]
+    /// Creates a new [PdfRect] from the given raw points values.
+    pub fn new_from_values(top: f32, left: f32, bottom: f32, right: f32) -> Self {
+        Self::new(
+            PdfPoints::new(top),
+            PdfPoints::new(left),
+            PdfPoints::new(bottom),
+            PdfPoints::new(right),
+        )
+    }
+}
 
 /// The orientation of a [PdfPage].
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -25,7 +124,7 @@ pub enum PdfPageOrientation {
 impl PdfPageOrientation {
     #[inline]
     pub(crate) fn from_width_and_height(width: PdfPoints, height: PdfPoints) -> Self {
-        if width > height {
+        if width.value > height.value {
             PdfPageOrientation::Landscape
         } else {
             PdfPageOrientation::Portrait
@@ -110,13 +209,13 @@ impl<'a> PdfPage<'a> {
     /// Returns the width of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
     pub fn width(&self) -> PdfPoints {
-        self.bindings.FPDF_GetPageWidthF(self.handle)
+        PdfPoints::new(self.bindings.FPDF_GetPageWidthF(self.handle))
     }
 
     /// Returns the height of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
     pub fn height(&self) -> PdfPoints {
-        self.bindings.FPDF_GetPageHeightF(self.handle)
+        PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.handle))
     }
 
     /// Returns [PdfPageOrientation::Landscape] if the width of this [PdfPage]
@@ -152,6 +251,18 @@ impl<'a> PdfPage<'a> {
             .FPDFPage_SetRotation(self.handle, rotation.as_pdfium());
     }
 
+    /// Returns the collection of bounding boxes defining the extents of this [PdfPage].
+    #[inline]
+    pub fn boundaries(&self) -> PdfPageBoundaries {
+        PdfPageBoundaries::from_pdfium(self, self.bindings)
+    }
+
+    /// Returns the paper size of this [PdfPage].
+    #[inline]
+    pub fn paper_size(&self) -> PdfPagePaperSize {
+        PdfPagePaperSize::from_points(self.width(), self.height())
+    }
+
     /// Returns a [PdfBitmap] using pixel dimensions, rotation settings, and rendering options
     /// configured in the given [PdfBitmapConfig].
     ///
@@ -169,7 +280,7 @@ impl<'a> PdfPage<'a> {
         Ok(PdfBitmap::from_pdfium(
             handle,
             config,
-            &self,
+            self,
             self.document,
             self.bindings,
         ))
@@ -203,7 +314,7 @@ impl<'a> PdfPage<'a> {
                 form_field_highlight: vec![],
                 render_flags: FPDF_ANNOT as i32,
             },
-            &self,
+            self,
             self.document,
             self.bindings,
         ))

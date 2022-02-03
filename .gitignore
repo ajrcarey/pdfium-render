@@ -1,5 +1,6 @@
 # Rust test files and build artifacts
 
+docs/
 target/
 Cargo.lock
 *.so

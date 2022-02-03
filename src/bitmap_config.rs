@@ -14,7 +14,7 @@ use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation};
 
 /// Configures the scaling, rotation, and rendering settings that should be applied to
-/// a PdfPage to create a PdfBitmap for that page. PdfBitmapConfig can accommodate pages of
+/// a PdfPage to create a `PdfBitmap` for that page. [PdfBitmapConfig] can accommodate pages of
 /// different sizes while correctly maintaining each page's aspect ratio, automatically
 /// rotate portrait or landscape pages, generate page thumbnails, and apply maximum and
 /// minimum pixel sizes to the scaled width and height of the final bitmap.
@@ -81,14 +81,36 @@ impl PdfBitmapConfig {
         }
     }
 
+    /// Applies settings suitable for generating a thumbnail.
+    ///
+    /// * The source [PdfPage] will be rendered with a maximum width and height of the given
+    /// pixel size
+    /// * The page will not be rotated, irrespective of its orientation
+    /// * Image quality settings will be reduced to improve performance
+    /// * Annotations and user-filled form field data will not be rendered.
+    ///
+    /// These settings are applied to this [PdfBitmapConfig] object immediately and can be
+    /// selectively overridden by later function calls. For instance, a later call to
+    /// [PdfBitmapConfig::rotate()] can specify a custom rotation setting that will apply
+    /// to the thumbnail.
+    #[inline]
+    pub fn thumbnail(self, size: u8) -> Self {
+        self.set_target_size(size as u16, size as u16)
+            .set_maximum_width(size as u16)
+            .set_maximum_height(size as u16)
+            .rotate(PdfBitmapRotation::None, false)
+            .use_print_quality(false)
+            .set_image_smoothing(false)
+            .render_annotations(false)
+            .render_form_data(false)
+    }
+
     /// Converts the width and height of a [PdfPage] from points to pixels, scaling each
     /// dimension to the given target pixel sizes. The aspect ratio of the source page
     /// will not be maintained.
     #[inline]
     pub fn set_target_size(self, width: u16, height: u16) -> Self {
-        let result = self.set_target_width(width);
-
-        result.set_target_height(height)
+        self.set_target_width(width).set_target_height(height)
     }
 
     /// Converts the width of a [PdfPage] from points to pixels, scaling the source page
@@ -125,13 +147,10 @@ impl PdfBitmapConfig {
         self.scale_width_factor = None;
         self.scale_height_factor = None;
 
-        let result = self.set_target_width(width);
-
-        let result = result.set_maximum_width(width);
-
-        let result = result.set_maximum_height(height);
-
-        result.rotate_if_landscape(PdfBitmapRotation::Degrees90, true)
+        self.set_target_width(width)
+            .set_maximum_width(width)
+            .set_maximum_height(height)
+            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true)
     }
 
     /// Converts the width and height of a [PdfPage] from points to pixels by applying
@@ -193,9 +212,8 @@ impl PdfBitmapConfig {
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate(self, rotation: PdfBitmapRotation, do_rotate_constraints: bool) -> Self {
-        let result = self.rotate_if_portait(rotation, do_rotate_constraints);
-
-        result.rotate_if_landscape(rotation, do_rotate_constraints)
+        self.rotate_if_portait(rotation, do_rotate_constraints)
+            .rotate_if_landscape(rotation, do_rotate_constraints)
     }
 
     /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
@@ -253,7 +271,7 @@ impl PdfBitmapConfig {
 
     /// Controls whether form data widgets and user-supplied form data should be included
     /// during rendering of the [PdfPage]. The default is `true`. The setting has no effect
-    /// if the [PdfDocument] containing the [PdfPage] does not include an embedded [PdfForm].
+    /// if the `PdfDocument` containing the `PdfPage` does not include an embedded `PdfForm`.
     #[inline]
     pub fn render_form_data(mut self, do_render: bool) -> Self {
         self.do_render_form_data = do_render;
@@ -322,6 +340,11 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether Pdfium should render for printing. The default is `false`.
+    ///
+    /// Certain PDF files may stipulate different quality settings for on-screen display
+    /// compared to printing. For these files, changing this setting to `true` will result
+    /// in a higher quality rendered bitmap but slower performance. For PDF files that do
+    /// not stipulate different quality settings, changing this setting will have no effect.
     #[inline]
     pub fn use_print_quality(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_render_for_printing = do_set_flag;
@@ -483,14 +506,14 @@ impl PdfBitmapConfig {
             Some(scale)
         } else {
             self.target_width
-                .map(|target| (target as f32) / source_width)
+                .map(|target| (target as f32) / source_width.value)
         };
 
         let height_scale = if let Some(scale) = self.scale_height_factor {
             Some(scale)
         } else {
             self.target_height
-                .map(|target| (target as f32) / source_height)
+                .map(|target| (target as f32) / source_height.value)
         };
 
         // Maintain source aspect ratio if only one dimension's scale is set.
@@ -531,10 +554,10 @@ impl PdfBitmapConfig {
         if let Some(maximum) = width_constraint {
             let maximum = maximum as f32;
 
-            if source_width * width_scale > maximum {
+            if source_width.value * width_scale > maximum {
                 // Constrain the width, so it does not exceed the maximum.
 
-                width_scale = maximum / source_width;
+                width_scale = maximum / source_width.value;
 
                 if do_maintain_aspect_ratio {
                     height_scale = width_scale;
@@ -545,10 +568,10 @@ impl PdfBitmapConfig {
         if let Some(maximum) = height_constraint {
             let maximum = maximum as f32;
 
-            if source_height * height_scale > maximum {
+            if source_height.value * height_scale > maximum {
                 // Constrain the height, so it does not exceed the maximum.
 
-                height_scale = maximum / source_height;
+                height_scale = maximum / source_height.value;
 
                 if do_maintain_aspect_ratio {
                     width_scale = height_scale;
@@ -609,8 +632,8 @@ impl PdfBitmapConfig {
         }
 
         PdfBitmapRenderSettings {
-            width: (source_width * width_scale) as i32,
-            height: (source_height * height_scale) as i32,
+            width: (source_width.value * width_scale) as i32,
+            height: (source_height.value * height_scale) as i32,
             format: self.format.as_pdfium() as i32,
             rotate: target_rotation.as_pdfium(),
             do_render_form_data: self.do_render_form_data,
