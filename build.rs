@@ -46,8 +46,10 @@ fn main() {
 
         // Write the bindings to src/bindgen.rs.
 
+        let out_path = std::path::PathBuf::from("src");
+
         bindings
-            .write_to_file(std::path::PathBuf::from("src").join("bindgen.rs"))
+            .write_to_file(out_path.join("bindgen.rs"))
             .expect("Unable to write bindings");
     }
 }

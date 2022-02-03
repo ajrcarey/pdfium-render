@@ -161,6 +161,98 @@ pub const PDF_FORM_ERROR: i32 = -1;
 pub const PDF_FORM_NOTAVAIL: u32 = 0;
 pub const PDF_FORM_AVAIL: u32 = 1;
 pub const PDF_FORM_NOTEXIST: u32 = 2;
+pub const _STDINT_H: u32 = 1;
+pub const _FEATURES_H: u32 = 1;
+pub const _DEFAULT_SOURCE: u32 = 1;
+pub const __GLIBC_USE_ISOC2X: u32 = 0;
+pub const __USE_ISOC11: u32 = 1;
+pub const __USE_ISOC99: u32 = 1;
+pub const __USE_ISOC95: u32 = 1;
+pub const __USE_POSIX_IMPLICITLY: u32 = 1;
+pub const _POSIX_SOURCE: u32 = 1;
+pub const _POSIX_C_SOURCE: u32 = 200809;
+pub const __USE_POSIX: u32 = 1;
+pub const __USE_POSIX2: u32 = 1;
+pub const __USE_POSIX199309: u32 = 1;
+pub const __USE_POSIX199506: u32 = 1;
+pub const __USE_XOPEN2K: u32 = 1;
+pub const __USE_XOPEN2K8: u32 = 1;
+pub const _ATFILE_SOURCE: u32 = 1;
+pub const __USE_MISC: u32 = 1;
+pub const __USE_ATFILE: u32 = 1;
+pub const __USE_FORTIFY_LEVEL: u32 = 0;
+pub const __GLIBC_USE_DEPRECATED_GETS: u32 = 0;
+pub const __GLIBC_USE_DEPRECATED_SCANF: u32 = 0;
+pub const _STDC_PREDEF_H: u32 = 1;
+pub const __STDC_IEC_559__: u32 = 1;
+pub const __STDC_IEC_559_COMPLEX__: u32 = 1;
+pub const __STDC_ISO_10646__: u32 = 201706;
+pub const __GNU_LIBRARY__: u32 = 6;
+pub const __GLIBC__: u32 = 2;
+pub const __GLIBC_MINOR__: u32 = 33;
+pub const _SYS_CDEFS_H: u32 = 1;
+pub const __glibc_c99_flexarr_available: u32 = 1;
+pub const __WORDSIZE: u32 = 64;
+pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
+pub const __SYSCALL_WORDSIZE: u32 = 64;
+pub const __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI: u32 = 0;
+pub const __HAVE_GENERIC_SELECTION: u32 = 1;
+pub const __GLIBC_USE_LIB_EXT2: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_BFP_EXT: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_BFP_EXT_C2X: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_FUNCS_EXT: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_TYPES_EXT: u32 = 0;
+pub const _BITS_TYPES_H: u32 = 1;
+pub const __TIMESIZE: u32 = 64;
+pub const _BITS_TYPESIZES_H: u32 = 1;
+pub const __OFF_T_MATCHES_OFF64_T: u32 = 1;
+pub const __INO_T_MATCHES_INO64_T: u32 = 1;
+pub const __RLIM_T_MATCHES_RLIM64_T: u32 = 1;
+pub const __STATFS_MATCHES_STATFS64: u32 = 1;
+pub const __KERNEL_OLD_TIMEVAL_MATCHES_TIMEVAL64: u32 = 1;
+pub const __FD_SETSIZE: u32 = 1024;
+pub const _BITS_TIME64_H: u32 = 1;
+pub const _BITS_WCHAR_H: u32 = 1;
+pub const _BITS_STDINT_INTN_H: u32 = 1;
+pub const _BITS_STDINT_UINTN_H: u32 = 1;
+pub const INT8_MIN: i32 = -128;
+pub const INT16_MIN: i32 = -32768;
+pub const INT32_MIN: i32 = -2147483648;
+pub const INT8_MAX: u32 = 127;
+pub const INT16_MAX: u32 = 32767;
+pub const INT32_MAX: u32 = 2147483647;
+pub const UINT8_MAX: u32 = 255;
+pub const UINT16_MAX: u32 = 65535;
+pub const UINT32_MAX: u32 = 4294967295;
+pub const INT_LEAST8_MIN: i32 = -128;
+pub const INT_LEAST16_MIN: i32 = -32768;
+pub const INT_LEAST32_MIN: i32 = -2147483648;
+pub const INT_LEAST8_MAX: u32 = 127;
+pub const INT_LEAST16_MAX: u32 = 32767;
+pub const INT_LEAST32_MAX: u32 = 2147483647;
+pub const UINT_LEAST8_MAX: u32 = 255;
+pub const UINT_LEAST16_MAX: u32 = 65535;
+pub const UINT_LEAST32_MAX: u32 = 4294967295;
+pub const INT_FAST8_MIN: i32 = -128;
+pub const INT_FAST16_MIN: i64 = -9223372036854775808;
+pub const INT_FAST32_MIN: i64 = -9223372036854775808;
+pub const INT_FAST8_MAX: u32 = 127;
+pub const INT_FAST16_MAX: u64 = 9223372036854775807;
+pub const INT_FAST32_MAX: u64 = 9223372036854775807;
+pub const UINT_FAST8_MAX: u32 = 255;
+pub const UINT_FAST16_MAX: i32 = -1;
+pub const UINT_FAST32_MAX: i32 = -1;
+pub const INTPTR_MIN: i64 = -9223372036854775808;
+pub const INTPTR_MAX: u64 = 9223372036854775807;
+pub const UINTPTR_MAX: i32 = -1;
+pub const PTRDIFF_MIN: i64 = -9223372036854775808;
+pub const PTRDIFF_MAX: u64 = 9223372036854775807;
+pub const SIG_ATOMIC_MIN: i32 = -2147483648;
+pub const SIG_ATOMIC_MAX: u32 = 2147483647;
+pub const SIZE_MAX: i32 = -1;
+pub const WINT_MIN: u32 = 0;
+pub const WINT_MAX: u32 = 4294967295;
 pub const FPDF_COLORSPACE_UNKNOWN: u32 = 0;
 pub const FPDF_COLORSPACE_DEVICEGRAY: u32 = 1;
 pub const FPDF_COLORSPACE_DEVICERGB: u32 = 2;
@@ -515,12 +607,12 @@ pub struct FPDF_BSTR_ {
 fn bindgen_test_layout_FPDF_BSTR_() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_BSTR_>(),
-        8usize,
+        16usize,
         concat!("Size of: ", stringify!(FPDF_BSTR_))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_BSTR_>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_BSTR_))
     );
     assert_eq!(
@@ -535,7 +627,7 @@ fn bindgen_test_layout_FPDF_BSTR_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_BSTR_>())).len as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_BSTR_),
@@ -825,6 +917,19 @@ pub type FPDF_ANNOTATION_SUBTYPE = ::std::os::raw::c_int;
 pub type FPDF_ANNOT_APPEARANCEMODE = ::std::os::raw::c_int;
 #[doc = " Dictionary value types."]
 pub type FPDF_OBJECT_TYPE = ::std::os::raw::c_int;
+extern "C" {
+    #[doc = " Function: FPDF_InitLibrary"]
+    #[doc = "          Initialize the FPDFSDK library"]
+    #[doc = " Parameters:"]
+    #[doc = "          None"]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    #[doc = " Comments:"]
+    #[doc = "          Convenience function to call FPDF_InitLibraryWithConfig() for"]
+    #[doc = "          backwards compatibility purposes. This will be deprecated in the"]
+    #[doc = "          future."]
+    pub fn FPDF_InitLibrary();
+}
 #[doc = " Process-wide options for initializing the library."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -851,12 +956,12 @@ pub struct FPDF_LIBRARY_CONFIG_ {
 fn bindgen_test_layout_FPDF_LIBRARY_CONFIG_() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_LIBRARY_CONFIG_>(),
-        20usize,
+        40usize,
         concat!("Size of: ", stringify!(FPDF_LIBRARY_CONFIG_))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_LIBRARY_CONFIG_>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_LIBRARY_CONFIG_))
     );
     assert_eq!(
@@ -873,7 +978,7 @@ fn bindgen_test_layout_FPDF_LIBRARY_CONFIG_() {
         unsafe {
             &(*(::std::ptr::null::<FPDF_LIBRARY_CONFIG_>())).m_pUserFontPaths as *const _ as usize
         },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_LIBRARY_CONFIG_),
@@ -883,7 +988,7 @@ fn bindgen_test_layout_FPDF_LIBRARY_CONFIG_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_LIBRARY_CONFIG_>())).m_pIsolate as *const _ as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_LIBRARY_CONFIG_),
@@ -895,7 +1000,7 @@ fn bindgen_test_layout_FPDF_LIBRARY_CONFIG_() {
         unsafe {
             &(*(::std::ptr::null::<FPDF_LIBRARY_CONFIG_>())).m_v8EmbedderSlot as *const _ as usize
         },
-        12usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_LIBRARY_CONFIG_),
@@ -907,7 +1012,7 @@ fn bindgen_test_layout_FPDF_LIBRARY_CONFIG_() {
         unsafe {
             &(*(::std::ptr::null::<FPDF_LIBRARY_CONFIG_>())).m_pPlatform as *const _ as usize
         },
-        16usize,
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_LIBRARY_CONFIG_),
@@ -918,6 +1023,122 @@ fn bindgen_test_layout_FPDF_LIBRARY_CONFIG_() {
 }
 #[doc = " Process-wide options for initializing the library."]
 pub type FPDF_LIBRARY_CONFIG = FPDF_LIBRARY_CONFIG_;
+extern "C" {
+    #[doc = " Function: FPDF_InitLibraryWithConfig"]
+    #[doc = "          Initialize the FPDFSDK library"]
+    #[doc = " Parameters:"]
+    #[doc = "          config - configuration information as above."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    #[doc = " Comments:"]
+    #[doc = "          You have to call this function before you can call any PDF"]
+    #[doc = "          processing functions."]
+    pub fn FPDF_InitLibraryWithConfig(config: *const FPDF_LIBRARY_CONFIG);
+}
+extern "C" {
+    #[doc = " Function: FPDF_DestroyLibary"]
+    #[doc = "          Release all resources allocated by the FPDFSDK library."]
+    #[doc = " Parameters:"]
+    #[doc = "          None."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    #[doc = " Comments:"]
+    #[doc = "          You can call this function to release all memory blocks allocated by"]
+    #[doc = "          the library."]
+    #[doc = "          After this function is called, you should not call any PDF"]
+    #[doc = "          processing functions."]
+    pub fn FPDF_DestroyLibrary();
+}
+extern "C" {
+    #[doc = " Function: FPDF_SetSandBoxPolicy"]
+    #[doc = "          Set the policy for the sandbox environment."]
+    #[doc = " Parameters:"]
+    #[doc = "          policy -   The specified policy for setting, for example:"]
+    #[doc = "                     FPDF_POLICY_MACHINETIME_ACCESS."]
+    #[doc = "          enable -   True to enable, false to disable the policy."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_SetSandBoxPolicy(policy: FPDF_DWORD, enable: FPDF_BOOL);
+}
+extern "C" {
+    #[doc = " Function: FPDF_LoadDocument"]
+    #[doc = "          Open and load a PDF document."]
+    #[doc = " Parameters:"]
+    #[doc = "          file_path -  Path to the PDF file (including extension)."]
+    #[doc = "          password  -  A string used as the password for the PDF file."]
+    #[doc = "                       If no password is needed, empty or NULL can be used."]
+    #[doc = "                       See comments below regarding the encoding."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the loaded document, or NULL on failure."]
+    #[doc = " Comments:"]
+    #[doc = "          Loaded document can be closed by FPDF_CloseDocument()."]
+    #[doc = "          If this function fails, you can use FPDF_GetLastError() to retrieve"]
+    #[doc = "          the reason why it failed."]
+    #[doc = ""]
+    #[doc = "          The encoding for |password| can be either UTF-8 or Latin-1. PDFs,"]
+    #[doc = "          depending on the security handler revision, will only accept one or"]
+    #[doc = "          the other encoding. If |password|'s encoding and the PDF's expected"]
+    #[doc = "          encoding do not match, FPDF_LoadDocument() will automatically"]
+    #[doc = "          convert |password| to the other encoding."]
+    pub fn FPDF_LoadDocument(file_path: FPDF_STRING, password: FPDF_BYTESTRING) -> FPDF_DOCUMENT;
+}
+extern "C" {
+    #[doc = " Function: FPDF_LoadMemDocument"]
+    #[doc = "          Open and load a PDF document from memory."]
+    #[doc = " Parameters:"]
+    #[doc = "          data_buf    -   Pointer to a buffer containing the PDF document."]
+    #[doc = "          size        -   Number of bytes in the PDF document."]
+    #[doc = "          password    -   A string used as the password for the PDF file."]
+    #[doc = "                          If no password is needed, empty or NULL can be used."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the loaded document, or NULL on failure."]
+    #[doc = " Comments:"]
+    #[doc = "          The memory buffer must remain valid when the document is open."]
+    #[doc = "          The loaded document can be closed by FPDF_CloseDocument."]
+    #[doc = "          If this function fails, you can use FPDF_GetLastError() to retrieve"]
+    #[doc = "          the reason why it failed."]
+    #[doc = ""]
+    #[doc = "          See the comments for FPDF_LoadDocument() regarding the encoding for"]
+    #[doc = "          |password|."]
+    #[doc = " Notes:"]
+    #[doc = "          If PDFium is built with the XFA module, the application should call"]
+    #[doc = "          FPDF_LoadXFA() function after the PDF document loaded to support XFA"]
+    #[doc = "          fields defined in the fpdfformfill.h file."]
+    pub fn FPDF_LoadMemDocument(
+        data_buf: *const ::std::os::raw::c_void,
+        size: ::std::os::raw::c_int,
+        password: FPDF_BYTESTRING,
+    ) -> FPDF_DOCUMENT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_LoadMemDocument64"]
+    #[doc = "          Open and load a PDF document from memory."]
+    #[doc = " Parameters:"]
+    #[doc = "          data_buf    -   Pointer to a buffer containing the PDF document."]
+    #[doc = "          size        -   Number of bytes in the PDF document."]
+    #[doc = "          password    -   A string used as the password for the PDF file."]
+    #[doc = "                          If no password is needed, empty or NULL can be used."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the loaded document, or NULL on failure."]
+    #[doc = " Comments:"]
+    #[doc = "          The memory buffer must remain valid when the document is open."]
+    #[doc = "          The loaded document can be closed by FPDF_CloseDocument."]
+    #[doc = "          If this function fails, you can use FPDF_GetLastError() to retrieve"]
+    #[doc = "          the reason why it failed."]
+    #[doc = ""]
+    #[doc = "          See the comments for FPDF_LoadDocument() regarding the encoding for"]
+    #[doc = "          |password|."]
+    #[doc = " Notes:"]
+    #[doc = "          If PDFium is built with the XFA module, the application should call"]
+    #[doc = "          FPDF_LoadXFA() function after the PDF document loaded to support XFA"]
+    #[doc = "          fields defined in the fpdfformfill.h file."]
+    pub fn FPDF_LoadMemDocument64(
+        data_buf: *const ::std::os::raw::c_void,
+        size: size_t,
+        password: FPDF_BYTESTRING,
+    ) -> FPDF_DOCUMENT;
+}
 #[doc = " Structure for custom file access."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -947,12 +1168,12 @@ pub struct FPDF_FILEACCESS {
 fn bindgen_test_layout_FPDF_FILEACCESS() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_FILEACCESS>(),
-        12usize,
+        24usize,
         concat!("Size of: ", stringify!(FPDF_FILEACCESS))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_FILEACCESS>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_FILEACCESS))
     );
     assert_eq!(
@@ -967,7 +1188,7 @@ fn bindgen_test_layout_FPDF_FILEACCESS() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEACCESS>())).m_GetBlock as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEACCESS),
@@ -977,7 +1198,7 @@ fn bindgen_test_layout_FPDF_FILEACCESS() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEACCESS>())).m_Param as *const _ as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEACCESS),
@@ -1084,12 +1305,12 @@ pub struct FPDF_FILEHANDLER_ {
 fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_FILEHANDLER_>(),
-        28usize,
+        56usize,
         concat!("Size of: ", stringify!(FPDF_FILEHANDLER_))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_FILEHANDLER_>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_FILEHANDLER_))
     );
     assert_eq!(
@@ -1104,7 +1325,7 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEHANDLER_>())).Release as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEHANDLER_),
@@ -1114,7 +1335,7 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEHANDLER_>())).GetSize as *const _ as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEHANDLER_),
@@ -1124,7 +1345,7 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEHANDLER_>())).ReadBlock as *const _ as usize },
-        12usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEHANDLER_),
@@ -1134,7 +1355,7 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEHANDLER_>())).WriteBlock as *const _ as usize },
-        16usize,
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEHANDLER_),
@@ -1144,7 +1365,7 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEHANDLER_>())).Flush as *const _ as usize },
-        20usize,
+        40usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEHANDLER_),
@@ -1154,7 +1375,7 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEHANDLER_>())).Truncate as *const _ as usize },
-        24usize,
+        48usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEHANDLER_),
@@ -1168,6 +1389,241 @@ fn bindgen_test_layout_FPDF_FILEHANDLER_() {
 #[doc = " Note: This is a handler and should be implemented by callers,"]
 #[doc = " and is only used from XFA."]
 pub type FPDF_FILEHANDLER = FPDF_FILEHANDLER_;
+extern "C" {
+    #[doc = " Function: FPDF_LoadCustomDocument"]
+    #[doc = "          Load PDF document from a custom access descriptor."]
+    #[doc = " Parameters:"]
+    #[doc = "          pFileAccess -   A structure for accessing the file."]
+    #[doc = "          password    -   Optional password for decrypting the PDF file."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the loaded document, or NULL on failure."]
+    #[doc = " Comments:"]
+    #[doc = "          The application must keep the file resources |pFileAccess| points to"]
+    #[doc = "          valid until the returned FPDF_DOCUMENT is closed. |pFileAccess|"]
+    #[doc = "          itself does not need to outlive the FPDF_DOCUMENT."]
+    #[doc = ""]
+    #[doc = "          The loaded document can be closed with FPDF_CloseDocument()."]
+    #[doc = ""]
+    #[doc = "          See the comments for FPDF_LoadDocument() regarding the encoding for"]
+    #[doc = "          |password|."]
+    #[doc = " Notes:"]
+    #[doc = "          If PDFium is built with the XFA module, the application should call"]
+    #[doc = "          FPDF_LoadXFA() function after the PDF document loaded to support XFA"]
+    #[doc = "          fields defined in the fpdfformfill.h file."]
+    pub fn FPDF_LoadCustomDocument(
+        pFileAccess: *mut FPDF_FILEACCESS,
+        password: FPDF_BYTESTRING,
+    ) -> FPDF_DOCUMENT;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetFileVersion"]
+    #[doc = "          Get the file version of the given PDF document."]
+    #[doc = " Parameters:"]
+    #[doc = "          doc         -   Handle to a document."]
+    #[doc = "          fileVersion -   The PDF file version. File version: 14 for 1.4, 15"]
+    #[doc = "                          for 1.5, ..."]
+    #[doc = " Return value:"]
+    #[doc = "          True if succeeds, false otherwise."]
+    #[doc = " Comments:"]
+    #[doc = "          If the document was created by FPDF_CreateNewDocument,"]
+    #[doc = "          then this function will always fail."]
+    pub fn FPDF_GetFileVersion(
+        doc: FPDF_DOCUMENT,
+        fileVersion: *mut ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetLastError"]
+    #[doc = "          Get last error code when a function fails."]
+    #[doc = " Parameters:"]
+    #[doc = "          None."]
+    #[doc = " Return value:"]
+    #[doc = "          A 32-bit integer indicating error code as defined above."]
+    #[doc = " Comments:"]
+    #[doc = "          If the previous SDK call succeeded, the return value of this"]
+    #[doc = "          function is not defined."]
+    pub fn FPDF_GetLastError() -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_DocumentHasValidCrossReferenceTable"]
+    #[doc = "          Whether the document's cross reference table is valid or not."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to a document. Returned by FPDF_LoadDocument."]
+    #[doc = " Return value:"]
+    #[doc = "          True if the PDF parser did not encounter problems parsing the cross"]
+    #[doc = "          reference table. False if the parser could not parse the cross"]
+    #[doc = "          reference table and the table had to be rebuild from other data"]
+    #[doc = "          within the document."]
+    #[doc = " Comments:"]
+    #[doc = "          The return value can change over time as the PDF parser evolves."]
+    pub fn FPDF_DocumentHasValidCrossReferenceTable(document: FPDF_DOCUMENT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetTrailerEnds"]
+    #[doc = "          Get the byte offsets of trailer ends."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument()."]
+    #[doc = "          buffer      -   The address of a buffer that receives the"]
+    #[doc = "                          byte offsets."]
+    #[doc = "          length      -   The size, in ints, of |buffer|."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the number of ints in the buffer on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " |buffer| is an array of integers that describes the exact byte offsets of the"]
+    #[doc = " trailer ends in the document. If |length| is less than the returned length,"]
+    #[doc = " or |document| or |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDF_GetTrailerEnds(
+        document: FPDF_DOCUMENT,
+        buffer: *mut ::std::os::raw::c_uint,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetDocPermission"]
+    #[doc = "          Get file permission flags of the document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to a document. Returned by FPDF_LoadDocument."]
+    #[doc = " Return value:"]
+    #[doc = "          A 32-bit integer indicating permission flags. Please refer to the"]
+    #[doc = "          PDF Reference for detailed descriptions. If the document is not"]
+    #[doc = "          protected, 0xffffffff will be returned."]
+    pub fn FPDF_GetDocPermissions(document: FPDF_DOCUMENT) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetSecurityHandlerRevision"]
+    #[doc = "          Get the revision for the security handler."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to a document. Returned by FPDF_LoadDocument."]
+    #[doc = " Return value:"]
+    #[doc = "          The security handler revision number. Please refer to the PDF"]
+    #[doc = "          Reference for a detailed description. If the document is not"]
+    #[doc = "          protected, -1 will be returned."]
+    pub fn FPDF_GetSecurityHandlerRevision(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetPageCount"]
+    #[doc = "          Get total number of pages in the document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument."]
+    #[doc = " Return value:"]
+    #[doc = "          Total number of pages in the document."]
+    pub fn FPDF_GetPageCount(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_LoadPage"]
+    #[doc = "          Load a page inside the document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument"]
+    #[doc = "          page_index  -   Index number of the page. 0 for the first page."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the loaded page, or NULL if page load fails."]
+    #[doc = " Comments:"]
+    #[doc = "          The loaded page can be rendered to devices using FPDF_RenderPage."]
+    #[doc = "          The loaded page can be closed using FPDF_ClosePage."]
+    pub fn FPDF_LoadPage(document: FPDF_DOCUMENT, page_index: ::std::os::raw::c_int) -> FPDF_PAGE;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FPDF_GetPageWidthF"]
+    #[doc = "          Get page width."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "          Page width (excluding non-displayable area) measured in points."]
+    #[doc = "          One point is 1/72 inch (around 0.3528 mm)."]
+    pub fn FPDF_GetPageWidthF(page: FPDF_PAGE) -> f32;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetPageWidth"]
+    #[doc = "          Get page width."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage."]
+    #[doc = " Return value:"]
+    #[doc = "          Page width (excluding non-displayable area) measured in points."]
+    #[doc = "          One point is 1/72 inch (around 0.3528 mm)."]
+    #[doc = " Note:"]
+    #[doc = "          Prefer FPDF_GetPageWidthF() above. This will be deprecated in the"]
+    #[doc = "          future."]
+    pub fn FPDF_GetPageWidth(page: FPDF_PAGE) -> f64;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FPDF_GetPageHeightF"]
+    #[doc = "          Get page height."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "          Page height (excluding non-displayable area) measured in points."]
+    #[doc = "          One point is 1/72 inch (around 0.3528 mm)"]
+    pub fn FPDF_GetPageHeightF(page: FPDF_PAGE) -> f32;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetPageHeight"]
+    #[doc = "          Get page height."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage."]
+    #[doc = " Return value:"]
+    #[doc = "          Page height (excluding non-displayable area) measured in points."]
+    #[doc = "          One point is 1/72 inch (around 0.3528 mm)"]
+    #[doc = " Note:"]
+    #[doc = "          Prefer FPDF_GetPageHeightF() above. This will be deprecated in the"]
+    #[doc = "          future."]
+    pub fn FPDF_GetPageHeight(page: FPDF_PAGE) -> f64;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetPageBoundingBox"]
+    #[doc = "          Get the bounding box of the page. This is the intersection between"]
+    #[doc = "          its media box and its crop box."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage."]
+    #[doc = "          rect        -   Pointer to a rect to receive the page bounding box."]
+    #[doc = "                          On an error, |rect| won't be filled."]
+    #[doc = " Return value:"]
+    #[doc = "          True for success."]
+    pub fn FPDF_GetPageBoundingBox(page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetPageSizeByIndexF"]
+    #[doc = "          Get the size of the page at the given index."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument()."]
+    #[doc = "          page_index  -   Page index, zero for the first page."]
+    #[doc = "          size        -   Pointer to a FS_SIZEF to receive the page size."]
+    #[doc = "                          (in points)."]
+    #[doc = " Return value:"]
+    #[doc = "          Non-zero for success. 0 for error (document or page not found)."]
+    pub fn FPDF_GetPageSizeByIndexF(
+        document: FPDF_DOCUMENT,
+        page_index: ::std::os::raw::c_int,
+        size: *mut FS_SIZEF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetPageSizeByIndex"]
+    #[doc = "          Get the size of the page at the given index."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument."]
+    #[doc = "          page_index  -   Page index, zero for the first page."]
+    #[doc = "          width       -   Pointer to a double to receive the page width"]
+    #[doc = "                          (in points)."]
+    #[doc = "          height      -   Pointer to a double to receive the page height"]
+    #[doc = "                          (in points)."]
+    #[doc = " Return value:"]
+    #[doc = "          Non-zero for success. 0 for error (document or page not found)."]
+    #[doc = " Note:"]
+    #[doc = "          Prefer FPDF_GetPageSizeByIndexF() above. This will be deprecated in"]
+    #[doc = "          the future."]
+    pub fn FPDF_GetPageSizeByIndex(
+        document: FPDF_DOCUMENT,
+        page_index: ::std::os::raw::c_int,
+        width: *mut f64,
+        height: *mut f64,
+    ) -> ::std::os::raw::c_int;
+}
 #[doc = " Struct for color scheme."]
 #[doc = " Each should be a 32-bit value specifying the color, in 8888 ARGB format."]
 #[repr(C)]
@@ -1182,12 +1638,12 @@ pub struct FPDF_COLORSCHEME_ {
 fn bindgen_test_layout_FPDF_COLORSCHEME_() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_COLORSCHEME_>(),
-        16usize,
+        32usize,
         concat!("Size of: ", stringify!(FPDF_COLORSCHEME_))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_COLORSCHEME_>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_COLORSCHEME_))
     );
     assert_eq!(
@@ -1206,7 +1662,7 @@ fn bindgen_test_layout_FPDF_COLORSCHEME_() {
         unsafe {
             &(*(::std::ptr::null::<FPDF_COLORSCHEME_>())).path_stroke_color as *const _ as usize
         },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_COLORSCHEME_),
@@ -1218,7 +1674,7 @@ fn bindgen_test_layout_FPDF_COLORSCHEME_() {
         unsafe {
             &(*(::std::ptr::null::<FPDF_COLORSCHEME_>())).text_fill_color as *const _ as usize
         },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_COLORSCHEME_),
@@ -1230,7 +1686,7 @@ fn bindgen_test_layout_FPDF_COLORSCHEME_() {
         unsafe {
             &(*(::std::ptr::null::<FPDF_COLORSCHEME_>())).text_stroke_color as *const _ as usize
         },
-        12usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_COLORSCHEME_),
@@ -1242,6 +1698,563 @@ fn bindgen_test_layout_FPDF_COLORSCHEME_() {
 #[doc = " Struct for color scheme."]
 #[doc = " Each should be a 32-bit value specifying the color, in 8888 ARGB format."]
 pub type FPDF_COLORSCHEME = FPDF_COLORSCHEME_;
+extern "C" {
+    #[doc = " Function: FPDF_RenderPageBitmap"]
+    #[doc = "          Render contents of a page to a device independent bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the device independent bitmap (as the"]
+    #[doc = "                          output buffer). The bitmap handle can be created"]
+    #[doc = "                          by FPDFBitmap_Create or retrieved from an image"]
+    #[doc = "                          object by FPDFImageObj_GetBitmap."]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage"]
+    #[doc = "          start_x     -   Left pixel position of the display area in"]
+    #[doc = "                          bitmap coordinates."]
+    #[doc = "          start_y     -   Top pixel position of the display area in bitmap"]
+    #[doc = "                          coordinates."]
+    #[doc = "          size_x      -   Horizontal size (in pixels) for displaying the page."]
+    #[doc = "          size_y      -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "          rotate      -   Page orientation:"]
+    #[doc = "                            0 (normal)"]
+    #[doc = "                            1 (rotated 90 degrees clockwise)"]
+    #[doc = "                            2 (rotated 180 degrees)"]
+    #[doc = "                            3 (rotated 90 degrees counter-clockwise)"]
+    #[doc = "          flags       -   0 for normal display, or combination of the Page"]
+    #[doc = "                          Rendering flags defined above. With the FPDF_ANNOT"]
+    #[doc = "                          flag, it renders all annotations that do not require"]
+    #[doc = "                          user-interaction, which are all annotations except"]
+    #[doc = "                          widget and popup annotations."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_RenderPageBitmap(
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        flags: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_RenderPageBitmapWithMatrix"]
+    #[doc = "          Render contents of a page to a device independent bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the device independent bitmap (as the"]
+    #[doc = "                          output buffer). The bitmap handle can be created"]
+    #[doc = "                          by FPDFBitmap_Create or retrieved by"]
+    #[doc = "                          FPDFImageObj_GetBitmap."]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage."]
+    #[doc = "          matrix      -   The transform matrix, which must be invertible."]
+    #[doc = "                          See PDF Reference 1.7, 4.2.2 Common Transformations."]
+    #[doc = "          clipping    -   The rect to clip to in device coords."]
+    #[doc = "          flags       -   0 for normal display, or combination of the Page"]
+    #[doc = "                          Rendering flags defined above. With the FPDF_ANNOT"]
+    #[doc = "                          flag, it renders all annotations that do not require"]
+    #[doc = "                          user-interaction, which are all annotations except"]
+    #[doc = "                          widget and popup annotations."]
+    #[doc = " Return value:"]
+    #[doc = "          None. Note that behavior is undefined if det of |matrix| is 0."]
+    pub fn FPDF_RenderPageBitmapWithMatrix(
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipping: *const FS_RECTF,
+        flags: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_ClosePage"]
+    #[doc = "          Close a loaded PDF page."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the loaded page."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_ClosePage(page: FPDF_PAGE);
+}
+extern "C" {
+    #[doc = " Function: FPDF_CloseDocument"]
+    #[doc = "          Close a loaded PDF document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_CloseDocument(document: FPDF_DOCUMENT);
+}
+extern "C" {
+    #[doc = " Function: FPDF_DeviceToPage"]
+    #[doc = "          Convert the screen coordinates of a point to page coordinates."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage."]
+    #[doc = "          start_x     -   Left pixel position of the display area in"]
+    #[doc = "                          device coordinates."]
+    #[doc = "          start_y     -   Top pixel position of the display area in device"]
+    #[doc = "                          coordinates."]
+    #[doc = "          size_x      -   Horizontal size (in pixels) for displaying the page."]
+    #[doc = "          size_y      -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "          rotate      -   Page orientation:"]
+    #[doc = "                            0 (normal)"]
+    #[doc = "                            1 (rotated 90 degrees clockwise)"]
+    #[doc = "                            2 (rotated 180 degrees)"]
+    #[doc = "                            3 (rotated 90 degrees counter-clockwise)"]
+    #[doc = "          device_x    -   X value in device coordinates to be converted."]
+    #[doc = "          device_y    -   Y value in device coordinates to be converted."]
+    #[doc = "          page_x      -   A pointer to a double receiving the converted X"]
+    #[doc = "                          value in page coordinates."]
+    #[doc = "          page_y      -   A pointer to a double receiving the converted Y"]
+    #[doc = "                          value in page coordinates."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns true if the conversion succeeds, and |page_x| and |page_y|"]
+    #[doc = "          successfully receives the converted coordinates."]
+    #[doc = " Comments:"]
+    #[doc = "          The page coordinate system has its origin at the left-bottom corner"]
+    #[doc = "          of the page, with the X-axis on the bottom going to the right, and"]
+    #[doc = "          the Y-axis on the left side going up."]
+    #[doc = ""]
+    #[doc = "          NOTE: this coordinate system can be altered when you zoom, scroll,"]
+    #[doc = "          or rotate a page, however, a point on the page should always have"]
+    #[doc = "          the same coordinate values in the page coordinate system."]
+    #[doc = ""]
+    #[doc = "          The device coordinate system is device dependent. For screen device,"]
+    #[doc = "          its origin is at the left-top corner of the window. However this"]
+    #[doc = "          origin can be altered by the Windows coordinate transformation"]
+    #[doc = "          utilities."]
+    #[doc = ""]
+    #[doc = "          You must make sure the start_x, start_y, size_x, size_y"]
+    #[doc = "          and rotate parameters have exactly same values as you used in"]
+    #[doc = "          the FPDF_RenderPage() function call."]
+    pub fn FPDF_DeviceToPage(
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        device_x: ::std::os::raw::c_int,
+        device_y: ::std::os::raw::c_int,
+        page_x: *mut f64,
+        page_y: *mut f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_PageToDevice"]
+    #[doc = "          Convert the page coordinates of a point to screen coordinates."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page. Returned by FPDF_LoadPage."]
+    #[doc = "          start_x     -   Left pixel position of the display area in"]
+    #[doc = "                          device coordinates."]
+    #[doc = "          start_y     -   Top pixel position of the display area in device"]
+    #[doc = "                          coordinates."]
+    #[doc = "          size_x      -   Horizontal size (in pixels) for displaying the page."]
+    #[doc = "          size_y      -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "          rotate      -   Page orientation:"]
+    #[doc = "                            0 (normal)"]
+    #[doc = "                            1 (rotated 90 degrees clockwise)"]
+    #[doc = "                            2 (rotated 180 degrees)"]
+    #[doc = "                            3 (rotated 90 degrees counter-clockwise)"]
+    #[doc = "          page_x      -   X value in page coordinates."]
+    #[doc = "          page_y      -   Y value in page coordinate."]
+    #[doc = "          device_x    -   A pointer to an integer receiving the result X"]
+    #[doc = "                          value in device coordinates."]
+    #[doc = "          device_y    -   A pointer to an integer receiving the result Y"]
+    #[doc = "                          value in device coordinates."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns true if the conversion succeeds, and |device_x| and"]
+    #[doc = "          |device_y| successfully receives the converted coordinates."]
+    #[doc = " Comments:"]
+    #[doc = "          See comments for FPDF_DeviceToPage()."]
+    pub fn FPDF_PageToDevice(
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+        device_x: *mut ::std::os::raw::c_int,
+        device_y: *mut ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_Create"]
+    #[doc = "          Create a device independent bitmap (FXDIB)."]
+    #[doc = " Parameters:"]
+    #[doc = "          width       -   The number of pixels in width for the bitmap."]
+    #[doc = "                          Must be greater than 0."]
+    #[doc = "          height      -   The number of pixels in height for the bitmap."]
+    #[doc = "                          Must be greater than 0."]
+    #[doc = "          alpha       -   A flag indicating whether the alpha channel is used."]
+    #[doc = "                          Non-zero for using alpha, zero for not using."]
+    #[doc = " Return value:"]
+    #[doc = "          The created bitmap handle, or NULL if a parameter error or out of"]
+    #[doc = "          memory."]
+    #[doc = " Comments:"]
+    #[doc = "          The bitmap always uses 4 bytes per pixel. The first byte is always"]
+    #[doc = "          double word aligned."]
+    #[doc = ""]
+    #[doc = "          The byte order is BGRx (the last byte unused if no alpha channel) or"]
+    #[doc = "          BGRA."]
+    #[doc = ""]
+    #[doc = "          The pixels in a horizontal line are stored side by side, with the"]
+    #[doc = "          left most pixel stored first (with lower memory address)."]
+    #[doc = "          Each line uses width * 4 bytes."]
+    #[doc = ""]
+    #[doc = "          Lines are stored one after another, with the top most line stored"]
+    #[doc = "          first. There is no gap between adjacent lines."]
+    #[doc = ""]
+    #[doc = "          This function allocates enough memory for holding all pixels in the"]
+    #[doc = "          bitmap, but it doesn't initialize the buffer. Applications can use"]
+    #[doc = "          FPDFBitmap_FillRect() to fill the bitmap using any color. If the OS"]
+    #[doc = "          allows it, this function can allocate up to 4 GB of memory."]
+    pub fn FPDFBitmap_Create(
+        width: ::std::os::raw::c_int,
+        height: ::std::os::raw::c_int,
+        alpha: ::std::os::raw::c_int,
+    ) -> FPDF_BITMAP;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_CreateEx"]
+    #[doc = "          Create a device independent bitmap (FXDIB)"]
+    #[doc = " Parameters:"]
+    #[doc = "          width       -   The number of pixels in width for the bitmap."]
+    #[doc = "                          Must be greater than 0."]
+    #[doc = "          height      -   The number of pixels in height for the bitmap."]
+    #[doc = "                          Must be greater than 0."]
+    #[doc = "          format      -   A number indicating for bitmap format, as defined"]
+    #[doc = "                          above."]
+    #[doc = "          first_scan  -   A pointer to the first byte of the first line if"]
+    #[doc = "                          using an external buffer. If this parameter is NULL,"]
+    #[doc = "                          then the a new buffer will be created."]
+    #[doc = "          stride      -   Number of bytes for each scan line, for external"]
+    #[doc = "                          buffer only."]
+    #[doc = " Return value:"]
+    #[doc = "          The bitmap handle, or NULL if parameter error or out of memory."]
+    #[doc = " Comments:"]
+    #[doc = "          Similar to FPDFBitmap_Create function, but allows for more formats"]
+    #[doc = "          and an external buffer is supported. The bitmap created by this"]
+    #[doc = "          function can be used in any place that a FPDF_BITMAP handle is"]
+    #[doc = "          required."]
+    #[doc = ""]
+    #[doc = "          If an external buffer is used, then the application should destroy"]
+    #[doc = "          the buffer by itself. FPDFBitmap_Destroy function will not destroy"]
+    #[doc = "          the buffer."]
+    pub fn FPDFBitmap_CreateEx(
+        width: ::std::os::raw::c_int,
+        height: ::std::os::raw::c_int,
+        format: ::std::os::raw::c_int,
+        first_scan: *mut ::std::os::raw::c_void,
+        stride: ::std::os::raw::c_int,
+    ) -> FPDF_BITMAP;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_GetFormat"]
+    #[doc = "          Get the format of the bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create"]
+    #[doc = "                          or FPDFImageObj_GetBitmap."]
+    #[doc = " Return value:"]
+    #[doc = "          The format of the bitmap."]
+    #[doc = " Comments:"]
+    #[doc = "          Only formats supported by FPDFBitmap_CreateEx are supported by this"]
+    #[doc = "          function; see the list of such formats above."]
+    pub fn FPDFBitmap_GetFormat(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_FillRect"]
+    #[doc = "          Fill a rectangle in a bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   The handle to the bitmap. Returned by"]
+    #[doc = "                          FPDFBitmap_Create."]
+    #[doc = "          left        -   The left position. Starting from 0 at the"]
+    #[doc = "                          left-most pixel."]
+    #[doc = "          top         -   The top position. Starting from 0 at the"]
+    #[doc = "                          top-most line."]
+    #[doc = "          width       -   Width in pixels to be filled."]
+    #[doc = "          height      -   Height in pixels to be filled."]
+    #[doc = "          color       -   A 32-bit value specifing the color, in 8888 ARGB"]
+    #[doc = "                          format."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    #[doc = " Comments:"]
+    #[doc = "          This function sets the color and (optionally) alpha value in the"]
+    #[doc = "          specified region of the bitmap."]
+    #[doc = ""]
+    #[doc = "          NOTE: If the alpha channel is used, this function does NOT"]
+    #[doc = "          composite the background with the source color, instead the"]
+    #[doc = "          background will be replaced by the source color and the alpha."]
+    #[doc = ""]
+    #[doc = "          If the alpha channel is not used, the alpha parameter is ignored."]
+    pub fn FPDFBitmap_FillRect(
+        bitmap: FPDF_BITMAP,
+        left: ::std::os::raw::c_int,
+        top: ::std::os::raw::c_int,
+        width: ::std::os::raw::c_int,
+        height: ::std::os::raw::c_int,
+        color: FPDF_DWORD,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_GetBuffer"]
+    #[doc = "          Get data buffer of a bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create"]
+    #[doc = "                          or FPDFImageObj_GetBitmap."]
+    #[doc = " Return value:"]
+    #[doc = "          The pointer to the first byte of the bitmap buffer."]
+    #[doc = " Comments:"]
+    #[doc = "          The stride may be more than width * number of bytes per pixel"]
+    #[doc = ""]
+    #[doc = "          Applications can use this function to get the bitmap buffer pointer,"]
+    #[doc = "          then manipulate any color and/or alpha values for any pixels in the"]
+    #[doc = "          bitmap."]
+    #[doc = ""]
+    #[doc = "          The data is in BGRA format. Where the A maybe unused if alpha was"]
+    #[doc = "          not specified."]
+    pub fn FPDFBitmap_GetBuffer(bitmap: FPDF_BITMAP) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_GetWidth"]
+    #[doc = "          Get width of a bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create"]
+    #[doc = "                          or FPDFImageObj_GetBitmap."]
+    #[doc = " Return value:"]
+    #[doc = "          The width of the bitmap in pixels."]
+    pub fn FPDFBitmap_GetWidth(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_GetHeight"]
+    #[doc = "          Get height of a bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create"]
+    #[doc = "                          or FPDFImageObj_GetBitmap."]
+    #[doc = " Return value:"]
+    #[doc = "          The height of the bitmap in pixels."]
+    pub fn FPDFBitmap_GetHeight(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_GetStride"]
+    #[doc = "          Get number of bytes for each line in the bitmap buffer."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create"]
+    #[doc = "                          or FPDFImageObj_GetBitmap."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of bytes for each line in the bitmap buffer."]
+    #[doc = " Comments:"]
+    #[doc = "          The stride may be more than width * number of bytes per pixel."]
+    pub fn FPDFBitmap_GetStride(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFBitmap_Destroy"]
+    #[doc = "          Destroy a bitmap and release all related buffers."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create"]
+    #[doc = "                          or FPDFImageObj_GetBitmap."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    #[doc = " Comments:"]
+    #[doc = "          This function will not destroy any external buffers provided when"]
+    #[doc = "          the bitmap was created."]
+    pub fn FPDFBitmap_Destroy(bitmap: FPDF_BITMAP);
+}
+extern "C" {
+    #[doc = " Function: FPDF_VIEWERREF_GetPrintScaling"]
+    #[doc = "          Whether the PDF document prefers to be scaled or not."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_VIEWERREF_GetPrintScaling(document: FPDF_DOCUMENT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_VIEWERREF_GetNumCopies"]
+    #[doc = "          Returns the number of copies to be printed."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of copies to be printed."]
+    pub fn FPDF_VIEWERREF_GetNumCopies(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_VIEWERREF_GetPrintPageRange"]
+    #[doc = "          Page numbers to initialize print dialog box when file is printed."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = " Return value:"]
+    #[doc = "          The print page range to be used for printing."]
+    pub fn FPDF_VIEWERREF_GetPrintPageRange(document: FPDF_DOCUMENT) -> FPDF_PAGERANGE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_VIEWERREF_GetPrintPageRangeCount"]
+    #[doc = "          Returns the number of elements in a FPDF_PAGERANGE."]
+    #[doc = " Parameters:"]
+    #[doc = "          pagerange   -   Handle to the page range."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of elements in the page range. Returns 0 on error."]
+    pub fn FPDF_VIEWERREF_GetPrintPageRangeCount(pagerange: FPDF_PAGERANGE) -> size_t;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_VIEWERREF_GetPrintPageRangeElement"]
+    #[doc = "          Returns an element from a FPDF_PAGERANGE."]
+    #[doc = " Parameters:"]
+    #[doc = "          pagerange   -   Handle to the page range."]
+    #[doc = "          index       -   Index of the element."]
+    #[doc = " Return value:"]
+    #[doc = "          The value of the element in the page range at a given index."]
+    #[doc = "          Returns -1 on error."]
+    pub fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+        pagerange: FPDF_PAGERANGE,
+        index: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_VIEWERREF_GetDuplex"]
+    #[doc = "          Returns the paper handling option to be used when printing from"]
+    #[doc = "          the print dialog."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = " Return value:"]
+    #[doc = "          The paper handling option to be used when printing."]
+    pub fn FPDF_VIEWERREF_GetDuplex(document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE;
+}
+extern "C" {
+    #[doc = " Function: FPDF_VIEWERREF_GetName"]
+    #[doc = "          Gets the contents for a viewer ref, with a given key. The value must"]
+    #[doc = "          be of type \"name\"."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = "          key         -   Name of the key in the viewer pref dictionary,"]
+    #[doc = "                          encoded in UTF-8."]
+    #[doc = "          buffer      -   A string to write the contents of the key to."]
+    #[doc = "          length      -   Length of the buffer."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of bytes in the contents, including the NULL terminator."]
+    #[doc = "          Thus if the return value is 0, then that indicates an error, such"]
+    #[doc = "          as when |document| is invalid or |buffer| is NULL. If |length| is"]
+    #[doc = "          less than the returned length, or |buffer| is NULL, |buffer| will"]
+    #[doc = "          not be modified."]
+    pub fn FPDF_VIEWERREF_GetName(
+        document: FPDF_DOCUMENT,
+        key: FPDF_BYTESTRING,
+        buffer: *mut ::std::os::raw::c_char,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FPDF_CountNamedDests"]
+    #[doc = "          Get the count of named destinations in the PDF document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to a document"]
+    #[doc = " Return value:"]
+    #[doc = "          The count of named destinations."]
+    pub fn FPDF_CountNamedDests(document: FPDF_DOCUMENT) -> FPDF_DWORD;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetNamedDestByName"]
+    #[doc = "          Get a the destination handle for the given name."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to the loaded document."]
+    #[doc = "          name        -   The name of a destination."]
+    #[doc = " Return value:"]
+    #[doc = "          The handle to the destination."]
+    pub fn FPDF_GetNamedDestByName(document: FPDF_DOCUMENT, name: FPDF_BYTESTRING) -> FPDF_DEST;
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetNamedDest"]
+    #[doc = "          Get the named destination by index."]
+    #[doc = " Parameters:"]
+    #[doc = "          document        -   Handle to a document"]
+    #[doc = "          index           -   The index of a named destination."]
+    #[doc = "          buffer          -   The buffer to store the destination name,"]
+    #[doc = "                              used as wchar_t*."]
+    #[doc = "          buflen [in/out] -   Size of the buffer in bytes on input,"]
+    #[doc = "                              length of the result in bytes on output"]
+    #[doc = "                              or -1 if the buffer is too small."]
+    #[doc = " Return value:"]
+    #[doc = "          The destination handle for a given index, or NULL if there is no"]
+    #[doc = "          named destination corresponding to |index|."]
+    #[doc = " Comments:"]
+    #[doc = "          Call this function twice to get the name of the named destination:"]
+    #[doc = "            1) First time pass in |buffer| as NULL and get buflen."]
+    #[doc = "            2) Second time pass in allocated |buffer| and buflen to retrieve"]
+    #[doc = "               |buffer|, which should be used as wchar_t*."]
+    #[doc = ""]
+    #[doc = "         If buflen is not sufficiently large, it will be set to -1 upon"]
+    #[doc = "         return."]
+    pub fn FPDF_GetNamedDest(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: *mut ::std::os::raw::c_long,
+    ) -> FPDF_DEST;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetXFAPacketCount"]
+    #[doc = "          Get the number of valid packets in the XFA entry."]
+    #[doc = " Parameters:"]
+    #[doc = "          document - Handle to the document."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of valid packets, or -1 on error."]
+    pub fn FPDF_GetXFAPacketCount(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetXFAPacketName"]
+    #[doc = "          Get the name of a packet in the XFA array."]
+    #[doc = " Parameters:"]
+    #[doc = "          document - Handle to the document."]
+    #[doc = "          index    - Index number of the packet. 0 for the first packet."]
+    #[doc = "          buffer   - Buffer for holding the name of the XFA packet."]
+    #[doc = "          buflen   - Length of |buffer| in bytes."]
+    #[doc = " Return value:"]
+    #[doc = "          The length of the packet name in bytes, or 0 on error."]
+    #[doc = ""]
+    #[doc = " |document| must be valid and |index| must be in the range [0, N), where N is"]
+    #[doc = " the value returned by FPDF_GetXFAPacketCount()."]
+    #[doc = " |buffer| is only modified if it is non-NULL and |buflen| is greater than or"]
+    #[doc = " equal to the length of the packet name. The packet name includes a"]
+    #[doc = " terminating NUL character. |buffer| is unmodified on error."]
+    pub fn FPDF_GetXFAPacketName(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetXFAPacketContent"]
+    #[doc = "          Get the content of a packet in the XFA array."]
+    #[doc = " Parameters:"]
+    #[doc = "          document   - Handle to the document."]
+    #[doc = "          index      - Index number of the packet. 0 for the first packet."]
+    #[doc = "          buffer     - Buffer for holding the content of the XFA packet."]
+    #[doc = "          buflen     - Length of |buffer| in bytes."]
+    #[doc = "          out_buflen - Pointer to the variable that will receive the minimum"]
+    #[doc = "                       buffer size needed to contain the content of the XFA"]
+    #[doc = "                       packet."]
+    #[doc = " Return value:"]
+    #[doc = "          Whether the operation succeeded or not."]
+    #[doc = ""]
+    #[doc = " |document| must be valid and |index| must be in the range [0, N), where N is"]
+    #[doc = " the value returned by FPDF_GetXFAPacketCount(). |out_buflen| must not be"]
+    #[doc = " NULL. When the aforementioned arguments are valid, the operation succeeds,"]
+    #[doc = " and |out_buflen| receives the content size. |buffer| is only modified if"]
+    #[doc = " |buffer| is non-null and long enough to contain the content. Callers must"]
+    #[doc = " check both the return value and the input |buflen| is no less than the"]
+    #[doc = " returned |out_buflen| before using the data in |buffer|."]
+    pub fn FPDF_GetXFAPacketContent(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        out_buflen: *mut ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
 pub const FPDF_FILEIDTYPE_FILEIDTYPE_PERMANENT: FPDF_FILEIDTYPE = 0;
 pub const FPDF_FILEIDTYPE_FILEIDTYPE_CHANGING: FPDF_FILEIDTYPE = 1;
 #[doc = " The file identifier entry type. See section 14.4 \"File Identifiers\" of the"]
@@ -1353,6 +2366,404 @@ fn bindgen_test_layout__FS_QUADPOINTSF() {
     );
 }
 pub type FS_QUADPOINTSF = _FS_QUADPOINTSF;
+extern "C" {
+    #[doc = " Get the first child of |bookmark|, or the first top-level bookmark item."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   bookmark - handle to the current bookmark. Pass NULL for the first top"]
+    #[doc = "              level item."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the first child of |bookmark| or the first top-level"]
+    #[doc = " bookmark item. NULL if no child or top-level bookmark found."]
+    pub fn FPDFBookmark_GetFirstChild(
+        document: FPDF_DOCUMENT,
+        bookmark: FPDF_BOOKMARK,
+    ) -> FPDF_BOOKMARK;
+}
+extern "C" {
+    #[doc = " Get the next sibling of |bookmark|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   bookmark - handle to the current bookmark."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the next sibling of |bookmark|, or NULL if this is the"]
+    #[doc = " last bookmark at this level."]
+    #[doc = ""]
+    #[doc = " Note that the caller is responsible for handling circular bookmark"]
+    #[doc = " references, as may arise from malformed documents."]
+    pub fn FPDFBookmark_GetNextSibling(
+        document: FPDF_DOCUMENT,
+        bookmark: FPDF_BOOKMARK,
+    ) -> FPDF_BOOKMARK;
+}
+extern "C" {
+    #[doc = " Get the title of |bookmark|."]
+    #[doc = ""]
+    #[doc = "   bookmark - handle to the bookmark."]
+    #[doc = "   buffer   - buffer for the title. May be NULL."]
+    #[doc = "   buflen   - the length of the buffer in bytes. May be 0."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the title, including the terminating NUL"]
+    #[doc = " character. The number of bytes is returned regardless of the |buffer| and"]
+    #[doc = " |buflen| parameters."]
+    #[doc = ""]
+    #[doc = " Regardless of the platform, the |buffer| is always in UTF-16LE encoding. The"]
+    #[doc = " string is terminated by a UTF16 NUL character. If |buflen| is less than the"]
+    #[doc = " required length, or |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDFBookmark_GetTitle(
+        bookmark: FPDF_BOOKMARK,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Find the bookmark with |title| in |document|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   title    - the UTF-16LE encoded Unicode title for which to search."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the bookmark, or NULL if |title| can't be found."]
+    #[doc = ""]
+    #[doc = " FPDFBookmark_Find() will always return the first bookmark found even if"]
+    #[doc = " multiple bookmarks have the same |title|."]
+    pub fn FPDFBookmark_Find(document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK;
+}
+extern "C" {
+    #[doc = " Get the destination associated with |bookmark|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   bookmark - handle to the bookmark."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the destination data, or NULL if no destination is"]
+    #[doc = " associated with |bookmark|."]
+    pub fn FPDFBookmark_GetDest(document: FPDF_DOCUMENT, bookmark: FPDF_BOOKMARK) -> FPDF_DEST;
+}
+extern "C" {
+    #[doc = " Get the action associated with |bookmark|."]
+    #[doc = ""]
+    #[doc = "   bookmark - handle to the bookmark."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the action data, or NULL if no action is associated"]
+    #[doc = " with |bookmark|."]
+    #[doc = " If this function returns a valid handle, it is valid as long as |bookmark| is"]
+    #[doc = " valid."]
+    #[doc = " If this function returns NULL, FPDFBookmark_GetDest() should be called to get"]
+    #[doc = " the |bookmark| destination data."]
+    pub fn FPDFBookmark_GetAction(bookmark: FPDF_BOOKMARK) -> FPDF_ACTION;
+}
+extern "C" {
+    #[doc = " Get the type of |action|."]
+    #[doc = ""]
+    #[doc = "   action - handle to the action."]
+    #[doc = ""]
+    #[doc = " Returns one of:"]
+    #[doc = "   PDFACTION_UNSUPPORTED"]
+    #[doc = "   PDFACTION_GOTO"]
+    #[doc = "   PDFACTION_REMOTEGOTO"]
+    #[doc = "   PDFACTION_URI"]
+    #[doc = "   PDFACTION_LAUNCH"]
+    pub fn FPDFAction_GetType(action: FPDF_ACTION) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the destination of |action|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   action   - handle to the action. |action| must be a |PDFACTION_GOTO| or"]
+    #[doc = "              |PDFACTION_REMOTEGOTO|."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the destination data, or NULL on error, typically"]
+    #[doc = " because the arguments were bad or the action was of the wrong type."]
+    #[doc = ""]
+    #[doc = " In the case of |PDFACTION_REMOTEGOTO|, you must first call"]
+    #[doc = " FPDFAction_GetFilePath(), then load the document at that path, then pass"]
+    #[doc = " the document handle from that document as |document| to FPDFAction_GetDest()."]
+    pub fn FPDFAction_GetDest(document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST;
+}
+extern "C" {
+    #[doc = " Get the file path of |action|."]
+    #[doc = ""]
+    #[doc = "   action - handle to the action. |action| must be a |PDFACTION_LAUNCH| or"]
+    #[doc = "            |PDFACTION_REMOTEGOTO|."]
+    #[doc = "   buffer - a buffer for output the path string. May be NULL."]
+    #[doc = "   buflen - the length of the buffer, in bytes. May be 0."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the file path, including the trailing NUL"]
+    #[doc = " character, or 0 on error, typically because the arguments were bad or the"]
+    #[doc = " action was of the wrong type."]
+    #[doc = ""]
+    #[doc = " Regardless of the platform, the |buffer| is always in UTF-8 encoding."]
+    #[doc = " If |buflen| is less than the returned length, or |buffer| is NULL, |buffer|"]
+    #[doc = " will not be modified."]
+    pub fn FPDFAction_GetFilePath(
+        action: FPDF_ACTION,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the URI path of |action|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   action   - handle to the action. Must be a |PDFACTION_URI|."]
+    #[doc = "   buffer   - a buffer for the path string. May be NULL."]
+    #[doc = "   buflen   - the length of the buffer, in bytes. May be 0."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the URI path, including the trailing NUL"]
+    #[doc = " character, or 0 on error, typically because the arguments were bad or the"]
+    #[doc = " action was of the wrong type."]
+    #[doc = ""]
+    #[doc = " The |buffer| is always encoded in 7-bit ASCII. If |buflen| is less than the"]
+    #[doc = " returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDFAction_GetURIPath(
+        document: FPDF_DOCUMENT,
+        action: FPDF_ACTION,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the page index of |dest|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   dest     - handle to the destination."]
+    #[doc = ""]
+    #[doc = " Returns the 0-based page index containing |dest|. Returns -1 on error."]
+    pub fn FPDFDest_GetDestPageIndex(
+        document: FPDF_DOCUMENT,
+        dest: FPDF_DEST,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the view (fit type) specified by |dest|."]
+    #[doc = ""]
+    #[doc = "   dest         - handle to the destination."]
+    #[doc = "   pNumParams   - receives the number of view parameters, which is at most 4."]
+    #[doc = "   pParams      - buffer to write the view parameters. Must be at least 4"]
+    #[doc = "                  FS_FLOATs long."]
+    #[doc = " Returns one of the PDFDEST_VIEW_* constants, PDFDEST_VIEW_UNKNOWN_MODE if"]
+    #[doc = " |dest| does not specify a view."]
+    pub fn FPDFDest_GetView(
+        dest: FPDF_DEST,
+        pNumParams: *mut ::std::os::raw::c_ulong,
+        pParams: *mut FS_FLOAT,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the (x, y, zoom) location of |dest| in the destination page, if the"]
+    #[doc = " destination is in [page /XYZ x y zoom] syntax."]
+    #[doc = ""]
+    #[doc = "   dest       - handle to the destination."]
+    #[doc = "   hasXVal    - out parameter; true if the x value is not null"]
+    #[doc = "   hasYVal    - out parameter; true if the y value is not null"]
+    #[doc = "   hasZoomVal - out parameter; true if the zoom value is not null"]
+    #[doc = "   x          - out parameter; the x coordinate, in page coordinates."]
+    #[doc = "   y          - out parameter; the y coordinate, in page coordinates."]
+    #[doc = "   zoom       - out parameter; the zoom value."]
+    #[doc = " Returns TRUE on successfully reading the /XYZ value."]
+    #[doc = ""]
+    #[doc = " Note the [x, y, zoom] values are only set if the corresponding hasXVal,"]
+    #[doc = " hasYVal or hasZoomVal flags are true."]
+    pub fn FPDFDest_GetLocationInPage(
+        dest: FPDF_DEST,
+        hasXVal: *mut FPDF_BOOL,
+        hasYVal: *mut FPDF_BOOL,
+        hasZoomVal: *mut FPDF_BOOL,
+        x: *mut FS_FLOAT,
+        y: *mut FS_FLOAT,
+        zoom: *mut FS_FLOAT,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Find a link at point (|x|,|y|) on |page|."]
+    #[doc = ""]
+    #[doc = "   page - handle to the document page."]
+    #[doc = "   x    - the x coordinate, in the page coordinate system."]
+    #[doc = "   y    - the y coordinate, in the page coordinate system."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the link, or NULL if no link found at the given point."]
+    #[doc = ""]
+    #[doc = " You can convert coordinates from screen coordinates to page coordinates using"]
+    #[doc = " FPDF_DeviceToPage()."]
+    pub fn FPDFLink_GetLinkAtPoint(page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK;
+}
+extern "C" {
+    #[doc = " Find the Z-order of link at point (|x|,|y|) on |page|."]
+    #[doc = ""]
+    #[doc = "   page - handle to the document page."]
+    #[doc = "   x    - the x coordinate, in the page coordinate system."]
+    #[doc = "   y    - the y coordinate, in the page coordinate system."]
+    #[doc = ""]
+    #[doc = " Returns the Z-order of the link, or -1 if no link found at the given point."]
+    #[doc = " Larger Z-order numbers are closer to the front."]
+    #[doc = ""]
+    #[doc = " You can convert coordinates from screen coordinates to page coordinates using"]
+    #[doc = " FPDF_DeviceToPage()."]
+    pub fn FPDFLink_GetLinkZOrderAtPoint(page: FPDF_PAGE, x: f64, y: f64) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get destination info for |link|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   link     - handle to the link."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the destination, or NULL if there is no destination"]
+    #[doc = " associated with the link. In this case, you should call FPDFLink_GetAction()"]
+    #[doc = " to retrieve the action associated with |link|."]
+    pub fn FPDFLink_GetDest(document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;
+}
+extern "C" {
+    #[doc = " Get action info for |link|."]
+    #[doc = ""]
+    #[doc = "   link - handle to the link."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the action associated to |link|, or NULL if no action."]
+    #[doc = " If this function returns a valid handle, it is valid as long as |link| is"]
+    #[doc = " valid."]
+    pub fn FPDFLink_GetAction(link: FPDF_LINK) -> FPDF_ACTION;
+}
+extern "C" {
+    #[doc = " Enumerates all the link annotations in |page|."]
+    #[doc = ""]
+    #[doc = "   page       - handle to the page."]
+    #[doc = "   start_pos  - the start position, should initially be 0 and is updated with"]
+    #[doc = "                the next start position on return."]
+    #[doc = "   link_annot - the link handle for |startPos|."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFLink_Enumerate(
+        page: FPDF_PAGE,
+        start_pos: *mut ::std::os::raw::c_int,
+        link_annot: *mut FPDF_LINK,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets FPDF_ANNOTATION object for |link_annot|."]
+    #[doc = ""]
+    #[doc = "   page       - handle to the page in which FPDF_LINK object is present."]
+    #[doc = "   link_annot - handle to link annotation."]
+    #[doc = ""]
+    #[doc = " Returns FPDF_ANNOTATION from the FPDF_LINK and NULL on failure,"]
+    #[doc = " if the input link annot or page is NULL."]
+    pub fn FPDFLink_GetAnnot(page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION;
+}
+extern "C" {
+    #[doc = " Get the rectangle for |link_annot|."]
+    #[doc = ""]
+    #[doc = "   link_annot - handle to the link annotation."]
+    #[doc = "   rect       - the annotation rectangle."]
+    #[doc = ""]
+    #[doc = " Returns true on success."]
+    pub fn FPDFLink_GetAnnotRect(link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the count of quadrilateral points to the |link_annot|."]
+    #[doc = ""]
+    #[doc = "   link_annot - handle to the link annotation."]
+    #[doc = ""]
+    #[doc = " Returns the count of quadrilateral points."]
+    pub fn FPDFLink_CountQuadPoints(link_annot: FPDF_LINK) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get the quadrilateral points for the specified |quad_index| in |link_annot|."]
+    #[doc = ""]
+    #[doc = "   link_annot  - handle to the link annotation."]
+    #[doc = "   quad_index  - the specified quad point index."]
+    #[doc = "   quad_points - receives the quadrilateral points."]
+    #[doc = ""]
+    #[doc = " Returns true on success."]
+    pub fn FPDFLink_GetQuadPoints(
+        link_annot: FPDF_LINK,
+        quad_index: ::std::os::raw::c_int,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Gets an additional-action from |page|."]
+    #[doc = ""]
+    #[doc = "   page      - handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "   aa_type   - the type of the page object's addtional-action, defined"]
+    #[doc = "               in public/fpdf_formfill.h"]
+    #[doc = ""]
+    #[doc = "   Returns the handle to the action data, or NULL if there is no"]
+    #[doc = "   additional-action of type |aa_type|."]
+    #[doc = "   If this function returns a valid handle, it is valid as long as |page| is"]
+    #[doc = "   valid."]
+    pub fn FPDF_GetPageAAction(page: FPDF_PAGE, aa_type: ::std::os::raw::c_int) -> FPDF_ACTION;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the file identifer defined in the trailer of |document|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   id_type  - the file identifier type to retrieve."]
+    #[doc = "   buffer   - a buffer for the file identifier. May be NULL."]
+    #[doc = "   buflen   - the length of the buffer, in bytes. May be 0."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the file identifier, including the NUL"]
+    #[doc = " terminator."]
+    #[doc = ""]
+    #[doc = " The |buffer| is always a byte string. The |buffer| is followed by a NUL"]
+    #[doc = " terminator.  If |buflen| is less than the returned length, or |buffer| is"]
+    #[doc = " NULL, |buffer| will not be modified."]
+    pub fn FPDF_GetFileIdentifier(
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get meta-data |tag| content from |document|."]
+    #[doc = ""]
+    #[doc = "   document - handle to the document."]
+    #[doc = "   tag      - the tag to retrieve. The tag can be one of:"]
+    #[doc = "                Title, Author, Subject, Keywords, Creator, Producer,"]
+    #[doc = "                CreationDate, or ModDate."]
+    #[doc = "              For detailed explanations of these tags and their respective"]
+    #[doc = "              values, please refer to PDF Reference 1.6, section 10.2.1,"]
+    #[doc = "              'Document Information Dictionary'."]
+    #[doc = "   buffer   - a buffer for the tag. May be NULL."]
+    #[doc = "   buflen   - the length of the buffer, in bytes. May be 0."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the tag, including trailing zeros."]
+    #[doc = ""]
+    #[doc = " The |buffer| is always encoded in UTF-16LE. The |buffer| is followed by two"]
+    #[doc = " bytes of zeros indicating the end of the string.  If |buflen| is less than"]
+    #[doc = " the returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    #[doc = ""]
+    #[doc = " For linearized files, FPDFAvail_IsFormAvail must be called before this, and"]
+    #[doc = " it must have returned PDF_FORM_AVAIL or PDF_FORM_NOTEXIST. Before that, there"]
+    #[doc = " is no guarantee the metadata has been loaded."]
+    pub fn FPDF_GetMetaText(
+        document: FPDF_DOCUMENT,
+        tag: FPDF_BYTESTRING,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the page label for |page_index| from |document|."]
+    #[doc = ""]
+    #[doc = "   document    - handle to the document."]
+    #[doc = "   page_index  - the 0-based index of the page."]
+    #[doc = "   buffer      - a buffer for the page label. May be NULL."]
+    #[doc = "   buflen      - the length of the buffer, in bytes. May be 0."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the page label, including trailing zeros."]
+    #[doc = ""]
+    #[doc = " The |buffer| is always encoded in UTF-16LE. The |buffer| is followed by two"]
+    #[doc = " bytes of zeros indicating the end of the string.  If |buflen| is less than"]
+    #[doc = " the returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDF_GetPageLabel(
+        document: FPDF_DOCUMENT,
+        page_index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _IPDF_JsPlatform {
@@ -1623,12 +3034,12 @@ pub struct _IPDF_JsPlatform {
 fn bindgen_test_layout__IPDF_JsPlatform() {
     assert_eq!(
         ::std::mem::size_of::<_IPDF_JsPlatform>(),
-        52usize,
+        104usize,
         concat!("Size of: ", stringify!(_IPDF_JsPlatform))
     );
     assert_eq!(
         ::std::mem::align_of::<_IPDF_JsPlatform>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_IPDF_JsPlatform))
     );
     assert_eq!(
@@ -1643,7 +3054,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).app_alert as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1653,7 +3064,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).app_beep as *const _ as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1663,7 +3074,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).app_response as *const _ as usize },
-        12usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1675,7 +3086,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
         unsafe {
             &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_getFilePath as *const _ as usize
         },
-        16usize,
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1685,7 +3096,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_mail as *const _ as usize },
-        20usize,
+        40usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1695,7 +3106,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_print as *const _ as usize },
-        24usize,
+        48usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1705,7 +3116,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_submitForm as *const _ as usize },
-        28usize,
+        56usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1715,7 +3126,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Doc_gotoPage as *const _ as usize },
-        32usize,
+        64usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1725,7 +3136,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).Field_browse as *const _ as usize },
-        36usize,
+        72usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1737,7 +3148,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
         unsafe {
             &(*(::std::ptr::null::<_IPDF_JsPlatform>())).m_pFormfillinfo as *const _ as usize
         },
-        40usize,
+        80usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1747,7 +3158,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IPDF_JsPlatform>())).m_isolate as *const _ as usize },
-        44usize,
+        88usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -1759,7 +3170,7 @@ fn bindgen_test_layout__IPDF_JsPlatform() {
         unsafe {
             &(*(::std::ptr::null::<_IPDF_JsPlatform>())).m_v8EmbedderSlot as *const _ as usize
         },
-        48usize,
+        96usize,
         concat!(
             "Offset of field: ",
             stringify!(_IPDF_JsPlatform),
@@ -2665,12 +4076,12 @@ pub struct _FPDF_FORMFILLINFO {
 fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     assert_eq!(
         ::std::mem::size_of::<_FPDF_FORMFILLINFO>(),
-        140usize,
+        280usize,
         concat!("Size of: ", stringify!(_FPDF_FORMFILLINFO))
     );
     assert_eq!(
         ::std::mem::align_of::<_FPDF_FORMFILLINFO>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_FPDF_FORMFILLINFO))
     );
     assert_eq!(
@@ -2685,7 +4096,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).Release as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2697,7 +4108,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_Invalidate as *const _ as usize
         },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2710,7 +4121,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OutputSelectedRect as *const _
                 as usize
         },
-        12usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2722,7 +4133,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetCursor as *const _ as usize
         },
-        16usize,
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2732,7 +4143,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetTimer as *const _ as usize },
-        20usize,
+        40usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2744,7 +4155,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_KillTimer as *const _ as usize
         },
-        24usize,
+        48usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2756,7 +4167,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetLocalTime as *const _ as usize
         },
-        28usize,
+        56usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2766,7 +4177,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OnChange as *const _ as usize },
-        32usize,
+        64usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2776,7 +4187,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetPage as *const _ as usize },
-        36usize,
+        72usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2788,7 +4199,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetCurrentPage as *const _ as usize
         },
-        40usize,
+        80usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2800,7 +4211,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetRotation as *const _ as usize
         },
-        44usize,
+        88usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2813,7 +4224,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_ExecuteNamedAction as *const _
                 as usize
         },
-        48usize,
+        96usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2826,7 +4237,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetTextFieldFocus as *const _
                 as usize
         },
-        52usize,
+        104usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2838,7 +4249,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DoURIAction as *const _ as usize
         },
-        56usize,
+        112usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2850,7 +4261,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DoGoToAction as *const _ as usize
         },
-        60usize,
+        120usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2862,7 +4273,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).m_pJsPlatform as *const _ as usize
         },
-        64usize,
+        128usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2872,7 +4283,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).xfa_disabled as *const _ as usize },
-        68usize,
+        136usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2884,7 +4295,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DisplayCaret as *const _ as usize
         },
-        72usize,
+        144usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2897,7 +4308,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetCurrentPageIndex as *const _
                 as usize
         },
-        76usize,
+        152usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2909,7 +4320,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_SetCurrentPage as *const _ as usize
         },
-        80usize,
+        160usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2919,7 +4330,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GotoURL as *const _ as usize },
-        84usize,
+        168usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2931,7 +4342,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetPageViewRect as *const _ as usize
         },
-        88usize,
+        176usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2943,7 +4354,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PageEvent as *const _ as usize
         },
-        92usize,
+        184usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2955,7 +4366,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PopupMenu as *const _ as usize
         },
-        96usize,
+        192usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2965,7 +4376,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OpenFile as *const _ as usize },
-        100usize,
+        200usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2975,7 +4386,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_EmailTo as *const _ as usize },
-        104usize,
+        208usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2985,7 +4396,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_UploadTo as *const _ as usize },
-        108usize,
+        216usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -2997,7 +4408,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetPlatform as *const _ as usize
         },
-        112usize,
+        224usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3009,7 +4420,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_GetLanguage as *const _ as usize
         },
-        116usize,
+        232usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3021,7 +4432,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DownloadFromURL as *const _ as usize
         },
-        120usize,
+        240usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3033,7 +4444,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PostRequestURL as *const _ as usize
         },
-        124usize,
+        248usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3045,7 +4456,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_PutRequestURL as *const _ as usize
         },
-        128usize,
+        256usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3057,7 +4468,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_OnFocusChange as *const _ as usize
         },
-        132usize,
+        264usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3070,7 +4481,7 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
             &(*(::std::ptr::null::<_FPDF_FORMFILLINFO>())).FFI_DoURIActionWithKeyboardModifier
                 as *const _ as usize
         },
-        136usize,
+        272usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_FORMFILLINFO),
@@ -3080,9 +4491,1869 @@ fn bindgen_test_layout__FPDF_FORMFILLINFO() {
     );
 }
 pub type FPDF_FORMFILLINFO = _FPDF_FORMFILLINFO;
+extern "C" {
+    #[doc = " Function: FPDFDOC_InitFormFillEnvironment"]
+    #[doc = "       Initialize form fill environment."]
+    #[doc = " Parameters:"]
+    #[doc = "       document        -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = "       pFormFillInfo   -   Pointer to a FPDF_FORMFILLINFO structure."]
+    #[doc = " Return Value:"]
+    #[doc = "       Handle to the form fill module, or NULL on failure."]
+    #[doc = " Comments:"]
+    #[doc = "       This function should be called before any form fill operation."]
+    pub fn FPDFDOC_InitFormFillEnvironment(
+        document: FPDF_DOCUMENT,
+        formInfo: *mut FPDF_FORMFILLINFO,
+    ) -> FPDF_FORMHANDLE;
+}
+extern "C" {
+    #[doc = " Function: FPDFDOC_ExitFormFillEnvironment"]
+    #[doc = "       Take ownership of |hHandle| and exit form fill environment."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This function is a no-op when |hHandle| is null."]
+    pub fn FPDFDOC_ExitFormFillEnvironment(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_OnAfterLoadPage"]
+    #[doc = "       This method is required for implementing all the form related"]
+    #[doc = "       functions. Should be invoked after user successfully loaded a"]
+    #[doc = "       PDF page, and FPDFDOC_InitFormFillEnvironment() has been invoked."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub fn FORM_OnAfterLoadPage(page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_OnBeforeClosePage"]
+    #[doc = "       This method is required for implementing all the form related"]
+    #[doc = "       functions. Should be invoked before user closes the PDF page."]
+    #[doc = " Parameters:"]
+    #[doc = "        page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "        hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                        FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "        None."]
+    pub fn FORM_OnBeforeClosePage(page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoDocumentJSAction"]
+    #[doc = "       This method is required for performing document-level JavaScript"]
+    #[doc = "       actions. It should be invoked after the PDF document has been loaded."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       If there is document-level JavaScript action embedded in the"]
+    #[doc = "       document, this method will execute the JavaScript action. Otherwise,"]
+    #[doc = "       the method will do nothing."]
+    pub fn FORM_DoDocumentJSAction(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoDocumentOpenAction"]
+    #[doc = "       This method is required for performing open-action when the document"]
+    #[doc = "       is opened."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This method will do nothing if there are no open-actions embedded"]
+    #[doc = "       in the document."]
+    pub fn FORM_DoDocumentOpenAction(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoDocumentAAction"]
+    #[doc = "       This method is required for performing the document's"]
+    #[doc = "       additional-action."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "       aaType      -   The type of the additional-actions which defined"]
+    #[doc = "                       above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This method will do nothing if there is no document"]
+    #[doc = "       additional-action corresponding to the specified |aaType|."]
+    pub fn FORM_DoDocumentAAction(hHandle: FPDF_FORMHANDLE, aaType: ::std::os::raw::c_int);
+}
+extern "C" {
+    #[doc = " Function: FORM_DoPageAAction"]
+    #[doc = "       This method is required for performing the page object's"]
+    #[doc = "       additional-action when opened or closed."]
+    #[doc = " Parameters:"]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       aaType      -   The type of the page object's additional-actions"]
+    #[doc = "                       which defined above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This method will do nothing if no additional-action corresponding"]
+    #[doc = "       to the specified |aaType| exists."]
+    pub fn FORM_DoPageAAction(
+        page: FPDF_PAGE,
+        hHandle: FPDF_FORMHANDLE,
+        aaType: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Function: FORM_OnMouseMove"]
+    #[doc = "       Call this member function when the mouse cursor moves."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnMouseMove(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_OnMouseWheel"]
+    #[doc = "       Call this member function when the user scrolls the mouse wheel."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_coord  -   Specifies the coordinates of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       delta_x     -   Specifies the amount of wheel movement on the x-axis,"]
+    #[doc = "                       in units of platform-agnostic wheel deltas. Negative"]
+    #[doc = "                       values mean left."]
+    #[doc = "       delta_y     -   Specifies the amount of wheel movement on the y-axis,"]
+    #[doc = "                       in units of platform-agnostic wheel deltas. Negative"]
+    #[doc = "                       values mean down."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    #[doc = " Comments:"]
+    #[doc = "       For |delta_x| and |delta_y|, the caller must normalize"]
+    #[doc = "       platform-specific wheel deltas. e.g. On Windows, a delta value of 240"]
+    #[doc = "       for a WM_MOUSEWHEEL event normalizes to 2, since Windows defines"]
+    #[doc = "       WHEEL_DELTA as 120."]
+    pub fn FORM_OnMouseWheel(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_coord: *const FS_POINTF,
+        delta_x: ::std::os::raw::c_int,
+        delta_y: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnFocus"]
+    #[doc = "       This function focuses the form annotation at a given point. If the"]
+    #[doc = "       annotation at the point already has focus, nothing happens. If there"]
+    #[doc = "       is no annotation at the point, removes form focus."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if there is an annotation at the given point and it has focus."]
+    pub fn FORM_OnFocus(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnLButtonDown"]
+    #[doc = "       Call this member function when the user presses the left"]
+    #[doc = "       mouse button."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnLButtonDown(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnRButtonDown"]
+    #[doc = "       Same as above, execpt for the right mouse button."]
+    #[doc = " Comments:"]
+    #[doc = "       At the present time, has no effect except in XFA builds, but is"]
+    #[doc = "       included for the sake of symmetry."]
+    pub fn FORM_OnRButtonDown(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnLButtonUp"]
+    #[doc = "       Call this member function when the user releases the left"]
+    #[doc = "       mouse button."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in device."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in device."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnLButtonUp(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnRButtonUp"]
+    #[doc = "       Same as above, execpt for the right mouse button."]
+    #[doc = " Comments:"]
+    #[doc = "       At the present time, has no effect except in XFA builds, but is"]
+    #[doc = "       included for the sake of symmetry."]
+    pub fn FORM_OnRButtonUp(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnLButtonDoubleClick"]
+    #[doc = "       Call this member function when the user double clicks the"]
+    #[doc = "       left mouse button."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       modifier    -   Indicates whether various virtual keys are down."]
+    #[doc = "       page_x      -   Specifies the x-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = "       page_y      -   Specifies the y-coordinate of the cursor in PDF user"]
+    #[doc = "                       space."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnLButtonDoubleClick(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: ::std::os::raw::c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnKeyDown"]
+    #[doc = "       Call this member function when a nonsystem key is pressed."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, aseturned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       nKeyCode    -   The virtual-key code of the given key (see"]
+    #[doc = "                       fpdf_fwlevent.h for virtual key codes)."]
+    #[doc = "       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key"]
+    #[doc = "                       flag values)."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnKeyDown(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: ::std::os::raw::c_int,
+        modifier: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnKeyUp"]
+    #[doc = "       Call this member function when a nonsystem key is released."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       nKeyCode    -   The virtual-key code of the given key (see"]
+    #[doc = "                       fpdf_fwlevent.h for virtual key codes)."]
+    #[doc = "       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key"]
+    #[doc = "                       flag values)."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnKeyUp(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: ::std::os::raw::c_int,
+        modifier: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_OnChar"]
+    #[doc = "       Call this member function when a keystroke translates to a"]
+    #[doc = "       nonsystem character."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       nChar       -   The character code value itself."]
+    #[doc = "       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key"]
+    #[doc = "                       flag values)."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_OnChar(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nChar: ::std::os::raw::c_int,
+        modifier: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_GetFocusedText"]
+    #[doc = "       Call this function to obtain the text within the current focused"]
+    #[doc = "       field, if any."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       buffer      -   Buffer for holding the form text, encoded in"]
+    #[doc = "                       UTF-16LE. If NULL, |buffer| is not modified."]
+    #[doc = "       buflen      -   Length of |buffer| in bytes. If |buflen| is less"]
+    #[doc = "                       than the length of the form text string, |buffer| is"]
+    #[doc = "                       not modified."]
+    #[doc = " Return Value:"]
+    #[doc = "       Length in bytes for the text in the focused field."]
+    pub fn FORM_GetFocusedText(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FORM_GetSelectedText"]
+    #[doc = "       Call this function to obtain selected text within a form text"]
+    #[doc = "       field or form combobox text field."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       buffer      -   Buffer for holding the selected text, encoded in"]
+    #[doc = "                       UTF-16LE. If NULL, |buffer| is not modified."]
+    #[doc = "       buflen      -   Length of |buffer| in bytes. If |buflen| is less"]
+    #[doc = "                       than the length of the selected text string,"]
+    #[doc = "                       |buffer| is not modified."]
+    #[doc = " Return Value:"]
+    #[doc = "       Length in bytes of selected text in form text field or form combobox"]
+    #[doc = "       text field."]
+    pub fn FORM_GetSelectedText(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FORM_ReplaceSelection"]
+    #[doc = "       Call this function to replace the selected text in a form"]
+    #[doc = "       text field or user-editable form combobox text field with another"]
+    #[doc = "       text string (which can be empty or non-empty). If there is no"]
+    #[doc = "       selected text, this function will append the replacement text after"]
+    #[doc = "       the current caret position."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as Returned by FPDF_LoadPage()."]
+    #[doc = "       wsText      -   The text to be inserted, in UTF-16LE format."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub fn FORM_ReplaceSelection(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        wsText: FPDF_WIDESTRING,
+    );
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_SelectAllText"]
+    #[doc = "       Call this function to select all the text within the currently focused"]
+    #[doc = "       form text field or form combobox text field."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       Whether the operation succeeded or not."]
+    pub fn FORM_SelectAllText(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_CanUndo"]
+    #[doc = "       Find out if it is possible for the current focused widget in a given"]
+    #[doc = "       form to perform an undo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if it is possible to undo."]
+    pub fn FORM_CanUndo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_CanRedo"]
+    #[doc = "       Find out if it is possible for the current focused widget in a given"]
+    #[doc = "       form to perform a redo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if it is possible to redo."]
+    pub fn FORM_CanRedo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_Undo"]
+    #[doc = "       Make the current focussed widget perform an undo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if the undo operation succeeded."]
+    pub fn FORM_Undo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_Redo"]
+    #[doc = "       Make the current focussed widget perform a redo operation."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True if the redo operation succeeded."]
+    pub fn FORM_Redo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FORM_ForceToKillFocus."]
+    #[doc = "       Call this member function to force to kill the focus of the form"]
+    #[doc = "       field which has focus. If it would kill the focus of a form field,"]
+    #[doc = "       save the value of form field if was changed by theuser."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    pub fn FORM_ForceToKillFocus(hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FORM_GetFocusedAnnot."]
+    #[doc = "       Call this member function to get the currently focused annotation."]
+    #[doc = " Parameters:"]
+    #[doc = "       handle      -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       page_index  -   Buffer to hold the index number of the page which"]
+    #[doc = "                       contains the focused annotation. 0 for the first page."]
+    #[doc = "                       Can't be NULL."]
+    #[doc = "       annot       -   Buffer to hold the focused annotation. Can't be NULL."]
+    #[doc = " Return Value:"]
+    #[doc = "       On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = "       false and leave the out parameters unmodified."]
+    #[doc = " Comments:"]
+    #[doc = "       Not currently supported for XFA forms - will report no focused"]
+    #[doc = "       annotation."]
+    #[doc = "       Must call FPDFPage_CloseAnnot() when the annotation returned in |annot|"]
+    #[doc = "       by this function is no longer needed."]
+    #[doc = "       This will return true and set |page_index| to -1 and |annot| to NULL, if"]
+    #[doc = "       there is no focused annotation."]
+    pub fn FORM_GetFocusedAnnot(
+        handle: FPDF_FORMHANDLE,
+        page_index: *mut ::std::os::raw::c_int,
+        annot: *mut FPDF_ANNOTATION,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FORM_SetFocusedAnnot."]
+    #[doc = "       Call this member function to set the currently focused annotation."]
+    #[doc = " Parameters:"]
+    #[doc = "       handle      -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       annot       -   Handle to an annotation."]
+    #[doc = " Return Value:"]
+    #[doc = "       True indicates success; otherwise false."]
+    #[doc = " Comments:"]
+    #[doc = "       |annot| can't be NULL. To kill focus, use FORM_ForceToKillFocus()"]
+    #[doc = "       instead."]
+    pub fn FORM_SetFocusedAnnot(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFPage_HasFormFieldAtPoint"]
+    #[doc = "     Get the form field type by point."]
+    #[doc = " Parameters:"]
+    #[doc = "     hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                     FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "     page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = "     page_x      -   X position in PDF \"user space\"."]
+    #[doc = "     page_y      -   Y position in PDF \"user space\"."]
+    #[doc = " Return Value:"]
+    #[doc = "     Return the type of the form field; -1 indicates no field."]
+    #[doc = "     See field types above."]
+    pub fn FPDFPage_HasFormFieldAtPoint(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFPage_FormFieldZOrderAtPoint"]
+    #[doc = "     Get the form field z-order by point."]
+    #[doc = " Parameters:"]
+    #[doc = "     hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                     FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "     page        -   Handle to the page. Returned by FPDF_LoadPage()."]
+    #[doc = "     page_x      -   X position in PDF \"user space\"."]
+    #[doc = "     page_y      -   Y position in PDF \"user space\"."]
+    #[doc = " Return Value:"]
+    #[doc = "     Return the z-order of the form field; -1 indicates no field."]
+    #[doc = "     Higher numbers are closer to the front."]
+    pub fn FPDFPage_FormFieldZOrderAtPoint(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_SetFormFieldHighlightColor"]
+    #[doc = "       Set the highlight color of the specified (or all) form fields"]
+    #[doc = "       in the document."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       doc         -   Handle to the document, as returned by"]
+    #[doc = "                       FPDF_LoadDocument()."]
+    #[doc = "       fieldType   -   A 32-bit integer indicating the type of a form"]
+    #[doc = "                       field (defined above)."]
+    #[doc = "       color       -   The highlight color of the form field. Constructed by"]
+    #[doc = "                       0xxxrrggbb."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       When the parameter fieldType is set to FPDF_FORMFIELD_UNKNOWN, the"]
+    #[doc = "       highlight color will be applied to all the form fields in the"]
+    #[doc = "       document."]
+    #[doc = "       Please refresh the client window to show the highlight immediately"]
+    #[doc = "       if necessary."]
+    pub fn FPDF_SetFormFieldHighlightColor(
+        hHandle: FPDF_FORMHANDLE,
+        fieldType: ::std::os::raw::c_int,
+        color: ::std::os::raw::c_ulong,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_SetFormFieldHighlightAlpha"]
+    #[doc = "       Set the transparency of the form field highlight color in the"]
+    #[doc = "       document."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       doc         -   Handle to the document, as returaned by"]
+    #[doc = "                       FPDF_LoadDocument()."]
+    #[doc = "       alpha       -   The transparency of the form field highlight color,"]
+    #[doc = "                       between 0-255."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    pub fn FPDF_SetFormFieldHighlightAlpha(
+        hHandle: FPDF_FORMHANDLE,
+        alpha: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_RemoveFormFieldHighlight"]
+    #[doc = "       Remove the form field highlight color in the document."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle     -   Handle to the form fill module, as returned by"]
+    #[doc = "                       FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       Please refresh the client window to remove the highlight immediately"]
+    #[doc = "       if necessary."]
+    pub fn FPDF_RemoveFormFieldHighlight(hHandle: FPDF_FORMHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FPDF_FFLDraw"]
+    #[doc = "       Render FormFields and popup window on a page to a device independent"]
+    #[doc = "       bitmap."]
+    #[doc = " Parameters:"]
+    #[doc = "       hHandle      -   Handle to the form fill module, as returned by"]
+    #[doc = "                        FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "       bitmap       -   Handle to the device independent bitmap (as the"]
+    #[doc = "                        output buffer). Bitmap handles can be created by"]
+    #[doc = "                        FPDFBitmap_Create()."]
+    #[doc = "       page         -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "       start_x      -   Left pixel position of the display area in the"]
+    #[doc = "                        device coordinates."]
+    #[doc = "       start_y      -   Top pixel position of the display area in the device"]
+    #[doc = "                        coordinates."]
+    #[doc = "       size_x       -   Horizontal size (in pixels) for displaying the page."]
+    #[doc = "       size_y       -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "       rotate       -   Page orientation: 0 (normal), 1 (rotated 90 degrees"]
+    #[doc = "                        clockwise), 2 (rotated 180 degrees), 3 (rotated 90"]
+    #[doc = "                        degrees counter-clockwise)."]
+    #[doc = "       flags        -   0 for normal display, or combination of flags"]
+    #[doc = "                        defined above."]
+    #[doc = " Return Value:"]
+    #[doc = "       None."]
+    #[doc = " Comments:"]
+    #[doc = "       This function is designed to render annotations that are"]
+    #[doc = "       user-interactive, which are widget annotations (for FormFields) and"]
+    #[doc = "       popup annotations."]
+    #[doc = "       With the FPDF_ANNOT flag, this function will render a popup annotation"]
+    #[doc = "       when users mouse-hover on a non-widget annotation. Regardless of"]
+    #[doc = "       FPDF_ANNOT flag, this function will always render widget annotations"]
+    #[doc = "       for FormFields."]
+    #[doc = "       In order to implement the FormFill functions, implementation should"]
+    #[doc = "       call this function after rendering functions, such as"]
+    #[doc = "       FPDF_RenderPageBitmap() or FPDF_RenderPageBitmap_Start(), have"]
+    #[doc = "       finished rendering the page contents."]
+    pub fn FPDF_FFLDraw(
+        hHandle: FPDF_FORMHANDLE,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        flags: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FPDF_GetFormType"]
+    #[doc = "           Returns the type of form contained in the PDF document."]
+    #[doc = " Parameters:"]
+    #[doc = "           document - Handle to document."]
+    #[doc = " Return Value:"]
+    #[doc = "           Integer value representing one of the FORMTYPE_ values."]
+    #[doc = " Comments:"]
+    #[doc = "           If |document| is NULL, then the return value is FORMTYPE_NONE."]
+    pub fn FPDF_GetFormType(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_SetIndexSelected"]
+    #[doc = "           Selects/deselects the value at the given |index| of the focused"]
+    #[doc = "           annotation."]
+    #[doc = " Parameters:"]
+    #[doc = "           hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                           FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "           page        -   Handle to the page. Returned by FPDF_LoadPage"]
+    #[doc = "           index       -   0-based index of value to be set as"]
+    #[doc = "                           selected/unselected"]
+    #[doc = "           selected    -   true to select, false to deselect"]
+    #[doc = " Return Value:"]
+    #[doc = "           TRUE if the operation succeeded."]
+    #[doc = "           FALSE if the operation failed or widget is not a supported type."]
+    #[doc = " Comments:"]
+    #[doc = "           Intended for use with listbox/combobox widget types. Comboboxes"]
+    #[doc = "           have at most a single value selected at a time which cannot be"]
+    #[doc = "           deselected. Deselect on a combobox is a no-op that returns false."]
+    #[doc = "           Default implementation is a no-op that will return false for"]
+    #[doc = "           other types."]
+    #[doc = "           Not currently supported for XFA forms - will return false."]
+    pub fn FORM_SetIndexSelected(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: ::std::os::raw::c_int,
+        selected: FPDF_BOOL,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API"]
+    #[doc = " Function: FORM_IsIndexSelected"]
+    #[doc = "           Returns whether or not the value at |index| of the focused"]
+    #[doc = "           annotation is currently selected."]
+    #[doc = " Parameters:"]
+    #[doc = "           hHandle     -   Handle to the form fill module. Returned by"]
+    #[doc = "                           FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "           page        -   Handle to the page. Returned by FPDF_LoadPage"]
+    #[doc = "           index       -   0-based Index of value to check"]
+    #[doc = " Return Value:"]
+    #[doc = "           TRUE if value at |index| is currently selected."]
+    #[doc = "           FALSE if value at |index| is not selected or widget is not a"]
+    #[doc = "           supported type."]
+    #[doc = " Comments:"]
+    #[doc = "           Intended for use with listbox/combobox widget types. Default"]
+    #[doc = "           implementation is a no-op that will return false for other types."]
+    #[doc = "           Not currently supported for XFA forms - will return false."]
+    pub fn FORM_IsIndexSelected(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_LoadXFA"]
+    #[doc = "          If the document consists of XFA fields, call this method to"]
+    #[doc = "          attempt to load XFA fields."]
+    #[doc = " Parameters:"]
+    #[doc = "          document     -   Handle to document from FPDF_LoadDocument()."]
+    #[doc = " Return Value:"]
+    #[doc = "          TRUE upon success, otherwise FALSE. If XFA support is not built"]
+    #[doc = "          into PDFium, performs no action and always returns FALSE."]
+    pub fn FPDF_LoadXFA(document: FPDF_DOCUMENT) -> FPDF_BOOL;
+}
 pub const FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color: FPDFANNOT_COLORTYPE = 0;
 pub const FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor: FPDFANNOT_COLORTYPE = 1;
 pub type FPDFANNOT_COLORTYPE = ::std::os::raw::c_uint;
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Check if an annotation subtype is currently supported for creation."]
+    #[doc = " Currently supported subtypes:"]
+    #[doc = "    - circle"]
+    #[doc = "    - freetext"]
+    #[doc = "    - highlight"]
+    #[doc = "    - ink"]
+    #[doc = "    - link"]
+    #[doc = "    - popup"]
+    #[doc = "    - square,"]
+    #[doc = "    - squiggly"]
+    #[doc = "    - stamp"]
+    #[doc = "    - strikeout"]
+    #[doc = "    - text"]
+    #[doc = "    - underline"]
+    #[doc = ""]
+    #[doc = "   subtype   - the subtype to be checked."]
+    #[doc = ""]
+    #[doc = " Returns true if this subtype supported."]
+    pub fn FPDFAnnot_IsSupportedSubtype(subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Create an annotation in |page| of the subtype |subtype|. If the specified"]
+    #[doc = " subtype is illegal or unsupported, then a new annotation will not be created."]
+    #[doc = " Must call FPDFPage_CloseAnnot() when the annotation returned by this"]
+    #[doc = " function is no longer needed."]
+    #[doc = ""]
+    #[doc = "   page      - handle to a page."]
+    #[doc = "   subtype   - the subtype of the new annotation."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the new annotation object, or NULL on failure."]
+    pub fn FPDFPage_CreateAnnot(
+        page: FPDF_PAGE,
+        subtype: FPDF_ANNOTATION_SUBTYPE,
+    ) -> FPDF_ANNOTATION;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of annotations in |page|."]
+    #[doc = ""]
+    #[doc = "   page   - handle to a page."]
+    #[doc = ""]
+    #[doc = " Returns the number of annotations in |page|."]
+    pub fn FPDFPage_GetAnnotCount(page: FPDF_PAGE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get annotation in |page| at |index|. Must call FPDFPage_CloseAnnot() when the"]
+    #[doc = " annotation returned by this function is no longer needed."]
+    #[doc = ""]
+    #[doc = "   page  - handle to a page."]
+    #[doc = "   index - the index of the annotation."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the annotation object, or NULL on failure."]
+    pub fn FPDFPage_GetAnnot(page: FPDF_PAGE, index: ::std::os::raw::c_int) -> FPDF_ANNOTATION;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the index of |annot| in |page|. This is the opposite of"]
+    #[doc = " FPDFPage_GetAnnot()."]
+    #[doc = ""]
+    #[doc = "   page  - handle to the page that the annotation is on."]
+    #[doc = "   annot - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns the index of |annot|, or -1 on failure."]
+    pub fn FPDFPage_GetAnnotIndex(page: FPDF_PAGE, annot: FPDF_ANNOTATION)
+        -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Close an annotation. Must be called when the annotation returned by"]
+    #[doc = " FPDFPage_CreateAnnot() or FPDFPage_GetAnnot() is no longer needed. This"]
+    #[doc = " function does not remove the annotation from the document."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    pub fn FPDFPage_CloseAnnot(annot: FPDF_ANNOTATION);
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Remove the annotation in |page| at |index|."]
+    #[doc = ""]
+    #[doc = "   page  - handle to a page."]
+    #[doc = "   index - the index of the annotation."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFPage_RemoveAnnot(page: FPDF_PAGE, index: ::std::os::raw::c_int) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the subtype of an annotation."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns the annotation subtype."]
+    pub fn FPDFAnnot_GetSubtype(annot: FPDF_ANNOTATION) -> FPDF_ANNOTATION_SUBTYPE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Check if an annotation subtype is currently supported for object extraction,"]
+    #[doc = " update, and removal."]
+    #[doc = " Currently supported subtypes: ink and stamp."]
+    #[doc = ""]
+    #[doc = "   subtype   - the subtype to be checked."]
+    #[doc = ""]
+    #[doc = " Returns true if this subtype supported."]
+    pub fn FPDFAnnot_IsObjectSupportedSubtype(subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Update |obj| in |annot|. |obj| must be in |annot| already and must have"]
+    #[doc = " been retrieved by FPDFAnnot_GetObject(). Currently, only ink and stamp"]
+    #[doc = " annotations are supported by this API. Also note that only path, image, and"]
+    #[doc = " text objects have APIs for modification; see FPDFPath_*(), FPDFText_*(), and"]
+    #[doc = " FPDFImageObj_*()."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   obj    - handle to the object that |annot| needs to update."]
+    #[doc = ""]
+    #[doc = " Return true if successful."]
+    pub fn FPDFAnnot_UpdateObject(annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Add a new InkStroke, represented by an array of points, to the InkList of"]
+    #[doc = " |annot|. The API creates an InkList if one doesn't already exist in |annot|."]
+    #[doc = " This API works only for ink annotations. Please refer to ISO 32000-1:2008"]
+    #[doc = " spec, section 12.5.6.13."]
+    #[doc = ""]
+    #[doc = "   annot       - handle to an annotation."]
+    #[doc = "   points      - pointer to a FS_POINTF array representing input points."]
+    #[doc = "   point_count - number of elements in |points| array. This should not exceed"]
+    #[doc = "                 the maximum value that can be represented by an int32_t)."]
+    #[doc = ""]
+    #[doc = " Returns the 0-based index at which the new InkStroke is added in the InkList"]
+    #[doc = " of the |annot|. Returns -1 on failure."]
+    pub fn FPDFAnnot_AddInkStroke(
+        annot: FPDF_ANNOTATION,
+        points: *const FS_POINTF,
+        point_count: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Removes an InkList in |annot|."]
+    #[doc = " This API works only for ink annotations."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Return true on successful removal of /InkList entry from context of the"]
+    #[doc = " non-null ink |annot|. Returns false on failure."]
+    pub fn FPDFAnnot_RemoveInkList(annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Add |obj| to |annot|. |obj| must have been created by"]
+    #[doc = " FPDFPageObj_CreateNew{Path|Rect}() or FPDFPageObj_New{Text|Image}Obj(), and"]
+    #[doc = " will be owned by |annot|. Note that an |obj| cannot belong to more than one"]
+    #[doc = " |annot|. Currently, only ink and stamp annotations are supported by this API."]
+    #[doc = " Also note that only path, image, and text objects have APIs for creation."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   obj    - handle to the object that is to be added to |annot|."]
+    #[doc = ""]
+    #[doc = " Return true if successful."]
+    pub fn FPDFAnnot_AppendObject(annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the total number of objects in |annot|, including path objects, text"]
+    #[doc = " objects, external objects, image objects, and shading objects."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns the number of objects in |annot|."]
+    pub fn FPDFAnnot_GetObjectCount(annot: FPDF_ANNOTATION) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the object in |annot| at |index|."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   index  - the index of the object."]
+    #[doc = ""]
+    #[doc = " Return a handle to the object, or NULL on failure."]
+    pub fn FPDFAnnot_GetObject(
+        annot: FPDF_ANNOTATION,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Remove the object in |annot| at |index|."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   index  - the index of the object to be removed."]
+    #[doc = ""]
+    #[doc = " Return true if successful."]
+    pub fn FPDFAnnot_RemoveObject(
+        annot: FPDF_ANNOTATION,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the color of an annotation. Fails when called on annotations with"]
+    #[doc = " appearance streams already defined; instead use"]
+    #[doc = " FPDFPath_Set{Stroke|Fill}Color()."]
+    #[doc = ""]
+    #[doc = "   annot    - handle to an annotation."]
+    #[doc = "   type     - type of the color to be set."]
+    #[doc = "   R, G, B  - buffer to hold the RGB value of the color. Ranges from 0 to 255."]
+    #[doc = "   A        - buffer to hold the opacity. Ranges from 0 to 255."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetColor(
+        annot: FPDF_ANNOTATION,
+        type_: FPDFANNOT_COLORTYPE,
+        R: ::std::os::raw::c_uint,
+        G: ::std::os::raw::c_uint,
+        B: ::std::os::raw::c_uint,
+        A: ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the color of an annotation. If no color is specified, default to yellow"]
+    #[doc = " for highlight annotation, black for all else. Fails when called on"]
+    #[doc = " annotations with appearance streams already defined; instead use"]
+    #[doc = " FPDFPath_Get{Stroke|Fill}Color()."]
+    #[doc = ""]
+    #[doc = "   annot    - handle to an annotation."]
+    #[doc = "   type     - type of the color requested."]
+    #[doc = "   R, G, B  - buffer to hold the RGB value of the color. Ranges from 0 to 255."]
+    #[doc = "   A        - buffer to hold the opacity. Ranges from 0 to 255."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_GetColor(
+        annot: FPDF_ANNOTATION,
+        type_: FPDFANNOT_COLORTYPE,
+        R: *mut ::std::os::raw::c_uint,
+        G: *mut ::std::os::raw::c_uint,
+        B: *mut ::std::os::raw::c_uint,
+        A: *mut ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Check if the annotation is of a type that has attachment points"]
+    #[doc = " (i.e. quadpoints). Quadpoints are the vertices of the rectangle that"]
+    #[doc = " encompasses the texts affected by the annotation. They provide the"]
+    #[doc = " coordinates in the page where the annotation is attached. Only text markup"]
+    #[doc = " annotations (i.e. highlight, strikeout, squiggly, and underline) and link"]
+    #[doc = " annotations have quadpoints."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns true if the annotation is of a type that has quadpoints, false"]
+    #[doc = " otherwise."]
+    pub fn FPDFAnnot_HasAttachmentPoints(annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Replace the attachment points (i.e. quadpoints) set of an annotation at"]
+    #[doc = " |quad_index|. This index needs to be within the result of"]
+    #[doc = " FPDFAnnot_CountAttachmentPoints()."]
+    #[doc = " If the annotation's appearance stream is defined and this annotation is of a"]
+    #[doc = " type with quadpoints, then update the bounding box too if the new quadpoints"]
+    #[doc = " define a bigger one."]
+    #[doc = ""]
+    #[doc = "   annot       - handle to an annotation."]
+    #[doc = "   quad_index  - index of the set of quadpoints."]
+    #[doc = "   quad_points - the quadpoints to be set."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetAttachmentPoints(
+        annot: FPDF_ANNOTATION,
+        quad_index: size_t,
+        quad_points: *const FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Append to the list of attachment points (i.e. quadpoints) of an annotation."]
+    #[doc = " If the annotation's appearance stream is defined and this annotation is of a"]
+    #[doc = " type with quadpoints, then update the bounding box too if the new quadpoints"]
+    #[doc = " define a bigger one."]
+    #[doc = ""]
+    #[doc = "   annot       - handle to an annotation."]
+    #[doc = "   quad_points - the quadpoints to be set."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_AppendAttachmentPoints(
+        annot: FPDF_ANNOTATION,
+        quad_points: *const FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of sets of quadpoints of an annotation."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns the number of sets of quadpoints, or 0 on failure."]
+    pub fn FPDFAnnot_CountAttachmentPoints(annot: FPDF_ANNOTATION) -> size_t;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the attachment points (i.e. quadpoints) of an annotation."]
+    #[doc = ""]
+    #[doc = "   annot       - handle to an annotation."]
+    #[doc = "   quad_index  - index of the set of quadpoints."]
+    #[doc = "   quad_points - receives the quadpoints; must not be NULL."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_GetAttachmentPoints(
+        annot: FPDF_ANNOTATION,
+        quad_index: size_t,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the annotation rectangle defining the location of the annotation. If the"]
+    #[doc = " annotation's appearance stream is defined and this annotation is of a type"]
+    #[doc = " without quadpoints, then update the bounding box too if the new rectangle"]
+    #[doc = " defines a bigger one."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   rect   - the annotation rectangle to be set."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetRect(annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the annotation rectangle defining the location of the annotation."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   rect   - receives the rectangle; must not be NULL."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_GetRect(annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the vertices of a polygon or polyline annotation. |buffer| is an array of"]
+    #[doc = " points of the annotation. If |length| is less than the returned length, or"]
+    #[doc = " |annot| or |buffer| is NULL, |buffer| will not be modified."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()"]
+    #[doc = "   buffer - buffer for holding the points."]
+    #[doc = "   length - length of the buffer in points."]
+    #[doc = ""]
+    #[doc = " Returns the number of points if the annotation is of type polygon or"]
+    #[doc = " polyline, 0 otherwise."]
+    pub fn FPDFAnnot_GetVertices(
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FS_POINTF,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of paths in the ink list of an ink annotation."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()"]
+    #[doc = ""]
+    #[doc = " Returns the number of paths in the ink list if the annotation is of type ink,"]
+    #[doc = " 0 otherwise."]
+    pub fn FPDFAnnot_GetInkListCount(annot: FPDF_ANNOTATION) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get a path in the ink list of an ink annotation. |buffer| is an array of"]
+    #[doc = " points of the path. If |length| is less than the returned length, or |annot|"]
+    #[doc = " or |buffer| is NULL, |buffer| will not be modified."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()"]
+    #[doc = "   path_index - index of the path"]
+    #[doc = "   buffer - buffer for holding the points."]
+    #[doc = "   length - length of the buffer in points."]
+    #[doc = ""]
+    #[doc = " Returns the number of points of the path if the annotation is of type ink, 0"]
+    #[doc = " otherwise."]
+    pub fn FPDFAnnot_GetInkListPath(
+        annot: FPDF_ANNOTATION,
+        path_index: ::std::os::raw::c_ulong,
+        buffer: *mut FS_POINTF,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the starting and ending coordinates of a line annotation."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()"]
+    #[doc = "   start - starting point"]
+    #[doc = "   end - ending point"]
+    #[doc = ""]
+    #[doc = " Returns true if the annotation is of type line, |start| and |end| are not"]
+    #[doc = " NULL, false otherwise."]
+    pub fn FPDFAnnot_GetLine(
+        annot: FPDF_ANNOTATION,
+        start: *mut FS_POINTF,
+        end: *mut FS_POINTF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the characteristics of the annotation's border (rounded rectangle)."]
+    #[doc = ""]
+    #[doc = "   annot              - handle to an annotation"]
+    #[doc = "   horizontal_radius  - horizontal corner radius, in default user space units"]
+    #[doc = "   vertical_radius    - vertical corner radius, in default user space units"]
+    #[doc = "   border_width       - border width, in default user space units"]
+    #[doc = ""]
+    #[doc = " Returns true if setting the border for |annot| succeeds, false otherwise."]
+    #[doc = ""]
+    #[doc = " If |annot| contains an appearance stream that overrides the border values,"]
+    #[doc = " then the appearance stream will be removed on success."]
+    pub fn FPDFAnnot_SetBorder(
+        annot: FPDF_ANNOTATION,
+        horizontal_radius: f32,
+        vertical_radius: f32,
+        border_width: f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the characteristics of the annotation's border (rounded rectangle)."]
+    #[doc = ""]
+    #[doc = "   annot              - handle to an annotation"]
+    #[doc = "   horizontal_radius  - horizontal corner radius, in default user space units"]
+    #[doc = "   vertical_radius    - vertical corner radius, in default user space units"]
+    #[doc = "   border_width       - border width, in default user space units"]
+    #[doc = ""]
+    #[doc = " Returns true if |horizontal_radius|, |vertical_radius| and |border_width| are"]
+    #[doc = " not NULL, false otherwise."]
+    pub fn FPDFAnnot_GetBorder(
+        annot: FPDF_ANNOTATION,
+        horizontal_radius: *mut f32,
+        vertical_radius: *mut f32,
+        border_width: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Check if |annot|'s dictionary has |key| as a key."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   key    - the key to look for, encoded in UTF-8."]
+    #[doc = ""]
+    #[doc = " Returns true if |key| exists."]
+    pub fn FPDFAnnot_HasKey(annot: FPDF_ANNOTATION, key: FPDF_BYTESTRING) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the type of the value corresponding to |key| in |annot|'s dictionary."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   key    - the key to look for, encoded in UTF-8."]
+    #[doc = ""]
+    #[doc = " Returns the type of the dictionary value."]
+    pub fn FPDFAnnot_GetValueType(annot: FPDF_ANNOTATION, key: FPDF_BYTESTRING)
+        -> FPDF_OBJECT_TYPE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the string value corresponding to |key| in |annot|'s dictionary,"]
+    #[doc = " overwriting the existing value if any. The value type would be"]
+    #[doc = " FPDF_OBJECT_STRING after this function call succeeds."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   key    - the key to the dictionary entry to be set, encoded in UTF-8."]
+    #[doc = "   value  - the string value to be set, encoded in UTF-16LE."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetStringValue(
+        annot: FPDF_ANNOTATION,
+        key: FPDF_BYTESTRING,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the string value corresponding to |key| in |annot|'s dictionary. |buffer|"]
+    #[doc = " is only modified if |buflen| is longer than the length of contents. Note that"]
+    #[doc = " if |key| does not exist in the dictionary or if |key|'s corresponding value"]
+    #[doc = " in the dictionary is not a string (i.e. the value is not of type"]
+    #[doc = " FPDF_OBJECT_STRING or FPDF_OBJECT_NAME), then an empty string would be copied"]
+    #[doc = " to |buffer| and the return value would be 2. On other errors, nothing would"]
+    #[doc = " be added to |buffer| and the return value would be 0."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   key    - the key to the requested dictionary entry, encoded in UTF-8."]
+    #[doc = "   buffer - buffer for holding the value string, encoded in UTF-16LE."]
+    #[doc = "   buflen - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the string value in bytes."]
+    pub fn FPDFAnnot_GetStringValue(
+        annot: FPDF_ANNOTATION,
+        key: FPDF_BYTESTRING,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the float value corresponding to |key| in |annot|'s dictionary. Writes"]
+    #[doc = " value to |value| and returns True if |key| exists in the dictionary and"]
+    #[doc = " |key|'s corresponding value is a number (FPDF_OBJECT_NUMBER), False"]
+    #[doc = " otherwise."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   key    - the key to the requested dictionary entry, encoded in UTF-8."]
+    #[doc = "   value  - receives the value, must not be NULL."]
+    #[doc = ""]
+    #[doc = " Returns True if value found, False otherwise."]
+    pub fn FPDFAnnot_GetNumberValue(
+        annot: FPDF_ANNOTATION,
+        key: FPDF_BYTESTRING,
+        value: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the AP (appearance string) in |annot|'s dictionary for a given"]
+    #[doc = " |appearanceMode|."]
+    #[doc = ""]
+    #[doc = "   annot          - handle to an annotation."]
+    #[doc = "   appearanceMode - the appearance mode (normal, rollover or down) for which"]
+    #[doc = "                    to get the AP."]
+    #[doc = "   value          - the string value to be set, encoded in UTF-16LE. If"]
+    #[doc = "                    nullptr is passed, the AP is cleared for that mode. If the"]
+    #[doc = "                    mode is Normal, APs for all modes are cleared."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetAP(
+        annot: FPDF_ANNOTATION,
+        appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the AP (appearance string) from |annot|'s dictionary for a given"]
+    #[doc = " |appearanceMode|."]
+    #[doc = " |buffer| is only modified if |buflen| is large enough to hold the whole AP"]
+    #[doc = " string. If |buflen| is smaller, the total size of the AP is still returned,"]
+    #[doc = " but nothing is copied."]
+    #[doc = " If there is no appearance stream for |annot| in |appearanceMode|, an empty"]
+    #[doc = " string is written to |buf| and 2 is returned."]
+    #[doc = " On other errors, nothing is written to |buffer| and 0 is returned."]
+    #[doc = ""]
+    #[doc = "   annot          - handle to an annotation."]
+    #[doc = "   appearanceMode - the appearance mode (normal, rollover or down) for which"]
+    #[doc = "                    to get the AP."]
+    #[doc = "   buffer         - buffer for holding the value string, encoded in UTF-16LE."]
+    #[doc = "   buflen         - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the string value in bytes."]
+    pub fn FPDFAnnot_GetAP(
+        annot: FPDF_ANNOTATION,
+        appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the annotation corresponding to |key| in |annot|'s dictionary. Common"]
+    #[doc = " keys for linking annotations include \"IRT\" and \"Popup\". Must call"]
+    #[doc = " FPDFPage_CloseAnnot() when the annotation returned by this function is no"]
+    #[doc = " longer needed."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to an annotation."]
+    #[doc = "   key    - the key to the requested dictionary entry, encoded in UTF-8."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the linked annotation object, or NULL on failure."]
+    pub fn FPDFAnnot_GetLinkedAnnot(
+        annot: FPDF_ANNOTATION,
+        key: FPDF_BYTESTRING,
+    ) -> FPDF_ANNOTATION;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the annotation flags of |annot|."]
+    #[doc = ""]
+    #[doc = "   annot    - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns the annotation flags."]
+    pub fn FPDFAnnot_GetFlags(annot: FPDF_ANNOTATION) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the |annot|'s flags to be of the value |flags|."]
+    #[doc = ""]
+    #[doc = "   annot      - handle to an annotation."]
+    #[doc = "   flags      - the flag values to be set."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetFlags(annot: FPDF_ANNOTATION, flags: ::std::os::raw::c_int) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the annotation flags of |annot|."]
+    #[doc = ""]
+    #[doc = "    hHandle     -   handle to the form fill module, returned by"]
+    #[doc = "                    FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "    annot       -   handle to an interactive form annotation."]
+    #[doc = ""]
+    #[doc = " Returns the annotation flags specific to interactive forms."]
+    pub fn FPDFAnnot_GetFormFieldFlags(
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Retrieves an interactive form annotation whose rectangle contains a given"]
+    #[doc = " point on a page. Must call FPDFPage_CloseAnnot() when the annotation returned"]
+    #[doc = " is no longer needed."]
+    #[doc = ""]
+    #[doc = ""]
+    #[doc = "    hHandle     -   handle to the form fill module, returned by"]
+    #[doc = "                    FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "    page        -   handle to the page, returned by FPDF_LoadPage function."]
+    #[doc = "    point       -   position in PDF \"user space\"."]
+    #[doc = ""]
+    #[doc = " Returns the interactive form annotation whose rectangle contains the given"]
+    #[doc = " coordinates on the page. If there is no such annotation, return NULL."]
+    pub fn FPDFAnnot_GetFormFieldAtPoint(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        point: *const FS_POINTF,
+    ) -> FPDF_ANNOTATION;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the name of |annot|, which is an interactive form annotation."]
+    #[doc = " |buffer| is only modified if |buflen| is longer than the length of contents."]
+    #[doc = " In case of error, nothing will be added to |buffer| and the return value will"]
+    #[doc = " be 0. Note that return value of empty string is 2 for \"\\0\\0\"."]
+    #[doc = ""]
+    #[doc = "    hHandle     -   handle to the form fill module, returned by"]
+    #[doc = "                    FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "    annot       -   handle to an interactive form annotation."]
+    #[doc = "    buffer      -   buffer for holding the name string, encoded in UTF-16LE."]
+    #[doc = "    buflen      -   length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the string value in bytes."]
+    pub fn FPDFAnnot_GetFormFieldName(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the form field type of |annot|, which is an interactive form annotation."]
+    #[doc = ""]
+    #[doc = "    hHandle     -   handle to the form fill module, returned by"]
+    #[doc = "                    FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "    annot       -   handle to an interactive form annotation."]
+    #[doc = ""]
+    #[doc = " Returns the type of the form field (one of the FPDF_FORMFIELD_* values) on"]
+    #[doc = " success. Returns -1 on error."]
+    #[doc = " See field types in fpdf_formfill.h."]
+    pub fn FPDFAnnot_GetFormFieldType(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the value of |annot|, which is an interactive form annotation."]
+    #[doc = " |buffer| is only modified if |buflen| is longer than the length of contents."]
+    #[doc = " In case of error, nothing will be added to |buffer| and the return value will"]
+    #[doc = " be 0. Note that return value of empty string is 2 for \"\\0\\0\"."]
+    #[doc = ""]
+    #[doc = "    hHandle     -   handle to the form fill module, returned by"]
+    #[doc = "                    FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "    annot       -   handle to an interactive form annotation."]
+    #[doc = "    buffer      -   buffer for holding the value string, encoded in UTF-16LE."]
+    #[doc = "    buflen      -   length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the string value in bytes."]
+    pub fn FPDFAnnot_GetFormFieldValue(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of options in the |annot|'s \"Opt\" dictionary. Intended for"]
+    #[doc = " use with listbox and combobox widget annotations."]
+    #[doc = ""]
+    #[doc = "   hHandle - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns the number of options in \"Opt\" dictionary on success. Return value"]
+    #[doc = " will be -1 if annotation does not have an \"Opt\" dictionary or other error."]
+    pub fn FPDFAnnot_GetOptionCount(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the string value for the label of the option at |index| in |annot|'s"]
+    #[doc = " \"Opt\" dictionary. Intended for use with listbox and combobox widget"]
+    #[doc = " annotations. |buffer| is only modified if |buflen| is longer than the length"]
+    #[doc = " of contents. If index is out of range or in case of other error, nothing"]
+    #[doc = " will be added to |buffer| and the return value will be 0. Note that"]
+    #[doc = " return value of empty string is 2 for \"\\0\\0\"."]
+    #[doc = ""]
+    #[doc = "   hHandle - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = "   index   - numeric index of the option in the \"Opt\" array"]
+    #[doc = "   buffer  - buffer for holding the value string, encoded in UTF-16LE."]
+    #[doc = "   buflen  - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the string value in bytes."]
+    #[doc = " If |annot| does not have an \"Opt\" array, |index| is out of range or if any"]
+    #[doc = " other error occurs, returns 0."]
+    pub fn FPDFAnnot_GetOptionLabel(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        index: ::std::os::raw::c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Determine whether or not the option at |index| in |annot|'s \"Opt\" dictionary"]
+    #[doc = " is selected. Intended for use with listbox and combobox widget annotations."]
+    #[doc = ""]
+    #[doc = "   handle  - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = "   index   - numeric index of the option in the \"Opt\" array."]
+    #[doc = ""]
+    #[doc = " Returns true if the option at |index| in |annot|'s \"Opt\" dictionary is"]
+    #[doc = " selected, false otherwise."]
+    pub fn FPDFAnnot_IsOptionSelected(
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the float value of the font size for an |annot| with variable text."]
+    #[doc = " If 0, the font is to be auto-sized: its size is computed as a function of"]
+    #[doc = " the height of the annotation rectangle."]
+    #[doc = ""]
+    #[doc = "   hHandle - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = "   value   - Required. Float which will be set to font size on success."]
+    #[doc = ""]
+    #[doc = " Returns true if the font size was set in |value|, false on error or if"]
+    #[doc = " |value| not provided."]
+    pub fn FPDFAnnot_GetFontSize(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        value: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Determine if |annot| is a form widget that is checked. Intended for use with"]
+    #[doc = " checkbox and radio button widgets."]
+    #[doc = ""]
+    #[doc = "   hHandle - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns true if |annot| is a form widget and is checked, false otherwise."]
+    pub fn FPDFAnnot_IsChecked(hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the list of focusable annotation subtypes. Annotations of subtype"]
+    #[doc = " FPDF_ANNOT_WIDGET are by default focusable. New subtypes set using this API"]
+    #[doc = " will override the existing subtypes."]
+    #[doc = ""]
+    #[doc = "   hHandle  - handle to the form fill module, returned by"]
+    #[doc = "              FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   subtypes - list of annotation subtype which can be tabbed over."]
+    #[doc = "   count    - total number of annotation subtype in list."]
+    #[doc = " Returns true if list of annotation subtype is set successfully, false"]
+    #[doc = " otherwise."]
+    pub fn FPDFAnnot_SetFocusableSubtypes(
+        hHandle: FPDF_FORMHANDLE,
+        subtypes: *const FPDF_ANNOTATION_SUBTYPE,
+        count: size_t,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the count of focusable annotation subtypes as set by host"]
+    #[doc = " for a |hHandle|."]
+    #[doc = ""]
+    #[doc = "   hHandle  - handle to the form fill module, returned by"]
+    #[doc = "              FPDFDOC_InitFormFillEnvironment."]
+    #[doc = " Returns the count of focusable annotation subtypes or -1 on error."]
+    #[doc = " Note : Annotations of type FPDF_ANNOT_WIDGET are by default focusable."]
+    pub fn FPDFAnnot_GetFocusableSubtypesCount(hHandle: FPDF_FORMHANDLE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the list of focusable annotation subtype as set by host."]
+    #[doc = ""]
+    #[doc = "   hHandle  - handle to the form fill module, returned by"]
+    #[doc = "              FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   subtypes - receives the list of annotation subtype which can be tabbed"]
+    #[doc = "              over. Caller must have allocated |subtypes| more than or"]
+    #[doc = "              equal to the count obtained from"]
+    #[doc = "              FPDFAnnot_GetFocusableSubtypesCount() API."]
+    #[doc = "   count    - size of |subtypes|."]
+    #[doc = " Returns true on success and set list of annotation subtype to |subtypes|,"]
+    #[doc = " false otherwise."]
+    #[doc = " Note : Annotations of type FPDF_ANNOT_WIDGET are by default focusable."]
+    pub fn FPDFAnnot_GetFocusableSubtypes(
+        hHandle: FPDF_FORMHANDLE,
+        subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
+        count: size_t,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets FPDF_LINK object for |annot|. Intended to use for link annotations."]
+    #[doc = ""]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns FPDF_LINK from the FPDF_ANNOTATION and NULL on failure,"]
+    #[doc = " if the input annot is NULL or input annot's subtype is not link."]
+    pub fn FPDFAnnot_GetLink(annot: FPDF_ANNOTATION) -> FPDF_LINK;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the count of annotations in the |annot|'s control group."]
+    #[doc = " A group of interactive form annotations is collectively called a form"]
+    #[doc = " control group. Here, |annot|, an interactive form annotation, should be"]
+    #[doc = " either a radio button or a checkbox."]
+    #[doc = ""]
+    #[doc = "   hHandle - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns number of controls in its control group or -1 on error."]
+    pub fn FPDFAnnot_GetFormControlCount(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the index of |annot| in |annot|'s control group."]
+    #[doc = " A group of interactive form annotations is collectively called a form"]
+    #[doc = " control group. Here, |annot|, an interactive form annotation, should be"]
+    #[doc = " either a radio button or a checkbox."]
+    #[doc = ""]
+    #[doc = "   hHandle - handle to the form fill module, returned by"]
+    #[doc = "             FPDFDOC_InitFormFillEnvironment."]
+    #[doc = "   annot   - handle to an annotation."]
+    #[doc = ""]
+    #[doc = " Returns index of a given |annot| in its control group or -1 on error."]
+    pub fn FPDFAnnot_GetFormControlIndex(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the export value of |annot| which is an interactive form annotation."]
+    #[doc = " Intended for use with radio button and checkbox widget annotations."]
+    #[doc = " |buffer| is only modified if |buflen| is longer than the length of contents."]
+    #[doc = " In case of error, nothing will be added to |buffer| and the return value"]
+    #[doc = " will be 0. Note that return value of empty string is 2 for \"\\0\\0\"."]
+    #[doc = ""]
+    #[doc = "    hHandle     -   handle to the form fill module, returned by"]
+    #[doc = "                    FPDFDOC_InitFormFillEnvironment()."]
+    #[doc = "    annot       -   handle to an interactive form annotation."]
+    #[doc = "    buffer      -   buffer for holding the value string, encoded in UTF-16LE."]
+    #[doc = "    buflen      -   length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the string value in bytes."]
+    pub fn FPDFAnnot_GetFormFieldExportValue(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Add a URI action to |annot|, overwriting the existing action, if any."]
+    #[doc = ""]
+    #[doc = "   annot  - handle to a link annotation."]
+    #[doc = "   uri    - the URI to be set, encoded in 7-bit ASCII."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAnnot_SetURI(
+        annot: FPDF_ANNOTATION,
+        uri: *const ::std::os::raw::c_char,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of embedded files in |document|."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = ""]
+    #[doc = " Returns the number of embedded files in |document|."]
+    pub fn FPDFDoc_GetAttachmentCount(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Add an embedded file with |name| in |document|. If |name| is empty, or if"]
+    #[doc = " |name| is the name of a existing embedded file in |document|, or if"]
+    #[doc = " |document|'s embedded file name tree is too deep (i.e. |document| has too"]
+    #[doc = " many embedded files already), then a new attachment will not be added."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = "   name     - name of the new attachment."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the new attachment object, or NULL on failure."]
+    pub fn FPDFDoc_AddAttachment(document: FPDF_DOCUMENT, name: FPDF_WIDESTRING)
+        -> FPDF_ATTACHMENT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the embedded attachment at |index| in |document|. Note that the returned"]
+    #[doc = " attachment handle is only valid while |document| is open."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = "   index    - the index of the requested embedded file."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the attachment object, or NULL on failure."]
+    pub fn FPDFDoc_GetAttachment(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_ATTACHMENT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Delete the embedded attachment at |index| in |document|. Note that this does"]
+    #[doc = " not remove the attachment data from the PDF file; it simply removes the"]
+    #[doc = " file's entry in the embedded files name tree so that it does not appear in"]
+    #[doc = " the attachment list. This behavior may change in the future."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = "   index    - the index of the embedded file to be deleted."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFDoc_DeleteAttachment(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the name of the |attachment| file. |buffer| is only modified if |buflen|"]
+    #[doc = " is longer than the length of the file name. On errors, |buffer| is unmodified"]
+    #[doc = " and the returned length is 0."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   buffer     - buffer for holding the file name, encoded in UTF-16LE."]
+    #[doc = "   buflen     - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the file name in bytes."]
+    pub fn FPDFAttachment_GetName(
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Check if the params dictionary of |attachment| has |key| as a key."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   key        - the key to look for, encoded in UTF-8."]
+    #[doc = ""]
+    #[doc = " Returns true if |key| exists."]
+    pub fn FPDFAttachment_HasKey(attachment: FPDF_ATTACHMENT, key: FPDF_BYTESTRING) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the type of the value corresponding to |key| in the params dictionary of"]
+    #[doc = " the embedded |attachment|."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   key        - the key to look for, encoded in UTF-8."]
+    #[doc = ""]
+    #[doc = " Returns the type of the dictionary value."]
+    pub fn FPDFAttachment_GetValueType(
+        attachment: FPDF_ATTACHMENT,
+        key: FPDF_BYTESTRING,
+    ) -> FPDF_OBJECT_TYPE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the string value corresponding to |key| in the params dictionary of the"]
+    #[doc = " embedded file |attachment|, overwriting the existing value if any. The value"]
+    #[doc = " type should be FPDF_OBJECT_STRING after this function call succeeds."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   key        - the key to the dictionary entry, encoded in UTF-8."]
+    #[doc = "   value      - the string value to be set, encoded in UTF-16LE."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAttachment_SetStringValue(
+        attachment: FPDF_ATTACHMENT,
+        key: FPDF_BYTESTRING,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the string value corresponding to |key| in the params dictionary of the"]
+    #[doc = " embedded file |attachment|. |buffer| is only modified if |buflen| is longer"]
+    #[doc = " than the length of the string value. Note that if |key| does not exist in the"]
+    #[doc = " dictionary or if |key|'s corresponding value in the dictionary is not a"]
+    #[doc = " string (i.e. the value is not of type FPDF_OBJECT_STRING or"]
+    #[doc = " FPDF_OBJECT_NAME), then an empty string would be copied to |buffer| and the"]
+    #[doc = " return value would be 2. On other errors, nothing would be added to |buffer|"]
+    #[doc = " and the return value would be 0."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   key        - the key to the requested string value, encoded in UTF-8."]
+    #[doc = "   buffer     - buffer for holding the string value encoded in UTF-16LE."]
+    #[doc = "   buflen     - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the dictionary value string in bytes."]
+    pub fn FPDFAttachment_GetStringValue(
+        attachment: FPDF_ATTACHMENT,
+        key: FPDF_BYTESTRING,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the file data of |attachment|, overwriting the existing file data if any."]
+    #[doc = " The creation date and checksum will be updated, while all other dictionary"]
+    #[doc = " entries will be deleted. Note that only contents with |len| smaller than"]
+    #[doc = " INT_MAX is supported."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   contents   - buffer holding the file data to write to |attachment|."]
+    #[doc = "   len        - length of file data in bytes."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFAttachment_SetFile(
+        attachment: FPDF_ATTACHMENT,
+        document: FPDF_DOCUMENT,
+        contents: *const ::std::os::raw::c_void,
+        len: ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the file data of |attachment|."]
+    #[doc = " When the attachment file data is readable, true is returned, and |out_buflen|"]
+    #[doc = " is updated to indicate the file data size. |buffer| is only modified if"]
+    #[doc = " |buflen| is non-null and long enough to contain the entire file data. Callers"]
+    #[doc = " must check both the return value and the input |buflen| is no less than the"]
+    #[doc = " returned |out_buflen| before using the data."]
+    #[doc = ""]
+    #[doc = " Otherwise, when the attachment file data is unreadable or when |out_buflen|"]
+    #[doc = " is null, false is returned and |buffer| and |out_buflen| remain unmodified."]
+    #[doc = ""]
+    #[doc = "   attachment - handle to an attachment."]
+    #[doc = "   buffer     - buffer for holding the file data from |attachment|."]
+    #[doc = "   buflen     - length of the buffer in bytes."]
+    #[doc = "   out_buflen - pointer to the variable that will receive the minimum buffer"]
+    #[doc = "                size to contain the file data of |attachment|."]
+    #[doc = ""]
+    #[doc = " Returns true on success, false otherwise."]
+    pub fn FPDFAttachment_GetFile(
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        out_buflen: *mut ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = ""]
+    #[doc = " Determine if |document| represents a tagged PDF."]
+    #[doc = ""]
+    #[doc = " For the definition of tagged PDF, See (see 10.7 \"Tagged PDF\" in PDF"]
+    #[doc = " Reference 1.7)."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = ""]
+    #[doc = " Returns |true| iff |document| is a tagged PDF."]
+    pub fn FPDFCatalog_IsTagged(document: FPDF_DOCUMENT) -> FPDF_BOOL;
+}
 #[doc = " Interface for checking whether sections of the file are available."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3109,12 +6380,12 @@ pub struct _FX_FILEAVAIL {
 fn bindgen_test_layout__FX_FILEAVAIL() {
     assert_eq!(
         ::std::mem::size_of::<_FX_FILEAVAIL>(),
-        8usize,
+        16usize,
         concat!("Size of: ", stringify!(_FX_FILEAVAIL))
     );
     assert_eq!(
         ::std::mem::align_of::<_FX_FILEAVAIL>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_FX_FILEAVAIL))
     );
     assert_eq!(
@@ -3129,7 +6400,7 @@ fn bindgen_test_layout__FX_FILEAVAIL() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FX_FILEAVAIL>())).IsDataAvail as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_FX_FILEAVAIL),
@@ -3140,6 +6411,26 @@ fn bindgen_test_layout__FX_FILEAVAIL() {
 }
 #[doc = " Interface for checking whether sections of the file are available."]
 pub type FX_FILEAVAIL = _FX_FILEAVAIL;
+extern "C" {
+    #[doc = " Create a document availability provider."]
+    #[doc = ""]
+    #[doc = "   file_avail - pointer to file availability interface."]
+    #[doc = "   file       - pointer to a file access interface."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the document availability provider, or NULL on error."]
+    #[doc = ""]
+    #[doc = " FPDFAvail_Destroy() must be called when done with the availability provider."]
+    pub fn FPDFAvail_Create(
+        file_avail: *mut FX_FILEAVAIL,
+        file: *mut FPDF_FILEACCESS,
+    ) -> FPDF_AVAIL;
+}
+extern "C" {
+    #[doc = " Destroy the |avail| document availability provider."]
+    #[doc = ""]
+    #[doc = "   avail - handle to document availability provider to be destroyed."]
+    pub fn FPDFAvail_Destroy(avail: FPDF_AVAIL);
+}
 #[doc = " Download hints interface. Used to receive hints for further downloading."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3166,12 +6457,12 @@ pub struct _FX_DOWNLOADHINTS {
 fn bindgen_test_layout__FX_DOWNLOADHINTS() {
     assert_eq!(
         ::std::mem::size_of::<_FX_DOWNLOADHINTS>(),
-        8usize,
+        16usize,
         concat!("Size of: ", stringify!(_FX_DOWNLOADHINTS))
     );
     assert_eq!(
         ::std::mem::align_of::<_FX_DOWNLOADHINTS>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_FX_DOWNLOADHINTS))
     );
     assert_eq!(
@@ -3186,7 +6477,7 @@ fn bindgen_test_layout__FX_DOWNLOADHINTS() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FX_DOWNLOADHINTS>())).AddSegment as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_FX_DOWNLOADHINTS),
@@ -3197,25 +6488,246 @@ fn bindgen_test_layout__FX_DOWNLOADHINTS() {
 }
 #[doc = " Download hints interface. Used to receive hints for further downloading."]
 pub type FX_DOWNLOADHINTS = _FX_DOWNLOADHINTS;
-pub type int_least64_t = i64;
-pub type uint_least64_t = u64;
-pub type int_fast64_t = i64;
-pub type uint_fast64_t = u64;
-pub type int_least32_t = i32;
-pub type uint_least32_t = u32;
-pub type int_fast32_t = i32;
-pub type uint_fast32_t = u32;
-pub type int_least16_t = i16;
-pub type uint_least16_t = u16;
-pub type int_fast16_t = i16;
-pub type uint_fast16_t = u16;
-pub type int_least8_t = i8;
-pub type uint_least8_t = u8;
-pub type int_fast8_t = i8;
-pub type uint_fast8_t = u8;
-#[doc = " C99 7.18.1.5 Greatest-width integer types."]
-pub type intmax_t = ::std::os::raw::c_longlong;
-pub type uintmax_t = ::std::os::raw::c_ulonglong;
+extern "C" {
+    #[doc = " Checks if the document is ready for loading, if not, gets download hints."]
+    #[doc = ""]
+    #[doc = "   avail - handle to document availability provider."]
+    #[doc = "   hints - pointer to a download hints interface."]
+    #[doc = ""]
+    #[doc = " Returns one of:"]
+    #[doc = "   PDF_DATA_ERROR: A common error is returned. Data availability unknown."]
+    #[doc = "   PDF_DATA_NOTAVAIL: Data not yet available."]
+    #[doc = "   PDF_DATA_AVAIL: Data available."]
+    #[doc = ""]
+    #[doc = " Applications should call this function whenever new data arrives, and process"]
+    #[doc = " all the generated download hints, if any, until the function returns"]
+    #[doc = " |PDF_DATA_ERROR| or |PDF_DATA_AVAIL|."]
+    #[doc = " if hints is nullptr, the function just check current document availability."]
+    #[doc = ""]
+    #[doc = " Once all data is available, call FPDFAvail_GetDocument() to get a document"]
+    #[doc = " handle."]
+    pub fn FPDFAvail_IsDocAvail(
+        avail: FPDF_AVAIL,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get document from the availability provider."]
+    #[doc = ""]
+    #[doc = "   avail    - handle to document availability provider."]
+    #[doc = "   password - password for decrypting the PDF file. Optional."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the document."]
+    #[doc = ""]
+    #[doc = " When FPDFAvail_IsDocAvail() returns TRUE, call FPDFAvail_GetDocument() to"]
+    #[doc = " retrieve the document handle."]
+    #[doc = " See the comments for FPDF_LoadDocument() regarding the encoding for"]
+    #[doc = " |password|."]
+    pub fn FPDFAvail_GetDocument(avail: FPDF_AVAIL, password: FPDF_BYTESTRING) -> FPDF_DOCUMENT;
+}
+extern "C" {
+    #[doc = " Get the page number for the first available page in a linearized PDF."]
+    #[doc = ""]
+    #[doc = "   doc - document handle."]
+    #[doc = ""]
+    #[doc = " Returns the zero-based index for the first available page."]
+    #[doc = ""]
+    #[doc = " For most linearized PDFs, the first available page will be the first page,"]
+    #[doc = " however, some PDFs might make another page the first available page."]
+    #[doc = " For non-linearized PDFs, this function will always return zero."]
+    pub fn FPDFAvail_GetFirstPageNum(doc: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Check if |page_index| is ready for loading, if not, get the"]
+    #[doc = " |FX_DOWNLOADHINTS|."]
+    #[doc = ""]
+    #[doc = "   avail      - handle to document availability provider."]
+    #[doc = "   page_index - index number of the page. Zero for the first page."]
+    #[doc = "   hints      - pointer to a download hints interface. Populated if"]
+    #[doc = "                |page_index| is not available."]
+    #[doc = ""]
+    #[doc = " Returns one of:"]
+    #[doc = "   PDF_DATA_ERROR: A common error is returned. Data availability unknown."]
+    #[doc = "   PDF_DATA_NOTAVAIL: Data not yet available."]
+    #[doc = "   PDF_DATA_AVAIL: Data available."]
+    #[doc = ""]
+    #[doc = " This function can be called only after FPDFAvail_GetDocument() is called."]
+    #[doc = " Applications should call this function whenever new data arrives and process"]
+    #[doc = " all the generated download |hints|, if any, until this function returns"]
+    #[doc = " |PDF_DATA_ERROR| or |PDF_DATA_AVAIL|. Applications can then perform page"]
+    #[doc = " loading."]
+    #[doc = " if hints is nullptr, the function just check current availability of"]
+    #[doc = " specified page."]
+    pub fn FPDFAvail_IsPageAvail(
+        avail: FPDF_AVAIL,
+        page_index: ::std::os::raw::c_int,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Check if form data is ready for initialization, if not, get the"]
+    #[doc = " |FX_DOWNLOADHINTS|."]
+    #[doc = ""]
+    #[doc = "   avail - handle to document availability provider."]
+    #[doc = "   hints - pointer to a download hints interface. Populated if form is not"]
+    #[doc = "           ready for initialization."]
+    #[doc = ""]
+    #[doc = " Returns one of:"]
+    #[doc = "   PDF_FORM_ERROR: A common eror, in general incorrect parameters."]
+    #[doc = "   PDF_FORM_NOTAVAIL: Data not available."]
+    #[doc = "   PDF_FORM_AVAIL: Data available."]
+    #[doc = "   PDF_FORM_NOTEXIST: No form data."]
+    #[doc = ""]
+    #[doc = " This function can be called only after FPDFAvail_GetDocument() is called."]
+    #[doc = " The application should call this function whenever new data arrives and"]
+    #[doc = " process all the generated download |hints|, if any, until the function"]
+    #[doc = " |PDF_FORM_ERROR|, |PDF_FORM_AVAIL| or |PDF_FORM_NOTEXIST|."]
+    #[doc = " if hints is nullptr, the function just check current form availability."]
+    #[doc = ""]
+    #[doc = " Applications can then perform page loading. It is recommend to call"]
+    #[doc = " FPDFDOC_InitFormFillEnvironment() when |PDF_FORM_AVAIL| is returned."]
+    pub fn FPDFAvail_IsFormAvail(
+        avail: FPDF_AVAIL,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Check whether a document is a linearized PDF."]
+    #[doc = ""]
+    #[doc = "   avail - handle to document availability provider."]
+    #[doc = ""]
+    #[doc = " Returns one of:"]
+    #[doc = "   PDF_LINEARIZED"]
+    #[doc = "   PDF_NOT_LINEARIZED"]
+    #[doc = "   PDF_LINEARIZATION_UNKNOWN"]
+    #[doc = ""]
+    #[doc = " FPDFAvail_IsLinearized() will return |PDF_LINEARIZED| or |PDF_NOT_LINEARIZED|"]
+    #[doc = " when we have 1k  of data. If the files size less than 1k, it returns"]
+    #[doc = " |PDF_LINEARIZATION_UNKNOWN| as there is insufficient information to determine"]
+    #[doc = " if the PDF is linearlized."]
+    pub fn FPDFAvail_IsLinearized(avail: FPDF_AVAIL) -> ::std::os::raw::c_int;
+}
+#[doc = " Convenience types."]
+pub type __u_char = ::std::os::raw::c_uchar;
+pub type __u_short = ::std::os::raw::c_ushort;
+pub type __u_int = ::std::os::raw::c_uint;
+pub type __u_long = ::std::os::raw::c_ulong;
+#[doc = " Fixed-size types, underlying types depend on word size and compiler."]
+pub type __int8_t = ::std::os::raw::c_schar;
+pub type __uint8_t = ::std::os::raw::c_uchar;
+pub type __int16_t = ::std::os::raw::c_short;
+pub type __uint16_t = ::std::os::raw::c_ushort;
+pub type __int32_t = ::std::os::raw::c_int;
+pub type __uint32_t = ::std::os::raw::c_uint;
+pub type __int64_t = ::std::os::raw::c_long;
+pub type __uint64_t = ::std::os::raw::c_ulong;
+#[doc = " Smallest types with at least a given width."]
+pub type __int_least8_t = __int8_t;
+pub type __uint_least8_t = __uint8_t;
+pub type __int_least16_t = __int16_t;
+pub type __uint_least16_t = __uint16_t;
+pub type __int_least32_t = __int32_t;
+pub type __uint_least32_t = __uint32_t;
+pub type __int_least64_t = __int64_t;
+pub type __uint_least64_t = __uint64_t;
+pub type __quad_t = ::std::os::raw::c_long;
+pub type __u_quad_t = ::std::os::raw::c_ulong;
+pub type __intmax_t = ::std::os::raw::c_long;
+pub type __uintmax_t = ::std::os::raw::c_ulong;
+pub type __dev_t = ::std::os::raw::c_ulong;
+pub type __uid_t = ::std::os::raw::c_uint;
+pub type __gid_t = ::std::os::raw::c_uint;
+pub type __ino_t = ::std::os::raw::c_ulong;
+pub type __ino64_t = ::std::os::raw::c_ulong;
+pub type __mode_t = ::std::os::raw::c_uint;
+pub type __nlink_t = ::std::os::raw::c_ulong;
+pub type __off_t = ::std::os::raw::c_long;
+pub type __off64_t = ::std::os::raw::c_long;
+pub type __pid_t = ::std::os::raw::c_int;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct __fsid_t {
+    pub __val: [::std::os::raw::c_int; 2usize],
+}
+#[test]
+fn bindgen_test_layout___fsid_t() {
+    assert_eq!(
+        ::std::mem::size_of::<__fsid_t>(),
+        8usize,
+        concat!("Size of: ", stringify!(__fsid_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<__fsid_t>(),
+        4usize,
+        concat!("Alignment of ", stringify!(__fsid_t))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<__fsid_t>())).__val as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(__fsid_t),
+            "::",
+            stringify!(__val)
+        )
+    );
+}
+pub type __clock_t = ::std::os::raw::c_long;
+pub type __rlim_t = ::std::os::raw::c_ulong;
+pub type __rlim64_t = ::std::os::raw::c_ulong;
+pub type __id_t = ::std::os::raw::c_uint;
+pub type __time_t = ::std::os::raw::c_long;
+pub type __useconds_t = ::std::os::raw::c_uint;
+pub type __suseconds_t = ::std::os::raw::c_long;
+pub type __suseconds64_t = ::std::os::raw::c_long;
+pub type __daddr_t = ::std::os::raw::c_int;
+pub type __key_t = ::std::os::raw::c_int;
+pub type __clockid_t = ::std::os::raw::c_int;
+pub type __timer_t = *mut ::std::os::raw::c_void;
+pub type __blksize_t = ::std::os::raw::c_long;
+pub type __blkcnt_t = ::std::os::raw::c_long;
+pub type __blkcnt64_t = ::std::os::raw::c_long;
+pub type __fsblkcnt_t = ::std::os::raw::c_ulong;
+pub type __fsblkcnt64_t = ::std::os::raw::c_ulong;
+pub type __fsfilcnt_t = ::std::os::raw::c_ulong;
+pub type __fsfilcnt64_t = ::std::os::raw::c_ulong;
+pub type __fsword_t = ::std::os::raw::c_long;
+pub type __ssize_t = ::std::os::raw::c_long;
+pub type __syscall_slong_t = ::std::os::raw::c_long;
+pub type __syscall_ulong_t = ::std::os::raw::c_ulong;
+#[doc = " These few don't really vary by system, they always correspond"]
+#[doc = "to one of the other defined types."]
+pub type __loff_t = __off64_t;
+pub type __caddr_t = *mut ::std::os::raw::c_char;
+pub type __intptr_t = ::std::os::raw::c_long;
+pub type __socklen_t = ::std::os::raw::c_uint;
+#[doc = " C99: An integer type that can be accessed as an atomic entity,"]
+#[doc = "even in the presence of asynchronous interrupts."]
+#[doc = "It is not currently necessary for this to be machine-specific."]
+pub type __sig_atomic_t = ::std::os::raw::c_int;
+#[doc = " Signed."]
+pub type int_least8_t = __int_least8_t;
+pub type int_least16_t = __int_least16_t;
+pub type int_least32_t = __int_least32_t;
+pub type int_least64_t = __int_least64_t;
+#[doc = " Unsigned."]
+pub type uint_least8_t = __uint_least8_t;
+pub type uint_least16_t = __uint_least16_t;
+pub type uint_least32_t = __uint_least32_t;
+pub type uint_least64_t = __uint_least64_t;
+#[doc = " Signed."]
+pub type int_fast8_t = ::std::os::raw::c_schar;
+pub type int_fast16_t = ::std::os::raw::c_long;
+pub type int_fast32_t = ::std::os::raw::c_long;
+pub type int_fast64_t = ::std::os::raw::c_long;
+#[doc = " Unsigned."]
+pub type uint_fast8_t = ::std::os::raw::c_uchar;
+pub type uint_fast16_t = ::std::os::raw::c_ulong;
+pub type uint_fast32_t = ::std::os::raw::c_ulong;
+pub type uint_fast64_t = ::std::os::raw::c_ulong;
+#[doc = " Largest integral types."]
+pub type intmax_t = __intmax_t;
+pub type uintmax_t = __uintmax_t;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct FPDF_IMAGEOBJ_METADATA {
@@ -3329,6 +6841,1405 @@ fn bindgen_test_layout_FPDF_IMAGEOBJ_METADATA() {
         )
     );
 }
+extern "C" {
+    #[doc = " Create a new PDF document."]
+    #[doc = ""]
+    #[doc = " Returns a handle to a new document, or NULL on failure."]
+    pub fn FPDF_CreateNewDocument() -> FPDF_DOCUMENT;
+}
+extern "C" {
+    #[doc = " Create a new PDF page."]
+    #[doc = ""]
+    #[doc = "   document   - handle to document."]
+    #[doc = "   page_index - suggested 0-based index of the page to create. If it is larger"]
+    #[doc = "                than document's current last index(L), the created page index"]
+    #[doc = "                is the next available index -- L+1."]
+    #[doc = "   width      - the page width in points."]
+    #[doc = "   height     - the page height in points."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the new page or NULL on failure."]
+    #[doc = ""]
+    #[doc = " The page should be closed with FPDF_ClosePage() when finished as"]
+    #[doc = " with any other page in the document."]
+    pub fn FPDFPage_New(
+        document: FPDF_DOCUMENT,
+        page_index: ::std::os::raw::c_int,
+        width: f64,
+        height: f64,
+    ) -> FPDF_PAGE;
+}
+extern "C" {
+    #[doc = " Delete the page at |page_index|."]
+    #[doc = ""]
+    #[doc = "   document   - handle to document."]
+    #[doc = "   page_index - the index of the page to delete."]
+    pub fn FPDFPage_Delete(document: FPDF_DOCUMENT, page_index: ::std::os::raw::c_int);
+}
+extern "C" {
+    #[doc = " Get the rotation of |page|."]
+    #[doc = ""]
+    #[doc = "   page - handle to a page"]
+    #[doc = ""]
+    #[doc = " Returns one of the following indicating the page rotation:"]
+    #[doc = "   0 - No rotation."]
+    #[doc = "   1 - Rotated 90 degrees clockwise."]
+    #[doc = "   2 - Rotated 180 degrees clockwise."]
+    #[doc = "   3 - Rotated 270 degrees clockwise."]
+    pub fn FPDFPage_GetRotation(page: FPDF_PAGE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Set rotation for |page|."]
+    #[doc = ""]
+    #[doc = "   page   - handle to a page."]
+    #[doc = "   rotate - the rotation value, one of:"]
+    #[doc = "              0 - No rotation."]
+    #[doc = "              1 - Rotated 90 degrees clockwise."]
+    #[doc = "              2 - Rotated 180 degrees clockwise."]
+    #[doc = "              3 - Rotated 270 degrees clockwise."]
+    pub fn FPDFPage_SetRotation(page: FPDF_PAGE, rotate: ::std::os::raw::c_int);
+}
+extern "C" {
+    #[doc = " Insert |page_obj| into |page|."]
+    #[doc = ""]
+    #[doc = "   page     - handle to a page"]
+    #[doc = "   page_obj - handle to a page object. The |page_obj| will be automatically"]
+    #[doc = "              freed."]
+    pub fn FPDFPage_InsertObject(page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT);
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Remove |page_obj| from |page|."]
+    #[doc = ""]
+    #[doc = "   page     - handle to a page"]
+    #[doc = "   page_obj - handle to a page object to be removed."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    #[doc = ""]
+    #[doc = " Ownership is transferred to the caller. Call FPDFPageObj_Destroy() to free"]
+    #[doc = " it."]
+    pub fn FPDFPage_RemoveObject(page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get number of page objects inside |page|."]
+    #[doc = ""]
+    #[doc = "   page - handle to a page."]
+    #[doc = ""]
+    #[doc = " Returns the number of objects in |page|."]
+    pub fn FPDFPage_CountObjects(page: FPDF_PAGE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get object in |page| at |index|."]
+    #[doc = ""]
+    #[doc = "   page  - handle to a page."]
+    #[doc = "   index - the index of a page object."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the page object, or NULL on failed."]
+    pub fn FPDFPage_GetObject(page: FPDF_PAGE, index: ::std::os::raw::c_int) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Checks if |page| contains transparency."]
+    #[doc = ""]
+    #[doc = "   page - handle to a page."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if |page| contains transparency."]
+    pub fn FPDFPage_HasTransparency(page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Generate the content of |page|."]
+    #[doc = ""]
+    #[doc = "   page - handle to a page."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    #[doc = ""]
+    #[doc = " Before you save the page to a file, or reload the page, you must call"]
+    #[doc = " |FPDFPage_GenerateContent| or any changes to |page| will be lost."]
+    pub fn FPDFPage_GenerateContent(page: FPDF_PAGE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Destroy |page_obj| by releasing its resources. |page_obj| must have been"]
+    #[doc = " created by FPDFPageObj_CreateNew{Path|Rect}() or"]
+    #[doc = " FPDFPageObj_New{Text|Image}Obj(). This function must be called on"]
+    #[doc = " newly-created objects if they are not added to a page through"]
+    #[doc = " FPDFPage_InsertObject() or to an annotation through FPDFAnnot_AppendObject()."]
+    #[doc = ""]
+    #[doc = "   page_obj - handle to a page object."]
+    pub fn FPDFPageObj_Destroy(page_obj: FPDF_PAGEOBJECT);
+}
+extern "C" {
+    #[doc = " Checks if |page_object| contains transparency."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if |page_object| contains transparency."]
+    pub fn FPDFPageObj_HasTransparency(page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get type of |page_object|."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = ""]
+    #[doc = " Returns one of the FPDF_PAGEOBJ_* values on success, FPDF_PAGEOBJ_UNKNOWN on"]
+    #[doc = " error."]
+    pub fn FPDFPageObj_GetType(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Transform |page_object| by the given matrix."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = "   a           - matrix value."]
+    #[doc = "   b           - matrix value."]
+    #[doc = "   c           - matrix value."]
+    #[doc = "   d           - matrix value."]
+    #[doc = "   e           - matrix value."]
+    #[doc = "   f           - matrix value."]
+    #[doc = ""]
+    #[doc = " The matrix is composed as:"]
+    #[doc = "   |a c e|"]
+    #[doc = "   |b d f|"]
+    #[doc = " and can be used to scale, rotate, shear and translate the |page_object|."]
+    pub fn FPDFPageObj_Transform(
+        page_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    );
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the transform matrix of a page object."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = "   matrix      - pointer to struct to receive the matrix value."]
+    #[doc = ""]
+    #[doc = " The matrix is composed as:"]
+    #[doc = "   |a c e|"]
+    #[doc = "   |b d f|"]
+    #[doc = " and used to scale, rotate, shear and translate the page object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_GetMatrix(page_object: FPDF_PAGEOBJECT, matrix: *mut FS_MATRIX)
+        -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the transform matrix of a page object."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = "   matrix      - pointer to struct with the matrix value."]
+    #[doc = ""]
+    #[doc = " The matrix is composed as:"]
+    #[doc = "   |a c e|"]
+    #[doc = "   |b d f|"]
+    #[doc = " and can be used to scale, rotate, shear and translate the page object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_SetMatrix(path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Transform all annotations in |page|."]
+    #[doc = ""]
+    #[doc = "   page - handle to a page."]
+    #[doc = "   a    - matrix value."]
+    #[doc = "   b    - matrix value."]
+    #[doc = "   c    - matrix value."]
+    #[doc = "   d    - matrix value."]
+    #[doc = "   e    - matrix value."]
+    #[doc = "   f    - matrix value."]
+    #[doc = ""]
+    #[doc = " The matrix is composed as:"]
+    #[doc = "   |a c e|"]
+    #[doc = "   |b d f|"]
+    #[doc = " and can be used to scale, rotate, shear and translate the |page| annotations."]
+    pub fn FPDFPage_TransformAnnots(
+        page: FPDF_PAGE,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    );
+}
+extern "C" {
+    #[doc = " Create a new image object."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = ""]
+    #[doc = " Returns a handle to a new image object."]
+    pub fn FPDFPageObj_NewImageObj(document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get number of content marks in |page_object|."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = ""]
+    #[doc = " Returns the number of content marks in |page_object|, or -1 in case of"]
+    #[doc = " failure."]
+    pub fn FPDFPageObj_CountMarks(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get content mark in |page_object| at |index|."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = "   index       - the index of a page object."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the content mark, or NULL on failure. The handle is"]
+    #[doc = " still owned by the library, and it should not be freed directly. It becomes"]
+    #[doc = " invalid if the page object is destroyed, either directly or indirectly by"]
+    #[doc = " unloading the page."]
+    pub fn FPDFPageObj_GetMark(
+        page_object: FPDF_PAGEOBJECT,
+        index: ::std::os::raw::c_ulong,
+    ) -> FPDF_PAGEOBJECTMARK;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Add a new content mark to a |page_object|."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = "   name        - the name (tag) of the mark."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the content mark, or NULL on failure. The handle is"]
+    #[doc = " still owned by the library, and it should not be freed directly. It becomes"]
+    #[doc = " invalid if the page object is destroyed, either directly or indirectly by"]
+    #[doc = " unloading the page."]
+    pub fn FPDFPageObj_AddMark(
+        page_object: FPDF_PAGEOBJECT,
+        name: FPDF_BYTESTRING,
+    ) -> FPDF_PAGEOBJECTMARK;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Removes a content |mark| from a |page_object|."]
+    #[doc = " The mark handle will be invalid after the removal."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to a page object."]
+    #[doc = "   mark        - handle to a content mark in that object to remove."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation succeeded, FALSE if it failed."]
+    pub fn FPDFPageObj_RemoveMark(
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the name of a content mark."]
+    #[doc = ""]
+    #[doc = "   mark       - handle to a content mark."]
+    #[doc = "   buffer     - buffer for holding the returned name in UTF-16LE. This is only"]
+    #[doc = "                modified if |buflen| is longer than the length of the name."]
+    #[doc = "                Optional, pass null to just retrieve the size of the buffer"]
+    #[doc = "                needed."]
+    #[doc = "   buflen     - length of the buffer."]
+    #[doc = "   out_buflen - pointer to variable that will receive the minimum buffer size"]
+    #[doc = "                to contain the name. Not filled if FALSE is returned."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation succeeded, FALSE if it failed."]
+    pub fn FPDFPageObjMark_GetName(
+        mark: FPDF_PAGEOBJECTMARK,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        out_buflen: *mut ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of key/value pair parameters in |mark|."]
+    #[doc = ""]
+    #[doc = "   mark   - handle to a content mark."]
+    #[doc = ""]
+    #[doc = " Returns the number of key/value pair parameters |mark|, or -1 in case of"]
+    #[doc = " failure."]
+    pub fn FPDFPageObjMark_CountParams(mark: FPDF_PAGEOBJECTMARK) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the key of a property in a content mark."]
+    #[doc = ""]
+    #[doc = "   mark       - handle to a content mark."]
+    #[doc = "   index      - index of the property."]
+    #[doc = "   buffer     - buffer for holding the returned key in UTF-16LE. This is only"]
+    #[doc = "                modified if |buflen| is longer than the length of the key."]
+    #[doc = "                Optional, pass null to just retrieve the size of the buffer"]
+    #[doc = "                needed."]
+    #[doc = "   buflen     - length of the buffer."]
+    #[doc = "   out_buflen - pointer to variable that will receive the minimum buffer size"]
+    #[doc = "                to contain the key. Not filled if FALSE is returned."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation was successful, FALSE otherwise."]
+    pub fn FPDFPageObjMark_GetParamKey(
+        mark: FPDF_PAGEOBJECTMARK,
+        index: ::std::os::raw::c_ulong,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        out_buflen: *mut ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the type of the value of a property in a content mark by key."]
+    #[doc = ""]
+    #[doc = "   mark   - handle to a content mark."]
+    #[doc = "   key    - string key of the property."]
+    #[doc = ""]
+    #[doc = " Returns the type of the value, or FPDF_OBJECT_UNKNOWN in case of failure."]
+    pub fn FPDFPageObjMark_GetParamValueType(
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+    ) -> FPDF_OBJECT_TYPE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the value of a number property in a content mark by key as int."]
+    #[doc = " FPDFPageObjMark_GetParamValueType() should have returned FPDF_OBJECT_NUMBER"]
+    #[doc = " for this property."]
+    #[doc = ""]
+    #[doc = "   mark      - handle to a content mark."]
+    #[doc = "   key       - string key of the property."]
+    #[doc = "   out_value - pointer to variable that will receive the value. Not filled if"]
+    #[doc = "               false is returned."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the key maps to a number value, FALSE otherwise."]
+    pub fn FPDFPageObjMark_GetParamIntValue(
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+        out_value: *mut ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the value of a string property in a content mark by key."]
+    #[doc = ""]
+    #[doc = "   mark       - handle to a content mark."]
+    #[doc = "   key        - string key of the property."]
+    #[doc = "   buffer     - buffer for holding the returned value in UTF-16LE. This is"]
+    #[doc = "                only modified if |buflen| is longer than the length of the"]
+    #[doc = "                value."]
+    #[doc = "                Optional, pass null to just retrieve the size of the buffer"]
+    #[doc = "                needed."]
+    #[doc = "   buflen     - length of the buffer."]
+    #[doc = "   out_buflen - pointer to variable that will receive the minimum buffer size"]
+    #[doc = "                to contain the value. Not filled if FALSE is returned."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    pub fn FPDFPageObjMark_GetParamStringValue(
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        out_buflen: *mut ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the value of a blob property in a content mark by key."]
+    #[doc = ""]
+    #[doc = "   mark       - handle to a content mark."]
+    #[doc = "   key        - string key of the property."]
+    #[doc = "   buffer     - buffer for holding the returned value. This is only modified"]
+    #[doc = "                if |buflen| is at least as long as the length of the value."]
+    #[doc = "                Optional, pass null to just retrieve the size of the buffer"]
+    #[doc = "                needed."]
+    #[doc = "   buflen     - length of the buffer."]
+    #[doc = "   out_buflen - pointer to variable that will receive the minimum buffer size"]
+    #[doc = "                to contain the value. Not filled if FALSE is returned."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    pub fn FPDFPageObjMark_GetParamBlobValue(
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        out_buflen: *mut ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the value of an int property in a content mark by key. If a parameter"]
+    #[doc = " with key |key| exists, its value is set to |value|. Otherwise, it is added as"]
+    #[doc = " a new parameter."]
+    #[doc = ""]
+    #[doc = "   document    - handle to the document."]
+    #[doc = "   page_object - handle to the page object with the mark."]
+    #[doc = "   mark        - handle to a content mark."]
+    #[doc = "   key         - string key of the property."]
+    #[doc = "   value       - int value to set."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation succeeded, FALSE otherwise."]
+    pub fn FPDFPageObjMark_SetIntParam(
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+        value: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the value of a string property in a content mark by key. If a parameter"]
+    #[doc = " with key |key| exists, its value is set to |value|. Otherwise, it is added as"]
+    #[doc = " a new parameter."]
+    #[doc = ""]
+    #[doc = "   document    - handle to the document."]
+    #[doc = "   page_object - handle to the page object with the mark."]
+    #[doc = "   mark        - handle to a content mark."]
+    #[doc = "   key         - string key of the property."]
+    #[doc = "   value       - string value to set."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation succeeded, FALSE otherwise."]
+    pub fn FPDFPageObjMark_SetStringParam(
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+        value: FPDF_BYTESTRING,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the value of a blob property in a content mark by key. If a parameter"]
+    #[doc = " with key |key| exists, its value is set to |value|. Otherwise, it is added as"]
+    #[doc = " a new parameter."]
+    #[doc = ""]
+    #[doc = "   document    - handle to the document."]
+    #[doc = "   page_object - handle to the page object with the mark."]
+    #[doc = "   mark        - handle to a content mark."]
+    #[doc = "   key         - string key of the property."]
+    #[doc = "   value       - pointer to blob value to set."]
+    #[doc = "   value_len   - size in bytes of |value|."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation succeeded, FALSE otherwise."]
+    pub fn FPDFPageObjMark_SetBlobParam(
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+        value: *mut ::std::os::raw::c_void,
+        value_len: ::std::os::raw::c_ulong,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Removes a property from a content mark by key."]
+    #[doc = ""]
+    #[doc = "   page_object - handle to the page object with the mark."]
+    #[doc = "   mark        - handle to a content mark."]
+    #[doc = "   key         - string key of the property."]
+    #[doc = ""]
+    #[doc = " Returns TRUE if the operation succeeded, FALSE otherwise."]
+    pub fn FPDFPageObjMark_RemoveParam(
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: FPDF_BYTESTRING,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Load an image from a JPEG image file and then set it into |image_object|."]
+    #[doc = ""]
+    #[doc = "   pages        - pointer to the start of all loaded pages, may be NULL."]
+    #[doc = "   count        - number of |pages|, may be 0."]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   file_access  - file access handler which specifies the JPEG image file."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    #[doc = ""]
+    #[doc = " The image object might already have an associated image, which is shared and"]
+    #[doc = " cached by the loaded pages. In that case, we need to clear the cached image"]
+    #[doc = " for all the loaded pages. Pass |pages| and page count (|count|) to this API"]
+    #[doc = " to clear the image cache. If the image is not previously shared, or NULL is a"]
+    #[doc = " valid |pages| value."]
+    pub fn FPDFImageObj_LoadJpegFile(
+        pages: *mut FPDF_PAGE,
+        count: ::std::os::raw::c_int,
+        image_object: FPDF_PAGEOBJECT,
+        file_access: *mut FPDF_FILEACCESS,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Load an image from a JPEG image file and then set it into |image_object|."]
+    #[doc = ""]
+    #[doc = "   pages        - pointer to the start of all loaded pages, may be NULL."]
+    #[doc = "   count        - number of |pages|, may be 0."]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   file_access  - file access handler which specifies the JPEG image file."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    #[doc = ""]
+    #[doc = " The image object might already have an associated image, which is shared and"]
+    #[doc = " cached by the loaded pages. In that case, we need to clear the cached image"]
+    #[doc = " for all the loaded pages. Pass |pages| and page count (|count|) to this API"]
+    #[doc = " to clear the image cache. If the image is not previously shared, or NULL is a"]
+    #[doc = " valid |pages| value. This function loads the JPEG image inline, so the image"]
+    #[doc = " content is copied to the file. This allows |file_access| and its associated"]
+    #[doc = " data to be deleted after this function returns."]
+    pub fn FPDFImageObj_LoadJpegFileInline(
+        pages: *mut FPDF_PAGE,
+        count: ::std::os::raw::c_int,
+        image_object: FPDF_PAGEOBJECT,
+        file_access: *mut FPDF_FILEACCESS,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " TODO(thestig): Start deprecating this once FPDFPageObj_SetMatrix() is stable."]
+    #[doc = ""]
+    #[doc = " Set the transform matrix of |image_object|."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   a            - matrix value."]
+    #[doc = "   b            - matrix value."]
+    #[doc = "   c            - matrix value."]
+    #[doc = "   d            - matrix value."]
+    #[doc = "   e            - matrix value."]
+    #[doc = "   f            - matrix value."]
+    #[doc = ""]
+    #[doc = " The matrix is composed as:"]
+    #[doc = "   |a c e|"]
+    #[doc = "   |b d f|"]
+    #[doc = " and can be used to scale, rotate, shear and translate the |image_object|."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFImageObj_SetMatrix(
+        image_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Set |bitmap| to |image_object|."]
+    #[doc = ""]
+    #[doc = "   pages        - pointer to the start of all loaded pages, may be NULL."]
+    #[doc = "   count        - number of |pages|, may be 0."]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   bitmap       - handle of the bitmap."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFImageObj_SetBitmap(
+        pages: *mut FPDF_PAGE,
+        count: ::std::os::raw::c_int,
+        image_object: FPDF_PAGEOBJECT,
+        bitmap: FPDF_BITMAP,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get a bitmap rasterization of |image_object|. FPDFImageObj_GetBitmap() only"]
+    #[doc = " operates on |image_object| and does not take the associated image mask into"]
+    #[doc = " account. It also ignores the matrix for |image_object|."]
+    #[doc = " The returned bitmap will be owned by the caller, and FPDFBitmap_Destroy()"]
+    #[doc = " must be called on the returned bitmap when it is no longer needed."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = ""]
+    #[doc = " Returns the bitmap."]
+    pub fn FPDFImageObj_GetBitmap(image_object: FPDF_PAGEOBJECT) -> FPDF_BITMAP;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get a bitmap rasterization of |image_object| that takes the image mask and"]
+    #[doc = " image matrix into account. To render correctly, the caller must provide the"]
+    #[doc = " |document| associated with |image_object|. If there is a |page| associated"]
+    #[doc = " with |image_object| the caller should provide that as well."]
+    #[doc = " The returned bitmap will be owned by the caller, and FPDFBitmap_Destroy()"]
+    #[doc = " must be called on the returned bitmap when it is no longer needed."]
+    #[doc = ""]
+    #[doc = "   document     - handle to a document associated with |image_object|."]
+    #[doc = "   page         - handle to an optional page associated with |image_object|."]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = ""]
+    #[doc = " Returns the bitmap."]
+    pub fn FPDFImageObj_GetRenderedBitmap(
+        document: FPDF_DOCUMENT,
+        page: FPDF_PAGE,
+        image_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP;
+}
+extern "C" {
+    #[doc = " Get the decoded image data of |image_object|. The decoded data is the"]
+    #[doc = " uncompressed image data, i.e. the raw image data after having all filters"]
+    #[doc = " applied. |buffer| is only modified if |buflen| is longer than the length of"]
+    #[doc = " the decoded image data."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   buffer       - buffer for holding the decoded image data."]
+    #[doc = "   buflen       - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the decoded image data."]
+    pub fn FPDFImageObj_GetImageDataDecoded(
+        image_object: FPDF_PAGEOBJECT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the raw image data of |image_object|. The raw data is the image data as"]
+    #[doc = " stored in the PDF without applying any filters. |buffer| is only modified if"]
+    #[doc = " |buflen| is longer than the length of the raw image data."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   buffer       - buffer for holding the raw image data."]
+    #[doc = "   buflen       - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the raw image data."]
+    pub fn FPDFImageObj_GetImageDataRaw(
+        image_object: FPDF_PAGEOBJECT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the number of filters (i.e. decoders) of the image in |image_object|."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = ""]
+    #[doc = " Returns the number of |image_object|'s filters."]
+    pub fn FPDFImageObj_GetImageFilterCount(image_object: FPDF_PAGEOBJECT)
+        -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get the filter at |index| of |image_object|'s list of filters. Note that the"]
+    #[doc = " filters need to be applied in order, i.e. the first filter should be applied"]
+    #[doc = " first, then the second, etc. |buffer| is only modified if |buflen| is longer"]
+    #[doc = " than the length of the filter string."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   index        - the index of the filter requested."]
+    #[doc = "   buffer       - buffer for holding filter string, encoded in UTF-8."]
+    #[doc = "   buflen       - length of the buffer."]
+    #[doc = ""]
+    #[doc = " Returns the length of the filter string."]
+    pub fn FPDFImageObj_GetImageFilter(
+        image_object: FPDF_PAGEOBJECT,
+        index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Get the image metadata of |image_object|, including dimension, DPI, bits per"]
+    #[doc = " pixel, and colorspace. If the |image_object| is not an image object or if it"]
+    #[doc = " does not have an image, then the return value will be false. Otherwise,"]
+    #[doc = " failure to retrieve any specific parameter would result in its value being 0."]
+    #[doc = ""]
+    #[doc = "   image_object - handle to an image object."]
+    #[doc = "   page         - handle to the page that |image_object| is on. Required for"]
+    #[doc = "                  retrieving the image's bits per pixel and colorspace."]
+    #[doc = "   metadata     - receives the image metadata; must not be NULL."]
+    #[doc = ""]
+    #[doc = " Returns true if successful."]
+    pub fn FPDFImageObj_GetImageMetadata(
+        image_object: FPDF_PAGEOBJECT,
+        page: FPDF_PAGE,
+        metadata: *mut FPDF_IMAGEOBJ_METADATA,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Create a new path object at an initial position."]
+    #[doc = ""]
+    #[doc = "   x - initial horizontal position."]
+    #[doc = "   y - initial vertical position."]
+    #[doc = ""]
+    #[doc = " Returns a handle to a new path object."]
+    pub fn FPDFPageObj_CreateNewPath(x: f32, y: f32) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Create a closed path consisting of a rectangle."]
+    #[doc = ""]
+    #[doc = "   x - horizontal position for the left boundary of the rectangle."]
+    #[doc = "   y - vertical position for the bottom boundary of the rectangle."]
+    #[doc = "   w - width of the rectangle."]
+    #[doc = "   h - height of the rectangle."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the new path object."]
+    pub fn FPDFPageObj_CreateNewRect(x: f32, y: f32, w: f32, h: f32) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Get the bounding box of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object  - handle to a page object."]
+    #[doc = " left         - pointer where the left coordinate will be stored"]
+    #[doc = " bottom       - pointer where the bottom coordinate will be stored"]
+    #[doc = " right        - pointer where the right coordinate will be stored"]
+    #[doc = " top          - pointer where the top coordinate will be stored"]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_GetBounds(
+        page_object: FPDF_PAGEOBJECT,
+        left: *mut f32,
+        bottom: *mut f32,
+        right: *mut f32,
+        top: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Set the blend mode of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object  - handle to a page object."]
+    #[doc = " blend_mode   - string containing the blend mode."]
+    #[doc = ""]
+    #[doc = " Blend mode can be one of following: Color, ColorBurn, ColorDodge, Darken,"]
+    #[doc = " Difference, Exclusion, HardLight, Hue, Lighten, Luminosity, Multiply, Normal,"]
+    #[doc = " Overlay, Saturation, Screen, SoftLight"]
+    pub fn FPDFPageObj_SetBlendMode(page_object: FPDF_PAGEOBJECT, blend_mode: FPDF_BYTESTRING);
+}
+extern "C" {
+    #[doc = " Set the stroke RGBA of a page object. Range of values: 0 - 255."]
+    #[doc = ""]
+    #[doc = " page_object  - the handle to the page object."]
+    #[doc = " R            - the red component for the object's stroke color."]
+    #[doc = " G            - the green component for the object's stroke color."]
+    #[doc = " B            - the blue component for the object's stroke color."]
+    #[doc = " A            - the stroke alpha for the object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_SetStrokeColor(
+        page_object: FPDF_PAGEOBJECT,
+        R: ::std::os::raw::c_uint,
+        G: ::std::os::raw::c_uint,
+        B: ::std::os::raw::c_uint,
+        A: ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the stroke RGBA of a page object. Range of values: 0 - 255."]
+    #[doc = ""]
+    #[doc = " page_object  - the handle to the page object."]
+    #[doc = " R            - the red component of the path stroke color."]
+    #[doc = " G            - the green component of the object's stroke color."]
+    #[doc = " B            - the blue component of the object's stroke color."]
+    #[doc = " A            - the stroke alpha of the object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_GetStrokeColor(
+        page_object: FPDF_PAGEOBJECT,
+        R: *mut ::std::os::raw::c_uint,
+        G: *mut ::std::os::raw::c_uint,
+        B: *mut ::std::os::raw::c_uint,
+        A: *mut ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Set the stroke width of a page object."]
+    #[doc = ""]
+    #[doc = " path   - the handle to the page object."]
+    #[doc = " width  - the width of the stroke."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPageObj_SetStrokeWidth(page_object: FPDF_PAGEOBJECT, width: f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the stroke width of a page object."]
+    #[doc = ""]
+    #[doc = " path   - the handle to the page object."]
+    #[doc = " width  - the width of the stroke."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPageObj_GetStrokeWidth(page_object: FPDF_PAGEOBJECT, width: *mut f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the line join of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object  - handle to a page object."]
+    #[doc = ""]
+    #[doc = " Returns the line join, or -1 on failure."]
+    #[doc = " Line join can be one of following: FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND,"]
+    #[doc = " FPDF_LINEJOIN_BEVEL"]
+    pub fn FPDFPageObj_GetLineJoin(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Set the line join of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object  - handle to a page object."]
+    #[doc = " line_join    - line join"]
+    #[doc = ""]
+    #[doc = " Line join can be one of following: FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND,"]
+    #[doc = " FPDF_LINEJOIN_BEVEL"]
+    pub fn FPDFPageObj_SetLineJoin(
+        page_object: FPDF_PAGEOBJECT,
+        line_join: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the line cap of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = ""]
+    #[doc = " Returns the line cap, or -1 on failure."]
+    #[doc = " Line cap can be one of following: FPDF_LINECAP_BUTT, FPDF_LINECAP_ROUND,"]
+    #[doc = " FPDF_LINECAP_PROJECTING_SQUARE"]
+    pub fn FPDFPageObj_GetLineCap(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Set the line cap of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = " line_cap    - line cap"]
+    #[doc = ""]
+    #[doc = " Line cap can be one of following: FPDF_LINECAP_BUTT, FPDF_LINECAP_ROUND,"]
+    #[doc = " FPDF_LINECAP_PROJECTING_SQUARE"]
+    pub fn FPDFPageObj_SetLineCap(
+        page_object: FPDF_PAGEOBJECT,
+        line_cap: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Set the fill RGBA of a page object. Range of values: 0 - 255."]
+    #[doc = ""]
+    #[doc = " page_object  - the handle to the page object."]
+    #[doc = " R            - the red component for the object's fill color."]
+    #[doc = " G            - the green component for the object's fill color."]
+    #[doc = " B            - the blue component for the object's fill color."]
+    #[doc = " A            - the fill alpha for the object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_SetFillColor(
+        page_object: FPDF_PAGEOBJECT,
+        R: ::std::os::raw::c_uint,
+        G: ::std::os::raw::c_uint,
+        B: ::std::os::raw::c_uint,
+        A: ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the fill RGBA of a page object. Range of values: 0 - 255."]
+    #[doc = ""]
+    #[doc = " page_object  - the handle to the page object."]
+    #[doc = " R            - the red component of the object's fill color."]
+    #[doc = " G            - the green component of the object's fill color."]
+    #[doc = " B            - the blue component of the object's fill color."]
+    #[doc = " A            - the fill alpha of the object."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_GetFillColor(
+        page_object: FPDF_PAGEOBJECT,
+        R: *mut ::std::os::raw::c_uint,
+        G: *mut ::std::os::raw::c_uint,
+        B: *mut ::std::os::raw::c_uint,
+        A: *mut ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the line dash |phase| of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = " phase - pointer where the dashing phase will be stored."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_GetDashPhase(page_object: FPDF_PAGEOBJECT, phase: *mut f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the line dash phase of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = " phase - line dash phase."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_SetDashPhase(page_object: FPDF_PAGEOBJECT, phase: f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the line dash array of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = ""]
+    #[doc = " Returns the line dash array size or -1 on failure."]
+    pub fn FPDFPageObj_GetDashCount(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the line dash array of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = " dash_array - pointer where the dashing array will be stored."]
+    #[doc = " dash_count - number of elements in |dash_array|."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_GetDashArray(
+        page_object: FPDF_PAGEOBJECT,
+        dash_array: *mut f32,
+        dash_count: size_t,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the line dash array of |page_object|."]
+    #[doc = ""]
+    #[doc = " page_object - handle to a page object."]
+    #[doc = " dash_array - the dash array."]
+    #[doc = " dash_count - number of elements in |dash_array|."]
+    #[doc = " phase - the line dash phase."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFPageObj_SetDashArray(
+        page_object: FPDF_PAGEOBJECT,
+        dash_array: *const f32,
+        dash_count: size_t,
+        phase: f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get number of segments inside |path|."]
+    #[doc = ""]
+    #[doc = "   path - handle to a path."]
+    #[doc = ""]
+    #[doc = " A segment is a command, created by e.g. FPDFPath_MoveTo(),"]
+    #[doc = " FPDFPath_LineTo() or FPDFPath_BezierTo()."]
+    #[doc = ""]
+    #[doc = " Returns the number of objects in |path| or -1 on failure."]
+    pub fn FPDFPath_CountSegments(path: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get segment in |path| at |index|."]
+    #[doc = ""]
+    #[doc = "   path  - handle to a path."]
+    #[doc = "   index - the index of a segment."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the segment, or NULL on faiure."]
+    pub fn FPDFPath_GetPathSegment(
+        path: FPDF_PAGEOBJECT,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_PATHSEGMENT;
+}
+extern "C" {
+    #[doc = " Get coordinates of |segment|."]
+    #[doc = ""]
+    #[doc = "   segment  - handle to a segment."]
+    #[doc = "   x      - the horizontal position of the segment."]
+    #[doc = "   y      - the vertical position of the segment."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success, otherwise |x| and |y| is not set."]
+    pub fn FPDFPathSegment_GetPoint(
+        segment: FPDF_PATHSEGMENT,
+        x: *mut f32,
+        y: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get type of |segment|."]
+    #[doc = ""]
+    #[doc = "   segment - handle to a segment."]
+    #[doc = ""]
+    #[doc = " Returns one of the FPDF_SEGMENT_* values on success,"]
+    #[doc = " FPDF_SEGMENT_UNKNOWN on error."]
+    pub fn FPDFPathSegment_GetType(segment: FPDF_PATHSEGMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Gets if the |segment| closes the current subpath of a given path."]
+    #[doc = ""]
+    #[doc = "   segment - handle to a segment."]
+    #[doc = ""]
+    #[doc = " Returns close flag for non-NULL segment, FALSE otherwise."]
+    pub fn FPDFPathSegment_GetClose(segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Move a path's current point."]
+    #[doc = ""]
+    #[doc = " path   - the handle to the path object."]
+    #[doc = " x      - the horizontal position of the new current point."]
+    #[doc = " y      - the vertical position of the new current point."]
+    #[doc = ""]
+    #[doc = " Note that no line will be created between the previous current point and the"]
+    #[doc = " new one."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPath_MoveTo(path: FPDF_PAGEOBJECT, x: f32, y: f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Add a line between the current point and a new point in the path."]
+    #[doc = ""]
+    #[doc = " path   - the handle to the path object."]
+    #[doc = " x      - the horizontal position of the new point."]
+    #[doc = " y      - the vertical position of the new point."]
+    #[doc = ""]
+    #[doc = " The path's current point is changed to (x, y)."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPath_LineTo(path: FPDF_PAGEOBJECT, x: f32, y: f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Add a cubic Bezier curve to the given path, starting at the current point."]
+    #[doc = ""]
+    #[doc = " path   - the handle to the path object."]
+    #[doc = " x1     - the horizontal position of the first Bezier control point."]
+    #[doc = " y1     - the vertical position of the first Bezier control point."]
+    #[doc = " x2     - the horizontal position of the second Bezier control point."]
+    #[doc = " y2     - the vertical position of the second Bezier control point."]
+    #[doc = " x3     - the horizontal position of the ending point of the Bezier curve."]
+    #[doc = " y3     - the vertical position of the ending point of the Bezier curve."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPath_BezierTo(
+        path: FPDF_PAGEOBJECT,
+        x1: f32,
+        y1: f32,
+        x2: f32,
+        y2: f32,
+        x3: f32,
+        y3: f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Close the current subpath of a given path."]
+    #[doc = ""]
+    #[doc = " path   - the handle to the path object."]
+    #[doc = ""]
+    #[doc = " This will add a line between the current point and the initial point of the"]
+    #[doc = " subpath, thus terminating the current subpath."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPath_Close(path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Set the drawing mode of a path."]
+    #[doc = ""]
+    #[doc = " path     - the handle to the path object."]
+    #[doc = " fillmode - the filling mode to be set: one of the FPDF_FILLMODE_* flags."]
+    #[doc = " stroke   - a boolean specifying if the path should be stroked or not."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPath_SetDrawMode(
+        path: FPDF_PAGEOBJECT,
+        fillmode: ::std::os::raw::c_int,
+        stroke: FPDF_BOOL,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the drawing mode of a path."]
+    #[doc = ""]
+    #[doc = " path     - the handle to the path object."]
+    #[doc = " fillmode - the filling mode of the path: one of the FPDF_FILLMODE_* flags."]
+    #[doc = " stroke   - a boolean specifying if the path is stroked or not."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFPath_GetDrawMode(
+        path: FPDF_PAGEOBJECT,
+        fillmode: *mut ::std::os::raw::c_int,
+        stroke: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Create a new text object using one of the standard PDF fonts."]
+    #[doc = ""]
+    #[doc = " document   - handle to the document."]
+    #[doc = " font       - string containing the font name, without spaces."]
+    #[doc = " font_size  - the font size for the new text object."]
+    #[doc = ""]
+    #[doc = " Returns a handle to a new text object, or NULL on failure"]
+    pub fn FPDFPageObj_NewTextObj(
+        document: FPDF_DOCUMENT,
+        font: FPDF_BYTESTRING,
+        font_size: f32,
+    ) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Set the text for a text object. If it had text, it will be replaced."]
+    #[doc = ""]
+    #[doc = " text_object  - handle to the text object."]
+    #[doc = " text         - the UTF-16LE encoded string containing the text to be added."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFText_SetText(text_object: FPDF_PAGEOBJECT, text: FPDF_WIDESTRING) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the text using charcodes for a text object. If it had text, it will be"]
+    #[doc = " replaced."]
+    #[doc = ""]
+    #[doc = " text_object  - handle to the text object."]
+    #[doc = " charcodes    - pointer to an array of charcodes to be added."]
+    #[doc = " count        - number of elements in |charcodes|."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success"]
+    pub fn FPDFText_SetCharcodes(
+        text_object: FPDF_PAGEOBJECT,
+        charcodes: *const u32,
+        count: size_t,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Returns a font object loaded from a stream of data. The font is loaded"]
+    #[doc = " into the document."]
+    #[doc = ""]
+    #[doc = " document   - handle to the document."]
+    #[doc = " data       - the stream of data, which will be copied by the font object."]
+    #[doc = " size       - size of the stream, in bytes."]
+    #[doc = " font_type  - FPDF_FONT_TYPE1 or FPDF_FONT_TRUETYPE depending on the font"]
+    #[doc = " type."]
+    #[doc = " cid        - a boolean specifying if the font is a CID font or not."]
+    #[doc = ""]
+    #[doc = " The loaded font can be closed using FPDFFont_Close."]
+    #[doc = ""]
+    #[doc = " Returns NULL on failure"]
+    pub fn FPDFText_LoadFont(
+        document: FPDF_DOCUMENT,
+        data: *const u8,
+        size: u32,
+        font_type: ::std::os::raw::c_int,
+        cid: FPDF_BOOL,
+    ) -> FPDF_FONT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Loads one of the standard 14 fonts per PDF spec 1.7 page 416. The preferred"]
+    #[doc = " way of using font style is using a dash to separate the name from the style,"]
+    #[doc = " for example 'Helvetica-BoldItalic'."]
+    #[doc = ""]
+    #[doc = " document   - handle to the document."]
+    #[doc = " font       - string containing the font name, without spaces."]
+    #[doc = ""]
+    #[doc = " The loaded font can be closed using FPDFFont_Close."]
+    #[doc = ""]
+    #[doc = " Returns NULL on failure."]
+    pub fn FPDFText_LoadStandardFont(document: FPDF_DOCUMENT, font: FPDF_BYTESTRING) -> FPDF_FONT;
+}
+extern "C" {
+    #[doc = " Get the font size of a text object."]
+    #[doc = ""]
+    #[doc = "   text - handle to a text."]
+    #[doc = "   size - pointer to the font size of the text object, measured in points"]
+    #[doc = "   (about 1/72 inch)"]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFTextObj_GetFontSize(text: FPDF_PAGEOBJECT, size: *mut f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Close a loaded PDF font."]
+    #[doc = ""]
+    #[doc = " font   - Handle to the loaded font."]
+    pub fn FPDFFont_Close(font: FPDF_FONT);
+}
+extern "C" {
+    #[doc = " Create a new text object using a loaded font."]
+    #[doc = ""]
+    #[doc = " document   - handle to the document."]
+    #[doc = " font       - handle to the font object."]
+    #[doc = " font_size  - the font size for the new text object."]
+    #[doc = ""]
+    #[doc = " Returns a handle to a new text object, or NULL on failure"]
+    pub fn FPDFPageObj_CreateTextObj(
+        document: FPDF_DOCUMENT,
+        font: FPDF_FONT,
+        font_size: f32,
+    ) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Get the text rendering mode of a text object."]
+    #[doc = ""]
+    #[doc = " text     - the handle to the text object."]
+    #[doc = ""]
+    #[doc = " Returns one of the known FPDF_TEXT_RENDERMODE enum values on success,"]
+    #[doc = " FPDF_TEXTRENDERMODE_UNKNOWN on error."]
+    pub fn FPDFTextObj_GetTextRenderMode(text: FPDF_PAGEOBJECT) -> FPDF_TEXT_RENDERMODE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Set the text rendering mode of a text object."]
+    #[doc = ""]
+    #[doc = " text         - the handle to the text object."]
+    #[doc = " render_mode  - the FPDF_TEXT_RENDERMODE enum value to be set (cannot set to"]
+    #[doc = "                FPDF_TEXTRENDERMODE_UNKNOWN)."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDFTextObj_SetTextRenderMode(
+        text: FPDF_PAGEOBJECT,
+        render_mode: FPDF_TEXT_RENDERMODE,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the text of a text object."]
+    #[doc = ""]
+    #[doc = " text_object      - the handle to the text object."]
+    #[doc = " text_page        - the handle to the text page."]
+    #[doc = " buffer           - the address of a buffer that receives the text."]
+    #[doc = " length           - the size, in bytes, of |buffer|."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the text (including the trailing NUL"]
+    #[doc = " character) on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " Regardless of the platform, the |buffer| is always in UTF-16LE encoding."]
+    #[doc = " If |length| is less than the returned length, or |buffer| is NULL, |buffer|"]
+    #[doc = " will not be modified."]
+    pub fn FPDFTextObj_GetText(
+        text_object: FPDF_PAGEOBJECT,
+        text_page: FPDF_TEXTPAGE,
+        buffer: *mut FPDF_WCHAR,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the font of a text object."]
+    #[doc = ""]
+    #[doc = " text - the handle to the text object."]
+    #[doc = ""]
+    #[doc = " Returns a handle to the font object held by |text| which retains ownership."]
+    pub fn FPDFTextObj_GetFont(text: FPDF_PAGEOBJECT) -> FPDF_FONT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the font name of a font."]
+    #[doc = ""]
+    #[doc = " font   - the handle to the font object."]
+    #[doc = " buffer - the address of a buffer that receives the font name."]
+    #[doc = " length - the size, in bytes, of |buffer|."]
+    #[doc = ""]
+    #[doc = " Returns the number of bytes in the font name (including the trailing NUL"]
+    #[doc = " character) on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " Regardless of the platform, the |buffer| is always in UTF-8 encoding."]
+    #[doc = " If |length| is less than the returned length, or |buffer| is NULL, |buffer|"]
+    #[doc = " will not be modified."]
+    pub fn FPDFFont_GetFontName(
+        font: FPDF_FONT,
+        buffer: *mut ::std::os::raw::c_char,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the descriptor flags of a font."]
+    #[doc = ""]
+    #[doc = " font - the handle to the font object."]
+    #[doc = ""]
+    #[doc = " Returns the bit flags specifying various characteristics of the font as"]
+    #[doc = " defined in ISO 32000-1:2008, table 123, -1 on failure."]
+    pub fn FPDFFont_GetFlags(font: FPDF_FONT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the font weight of a font."]
+    #[doc = ""]
+    #[doc = " font - the handle to the font object."]
+    #[doc = ""]
+    #[doc = " Returns the font weight, -1 on failure."]
+    #[doc = " Typical values are 400 (normal) and 700 (bold)."]
+    pub fn FPDFFont_GetWeight(font: FPDF_FONT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the italic angle of a font."]
+    #[doc = ""]
+    #[doc = " font  - the handle to the font object."]
+    #[doc = " angle - pointer where the italic angle will be stored"]
+    #[doc = ""]
+    #[doc = " The italic angle of a |font| is defined as degrees counterclockwise"]
+    #[doc = " from vertical. For a font that slopes to the right, this will be negative."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success; |angle| unmodified on failure."]
+    pub fn FPDFFont_GetItalicAngle(font: FPDF_FONT, angle: *mut ::std::os::raw::c_int)
+        -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get ascent distance of a font."]
+    #[doc = ""]
+    #[doc = " font       - the handle to the font object."]
+    #[doc = " font_size  - the size of the |font|."]
+    #[doc = " ascent     - pointer where the font ascent will be stored"]
+    #[doc = ""]
+    #[doc = " Ascent is the maximum distance in points above the baseline reached by the"]
+    #[doc = " glyphs of the |font|. One point is 1/72 inch (around 0.3528 mm)."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success; |ascent| unmodified on failure."]
+    pub fn FPDFFont_GetAscent(font: FPDF_FONT, font_size: f32, ascent: *mut f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get descent distance of a font."]
+    #[doc = ""]
+    #[doc = " font       - the handle to the font object."]
+    #[doc = " font_size  - the size of the |font|."]
+    #[doc = " descent    - pointer where the font descent will be stored"]
+    #[doc = ""]
+    #[doc = " Descent is the maximum distance in points below the baseline reached by the"]
+    #[doc = " glyphs of the |font|. One point is 1/72 inch (around 0.3528 mm)."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success; |descent| unmodified on failure."]
+    pub fn FPDFFont_GetDescent(font: FPDF_FONT, font_size: f32, descent: *mut f32) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the width of a glyph in a font."]
+    #[doc = ""]
+    #[doc = " font       - the handle to the font object."]
+    #[doc = " glyph      - the glyph."]
+    #[doc = " font_size  - the size of the font."]
+    #[doc = " width      - pointer where the glyph width will be stored"]
+    #[doc = ""]
+    #[doc = " Glyph width is the distance from the end of the prior glyph to the next"]
+    #[doc = " glyph. This will be the vertical distance for vertical writing."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success; |width| unmodified on failure."]
+    pub fn FPDFFont_GetGlyphWidth(
+        font: FPDF_FONT,
+        glyph: u32,
+        font_size: f32,
+        width: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the glyphpath describing how to draw a font glyph."]
+    #[doc = ""]
+    #[doc = " font       - the handle to the font object."]
+    #[doc = " glyph      - the glyph being drawn."]
+    #[doc = " font_size  - the size of the font."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the segment, or NULL on faiure."]
+    pub fn FPDFFont_GetGlyphPath(font: FPDF_FONT, glyph: u32, font_size: f32) -> FPDF_GLYPHPATH;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get number of segments inside glyphpath."]
+    #[doc = ""]
+    #[doc = " glyphpath - handle to a glyph path."]
+    #[doc = ""]
+    #[doc = " Returns the number of objects in |glyphpath| or -1 on failure."]
+    pub fn FPDFGlyphPath_CountGlyphSegments(glyphpath: FPDF_GLYPHPATH) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get segment in glyphpath at index."]
+    #[doc = ""]
+    #[doc = " glyphpath  - handle to a glyph path."]
+    #[doc = " index      - the index of a segment."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the segment, or NULL on faiure."]
+    pub fn FPDFGlyphPath_GetGlyphPathSegment(
+        glyphpath: FPDF_GLYPHPATH,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_PATHSEGMENT;
+}
+extern "C" {
+    #[doc = " Get number of page objects inside |form_object|."]
+    #[doc = ""]
+    #[doc = "   form_object - handle to a form object."]
+    #[doc = ""]
+    #[doc = " Returns the number of objects in |form_object| on success, -1 on error."]
+    pub fn FPDFFormObj_CountObjects(form_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get page object in |form_object| at |index|."]
+    #[doc = ""]
+    #[doc = "   form_object - handle to a form object."]
+    #[doc = "   index       - the 0-based index of a page object."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the page object, or NULL on error."]
+    pub fn FPDFFormObj_GetObject(
+        form_object: FPDF_PAGEOBJECT,
+        index: ::std::os::raw::c_ulong,
+    ) -> FPDF_PAGEOBJECT;
+}
 #[doc = " Interface for unsupported feature notifications."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3349,12 +8260,12 @@ pub struct _UNSUPPORT_INFO {
 fn bindgen_test_layout__UNSUPPORT_INFO() {
     assert_eq!(
         ::std::mem::size_of::<_UNSUPPORT_INFO>(),
-        8usize,
+        16usize,
         concat!("Size of: ", stringify!(_UNSUPPORT_INFO))
     );
     assert_eq!(
         ::std::mem::align_of::<_UNSUPPORT_INFO>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_UNSUPPORT_INFO))
     );
     assert_eq!(
@@ -3371,7 +8282,7 @@ fn bindgen_test_layout__UNSUPPORT_INFO() {
         unsafe {
             &(*(::std::ptr::null::<_UNSUPPORT_INFO>())).FSDK_UnSupport_Handler as *const _ as usize
         },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_UNSUPPORT_INFO),
@@ -3382,6 +8293,37 @@ fn bindgen_test_layout__UNSUPPORT_INFO() {
 }
 #[doc = " Interface for unsupported feature notifications."]
 pub type UNSUPPORT_INFO = _UNSUPPORT_INFO;
+extern "C" {
+    #[doc = " Setup an unsupported object handler."]
+    #[doc = ""]
+    #[doc = "   unsp_info - Pointer to an UNSUPPORT_INFO structure."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FSDK_SetUnSpObjProcessHandler(unsp_info: *mut UNSUPPORT_INFO) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the document's PageMode."]
+    #[doc = ""]
+    #[doc = "   doc - Handle to document."]
+    #[doc = ""]
+    #[doc = " Returns one of the |PAGEMODE_*| flags defined above."]
+    #[doc = ""]
+    #[doc = " The page mode defines how the document should be initially displayed."]
+    pub fn FPDFDoc_GetPageMode(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Flatten annotations and form fields into the page contents."]
+    #[doc = ""]
+    #[doc = "   page  - handle to the page."]
+    #[doc = "   nFlag - One of the |FLAT_*| values denoting the page usage."]
+    #[doc = ""]
+    #[doc = " Returns one of the |FLATTEN_*| values."]
+    #[doc = ""]
+    #[doc = " Currently, all failures return |FLATTEN_FAIL| with no indication of the"]
+    #[doc = " cause."]
+    pub fn FPDFPage_Flatten(page: FPDF_PAGE, nFlag: ::std::os::raw::c_int)
+        -> ::std::os::raw::c_int;
+}
 pub const FWL_EVENTFLAG_FWL_EVENTFLAG_ShiftKey: FWL_EVENTFLAG = 1;
 pub const FWL_EVENTFLAG_FWL_EVENTFLAG_ControlKey: FWL_EVENTFLAG = 2;
 pub const FWL_EVENTFLAG_FWL_EVENTFLAG_AltKey: FWL_EVENTFLAG = 4;
@@ -3564,6 +8506,173 @@ pub const FWL_VKEYCODE_FWL_VKEY_OEM_Clear: FWL_VKEYCODE = 254;
 pub const FWL_VKEYCODE_FWL_VKEY_Unknown: FWL_VKEYCODE = 0;
 #[doc = " Virtual keycodes."]
 pub type FWL_VKEYCODE = ::std::os::raw::c_uint;
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the number of JavaScript actions in |document|."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = ""]
+    #[doc = " Returns the number of JavaScript actions in |document| or -1 on error."]
+    pub fn FPDFDoc_GetJavaScriptActionCount(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the JavaScript action at |index| in |document|."]
+    #[doc = ""]
+    #[doc = "   document - handle to a document."]
+    #[doc = "   index    - the index of the requested JavaScript action."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the JavaScript action, or NULL on failure."]
+    #[doc = " Caller owns the returned handle and must close it with"]
+    #[doc = " FPDFDoc_CloseJavaScriptAction()."]
+    pub fn FPDFDoc_GetJavaScriptAction(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_JAVASCRIPT_ACTION;
+}
+extern "C" {
+    #[doc = "   javascript - Handle to a JavaScript action."]
+    pub fn FPDFDoc_CloseJavaScriptAction(javascript: FPDF_JAVASCRIPT_ACTION);
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the name from the |javascript| handle. |buffer| is only modified if"]
+    #[doc = " |buflen| is longer than the length of the name. On errors, |buffer| is"]
+    #[doc = " unmodified and the returned length is 0."]
+    #[doc = ""]
+    #[doc = "   javascript - handle to an JavaScript action."]
+    #[doc = "   buffer     - buffer for holding the name, encoded in UTF-16LE."]
+    #[doc = "   buflen     - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the JavaScript action name in bytes."]
+    pub fn FPDFJavaScriptAction_GetName(
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the script from the |javascript| handle. |buffer| is only modified if"]
+    #[doc = " |buflen| is longer than the length of the script. On errors, |buffer| is"]
+    #[doc = " unmodified and the returned length is 0."]
+    #[doc = ""]
+    #[doc = "   javascript - handle to an JavaScript action."]
+    #[doc = "   buffer     - buffer for holding the name, encoded in UTF-16LE."]
+    #[doc = "   buflen     - length of the buffer in bytes."]
+    #[doc = ""]
+    #[doc = " Returns the length of the JavaScript action name in bytes."]
+    pub fn FPDFJavaScriptAction_GetScript(
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Import pages to a FPDF_DOCUMENT."]
+    #[doc = ""]
+    #[doc = "   dest_doc     - The destination document for the pages."]
+    #[doc = "   src_doc      - The document to be imported."]
+    #[doc = "   page_indices - An array of page indices to be imported. The first page is"]
+    #[doc = "                  zero. If |page_indices| is NULL, all pages from |src_doc|"]
+    #[doc = "                  are imported."]
+    #[doc = "   length       - The length of the |page_indices| array."]
+    #[doc = "   index        - The page index at which to insert the first imported page"]
+    #[doc = "                  into |dest_doc|. The first page is zero."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success. Returns FALSE if any pages in |page_indices| is"]
+    #[doc = " invalid."]
+    pub fn FPDF_ImportPagesByIndex(
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        page_indices: *const ::std::os::raw::c_int,
+        length: ::std::os::raw::c_ulong,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Import pages to a FPDF_DOCUMENT."]
+    #[doc = ""]
+    #[doc = "   dest_doc  - The destination document for the pages."]
+    #[doc = "   src_doc   - The document to be imported."]
+    #[doc = "   pagerange - A page range string, Such as \"1,3,5-7\". The first page is one."]
+    #[doc = "               If |pagerange| is NULL, all pages from |src_doc| are imported."]
+    #[doc = "   index     - The page index at which to insert the first imported page into"]
+    #[doc = "               |dest_doc|. The first page is zero."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success. Returns FALSE if any pages in |pagerange| is"]
+    #[doc = " invalid or if |pagerange| cannot be read."]
+    pub fn FPDF_ImportPages(
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        pagerange: FPDF_BYTESTRING,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Create a new document from |src_doc|.  The pages of |src_doc| will be"]
+    #[doc = " combined to provide |num_pages_on_x_axis x num_pages_on_y_axis| pages per"]
+    #[doc = " |output_doc| page."]
+    #[doc = ""]
+    #[doc = "   src_doc             - The document to be imported."]
+    #[doc = "   output_width        - The output page width in PDF \"user space\" units."]
+    #[doc = "   output_height       - The output page height in PDF \"user space\" units."]
+    #[doc = "   num_pages_on_x_axis - The number of pages on X Axis."]
+    #[doc = "   num_pages_on_y_axis - The number of pages on Y Axis."]
+    #[doc = ""]
+    #[doc = " Return value:"]
+    #[doc = "   A handle to the created document, or NULL on failure."]
+    #[doc = ""]
+    #[doc = " Comments:"]
+    #[doc = "   number of pages per page = num_pages_on_x_axis * num_pages_on_y_axis"]
+    #[doc = ""]
+    pub fn FPDF_ImportNPagesToOne(
+        src_doc: FPDF_DOCUMENT,
+        output_width: f32,
+        output_height: f32,
+        num_pages_on_x_axis: size_t,
+        num_pages_on_y_axis: size_t,
+    ) -> FPDF_DOCUMENT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Create a template to generate form xobjects from |src_doc|'s page at"]
+    #[doc = " |src_page_index|, for use in |dest_doc|."]
+    #[doc = ""]
+    #[doc = " Returns a handle on success, or NULL on failure. Caller owns the newly"]
+    #[doc = " created object."]
+    pub fn FPDF_NewXObjectFromPage(
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        src_page_index: ::std::os::raw::c_int,
+    ) -> FPDF_XOBJECT;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Close an FPDF_XOBJECT handle created by FPDF_NewXObjectFromPage()."]
+    #[doc = " FPDF_PAGEOBJECTs created from the FPDF_XOBJECT handle are not affected."]
+    pub fn FPDF_CloseXObject(xobject: FPDF_XOBJECT);
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Create a new form object from an FPDF_XOBJECT object."]
+    #[doc = ""]
+    #[doc = " Returns a new form object on success, or NULL on failure. Caller owns the"]
+    #[doc = " newly created object."]
+    pub fn FPDF_NewFormObjectFromXObject(xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Copy the viewer preferences from |src_doc| into |dest_doc|."]
+    #[doc = ""]
+    #[doc = "   dest_doc - Document to write the viewer preferences into."]
+    #[doc = "   src_doc  - Document to read the viewer preferences from."]
+    #[doc = ""]
+    #[doc = " Returns TRUE on success."]
+    pub fn FPDF_CopyViewerPreferences(dest_doc: FPDF_DOCUMENT, src_doc: FPDF_DOCUMENT)
+        -> FPDF_BOOL;
+}
 #[doc = " IFPDF_RENDERINFO interface."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3589,12 +8698,12 @@ pub struct _IFSDK_PAUSE {
 fn bindgen_test_layout__IFSDK_PAUSE() {
     assert_eq!(
         ::std::mem::size_of::<_IFSDK_PAUSE>(),
-        12usize,
+        24usize,
         concat!("Size of: ", stringify!(_IFSDK_PAUSE))
     );
     assert_eq!(
         ::std::mem::align_of::<_IFSDK_PAUSE>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_IFSDK_PAUSE))
     );
     assert_eq!(
@@ -3609,7 +8718,7 @@ fn bindgen_test_layout__IFSDK_PAUSE() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IFSDK_PAUSE>())).NeedToPauseNow as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_IFSDK_PAUSE),
@@ -3619,7 +8728,7 @@ fn bindgen_test_layout__IFSDK_PAUSE() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_IFSDK_PAUSE>())).user as *const _ as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(_IFSDK_PAUSE),
@@ -3630,6 +8739,121 @@ fn bindgen_test_layout__IFSDK_PAUSE() {
 }
 #[doc = " IFPDF_RENDERINFO interface."]
 pub type IFSDK_PAUSE = _IFSDK_PAUSE;
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_RenderPageBitmapWithColorScheme_Start"]
+    #[doc = "          Start to render page contents to a device independent bitmap"]
+    #[doc = "          progressively with a specified color scheme for the content."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap       -   Handle to the device independent bitmap (as the"]
+    #[doc = "                           output buffer). Bitmap handle can be created by"]
+    #[doc = "                           FPDFBitmap_Create function."]
+    #[doc = "          page         -   Handle to the page as returned by FPDF_LoadPage"]
+    #[doc = "                           function."]
+    #[doc = "          start_x      -   Left pixel position of the display area in the"]
+    #[doc = "                           bitmap coordinate."]
+    #[doc = "          start_y      -   Top pixel position of the display area in the"]
+    #[doc = "                           bitmap coordinate."]
+    #[doc = "          size_x       -   Horizontal size (in pixels) for displaying the"]
+    #[doc = "                           page."]
+    #[doc = "          size_y       -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "          rotate       -   Page orientation: 0 (normal), 1 (rotated 90"]
+    #[doc = "                           degrees clockwise), 2 (rotated 180 degrees),"]
+    #[doc = "                           3 (rotated 90 degrees counter-clockwise)."]
+    #[doc = "          flags        -   0 for normal display, or combination of flags"]
+    #[doc = "                           defined in fpdfview.h. With FPDF_ANNOT flag, it"]
+    #[doc = "                           renders all annotations that does not require"]
+    #[doc = "                           user-interaction, which are all annotations except"]
+    #[doc = "                           widget and popup annotations."]
+    #[doc = "          color_scheme -   Color scheme to be used in rendering the |page|."]
+    #[doc = "                           If null, this function will work similar to"]
+    #[doc = "                           FPDF_RenderPageBitmap_Start()."]
+    #[doc = "          pause        -   The IFSDK_PAUSE interface. A callback mechanism"]
+    #[doc = "                           allowing the page rendering process."]
+    #[doc = " Return value:"]
+    #[doc = "          Rendering Status. See flags for progressive process status for the"]
+    #[doc = "          details."]
+    pub fn FPDF_RenderPageBitmapWithColorScheme_Start(
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        flags: ::std::os::raw::c_int,
+        color_scheme: *const FPDF_COLORSCHEME,
+        pause: *mut IFSDK_PAUSE,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_RenderPageBitmap_Start"]
+    #[doc = "          Start to render page contents to a device independent bitmap"]
+    #[doc = "          progressively."]
+    #[doc = " Parameters:"]
+    #[doc = "          bitmap      -   Handle to the device independent bitmap (as the"]
+    #[doc = "                          output buffer). Bitmap handle can be created by"]
+    #[doc = "                          FPDFBitmap_Create()."]
+    #[doc = "          page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "          start_x     -   Left pixel position of the display area in the"]
+    #[doc = "                          bitmap coordinates."]
+    #[doc = "          start_y     -   Top pixel position of the display area in the bitmap"]
+    #[doc = "                          coordinates."]
+    #[doc = "          size_x      -   Horizontal size (in pixels) for displaying the page."]
+    #[doc = "          size_y      -   Vertical size (in pixels) for displaying the page."]
+    #[doc = "          rotate      -   Page orientation: 0 (normal), 1 (rotated 90 degrees"]
+    #[doc = "                          clockwise), 2 (rotated 180 degrees), 3 (rotated 90"]
+    #[doc = "                          degrees counter-clockwise)."]
+    #[doc = "          flags       -   0 for normal display, or combination of flags"]
+    #[doc = "                          defined in fpdfview.h. With FPDF_ANNOT flag, it"]
+    #[doc = "                          renders all annotations that does not require"]
+    #[doc = "                          user-interaction, which are all annotations except"]
+    #[doc = "                          widget and popup annotations."]
+    #[doc = "          pause       -   The IFSDK_PAUSE interface.A callback mechanism"]
+    #[doc = "                          allowing the page rendering process"]
+    #[doc = " Return value:"]
+    #[doc = "          Rendering Status. See flags for progressive process status for the"]
+    #[doc = "          details."]
+    pub fn FPDF_RenderPageBitmap_Start(
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: ::std::os::raw::c_int,
+        start_y: ::std::os::raw::c_int,
+        size_x: ::std::os::raw::c_int,
+        size_y: ::std::os::raw::c_int,
+        rotate: ::std::os::raw::c_int,
+        flags: ::std::os::raw::c_int,
+        pause: *mut IFSDK_PAUSE,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_RenderPage_Continue"]
+    #[doc = "          Continue rendering a PDF page."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = "          pause       -   The IFSDK_PAUSE interface (a callback mechanism"]
+    #[doc = "                          allowing the page rendering process to be paused"]
+    #[doc = "                          before it's finished). This can be NULL if you"]
+    #[doc = "                          don't want to pause."]
+    #[doc = " Return value:"]
+    #[doc = "          The rendering status. See flags for progressive process status for"]
+    #[doc = "          the details."]
+    pub fn FPDF_RenderPage_Continue(
+        page: FPDF_PAGE,
+        pause: *mut IFSDK_PAUSE,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_RenderPage_Close"]
+    #[doc = "          Release the resource allocate during page rendering. Need to be"]
+    #[doc = "          called after finishing rendering or"]
+    #[doc = "          cancel the rendering."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_RenderPage_Close(page: FPDF_PAGE);
+}
 #[doc = " Structure for custom file write"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3664,12 +8888,12 @@ pub struct FPDF_FILEWRITE_ {
 fn bindgen_test_layout_FPDF_FILEWRITE_() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_FILEWRITE_>(),
-        8usize,
+        16usize,
         concat!("Size of: ", stringify!(FPDF_FILEWRITE_))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_FILEWRITE_>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_FILEWRITE_))
     );
     assert_eq!(
@@ -3684,7 +8908,7 @@ fn bindgen_test_layout_FPDF_FILEWRITE_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_FILEWRITE_>())).WriteBlock as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_FILEWRITE_),
@@ -3695,6 +8919,438 @@ fn bindgen_test_layout_FPDF_FILEWRITE_() {
 }
 #[doc = " Structure for custom file write"]
 pub type FPDF_FILEWRITE = FPDF_FILEWRITE_;
+extern "C" {
+    #[doc = " Function: FPDF_SaveAsCopy"]
+    #[doc = "          Saves the copy of specified document in custom way."]
+    #[doc = " Parameters:"]
+    #[doc = "          document        -   Handle to document, as returned by"]
+    #[doc = "                              FPDF_LoadDocument() or FPDF_CreateNewDocument()."]
+    #[doc = "          pFileWrite      -   A pointer to a custom file write structure."]
+    #[doc = "          flags           -   The creating flags."]
+    #[doc = " Return value:"]
+    #[doc = "          TRUE for succeed, FALSE for failed."]
+    #[doc = ""]
+    pub fn FPDF_SaveAsCopy(
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDF_SaveWithVersion"]
+    #[doc = "          Same as FPDF_SaveAsCopy(), except the file version of the"]
+    #[doc = "          saved document can be specified by the caller."]
+    #[doc = " Parameters:"]
+    #[doc = "          document        -   Handle to document."]
+    #[doc = "          pFileWrite      -   A pointer to a custom file write structure."]
+    #[doc = "          flags           -   The creating flags."]
+    #[doc = "          fileVersion     -   The PDF file version. File version: 14 for 1.4,"]
+    #[doc = "                              15 for 1.5, ..."]
+    #[doc = " Return value:"]
+    #[doc = "          TRUE if succeed, FALSE if failed."]
+    #[doc = ""]
+    pub fn FPDF_SaveWithVersion(
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+        fileVersion: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get the character index in |text_page| internal character list."]
+    #[doc = ""]
+    #[doc = "   text_page  - a text page information structure."]
+    #[doc = "   nTextIndex - index of the text returned from FPDFText_GetText()."]
+    #[doc = ""]
+    #[doc = " Returns the index of the character in internal character list. -1 for error."]
+    pub fn FPDFText_GetCharIndexFromTextIndex(
+        text_page: FPDF_TEXTPAGE,
+        nTextIndex: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Get the text index in |text_page| internal character list."]
+    #[doc = ""]
+    #[doc = "   text_page  - a text page information structure."]
+    #[doc = "   nCharIndex - index of the character in internal character list."]
+    #[doc = ""]
+    #[doc = " Returns the index of the text returned from FPDFText_GetText(). -1 for error."]
+    pub fn FPDFText_GetTextIndexFromCharIndex(
+        text_page: FPDF_TEXTPAGE,
+        nCharIndex: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetSignatureCount"]
+    #[doc = "          Get total number of signatures in the document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument()."]
+    #[doc = " Return value:"]
+    #[doc = "          Total number of signatures in the document on success, -1 on error."]
+    pub fn FPDF_GetSignatureCount(document: FPDF_DOCUMENT) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_GetSignatureObject"]
+    #[doc = "          Get the Nth signature of the document."]
+    #[doc = " Parameters:"]
+    #[doc = "          document    -   Handle to document. Returned by FPDF_LoadDocument()."]
+    #[doc = "          index       -   Index into the array of signatures of the document."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the handle to the signature, or NULL on failure. The caller"]
+    #[doc = "          does not take ownership of the returned FPDF_SIGNATURE. Instead, it"]
+    #[doc = "          remains valid until FPDF_CloseDocument() is called for the document."]
+    pub fn FPDF_GetSignatureObject(
+        document: FPDF_DOCUMENT,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_SIGNATURE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFSignatureObj_GetContents"]
+    #[doc = "          Get the contents of a signature object."]
+    #[doc = " Parameters:"]
+    #[doc = "          signature   -   Handle to the signature object. Returned by"]
+    #[doc = "                          FPDF_GetSignatureObject()."]
+    #[doc = "          buffer      -   The address of a buffer that receives the contents."]
+    #[doc = "          length      -   The size, in bytes, of |buffer|."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the number of bytes in the contents on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " For public-key signatures, |buffer| is either a DER-encoded PKCS#1 binary or"]
+    #[doc = " a DER-encoded PKCS#7 binary. If |length| is less than the returned length, or"]
+    #[doc = " |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDFSignatureObj_GetContents(
+        signature: FPDF_SIGNATURE,
+        buffer: *mut ::std::os::raw::c_void,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFSignatureObj_GetByteRange"]
+    #[doc = "          Get the byte range of a signature object."]
+    #[doc = " Parameters:"]
+    #[doc = "          signature   -   Handle to the signature object. Returned by"]
+    #[doc = "                          FPDF_GetSignatureObject()."]
+    #[doc = "          buffer      -   The address of a buffer that receives the"]
+    #[doc = "                          byte range."]
+    #[doc = "          length      -   The size, in ints, of |buffer|."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the number of ints in the byte range on"]
+    #[doc = "          success, 0 on error."]
+    #[doc = ""]
+    #[doc = " |buffer| is an array of pairs of integers (starting byte offset,"]
+    #[doc = " length in bytes) that describes the exact byte range for the digest"]
+    #[doc = " calculation. If |length| is less than the returned length, or"]
+    #[doc = " |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDFSignatureObj_GetByteRange(
+        signature: FPDF_SIGNATURE,
+        buffer: *mut ::std::os::raw::c_int,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFSignatureObj_GetSubFilter"]
+    #[doc = "          Get the encoding of the value of a signature object."]
+    #[doc = " Parameters:"]
+    #[doc = "          signature   -   Handle to the signature object. Returned by"]
+    #[doc = "                          FPDF_GetSignatureObject()."]
+    #[doc = "          buffer      -   The address of a buffer that receives the encoding."]
+    #[doc = "          length      -   The size, in bytes, of |buffer|."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the number of bytes in the encoding name (including the"]
+    #[doc = "          trailing NUL character) on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " The |buffer| is always encoded in 7-bit ASCII. If |length| is less than the"]
+    #[doc = " returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDFSignatureObj_GetSubFilter(
+        signature: FPDF_SIGNATURE,
+        buffer: *mut ::std::os::raw::c_char,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFSignatureObj_GetReason"]
+    #[doc = "          Get the reason (comment) of the signature object."]
+    #[doc = " Parameters:"]
+    #[doc = "          signature   -   Handle to the signature object. Returned by"]
+    #[doc = "                          FPDF_GetSignatureObject()."]
+    #[doc = "          buffer      -   The address of a buffer that receives the reason."]
+    #[doc = "          length      -   The size, in bytes, of |buffer|."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the number of bytes in the reason on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " Regardless of the platform, the |buffer| is always in UTF-16LE encoding. The"]
+    #[doc = " string is terminated by a UTF16 NUL character. If |length| is less than the"]
+    #[doc = " returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    pub fn FPDFSignatureObj_GetReason(
+        signature: FPDF_SIGNATURE,
+        buffer: *mut ::std::os::raw::c_void,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFSignatureObj_GetTime"]
+    #[doc = "          Get the time of signing of a signature object."]
+    #[doc = " Parameters:"]
+    #[doc = "          signature   -   Handle to the signature object. Returned by"]
+    #[doc = "                          FPDF_GetSignatureObject()."]
+    #[doc = "          buffer      -   The address of a buffer that receives the time."]
+    #[doc = "          length      -   The size, in bytes, of |buffer|."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the number of bytes in the encoding name (including the"]
+    #[doc = "          trailing NUL character) on success, 0 on error."]
+    #[doc = ""]
+    #[doc = " The |buffer| is always encoded in 7-bit ASCII. If |length| is less than the"]
+    #[doc = " returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    #[doc = ""]
+    #[doc = " The format of time is expected to be D:YYYYMMDDHHMMSS+XX'YY', i.e. it's"]
+    #[doc = " percision is seconds, with timezone information. This value should be used"]
+    #[doc = " only when the time of signing is not available in the (PKCS#7 binary)"]
+    #[doc = " signature."]
+    pub fn FPDFSignatureObj_GetTime(
+        signature: FPDF_SIGNATURE,
+        buffer: *mut ::std::os::raw::c_char,
+        length: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFSignatureObj_GetDocMDPPermission"]
+    #[doc = "          Get the DocMDP permission of a signature object."]
+    #[doc = " Parameters:"]
+    #[doc = "          signature   -   Handle to the signature object. Returned by"]
+    #[doc = "                          FPDF_GetSignatureObject()."]
+    #[doc = " Return value:"]
+    #[doc = "          Returns the permission (1, 2 or 3) on success, 0 on error."]
+    pub fn FPDFSignatureObj_GetDocMDPPermission(
+        signature: FPDF_SIGNATURE,
+    ) -> ::std::os::raw::c_uint;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructTree_GetForPage"]
+    #[doc = "          Get the structure tree for a page."]
+    #[doc = " Parameters:"]
+    #[doc = "          page        -   Handle to the page, as returned by FPDF_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the structure tree or NULL on error."]
+    pub fn FPDF_StructTree_GetForPage(page: FPDF_PAGE) -> FPDF_STRUCTTREE;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructTree_Close"]
+    #[doc = "          Release a resource allocated by FPDF_StructTree_GetForPage()."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_tree -   Handle to the structure tree, as returned by"]
+    #[doc = "                          FPDF_StructTree_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "          None."]
+    pub fn FPDF_StructTree_Close(struct_tree: FPDF_STRUCTTREE);
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructTree_CountChildren"]
+    #[doc = "          Count the number of children for the structure tree."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_tree -   Handle to the structure tree, as returned by"]
+    #[doc = "                          FPDF_StructTree_LoadPage()."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of children, or -1 on error."]
+    pub fn FPDF_StructTree_CountChildren(struct_tree: FPDF_STRUCTTREE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructTree_GetChildAtIndex"]
+    #[doc = "          Get a child in the structure tree."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_tree -   Handle to the structure tree, as returned by"]
+    #[doc = "                          FPDF_StructTree_LoadPage()."]
+    #[doc = "          index       -   The index for the child, 0-based."]
+    #[doc = " Return value:"]
+    #[doc = "          The child at the n-th index or NULL on error."]
+    pub fn FPDF_StructTree_GetChildAtIndex(
+        struct_tree: FPDF_STRUCTTREE,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_STRUCTELEMENT;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructElement_GetAltText"]
+    #[doc = "          Get the alt text for a given element."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_element -   Handle to the struct element."]
+    #[doc = "          buffer         -   A buffer for output the alt text. May be NULL."]
+    #[doc = "          buflen         -   The length of the buffer, in bytes. May be 0."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of bytes in the title, including the terminating NUL"]
+    #[doc = "          character. The number of bytes is returned regardless of the"]
+    #[doc = "          |buffer| and |buflen| parameters."]
+    #[doc = " Comments:"]
+    #[doc = "          Regardless of the platform, the |buffer| is always in UTF-16LE"]
+    #[doc = "          encoding. The string is terminated by a UTF16 NUL character. If"]
+    #[doc = "          |buflen| is less than the required length, or |buffer| is NULL,"]
+    #[doc = "          |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetAltText(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_StructElement_GetID"]
+    #[doc = "          Get the ID for a given element."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_element -   Handle to the struct element."]
+    #[doc = "          buffer         -   A buffer for output the ID string. May be NULL."]
+    #[doc = "          buflen         -   The length of the buffer, in bytes. May be 0."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of bytes in the ID string, including the terminating NUL"]
+    #[doc = "          character. The number of bytes is returned regardless of the"]
+    #[doc = "          |buffer| and |buflen| parameters."]
+    #[doc = " Comments:"]
+    #[doc = "          Regardless of the platform, the |buffer| is always in UTF-16LE"]
+    #[doc = "          encoding. The string is terminated by a UTF16 NUL character. If"]
+    #[doc = "          |buflen| is less than the required length, or |buffer| is NULL,"]
+    #[doc = "          |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetID(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_StructElement_GetLang"]
+    #[doc = "          Get the case-insensitive IETF BCP 47 language code for an element."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_element -   Handle to the struct element."]
+    #[doc = "          buffer         -   A buffer for output the lang string. May be NULL."]
+    #[doc = "          buflen         -   The length of the buffer, in bytes. May be 0."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of bytes in the ID string, including the terminating NUL"]
+    #[doc = "          character. The number of bytes is returned regardless of the"]
+    #[doc = "          |buffer| and |buflen| parameters."]
+    #[doc = " Comments:"]
+    #[doc = "          Regardless of the platform, the |buffer| is always in UTF-16LE"]
+    #[doc = "          encoding. The string is terminated by a UTF16 NUL character. If"]
+    #[doc = "          |buflen| is less than the required length, or |buffer| is NULL,"]
+    #[doc = "          |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetLang(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDF_StructElement_GetStringAttribute"]
+    #[doc = "          Get a struct element attribute of type \"name\" or \"string\"."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_element -   Handle to the struct element."]
+    #[doc = "          attr_name      -   The name of the attribute to retrieve."]
+    #[doc = "          buffer         -   A buffer for output. May be NULL."]
+    #[doc = "          buflen         -   The length of the buffer, in bytes. May be 0."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of bytes in the attribute value, including the"]
+    #[doc = "          terminating NUL character. The number of bytes is returned"]
+    #[doc = "          regardless of the |buffer| and |buflen| parameters."]
+    #[doc = " Comments:"]
+    #[doc = "          Regardless of the platform, the |buffer| is always in UTF-16LE"]
+    #[doc = "          encoding. The string is terminated by a UTF16 NUL character. If"]
+    #[doc = "          |buflen| is less than the required length, or |buffer| is NULL,"]
+    #[doc = "          |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetStringAttribute(
+        struct_element: FPDF_STRUCTELEMENT,
+        attr_name: FPDF_BYTESTRING,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructElement_GetMarkedContentID"]
+    #[doc = "          Get the marked content ID for a given element."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_element -   Handle to the struct element."]
+    #[doc = " Return value:"]
+    #[doc = "          The marked content ID of the element. If no ID exists, returns"]
+    #[doc = "          -1."]
+    pub fn FPDF_StructElement_GetMarkedContentID(
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructElement_GetType"]
+    #[doc = "           Get the type (/S) for a given element."]
+    #[doc = " Parameters:"]
+    #[doc = "           struct_element - Handle to the struct element."]
+    #[doc = "           buffer        - A buffer for output. May be NULL."]
+    #[doc = "           buflen        - The length of the buffer, in bytes. May be 0."]
+    #[doc = " Return value:"]
+    #[doc = "           The number of bytes in the type, including the terminating NUL"]
+    #[doc = "           character. The number of bytes is returned regardless of the"]
+    #[doc = "           |buffer| and |buflen| parameters."]
+    #[doc = " Comments:"]
+    #[doc = "           Regardless of the platform, the |buffer| is always in UTF-16LE"]
+    #[doc = "           encoding. The string is terminated by a UTF16 NUL character. If"]
+    #[doc = "           |buflen| is less than the required length, or |buffer| is NULL,"]
+    #[doc = "           |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetType(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructElement_GetTitle"]
+    #[doc = "           Get the title (/T) for a given element."]
+    #[doc = " Parameters:"]
+    #[doc = "           struct_element - Handle to the struct element."]
+    #[doc = "           buffer         - A buffer for output. May be NULL."]
+    #[doc = "           buflen         - The length of the buffer, in bytes. May be 0."]
+    #[doc = " Return value:"]
+    #[doc = "           The number of bytes in the title, including the terminating NUL"]
+    #[doc = "           character. The number of bytes is returned regardless of the"]
+    #[doc = "           |buffer| and |buflen| parameters."]
+    #[doc = " Comments:"]
+    #[doc = "           Regardless of the platform, the |buffer| is always in UTF-16LE"]
+    #[doc = "           encoding. The string is terminated by a UTF16 NUL character. If"]
+    #[doc = "           |buflen| is less than the required length, or |buffer| is NULL,"]
+    #[doc = "           |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetTitle(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructElement_CountChildren"]
+    #[doc = "          Count the number of children for the structure element."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_element -   Handle to the struct element."]
+    #[doc = " Return value:"]
+    #[doc = "          The number of children, or -1 on error."]
+    pub fn FPDF_StructElement_CountChildren(
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDF_StructElement_GetChildAtIndex"]
+    #[doc = "          Get a child in the structure element."]
+    #[doc = " Parameters:"]
+    #[doc = "          struct_tree -   Handle to the struct element."]
+    #[doc = "          index       -   The index for the child, 0-based."]
+    #[doc = " Return value:"]
+    #[doc = "          The child at the n-th index or NULL on error."]
+    #[doc = " Comments:"]
+    #[doc = "          If the child exists but is not an element, then this function will"]
+    #[doc = "          return NULL. This will also return NULL for out of bounds indices."]
+    pub fn FPDF_StructElement_GetChildAtIndex(
+        struct_element: FPDF_STRUCTELEMENT,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_STRUCTELEMENT;
+}
 #[doc = " Interface: FPDF_SYSFONTINFO"]
 #[doc = "          Interface for getting system font information and font mapping"]
 #[repr(C)]
@@ -3883,12 +9539,12 @@ pub struct _FPDF_SYSFONTINFO {
 fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     assert_eq!(
         ::std::mem::size_of::<_FPDF_SYSFONTINFO>(),
-        36usize,
+        72usize,
         concat!("Size of: ", stringify!(_FPDF_SYSFONTINFO))
     );
     assert_eq!(
         ::std::mem::align_of::<_FPDF_SYSFONTINFO>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(_FPDF_SYSFONTINFO))
     );
     assert_eq!(
@@ -3903,7 +9559,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).Release as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3913,7 +9569,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).EnumFonts as *const _ as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3923,7 +9579,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).MapFont as *const _ as usize },
-        12usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3933,7 +9589,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).GetFont as *const _ as usize },
-        16usize,
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3943,7 +9599,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).GetFontData as *const _ as usize },
-        20usize,
+        40usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3953,7 +9609,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).GetFaceName as *const _ as usize },
-        24usize,
+        48usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3965,7 +9621,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
         unsafe {
             &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).GetFontCharset as *const _ as usize
         },
-        28usize,
+        56usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -3975,7 +9631,7 @@ fn bindgen_test_layout__FPDF_SYSFONTINFO() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<_FPDF_SYSFONTINFO>())).DeleteFont as *const _ as usize },
-        32usize,
+        64usize,
         concat!(
             "Offset of field: ",
             stringify!(_FPDF_SYSFONTINFO),
@@ -4001,12 +9657,12 @@ pub struct FPDF_CharsetFontMap_ {
 fn bindgen_test_layout_FPDF_CharsetFontMap_() {
     assert_eq!(
         ::std::mem::size_of::<FPDF_CharsetFontMap_>(),
-        8usize,
+        16usize,
         concat!("Size of: ", stringify!(FPDF_CharsetFontMap_))
     );
     assert_eq!(
         ::std::mem::align_of::<FPDF_CharsetFontMap_>(),
-        4usize,
+        8usize,
         concat!("Alignment of ", stringify!(FPDF_CharsetFontMap_))
     );
     assert_eq!(
@@ -4021,7 +9677,7 @@ fn bindgen_test_layout_FPDF_CharsetFontMap_() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<FPDF_CharsetFontMap_>())).fontname as *const _ as usize },
-        4usize,
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(FPDF_CharsetFontMap_),
@@ -4033,3 +9689,1049 @@ fn bindgen_test_layout_FPDF_CharsetFontMap_() {
 #[doc = " Struct: FPDF_CharsetFontMap"]
 #[doc = "    Provides the name of a font to use for a given charset value."]
 pub type FPDF_CharsetFontMap = FPDF_CharsetFontMap_;
+extern "C" {
+    #[doc = " Function: FPDF_GetDefaultTTFMap"]
+    #[doc = "    Returns a pointer to the default character set to TT Font name map. The"]
+    #[doc = "    map is an array of FPDF_CharsetFontMap structs, with its end indicated"]
+    #[doc = "    by a { -1, NULL } entry."]
+    #[doc = " Parameters:"]
+    #[doc = "     None."]
+    #[doc = " Return Value:"]
+    #[doc = "     Pointer to the Charset Font Map."]
+    pub fn FPDF_GetDefaultTTFMap() -> *const FPDF_CharsetFontMap;
+}
+extern "C" {
+    #[doc = " Function: FPDF_AddInstalledFont"]
+    #[doc = "          Add a system font to the list in PDFium."]
+    #[doc = " Comments:"]
+    #[doc = "          This function is only called during the system font list building"]
+    #[doc = "          process."]
+    #[doc = " Parameters:"]
+    #[doc = "          mapper          -   Opaque pointer to Foxit font mapper"]
+    #[doc = "          face            -   The font face name"]
+    #[doc = "          charset         -   Font character set. See above defined constants."]
+    #[doc = " Return Value:"]
+    #[doc = "          None."]
+    pub fn FPDF_AddInstalledFont(
+        mapper: *mut ::std::os::raw::c_void,
+        face: *const ::std::os::raw::c_char,
+        charset: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    #[doc = " Function: FPDF_SetSystemFontInfo"]
+    #[doc = "          Set the system font info interface into PDFium"]
+    #[doc = " Parameters:"]
+    #[doc = "          pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure"]
+    #[doc = " Return Value:"]
+    #[doc = "          None"]
+    #[doc = " Comments:"]
+    #[doc = "          Platform support implementation should implement required methods of"]
+    #[doc = "          FFDF_SYSFONTINFO interface, then call this function during PDFium"]
+    #[doc = "          initialization process."]
+    pub fn FPDF_SetSystemFontInfo(pFontInfo: *mut FPDF_SYSFONTINFO);
+}
+extern "C" {
+    #[doc = " Function: FPDF_GetDefaultSystemFontInfo"]
+    #[doc = "          Get default system font info interface for current platform"]
+    #[doc = " Parameters:"]
+    #[doc = "          None"]
+    #[doc = " Return Value:"]
+    #[doc = "          Pointer to a FPDF_SYSFONTINFO structure describing the default"]
+    #[doc = "          interface, or NULL if the platform doesn't have a default interface."]
+    #[doc = "          Application should call FPDF_FreeDefaultSystemFontInfo to free the"]
+    #[doc = "          returned pointer."]
+    #[doc = " Comments:"]
+    #[doc = "          For some platforms, PDFium implements a default version of system"]
+    #[doc = "          font info interface. The default implementation can be passed to"]
+    #[doc = "          FPDF_SetSystemFontInfo()."]
+    pub fn FPDF_GetDefaultSystemFontInfo() -> *mut FPDF_SYSFONTINFO;
+}
+extern "C" {
+    #[doc = " Function: FPDF_FreeDefaultSystemFontInfo"]
+    #[doc = "           Free a default system font info interface"]
+    #[doc = " Parameters:"]
+    #[doc = "           pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure"]
+    #[doc = " Return Value:"]
+    #[doc = "           None"]
+    #[doc = " Comments:"]
+    #[doc = "           This function should be called on the output from"]
+    #[doc = "           FPDF_SetSystemFontInfo() once it is no longer needed."]
+    pub fn FPDF_FreeDefaultSystemFontInfo(pFontInfo: *mut FPDF_SYSFONTINFO);
+}
+extern "C" {
+    #[doc = " Function: FPDFText_LoadPage"]
+    #[doc = "          Prepare information about all characters in a page."]
+    #[doc = " Parameters:"]
+    #[doc = "          page    -   Handle to the page. Returned by FPDF_LoadPage function"]
+    #[doc = "                      (in FPDFVIEW module)."]
+    #[doc = " Return value:"]
+    #[doc = "          A handle to the text page information structure."]
+    #[doc = "          NULL if something goes wrong."]
+    #[doc = " Comments:"]
+    #[doc = "          Application must call FPDFText_ClosePage to release the text page"]
+    #[doc = "          information."]
+    #[doc = ""]
+    pub fn FPDFText_LoadPage(page: FPDF_PAGE) -> FPDF_TEXTPAGE;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_ClosePage"]
+    #[doc = "          Release all resources allocated for a text page information"]
+    #[doc = "          structure."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = " Return Value:"]
+    #[doc = "          None."]
+    #[doc = ""]
+    pub fn FPDFText_ClosePage(text_page: FPDF_TEXTPAGE);
+}
+extern "C" {
+    #[doc = " Function: FPDFText_CountChars"]
+    #[doc = "          Get number of characters in a page."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = " Return value:"]
+    #[doc = "          Number of characters in the page. Return -1 for error."]
+    #[doc = "          Generated characters, like additional space characters, new line"]
+    #[doc = "          characters, are also counted."]
+    #[doc = " Comments:"]
+    #[doc = "          Characters in a page form a \"stream\", inside the stream, each"]
+    #[doc = "          character has an index."]
+    #[doc = "          We will use the index parameters in many of FPDFTEXT functions. The"]
+    #[doc = "          first character in the page"]
+    #[doc = "          has an index value of zero."]
+    #[doc = ""]
+    pub fn FPDFText_CountChars(text_page: FPDF_TEXTPAGE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetUnicode"]
+    #[doc = "          Get Unicode of a character in a page."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = " Return value:"]
+    #[doc = "          The Unicode of the particular character."]
+    #[doc = "          If a character is not encoded in Unicode and Foxit engine can't"]
+    #[doc = "          convert to Unicode,"]
+    #[doc = "          the return value will be zero."]
+    #[doc = ""]
+    pub fn FPDFText_GetUnicode(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_uint;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetFontSize"]
+    #[doc = "          Get the font size of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = " Return value:"]
+    #[doc = "          The font size of the particular character, measured in points (about"]
+    #[doc = "          1/72 inch). This is the typographic size of the font (so called"]
+    #[doc = "          \"em size\")."]
+    #[doc = ""]
+    pub fn FPDFText_GetFontSize(text_page: FPDF_TEXTPAGE, index: ::std::os::raw::c_int) -> f64;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetFontInfo"]
+    #[doc = "          Get the font name and flags of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page - Handle to a text page information structure."]
+    #[doc = "                      Returned by FPDFText_LoadPage function."]
+    #[doc = "          index     - Zero-based index of the character."]
+    #[doc = "          buffer    - A buffer receiving the font name."]
+    #[doc = "          buflen    - The length of |buffer| in bytes."]
+    #[doc = "          flags     - Optional pointer to an int receiving the font flags."]
+    #[doc = "                      These flags should be interpreted per PDF spec 1.7"]
+    #[doc = "                      Section 5.7.1 Font Descriptor Flags."]
+    #[doc = " Return value:"]
+    #[doc = "          On success, return the length of the font name, including the"]
+    #[doc = "          trailing NUL character, in bytes. If this length is less than or"]
+    #[doc = "          equal to |length|, |buffer| is set to the font name, |flags| is"]
+    #[doc = "          set to the font flags. |buffer| is in UTF-8 encoding. Return 0 on"]
+    #[doc = "          failure."]
+    #[doc = ""]
+    pub fn FPDFText_GetFontInfo(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+        flags: *mut ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetFontWeight"]
+    #[doc = "          Get the font weight of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = " Return value:"]
+    #[doc = "          On success, return the font weight of the particular character. If"]
+    #[doc = "          |text_page| is invalid, if |index| is out of bounds, or if the"]
+    #[doc = "          character's text object is undefined, return -1."]
+    #[doc = ""]
+    pub fn FPDFText_GetFontWeight(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetTextRenderMode"]
+    #[doc = "          Get text rendering mode of character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return the render mode value. A valid value is of type"]
+    #[doc = "          FPDF_TEXT_RENDERMODE. If |text_page| is invalid, if |index| is out"]
+    #[doc = "          of bounds, or if the text object is undefined, then return"]
+    #[doc = "          FPDF_TEXTRENDERMODE_UNKNOWN."]
+    #[doc = ""]
+    pub fn FPDFText_GetTextRenderMode(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_TEXT_RENDERMODE;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetFillColor"]
+    #[doc = "          Get the fill color of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page      -   Handle to a text page information structure."]
+    #[doc = "                             Returned by FPDFText_LoadPage function."]
+    #[doc = "          index          -   Zero-based index of the character."]
+    #[doc = "          R              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             red value of the fill color."]
+    #[doc = "          G              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             green value of the fill color."]
+    #[doc = "          B              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             blue value of the fill color."]
+    #[doc = "          A              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             alpha value of the fill color."]
+    #[doc = " Return value:"]
+    #[doc = "          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are"]
+    #[doc = "          unchanged."]
+    #[doc = ""]
+    pub fn FPDFText_GetFillColor(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        R: *mut ::std::os::raw::c_uint,
+        G: *mut ::std::os::raw::c_uint,
+        B: *mut ::std::os::raw::c_uint,
+        A: *mut ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetStrokeColor"]
+    #[doc = "          Get the stroke color of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page      -   Handle to a text page information structure."]
+    #[doc = "                             Returned by FPDFText_LoadPage function."]
+    #[doc = "          index          -   Zero-based index of the character."]
+    #[doc = "          R              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             red value of the stroke color."]
+    #[doc = "          G              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             green value of the stroke color."]
+    #[doc = "          B              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             blue value of the stroke color."]
+    #[doc = "          A              -   Pointer to an unsigned int number receiving the"]
+    #[doc = "                             alpha value of the stroke color."]
+    #[doc = " Return value:"]
+    #[doc = "          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are"]
+    #[doc = "          unchanged."]
+    #[doc = ""]
+    pub fn FPDFText_GetStrokeColor(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        R: *mut ::std::os::raw::c_uint,
+        G: *mut ::std::os::raw::c_uint,
+        B: *mut ::std::os::raw::c_uint,
+        A: *mut ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetCharAngle"]
+    #[doc = "          Get character rotation angle."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return the angle value in radian. Value will always be"]
+    #[doc = "          greater or equal to 0. If |text_page| is invalid, or if |index| is"]
+    #[doc = "          out of bounds, then return -1."]
+    #[doc = ""]
+    pub fn FPDFText_GetCharAngle(text_page: FPDF_TEXTPAGE, index: ::std::os::raw::c_int) -> f32;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetCharBox"]
+    #[doc = "          Get bounding box of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = "          left        -   Pointer to a double number receiving left position"]
+    #[doc = "                          of the character box."]
+    #[doc = "          right       -   Pointer to a double number receiving right position"]
+    #[doc = "                          of the character box."]
+    #[doc = "          bottom      -   Pointer to a double number receiving bottom position"]
+    #[doc = "                          of the character box."]
+    #[doc = "          top         -   Pointer to a double number receiving top position of"]
+    #[doc = "                          the character box."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return TRUE and fill in |left|, |right|, |bottom|, and"]
+    #[doc = "          |top|. If |text_page| is invalid, or if |index| is out of bounds,"]
+    #[doc = "          then return FALSE, and the out parameters remain unmodified."]
+    #[doc = " Comments:"]
+    #[doc = "          All positions are measured in PDF \"user space\"."]
+    #[doc = ""]
+    pub fn FPDFText_GetCharBox(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        left: *mut f64,
+        right: *mut f64,
+        bottom: *mut f64,
+        top: *mut f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetLooseCharBox"]
+    #[doc = "          Get a \"loose\" bounding box of a particular character, i.e., covering"]
+    #[doc = "          the entire glyph bounds, without taking the actual glyph shape into"]
+    #[doc = "          account."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = "          rect        -   Pointer to a FS_RECTF receiving the character box."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return TRUE and fill in |rect|. If |text_page| is"]
+    #[doc = "          invalid, or if |index| is out of bounds, then return FALSE, and the"]
+    #[doc = "          |rect| out parameter remains unmodified."]
+    #[doc = " Comments:"]
+    #[doc = "          All positions are measured in PDF \"user space\"."]
+    #[doc = ""]
+    pub fn FPDFText_GetLooseCharBox(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        rect: *mut FS_RECTF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFText_GetMatrix"]
+    #[doc = "          Get the effective transformation matrix for a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage()."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = "          matrix      -   Pointer to a FS_MATRIX receiving the transformation"]
+    #[doc = "                          matrix."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return TRUE and fill in |matrix|. If |text_page| is"]
+    #[doc = "          invalid, or if |index| is out of bounds, or if |matrix| is NULL,"]
+    #[doc = "          then return FALSE, and |matrix| remains unmodified."]
+    #[doc = ""]
+    pub fn FPDFText_GetMatrix(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        matrix: *mut FS_MATRIX,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetCharOrigin"]
+    #[doc = "          Get origin of a particular character."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          index       -   Zero-based index of the character."]
+    #[doc = "          x           -   Pointer to a double number receiving x coordinate of"]
+    #[doc = "                          the character origin."]
+    #[doc = "          y           -   Pointer to a double number receiving y coordinate of"]
+    #[doc = "                          the character origin."]
+    #[doc = " Return Value:"]
+    #[doc = "          Whether the call succeeded. If false, x and y are unchanged."]
+    #[doc = " Comments:"]
+    #[doc = "          All positions are measured in PDF \"user space\"."]
+    #[doc = ""]
+    pub fn FPDFText_GetCharOrigin(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+        x: *mut f64,
+        y: *mut f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetCharIndexAtPos"]
+    #[doc = "          Get the index of a character at or nearby a certain position on the"]
+    #[doc = "          page."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          x           -   X position in PDF \"user space\"."]
+    #[doc = "          y           -   Y position in PDF \"user space\"."]
+    #[doc = "          xTolerance  -   An x-axis tolerance value for character hit"]
+    #[doc = "                          detection, in point units."]
+    #[doc = "          yTolerance  -   A y-axis tolerance value for character hit"]
+    #[doc = "                          detection, in point units."]
+    #[doc = " Return Value:"]
+    #[doc = "          The zero-based index of the character at, or nearby the point (x,y)."]
+    #[doc = "          If there is no character at or nearby the point, return value will"]
+    #[doc = "          be -1. If an error occurs, -3 will be returned."]
+    #[doc = ""]
+    pub fn FPDFText_GetCharIndexAtPos(
+        text_page: FPDF_TEXTPAGE,
+        x: f64,
+        y: f64,
+        xTolerance: f64,
+        yTolerance: f64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetText"]
+    #[doc = "          Extract unicode text string from the page."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          start_index -   Index for the start characters."]
+    #[doc = "          count       -   Number of characters to be extracted."]
+    #[doc = "          result      -   A buffer (allocated by application) receiving the"]
+    #[doc = "                          extracted unicodes. The size of the buffer must be"]
+    #[doc = "                          able to hold the number of characters plus a"]
+    #[doc = "                          terminator."]
+    #[doc = " Return Value:"]
+    #[doc = "          Number of characters written into the result buffer, including the"]
+    #[doc = "          trailing terminator."]
+    #[doc = " Comments:"]
+    #[doc = "          This function ignores characters without unicode information."]
+    #[doc = ""]
+    pub fn FPDFText_GetText(
+        text_page: FPDF_TEXTPAGE,
+        start_index: ::std::os::raw::c_int,
+        count: ::std::os::raw::c_int,
+        result: *mut ::std::os::raw::c_ushort,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_CountRects"]
+    #[doc = "          Count number of rectangular areas occupied by a segment of texts."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          start_index -   Index for the start characters."]
+    #[doc = "          count       -   Number of characters."]
+    #[doc = " Return value:"]
+    #[doc = "          Number of rectangles. Zero for error."]
+    #[doc = " Comments:"]
+    #[doc = "          This function, along with FPDFText_GetRect can be used by"]
+    #[doc = "          applications to detect the position on the page for a text segment,"]
+    #[doc = "          so proper areas can be highlighted. FPDFTEXT will automatically"]
+    #[doc = "          merge small character boxes into bigger one if those characters"]
+    #[doc = "          are on the same line and use same font settings."]
+    #[doc = ""]
+    pub fn FPDFText_CountRects(
+        text_page: FPDF_TEXTPAGE,
+        start_index: ::std::os::raw::c_int,
+        count: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetRect"]
+    #[doc = "          Get a rectangular area from the result generated by"]
+    #[doc = "          FPDFText_CountRects."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          rect_index  -   Zero-based index for the rectangle."]
+    #[doc = "          left        -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          left boundary."]
+    #[doc = "          top         -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          top boundary."]
+    #[doc = "          right       -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          right boundary."]
+    #[doc = "          bottom      -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          bottom boundary."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return TRUE and fill in |left|, |top|, |right|, and"]
+    #[doc = "          |bottom|. If |text_page| is invalid then return FALSE, and the out"]
+    #[doc = "          parameters remain unmodified. If |text_page| is valid but"]
+    #[doc = "          |rect_index| is out of bounds, then return FALSE and set the out"]
+    #[doc = "          parameters to 0."]
+    #[doc = ""]
+    pub fn FPDFText_GetRect(
+        text_page: FPDF_TEXTPAGE,
+        rect_index: ::std::os::raw::c_int,
+        left: *mut f64,
+        top: *mut f64,
+        right: *mut f64,
+        bottom: *mut f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetBoundedText"]
+    #[doc = "          Extract unicode text within a rectangular boundary on the page."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          left        -   Left boundary."]
+    #[doc = "          top         -   Top boundary."]
+    #[doc = "          right       -   Right boundary."]
+    #[doc = "          bottom      -   Bottom boundary."]
+    #[doc = "          buffer      -   A unicode buffer."]
+    #[doc = "          buflen      -   Number of characters (not bytes) for the buffer,"]
+    #[doc = "                          excluding an additional terminator."]
+    #[doc = " Return Value:"]
+    #[doc = "          If buffer is NULL or buflen is zero, return number of characters"]
+    #[doc = "          (not bytes) of text present within the rectangle, excluding a"]
+    #[doc = "          terminating NUL. Generally you should pass a buffer at least one"]
+    #[doc = "          larger than this if you want a terminating NUL, which will be"]
+    #[doc = "          provided if space is available. Otherwise, return number of"]
+    #[doc = "          characters copied into the buffer, including the terminating NUL"]
+    #[doc = "          when space for it is available."]
+    #[doc = " Comment:"]
+    #[doc = "          If the buffer is too small, as much text as will fit is copied into"]
+    #[doc = "          it."]
+    #[doc = ""]
+    pub fn FPDFText_GetBoundedText(
+        text_page: FPDF_TEXTPAGE,
+        left: f64,
+        top: f64,
+        right: f64,
+        bottom: f64,
+        buffer: *mut ::std::os::raw::c_ushort,
+        buflen: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_FindStart"]
+    #[doc = "          Start a search."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = "          findwhat    -   A unicode match pattern."]
+    #[doc = "          flags       -   Option flags."]
+    #[doc = "          start_index -   Start from this character. -1 for end of the page."]
+    #[doc = " Return Value:"]
+    #[doc = "          A handle for the search context. FPDFText_FindClose must be called"]
+    #[doc = "          to release this handle."]
+    #[doc = ""]
+    pub fn FPDFText_FindStart(
+        text_page: FPDF_TEXTPAGE,
+        findwhat: FPDF_WIDESTRING,
+        flags: ::std::os::raw::c_ulong,
+        start_index: ::std::os::raw::c_int,
+    ) -> FPDF_SCHHANDLE;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_FindNext"]
+    #[doc = "          Search in the direction from page start to end."]
+    #[doc = " Parameters:"]
+    #[doc = "          handle      -   A search context handle returned by"]
+    #[doc = "                          FPDFText_FindStart."]
+    #[doc = " Return Value:"]
+    #[doc = "          Whether a match is found."]
+    #[doc = ""]
+    pub fn FPDFText_FindNext(handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_FindPrev"]
+    #[doc = "          Search in the direction from page end to start."]
+    #[doc = " Parameters:"]
+    #[doc = "          handle      -   A search context handle returned by"]
+    #[doc = "                          FPDFText_FindStart."]
+    #[doc = " Return Value:"]
+    #[doc = "          Whether a match is found."]
+    #[doc = ""]
+    pub fn FPDFText_FindPrev(handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetSchResultIndex"]
+    #[doc = "          Get the starting character index of the search result."]
+    #[doc = " Parameters:"]
+    #[doc = "          handle      -   A search context handle returned by"]
+    #[doc = "                          FPDFText_FindStart."]
+    #[doc = " Return Value:"]
+    #[doc = "          Index for the starting character."]
+    #[doc = ""]
+    pub fn FPDFText_GetSchResultIndex(handle: FPDF_SCHHANDLE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_GetSchCount"]
+    #[doc = "          Get the number of matched characters in the search result."]
+    #[doc = " Parameters:"]
+    #[doc = "          handle      -   A search context handle returned by"]
+    #[doc = "                          FPDFText_FindStart."]
+    #[doc = " Return Value:"]
+    #[doc = "          Number of matched characters."]
+    #[doc = ""]
+    pub fn FPDFText_GetSchCount(handle: FPDF_SCHHANDLE) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFText_FindClose"]
+    #[doc = "          Release a search context."]
+    #[doc = " Parameters:"]
+    #[doc = "          handle      -   A search context handle returned by"]
+    #[doc = "                          FPDFText_FindStart."]
+    #[doc = " Return Value:"]
+    #[doc = "          None."]
+    #[doc = ""]
+    pub fn FPDFText_FindClose(handle: FPDF_SCHHANDLE);
+}
+extern "C" {
+    #[doc = " Function: FPDFLink_LoadWebLinks"]
+    #[doc = "          Prepare information about weblinks in a page."]
+    #[doc = " Parameters:"]
+    #[doc = "          text_page   -   Handle to a text page information structure."]
+    #[doc = "                          Returned by FPDFText_LoadPage function."]
+    #[doc = " Return Value:"]
+    #[doc = "          A handle to the page's links information structure, or"]
+    #[doc = "          NULL if something goes wrong."]
+    #[doc = " Comments:"]
+    #[doc = "          Weblinks are those links implicitly embedded in PDF pages. PDF also"]
+    #[doc = "          has a type of annotation called \"link\" (FPDFTEXT doesn't deal with"]
+    #[doc = "          that kind of link). FPDFTEXT weblink feature is useful for"]
+    #[doc = "          automatically detecting links in the page contents. For example,"]
+    #[doc = "          things like \"https://www.example.com\" will be detected, so"]
+    #[doc = "          applications can allow user to click on those characters to activate"]
+    #[doc = "          the link, even the PDF doesn't come with link annotations."]
+    #[doc = ""]
+    #[doc = "          FPDFLink_CloseWebLinks must be called to release resources."]
+    #[doc = ""]
+    pub fn FPDFLink_LoadWebLinks(text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK;
+}
+extern "C" {
+    #[doc = " Function: FPDFLink_CountWebLinks"]
+    #[doc = "          Count number of detected web links."]
+    #[doc = " Parameters:"]
+    #[doc = "          link_page   -   Handle returned by FPDFLink_LoadWebLinks."]
+    #[doc = " Return Value:"]
+    #[doc = "          Number of detected web links."]
+    #[doc = ""]
+    pub fn FPDFLink_CountWebLinks(link_page: FPDF_PAGELINK) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFLink_GetURL"]
+    #[doc = "          Fetch the URL information for a detected web link."]
+    #[doc = " Parameters:"]
+    #[doc = "          link_page   -   Handle returned by FPDFLink_LoadWebLinks."]
+    #[doc = "          link_index  -   Zero-based index for the link."]
+    #[doc = "          buffer      -   A unicode buffer for the result."]
+    #[doc = "          buflen      -   Number of 16-bit code units (not bytes) for the"]
+    #[doc = "                          buffer, including an additional terminator."]
+    #[doc = " Return Value:"]
+    #[doc = "          If |buffer| is NULL or |buflen| is zero, return the number of 16-bit"]
+    #[doc = "          code units (not bytes) needed to buffer the result (an additional"]
+    #[doc = "          terminator is included in this count)."]
+    #[doc = "          Otherwise, copy the result into |buffer|, truncating at |buflen| if"]
+    #[doc = "          the result is too large to fit, and return the number of 16-bit code"]
+    #[doc = "          units actually copied into the buffer (the additional terminator is"]
+    #[doc = "          also included in this count)."]
+    #[doc = "          If |link_index| does not correspond to a valid link, then the result"]
+    #[doc = "          is an empty string."]
+    #[doc = ""]
+    pub fn FPDFLink_GetURL(
+        link_page: FPDF_PAGELINK,
+        link_index: ::std::os::raw::c_int,
+        buffer: *mut ::std::os::raw::c_ushort,
+        buflen: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFLink_CountRects"]
+    #[doc = "          Count number of rectangular areas for the link."]
+    #[doc = " Parameters:"]
+    #[doc = "          link_page   -   Handle returned by FPDFLink_LoadWebLinks."]
+    #[doc = "          link_index  -   Zero-based index for the link."]
+    #[doc = " Return Value:"]
+    #[doc = "          Number of rectangular areas for the link.  If |link_index| does"]
+    #[doc = "          not correspond to a valid link, then 0 is returned."]
+    #[doc = ""]
+    pub fn FPDFLink_CountRects(
+        link_page: FPDF_PAGELINK,
+        link_index: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Function: FPDFLink_GetRect"]
+    #[doc = "          Fetch the boundaries of a rectangle for a link."]
+    #[doc = " Parameters:"]
+    #[doc = "          link_page   -   Handle returned by FPDFLink_LoadWebLinks."]
+    #[doc = "          link_index  -   Zero-based index for the link."]
+    #[doc = "          rect_index  -   Zero-based index for a rectangle."]
+    #[doc = "          left        -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          left boundary."]
+    #[doc = "          top         -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          top boundary."]
+    #[doc = "          right       -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          right boundary."]
+    #[doc = "          bottom      -   Pointer to a double value receiving the rectangle"]
+    #[doc = "                          bottom boundary."]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return TRUE and fill in |left|, |top|, |right|, and"]
+    #[doc = "          |bottom|. If |link_page| is invalid or if |link_index| does not"]
+    #[doc = "          correspond to a valid link, then return FALSE, and the out"]
+    #[doc = "          parameters remain unmodified."]
+    #[doc = ""]
+    pub fn FPDFLink_GetRect(
+        link_page: FPDF_PAGELINK,
+        link_index: ::std::os::raw::c_int,
+        rect_index: ::std::os::raw::c_int,
+        left: *mut f64,
+        top: *mut f64,
+        right: *mut f64,
+        bottom: *mut f64,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Function: FPDFLink_GetTextRange"]
+    #[doc = "          Fetch the start char index and char count for a link."]
+    #[doc = " Parameters:"]
+    #[doc = "          link_page         -   Handle returned by FPDFLink_LoadWebLinks."]
+    #[doc = "          link_index        -   Zero-based index for the link."]
+    #[doc = "          start_char_index  -   pointer to int receiving the start char index"]
+    #[doc = "          char_count        -   pointer to int receiving the char count"]
+    #[doc = " Return Value:"]
+    #[doc = "          On success, return TRUE and fill in |start_char_index| and"]
+    #[doc = "          |char_count|. if |link_page| is invalid or if |link_index| does"]
+    #[doc = "          not correspond to a valid link, then return FALSE and the out"]
+    #[doc = "          parameters remain unmodified."]
+    #[doc = ""]
+    pub fn FPDFLink_GetTextRange(
+        link_page: FPDF_PAGELINK,
+        link_index: ::std::os::raw::c_int,
+        start_char_index: *mut ::std::os::raw::c_int,
+        char_count: *mut ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Function: FPDFLink_CloseWebLinks"]
+    #[doc = "          Release resources used by weblink feature."]
+    #[doc = " Parameters:"]
+    #[doc = "          link_page   -   Handle returned by FPDFLink_LoadWebLinks."]
+    #[doc = " Return Value:"]
+    #[doc = "          None."]
+    #[doc = ""]
+    pub fn FPDFLink_CloseWebLinks(link_page: FPDF_PAGELINK);
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the decoded data from the thumbnail of |page| if it exists."]
+    #[doc = " This only modifies |buffer| if |buflen| less than or equal to the"]
+    #[doc = " size of the decoded data. Returns the size of the decoded"]
+    #[doc = " data or 0 if thumbnail DNE. Optional, pass null to just retrieve"]
+    #[doc = " the size of the buffer needed."]
+    #[doc = ""]
+    #[doc = "   page    - handle to a page."]
+    #[doc = "   buffer  - buffer for holding the decoded image data."]
+    #[doc = "   buflen  - length of the buffer in bytes."]
+    pub fn FPDFPage_GetDecodedThumbnailData(
+        page: FPDF_PAGE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Gets the raw data from the thumbnail of |page| if it exists."]
+    #[doc = " This only modifies |buffer| if |buflen| is less than or equal to"]
+    #[doc = " the size of the raw data. Returns the size of the raw data or 0"]
+    #[doc = " if thumbnail DNE. Optional, pass null to just retrieve the size"]
+    #[doc = " of the buffer needed."]
+    #[doc = ""]
+    #[doc = "   page    - handle to a page."]
+    #[doc = "   buffer  - buffer for holding the raw image data."]
+    #[doc = "   buflen  - length of the buffer in bytes."]
+    pub fn FPDFPage_GetRawThumbnailData(
+        page: FPDF_PAGE,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Returns the thumbnail of |page| as a FPDF_BITMAP. Returns a nullptr"]
+    #[doc = " if unable to access the thumbnail's stream."]
+    #[doc = ""]
+    #[doc = "   page - handle to a page."]
+    pub fn FPDFPage_GetThumbnailAsBitmap(page: FPDF_PAGE) -> FPDF_BITMAP;
+}
+extern "C" {
+    #[doc = " Set \"MediaBox\" entry to the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - The left of the rectangle."]
+    #[doc = " bottom - The bottom of the rectangle."]
+    #[doc = " right  - The right of the rectangle."]
+    #[doc = " top    - The top of the rectangle."]
+    pub fn FPDFPage_SetMediaBox(page: FPDF_PAGE, left: f32, bottom: f32, right: f32, top: f32);
+}
+extern "C" {
+    #[doc = " Set \"CropBox\" entry to the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - The left of the rectangle."]
+    #[doc = " bottom - The bottom of the rectangle."]
+    #[doc = " right  - The right of the rectangle."]
+    #[doc = " top    - The top of the rectangle."]
+    pub fn FPDFPage_SetCropBox(page: FPDF_PAGE, left: f32, bottom: f32, right: f32, top: f32);
+}
+extern "C" {
+    #[doc = " Set \"BleedBox\" entry to the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - The left of the rectangle."]
+    #[doc = " bottom - The bottom of the rectangle."]
+    #[doc = " right  - The right of the rectangle."]
+    #[doc = " top    - The top of the rectangle."]
+    pub fn FPDFPage_SetBleedBox(page: FPDF_PAGE, left: f32, bottom: f32, right: f32, top: f32);
+}
+extern "C" {
+    #[doc = " Set \"TrimBox\" entry to the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - The left of the rectangle."]
+    #[doc = " bottom - The bottom of the rectangle."]
+    #[doc = " right  - The right of the rectangle."]
+    #[doc = " top    - The top of the rectangle."]
+    pub fn FPDFPage_SetTrimBox(page: FPDF_PAGE, left: f32, bottom: f32, right: f32, top: f32);
+}
+extern "C" {
+    #[doc = " Set \"ArtBox\" entry to the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - The left of the rectangle."]
+    #[doc = " bottom - The bottom of the rectangle."]
+    #[doc = " right  - The right of the rectangle."]
+    #[doc = " top    - The top of the rectangle."]
+    pub fn FPDFPage_SetArtBox(page: FPDF_PAGE, left: f32, bottom: f32, right: f32, top: f32);
+}
+extern "C" {
+    #[doc = " Get \"MediaBox\" entry from the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - Pointer to a float value receiving the left of the rectangle."]
+    #[doc = " bottom - Pointer to a float value receiving the bottom of the rectangle."]
+    #[doc = " right  - Pointer to a float value receiving the right of the rectangle."]
+    #[doc = " top    - Pointer to a float value receiving the top of the rectangle."]
+    #[doc = ""]
+    #[doc = " On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = " false and leave the out parameters unmodified."]
+    pub fn FPDFPage_GetMediaBox(
+        page: FPDF_PAGE,
+        left: *mut f32,
+        bottom: *mut f32,
+        right: *mut f32,
+        top: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get \"CropBox\" entry from the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - Pointer to a float value receiving the left of the rectangle."]
+    #[doc = " bottom - Pointer to a float value receiving the bottom of the rectangle."]
+    #[doc = " right  - Pointer to a float value receiving the right of the rectangle."]
+    #[doc = " top    - Pointer to a float value receiving the top of the rectangle."]
+    #[doc = ""]
+    #[doc = " On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = " false and leave the out parameters unmodified."]
+    pub fn FPDFPage_GetCropBox(
+        page: FPDF_PAGE,
+        left: *mut f32,
+        bottom: *mut f32,
+        right: *mut f32,
+        top: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get \"BleedBox\" entry from the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - Pointer to a float value receiving the left of the rectangle."]
+    #[doc = " bottom - Pointer to a float value receiving the bottom of the rectangle."]
+    #[doc = " right  - Pointer to a float value receiving the right of the rectangle."]
+    #[doc = " top    - Pointer to a float value receiving the top of the rectangle."]
+    #[doc = ""]
+    #[doc = " On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = " false and leave the out parameters unmodified."]
+    pub fn FPDFPage_GetBleedBox(
+        page: FPDF_PAGE,
+        left: *mut f32,
+        bottom: *mut f32,
+        right: *mut f32,
+        top: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get \"TrimBox\" entry from the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - Pointer to a float value receiving the left of the rectangle."]
+    #[doc = " bottom - Pointer to a float value receiving the bottom of the rectangle."]
+    #[doc = " right  - Pointer to a float value receiving the right of the rectangle."]
+    #[doc = " top    - Pointer to a float value receiving the top of the rectangle."]
+    #[doc = ""]
+    #[doc = " On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = " false and leave the out parameters unmodified."]
+    pub fn FPDFPage_GetTrimBox(
+        page: FPDF_PAGE,
+        left: *mut f32,
+        bottom: *mut f32,
+        right: *mut f32,
+        top: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Get \"ArtBox\" entry from the page dictionary."]
+    #[doc = ""]
+    #[doc = " page   - Handle to a page."]
+    #[doc = " left   - Pointer to a float value receiving the left of the rectangle."]
+    #[doc = " bottom - Pointer to a float value receiving the bottom of the rectangle."]
+    #[doc = " right  - Pointer to a float value receiving the right of the rectangle."]
+    #[doc = " top    - Pointer to a float value receiving the top of the rectangle."]
+    #[doc = ""]
+    #[doc = " On success, return true and write to the out parameters. Otherwise return"]
+    #[doc = " false and leave the out parameters unmodified."]
+    pub fn FPDFPage_GetArtBox(
+        page: FPDF_PAGE,
+        left: *mut f32,
+        bottom: *mut f32,
+        right: *mut f32,
+        top: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Apply transforms to |page|."]
+    #[doc = ""]
+    #[doc = " If |matrix| is provided it will be applied to transform the page."]
+    #[doc = " If |clipRect| is provided it will be used to clip the resulting page."]
+    #[doc = " If neither |matrix| or |clipRect| are provided this method returns |false|."]
+    #[doc = " Returns |true| if transforms are applied."]
+    #[doc = ""]
+    #[doc = " This function will transform the whole page, and would take effect to all the"]
+    #[doc = " objects in the page."]
+    #[doc = ""]
+    #[doc = " page        - Page handle."]
+    #[doc = " matrix      - Transform matrix."]
+    #[doc = " clipRect    - Clipping rectangle."]
+    pub fn FPDFPage_TransFormWithClip(
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipRect: *const FS_RECTF,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Transform (scale, rotate, shear, move) the clip path of page object."]
+    #[doc = " page_object - Handle to a page object. Returned by"]
+    #[doc = " FPDFPageObj_NewImageObj()."]
+    #[doc = ""]
+    #[doc = " a  - The coefficient \"a\" of the matrix."]
+    #[doc = " b  - The coefficient \"b\" of the matrix."]
+    #[doc = " c  - The coefficient \"c\" of the matrix."]
+    #[doc = " d  - The coefficient \"d\" of the matrix."]
+    #[doc = " e  - The coefficient \"e\" of the matrix."]
+    #[doc = " f  - The coefficient \"f\" of the matrix."]
+    pub fn FPDFPageObj_TransformClipPath(
+        page_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    );
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get the clip path of the page object."]
+    #[doc = ""]
+    #[doc = "   page object - Handle to a page object. Returned by e.g."]
+    #[doc = "                 FPDFPage_GetObject()."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the clip path, or NULL on failure. The caller does not"]
+    #[doc = " take ownership of the returned FPDF_CLIPPATH. Instead, it remains valid until"]
+    #[doc = " FPDF_ClosePage() is called for the page containing |page_object|."]
+    pub fn FPDFPageObj_GetClipPath(page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get number of paths inside |clip_path|."]
+    #[doc = ""]
+    #[doc = "   clip_path - handle to a clip_path."]
+    #[doc = ""]
+    #[doc = " Returns the number of objects in |clip_path| or -1 on failure."]
+    pub fn FPDFClipPath_CountPaths(clip_path: FPDF_CLIPPATH) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get number of segments inside one path of |clip_path|."]
+    #[doc = ""]
+    #[doc = "   clip_path  - handle to a clip_path."]
+    #[doc = "   path_index - index into the array of paths of the clip path."]
+    #[doc = ""]
+    #[doc = " Returns the number of segments or -1 on failure."]
+    pub fn FPDFClipPath_CountPathSegments(
+        clip_path: FPDF_CLIPPATH,
+        path_index: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API."]
+    #[doc = " Get segment in one specific path of |clip_path| at index."]
+    #[doc = ""]
+    #[doc = "   clip_path     - handle to a clip_path."]
+    #[doc = "   path_index    - the index of a path."]
+    #[doc = "   segment_index - the index of a segment."]
+    #[doc = ""]
+    #[doc = " Returns the handle to the segment, or NULL on failure. The caller does not"]
+    #[doc = " take ownership of the returned FPDF_PATHSEGMENT. Instead, it remains valid"]
+    #[doc = " until FPDF_ClosePage() is called for the page containing |clip_path|."]
+    pub fn FPDFClipPath_GetPathSegment(
+        clip_path: FPDF_CLIPPATH,
+        path_index: ::std::os::raw::c_int,
+        segment_index: ::std::os::raw::c_int,
+    ) -> FPDF_PATHSEGMENT;
+}
+extern "C" {
+    #[doc = " Create a new clip path, with a rectangle inserted."]
+    #[doc = ""]
+    #[doc = " Caller takes ownership of the returned FPDF_CLIPPATH. It should be freed with"]
+    #[doc = " FPDF_DestroyClipPath()."]
+    #[doc = ""]
+    #[doc = " left   - The left of the clip box."]
+    #[doc = " bottom - The bottom of the clip box."]
+    #[doc = " right  - The right of the clip box."]
+    #[doc = " top    - The top of the clip box."]
+    pub fn FPDF_CreateClipPath(left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH;
+}
+extern "C" {
+    #[doc = " Destroy the clip path."]
+    #[doc = ""]
+    #[doc = " clipPath - A handle to the clip path. It will be invalid after this call."]
+    pub fn FPDF_DestroyClipPath(clipPath: FPDF_CLIPPATH);
+}
+extern "C" {
+    #[doc = " Clip the page content, the page content that outside the clipping region"]
+    #[doc = " become invisible."]
+    #[doc = ""]
+    #[doc = " A clip path will be inserted before the page content stream or content array."]
+    #[doc = " In this way, the page content will be clipped by this clip path."]
+    #[doc = ""]
+    #[doc = " page        - A page handle."]
+    #[doc = " clipPath    - A handle to the clip path. (Does not take ownership.)"]
+    pub fn FPDFPage_InsertClipPath(page: FPDF_PAGE, clipPath: FPDF_CLIPPATH);
+}
