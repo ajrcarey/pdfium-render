@@ -1,19 +1,22 @@
 //! Defines the [PdfPage] struct, exposing functionality related to a single page in a
 //! `PdfPages` collection.
 
-use crate::bindgen::{FPDFBitmap_BGRA, FPDF_ANNOT, FPDF_BITMAP, FPDF_PAGE, FS_RECTF};
+use crate::bindgen::{FPDFBitmap_BGRA, FPDF_ANNOT, FPDF_BITMAP, FPDF_BOOL, FPDF_PAGE, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapRotation};
 use crate::bitmap_config::{PdfBitmapConfig, PdfBitmapRenderSettings};
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_boundaries::PdfPageBoundaries;
+use crate::page_objects::PdfPageObjects;
 use crate::page_size::PdfPagePaperSize;
+use crate::page_text::PdfPageText;
 use crate::pages::PdfPageIndex;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ffi::c_void;
 use std::os::raw::c_int;
+use std::ptr::null_mut;
 
 /// The internal coordinate system inside a [PdfDocument] is measured in Points, a
 /// device-independent unit equal to 1/72 inches, roughly 0.358 mm. Points are converted to pixels
@@ -24,6 +27,8 @@ pub struct PdfPoints {
 }
 
 impl PdfPoints {
+    pub const ZERO: PdfPoints = PdfPoints::new(0.0);
+
     /// Creates a new [PdfPoints] object with the given value.
     #[inline]
     pub const fn new(value: f32) -> Self {
@@ -74,9 +79,9 @@ impl PdfPoints {
 /// y values increasing as coordinates move vertically up.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PdfRect {
-    pub top: PdfPoints,
-    pub left: PdfPoints,
     pub bottom: PdfPoints,
+    pub left: PdfPoints,
+    pub top: PdfPoints,
     pub right: PdfPoints,
 }
 
@@ -84,31 +89,61 @@ impl PdfRect {
     #[inline]
     pub(crate) fn from_pdfium(rect: FS_RECTF) -> Self {
         Self {
-            top: PdfPoints::new(rect.top),
-            left: PdfPoints::new(rect.left),
             bottom: PdfPoints::new(rect.bottom),
+            left: PdfPoints::new(rect.left),
+            top: PdfPoints::new(rect.top),
             right: PdfPoints::new(rect.right),
         }
     }
 
     #[inline]
+    pub(crate) fn from_pdfium_as_result(
+        result: FPDF_BOOL,
+        rect: FS_RECTF,
+        bindings: &dyn PdfiumLibraryBindings,
+    ) -> Result<PdfRect, PdfiumError> {
+        if result == 0 {
+            if let Some(error) = bindings.get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        } else {
+            Ok(PdfRect::from_pdfium(rect))
+        }
+    }
+
+    #[inline]
     /// Creates a new [PdfRect] from the given [PdfPoints] measurements.
-    pub fn new(top: PdfPoints, left: PdfPoints, bottom: PdfPoints, right: PdfPoints) -> Self {
+    ///
+    /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
+    /// with x values increasing as coordinates move horizontally to the right and
+    /// y values increasing as coordinates move vertically up.
+    pub fn new(bottom: PdfPoints, left: PdfPoints, top: PdfPoints, right: PdfPoints) -> Self {
         Self {
-            top,
-            left,
             bottom,
+            left,
+            top,
             right,
         }
     }
 
     #[inline]
     /// Creates a new [PdfRect] from the given raw points values.
-    pub fn new_from_values(top: f32, left: f32, bottom: f32, right: f32) -> Self {
+    ///
+    /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
+    /// with x values increasing as coordinates move horizontally to the right and
+    /// y values increasing as coordinates move vertically up.
+    pub fn new_from_values(bottom: f32, left: f32, top: f32, right: f32) -> Self {
         Self::new(
-            PdfPoints::new(top),
-            PdfPoints::new(left),
             PdfPoints::new(bottom),
+            PdfPoints::new(left),
+            PdfPoints::new(top),
             PdfPoints::new(right),
         )
     }
@@ -218,6 +253,17 @@ impl<'a> PdfPage<'a> {
         PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.handle))
     }
 
+    /// Returns the width and height of this [PdfPage] expressed as a [PdfRect].
+    #[inline]
+    pub fn page_size(&self) -> PdfRect {
+        PdfRect::new(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            self.height(),
+            self.width(),
+        )
+    }
+
     /// Returns [PdfPageOrientation::Landscape] if the width of this [PdfPage]
     /// is greater than its height; otherwise returns [PdfPageOrientation::Portrait].
     #[inline]
@@ -251,6 +297,13 @@ impl<'a> PdfPage<'a> {
             .FPDFPage_SetRotation(self.handle, rotation.as_pdfium());
     }
 
+    /// Returns `true` if any object on the page contains transparency.
+    #[inline]
+    pub fn has_transparency(&self) -> bool {
+        self.bindings
+            .is_true(self.bindings.FPDFPage_HasTransparency(self.handle))
+    }
+
     /// Returns the collection of bounding boxes defining the extents of this [PdfPage].
     #[inline]
     pub fn boundaries(&self) -> PdfPageBoundaries {
@@ -261,6 +314,32 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub fn paper_size(&self) -> PdfPagePaperSize {
         PdfPagePaperSize::from_points(self.width(), self.height())
+    }
+
+    /// Returns the collection of text boxes contained within this [PdfPage].
+    pub fn text(&self) -> Result<PdfPageText, PdfiumError> {
+        let text_handle = self.bindings.FPDFText_LoadPage(self.handle);
+
+        if text_handle.is_null() {
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        } else {
+            Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings))
+        }
+    }
+
+    /// Returns the collection of page objects contained within this [PdfPage].
+    #[inline]
+    pub fn objects(&self) -> PdfPageObjects {
+        PdfPageObjects::from_pdfium(self, self.bindings)
     }
 
     /// Returns a [PdfBitmap] using pixel dimensions, rotation settings, and rendering options
@@ -331,7 +410,7 @@ impl<'a> PdfPage<'a> {
             width,
             height,
             format,
-            std::ptr::null_mut(),
+            null_mut(),
             0, // Not relevant because Pdfium will create the buffer itself.
         );
 

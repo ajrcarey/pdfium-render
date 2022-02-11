@@ -9,15 +9,22 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
     use pdfium_render::{pdfium::Pdfium, bitmap::PdfBitmapRotation, bitmap_config::PdfBitmapConfig};
     use image::ImageFormat;
 
-    let password = None;
+    // Bind to the system-provided Pdfium library.
     
-    let document = Pdfium::new(Pdfium::bind_to_system_library().unwrap())
-        .load_pdf_from_file("test.pdf", password).unwrap();
+    let pdfium = Pdfium::new(Pdfium::bind_to_system_library().unwrap());
+
+    // Load a PDF file.
     
+    let document = pdfium.load_pdf_from_file("test.pdf", None).unwrap();
+    
+    // Set our desired bitmap rendering options.
+ 
     let bitmap_render_config = PdfBitmapConfig::new()
         .set_target_width(2000)
         .set_maximum_height(2000)
         .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+
+    // Render each page to a bitmap, saving each as a JPEG.
  
     document.pages().iter().for_each(|page| {
         page.get_bitmap_with_config(&bitmap_render_config).unwrap()
@@ -26,6 +33,9 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
             .save_with_format(format!("test-page-{}.jpg", page.index()), ImageFormat::Jpeg).unwrap();
     });
 ```
+
+More examples, demonstrating page rendering, text extraction, page object introspection, and
+compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from
 `pdfium-sys` in several other important ways:
@@ -37,7 +47,7 @@ In addition to providing a more natural interface to Pdfium, `pdfium-render` dif
   library is not available.
 * Late binding to Pdfium means that `pdfium-render` can be compiled to WASM for running in a
   browser; this is not possible with `pdfium-sys`.
-* Pdfium is composed as a set of separate modules, each covering a separate aspects of PDF creation,
+* Pdfium is composed as a set of separate modules, each covering a different aspect of PDF creation,
   rendering, and editing. `pdfium-sys` only provides bindings for the subset of functions exposed
   by Pdfium's view module; `pdfium-render` aims to ultimately provide bindings to all non-interactive
   functions exposed by all Pdfium modules, including document creation and editing functions.
@@ -47,16 +57,17 @@ In addition to providing a more natural interface to Pdfium, `pdfium-render` dif
 
 ## What's new
 
-Version 0.5.2 adds bindings to Pdfium's `FPDF_GetPageBoundingBox()`, `FPDFDoc_GetPageMode()`, `FPDFPage_Get*Box()`, and `FPDFPage_Set*Box()` functions and exposes the `PdfPageBoundaries` collection, accessed from the `PdfPage::boundaries()` function.
-
+Version 0.5.3 adds bindings for `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions and adds the `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
+to the high-level idiomatic interface. It is now possible to extract text from PDF pages and page objects.
+ 
 ## Porting existing Pdfium code from other languages
 
 The high-level idiomatic Rust interface provided by the `Pdfium` struct is entirely optional;
 the `Pdfium` struct wraps around raw FFI bindings defined in the `PdfiumLibraryBindings`
-trait, and it is completely feasible to simply use those raw FFI bindings directly
-rather than the high level interface. This makes porting existing code that calls FPDF_* functions
-very straight-forward, while still gaining the benefits of late binding and
-WASM compatibility. For instance, the following code snippet (taken from a C++ sample):
+trait, and it is completely feasible to simply use the FFI bindings directly
+instead of the high level interface. This makes porting existing code that calls FPDF_* functions
+trivial, while still gaining the benefits of late binding and WASM compatibility.
+For instance, the following code snippet (taken from a C++ sample):
 
 ```
     string test_doc = "test.pdf";
@@ -84,11 +95,11 @@ would translate to the following Rust code:
 
 ## External Pdfium builds
 
-`pdfium-render` does not bundle Pdfium at all. You can either bind to a system-provided library
+`pdfium-render` does not include Pdfium itself. You can either bind to a system-provided library
 or package an external build of Pdfium alongside your Rust application. When compiling to WASM,
 packaging an external build of Pdfium as a separate WASM module is essential.
 
-* Native builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
+* Native builds of Pdfium for all major platforms _except_ WASM: <https://github.com/bblanchon/pdfium-binaries/releases>
 * WASM builds of Pdfium, suitable for deploying alongside `pdfium-render`: <https://github.com/paulo-coutinho/pdfium-lib/releases>
 
 ## Compiling to WASM
@@ -108,6 +119,7 @@ If you need a function that is not currently exposed, just raise an issue.
 
 ## Version history
 
+* 0.5.3: adds bindings for `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions, exposes `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
 * 0.5.2: adds bindings for `FPDF_GetPageBoundingBox()`, `FPDFDoc_GetPageMode()`, `FPDFPage_Get*Box()`, and `FPDFPage_Set*Box()` functions, exposes `PdfPageBoundaries` collection
 * 0.5.1: adds bindings for `FPDFPage_GetRotation()` and `FPDFPage_SetRotation()` functions, exposes `PdfMetadata` collection
 * 0.5.0: adds rendering of annotations and form field elements, thanks to an excellent contribution from <https://github.com/inzanez>

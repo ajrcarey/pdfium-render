@@ -83,7 +83,7 @@ impl<'a> PdfPages<'a> {
         self.bindings.FPDF_GetPageCount(*self.document.get_handle()) as PdfPageIndex
     }
 
-    /// Returns true if this [PdfPages] collection is empty.
+    /// Returns `true` if this [PdfPages] collection is empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
@@ -126,12 +126,6 @@ impl<'a> PdfPages<'a> {
         }
     }
 
-    /// Returns an iterator over all the pages in this [PdfPages] collection.
-    #[inline]
-    pub fn iter(&self) -> PdfDocumentPdfPageIterator {
-        PdfDocumentPdfPageIterator::new(self)
-    }
-
     /// Returns the [PdfPageMode] setting embedded in the containing [PdfDocument].
     pub fn page_mode(&self) -> PdfPageMode {
         PdfPageMode::from_pdfium(
@@ -140,40 +134,38 @@ impl<'a> PdfPages<'a> {
         )
         .unwrap_or(PdfPageMode::UnsetOrUnknown)
     }
+
+    /// Returns an iterator over all the pages in this [PdfPages] collection.
+    #[inline]
+    pub fn iter(&self) -> PdfPagesIterator {
+        PdfPagesIterator::new(self)
+    }
 }
 
-pub struct PdfDocumentPdfPageIterator<'a> {
+/// An iterator over all the [PdfPage] objects in a [PdfPages] collection.
+pub struct PdfPagesIterator<'a> {
     pages: &'a PdfPages<'a>,
-    page_count: PdfPageIndex,
     next_index: PdfPageIndex,
 }
 
-impl<'a> PdfDocumentPdfPageIterator<'a> {
+impl<'a> PdfPagesIterator<'a> {
     #[inline]
     pub(crate) fn new(pages: &'a PdfPages<'a>) -> Self {
-        PdfDocumentPdfPageIterator {
+        PdfPagesIterator {
             pages,
-            page_count: pages.len(),
             next_index: 0,
         }
     }
 }
 
-impl<'a> Iterator for PdfDocumentPdfPageIterator<'a> {
+impl<'a> Iterator for PdfPagesIterator<'a> {
     type Item = PdfPage<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_index >= self.page_count {
-            return None;
-        }
-
         let next = self.pages.get(self.next_index);
 
         self.next_index += 1;
 
-        match next {
-            Ok(next) => Some(next),
-            Err(_) => None,
-        }
+        next.ok()
     }
 }

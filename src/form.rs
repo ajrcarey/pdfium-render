@@ -11,6 +11,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use std::ops::DerefMut;
 use std::pin::Pin;
+use std::ptr::null_mut;
 
 /// The internal definition type of a [PdfForm] embedded in a `PdfDocument`.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -147,7 +148,7 @@ impl<'a> PdfForm<'a> {
             FFI_SetTextFieldFocus: None,
             FFI_DoURIAction: None,
             FFI_DoGoToAction: None,
-            m_pJsPlatform: std::ptr::null_mut(),
+            m_pJsPlatform: null_mut(),
             xfa_disabled: 0,
             FFI_DisplayCaret: None,
             FFI_GetCurrentPageIndex: None,

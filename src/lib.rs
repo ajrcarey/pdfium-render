@@ -8,17 +8,31 @@ mod bindgen {
     include!("bindgen.rs");
 }
 
+pub mod action;
+pub mod action_destination;
 pub mod bindings;
 pub mod bitmap;
 pub mod bitmap_config;
+pub mod bookmark;
+pub mod bookmarks;
 pub mod color;
 pub mod document;
 pub mod error;
+pub mod font;
 pub mod form;
 pub mod metadata;
 pub mod page;
 pub mod page_boundaries;
+pub mod page_object;
+pub mod page_object_form_fragment;
+pub mod page_object_image;
+pub mod page_object_path;
+pub mod page_object_shading;
+pub mod page_object_text;
+pub mod page_object_unsupported;
+pub mod page_objects;
 pub mod page_size;
+pub mod page_text;
 pub mod pages;
 pub mod pdfium;
 mod utils;

@@ -34,6 +34,10 @@ pub enum PdfiumError {
     UnknownBitmapRotation,
     UnknownFormType,
     UnknownFormFieldType,
+    UnknownActionType,
+    PageObjectIndexOutOfBounds,
+    UnknownPdfPageObjectType,
+    UnknownPdfPageTextRenderMode,
 
     /// A wrapped internal library error from Pdfium's FPDF_ERR_* constant values.
     PdfiumLibraryInternalError(PdfiumInternalError),

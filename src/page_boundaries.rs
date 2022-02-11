@@ -3,7 +3,7 @@
 
 use crate::bindgen::{FPDF_BOOL, FPDF_PAGE, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::error::PdfiumError;
 use crate::page::{PdfPage, PdfRect};
 use std::os::raw::c_float;
 
@@ -243,7 +243,7 @@ impl<'a> PdfPageBoundaries<'a> {
             .bindings
             .FPDF_GetPageBoundingBox(*self.page.get_handle(), &mut rect);
 
-        self.get_result_from_pdfium_rect(result, rect)
+        PdfRect::from_pdfium_as_result(result, rect, self.bindings)
             .map(|rect| PdfPageBoundaryBox::new(PdfPageBoundaryBoxType::Bounding, rect))
     }
 
@@ -266,7 +266,7 @@ impl<'a> PdfPageBoundaries<'a> {
             &mut top,
         );
 
-        self.get_result_from_pdfium_rect(
+        PdfRect::from_pdfium_as_result(
             result,
             FS_RECTF {
                 left,
@@ -274,30 +274,8 @@ impl<'a> PdfPageBoundaries<'a> {
                 right,
                 bottom,
             },
+            self.bindings,
         )
-    }
-
-    /// Converts the result of calling an FPDF_*Box() function into a [PdfRect].
-    #[inline]
-    fn get_result_from_pdfium_rect(
-        &self,
-        result: FPDF_BOOL,
-        rect: FS_RECTF,
-    ) -> Result<PdfRect, PdfiumError> {
-        if result == 0 {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
-        } else {
-            Ok(PdfRect::from_pdfium(rect))
-        }
     }
 
     /// Returns an iterator over all defined [PdfPageBoundaryBox] boxes in the containing [PdfPage].

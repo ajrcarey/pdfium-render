@@ -3,7 +3,6 @@
     <head>
         <meta charset="utf-8" />
         <script src="pdfium.js"></script>
-        <script src="pdfium_render.js"></script>
         <script src="pdfium_render_wasm_example.js"></script>
     </head>
 
@@ -47,13 +46,12 @@
                     );
 
                     // Now we can call the Rust functions we exported in example/wasm.rs.
-                    // The first function dump sizing metrics for each page to the console.
+                    // The first function dumps sizing metrics for each page to the console.
 
                     log_page_metrics_to_console();
 
-                    // The second function generates the raw bitmap byte data for a single page
-                    // in a sample PDF file. We can use this byte data to render the page to
-                    // an HTML canvas.
+                    // The second function generates the raw bitmap byte data for a single page in
+                    // a sample PDF file. We can use this byte data to render the page to an HTML canvas.
 
                     const pageIndex = 0;
                     const width = 1414;

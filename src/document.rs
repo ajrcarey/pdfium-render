@@ -3,6 +3,7 @@
 
 use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
+use crate::bookmarks::PdfBookmarks;
 use crate::form::PdfForm;
 use crate::metadata::PdfMetadata;
 use crate::pages::PdfPages;
@@ -122,6 +123,12 @@ impl<'a> PdfDocument<'a> {
     #[inline]
     pub fn form(&self) -> Option<&PdfForm> {
         self.form.as_ref()
+    }
+
+    /// Returns the collection of [PdfBookmarks] in this [PdfDocument].
+    #[inline]
+    pub fn bookmarks(&self) -> PdfBookmarks {
+        PdfBookmarks::new(self, self.bindings)
     }
 }
 
