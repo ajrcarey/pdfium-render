@@ -76,8 +76,12 @@ impl PdfBitmapConfig {
             do_set_flag_render_no_smooth_text: false,
             do_set_flag_render_no_smooth_image: false,
             do_set_flag_render_no_smooth_path: false,
-            do_set_flag_reverse_byte_order: false,
             do_set_flag_convert_fill_to_stroke: false,
+
+            // We ask Pdfium to reverse its bitmap byte order from BGR8 to RGB8 in order
+            // to make working with Image::DynamicImage easier after version 0.24. See:
+            // https://github.com/ajrcarey/pdfium-render/issues/9
+            do_set_flag_reverse_byte_order: true,
         }
     }
 
@@ -383,9 +387,10 @@ impl PdfBitmapConfig {
     }
 
     /// Controls whether the byte order of generated image data should be reversed
-    /// during rendering. The default is `false`. There should generally be no need
-    /// to set this flag, unless you want to do raw image processing and specifically
-    /// need the byte data returned by [crate::bitmap::PdfBitmap::as_bytes()] to be reversed.
+    /// during rendering. The default is `true`, so that Pdfium returns pixel data as RGB8
+    /// rather than its default BGR8. There should generally be no need to change this flag,
+    /// unless you want to do raw image processing and specifically need the pixel data returned
+    /// by [crate::bitmap::PdfBitmap::as_bytes()] to be in BGR8 format.
     #[inline]
     pub fn set_reverse_byte_order(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_reverse_byte_order = do_set_flag;

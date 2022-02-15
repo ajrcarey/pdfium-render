@@ -29,13 +29,10 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
     document.pages().iter().for_each(|page| {
         page.get_bitmap_with_config(&bitmap_render_config).unwrap()
             .as_image() // Renders this page to an Image::DynamicImage
-            .as_bgra8().unwrap()
+            .as_rgba8().unwrap()
             .save_with_format(format!("test-page-{}.jpg", page.index()), ImageFormat::Jpeg).unwrap();
     });
 ```
-
-More examples, demonstrating page rendering, text extraction, page object introspection, and
-compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from
 `pdfium-sys` in several other important ways:
@@ -55,10 +52,14 @@ In addition to providing a more natural interface to Pdfium, `pdfium-render` dif
 * Pages rendered by Pdfium can be exported as instances of `Image::DynamicImage` for easy,
   idiomatic post-processing.
 
+More examples, demonstrating page rendering, text extraction, page object introspection, and
+compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
+
 ## What's new
 
-Version 0.5.3 adds bindings for `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions and adds the `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
-to the high-level idiomatic interface. It is now possible to extract text from PDF pages and page objects.
+Version 0.5.3 adds bindings to Pdfium's `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions and adds the `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
+to the `pdfium-render` high-level interface. These additions make it possible to extract the text
+from PDF pages and page objects.
  
 ## Porting existing Pdfium code from other languages
 
@@ -119,6 +120,9 @@ If you need a function that is not currently exposed, just raise an issue.
 
 ## Version history
 
+* 0.5.4: changes default setting of `PdfBitmapConfig::set_reverse_byte_order()` to `true` to switch from
+  Pdfium's default BGRA8 pixel format to RGBA8. This is necessary since the `image` crate dropped
+  support for BGRA8 in version 0.24. See <https://github.com/ajrcarey/pdfium-render/issues/9> for more information.
 * 0.5.3: adds bindings for `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions, exposes `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
 * 0.5.2: adds bindings for `FPDF_GetPageBoundingBox()`, `FPDFDoc_GetPageMode()`, `FPDFPage_Get*Box()`, and `FPDFPage_Set*Box()` functions, exposes `PdfPageBoundaries` collection
 * 0.5.1: adds bindings for `FPDFPage_GetRotation()` and `FPDFPage_SetRotation()` functions, exposes `PdfMetadata` collection

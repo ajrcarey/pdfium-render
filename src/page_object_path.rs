@@ -1,4 +1,4 @@
-//! Defines the [PdfPageFormPathObject] struct, exposing functionality related to a single
+//! Defines the [PdfPagePathObject] struct, exposing functionality related to a single
 //! page object of type `PdfPageObjectType::Path`.
 
 use crate::bindgen::FPDF_PAGEOBJECT;

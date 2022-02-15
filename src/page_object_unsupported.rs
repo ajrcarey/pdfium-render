@@ -1,4 +1,4 @@
-//! Defines the [PdfPageUnspportedObject] struct, exposing functionality related to a single
+//! Defines the [PdfPageUnsupportedObject] struct, exposing functionality related to a single
 //! page object of type `PdfPageObjectType::Unsupported`.
 
 use crate::bindgen::FPDF_PAGEOBJECT;

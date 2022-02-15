@@ -84,7 +84,7 @@ pub fn main() {
 
                 let result = bitmap
                     .as_image()
-                    .as_bgra8()
+                    .as_rgba8()
                     .unwrap()
                     .save_with_format(format!("form-page-{}.jpg", page.index()), ImageFormat::Jpeg);
 

@@ -145,7 +145,7 @@ impl<'a> PdfBitmap<'a> {
             self.config.height as u32,
             self.as_bytes().to_owned(),
         )
-        .map(DynamicImage::ImageBgra8)
+        .map(DynamicImage::ImageRgba8)
         .unwrap()
     }
 

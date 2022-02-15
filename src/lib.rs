@@ -78,7 +78,7 @@ pub mod tests {
                     .get_bitmap_with_config(&render_config)
                     .unwrap()
                     .as_image()
-                    .as_bgra8()
+                    .as_rgba8()
                     .unwrap()
                     .save_with_format(
                         format!("form-test-page-{}.jpg", page.index()),

@@ -1,3 +1,6 @@
+//! Defines the [PdfActionDestination] struct, exposing functionality related to the
+//! destination of a single `PdfAction`.
+
 pub enum PdfActionDestination {
     LocalDestination(PdfActionLocalDestination),
     RemoteDestination(PdfActionRemoteDestination),
