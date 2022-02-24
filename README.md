@@ -4,7 +4,7 @@
 Pdfium exposed by the excellent `pdfium-sys` crate.
 
 ```
-    // Exports each page in the given test PDF file as a separate JPEG image.
+    // Renders each page in the given test PDF file to a separate JPEG file.
 
     use pdfium_render::{pdfium::Pdfium, bitmap::PdfBitmapRotation, bitmap_config::PdfBitmapConfig};
     use image::ImageFormat;
@@ -120,6 +120,9 @@ If you need a function that is not currently exposed, just raise an issue.
 
 ## Version history
 
+* 0.5.5: fixes two bugs in the WASM implementation, one to do with colors, one to do with text extraction.
+  See <https://github.com/ajrcarey/pdfium-render/issues/9> and <https://github.com/ajrcarey/pdfium-render/issues/11>
+  for more information.
 * 0.5.4: changes default setting of `PdfBitmapConfig::set_reverse_byte_order()` to `true` to switch from
   Pdfium's default BGRA8 pixel format to RGBA8. This is necessary since the `image` crate dropped
   support for BGRA8 in version 0.24. See <https://github.com/ajrcarey/pdfium-render/issues/9> for more information.

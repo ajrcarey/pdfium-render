@@ -528,13 +528,7 @@ pub fn initialize_pdfium_render(pdfium: JsValue, debug: bool) -> bool {
     if debug {
         // Output full Rust stack traces to Javascript console.
 
-        std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    }
-
-    if !pdfium.is_object() {
-        log::error!("pdfium-render::initialize_pdfium_render(): provided module is not a valid Javascript Object");
-
-        return false;
+        console_error_panic_hook::set_once();
     }
 
     if pdfium.is_object() {
@@ -547,7 +541,7 @@ pub fn initialize_pdfium_render(pdfium: JsValue, debug: bool) -> bool {
             }
         }
     } else {
-        log::error!("pdfium-render:initialize_pdfium_render(): value passed to initialize_pdfium_render() is not a Javascript Object");
+        log::error!("pdfium-render::initialize_pdfium_render(): provided module is not a valid Javascript Object");
 
         false
     }
@@ -2514,32 +2508,41 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 ))),
             )
             .as_f64()
-            .unwrap() as c_ulong;
+            .unwrap() as usize;
 
-        if result <= length && result > 0 {
+        if result <= buffer_len && result > 0 && buffer_len > 0 {
             log::debug!(
                 "pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetText(): copying {} bytes from Pdfium's WASM heap into local buffer at offset {}",
-                buffer_len,
+                result,
                 buffer as usize
             );
 
             unsafe {
+                // result is expressed in bytes, but buffer.copy_from() expects the _count_
+                // of pointer-sized objects to copy, i.e. the number of FPDF_WCHARs; this is
+                // not the same as the number of bytes. Giving buffer.copy_from() the raw result
+                // corrupts the WASM memory heap, leading to strange errors later on. Tracking
+                // down this bug led me on quite the annoying wild goose chase; see:
+                // https://github.com/ajrcarey/pdfium-render/issues/11
+
+                let char_count = result / size_of::<FPDF_WCHAR>();
+
                 buffer.copy_from(
-                    state
-                        .copy_bytes_from_pdfium(buffer_ptr, buffer_len)
-                        .as_ptr() as *mut FPDF_WCHAR,
-                    buffer_len,
+                    state.copy_bytes_from_pdfium(buffer_ptr, result).as_ptr() as *mut FPDF_WCHAR,
+                    char_count,
                 );
             }
 
             log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetText(): freeing buffer in Pdfium's WASM heap");
+        }
 
+        if buffer_len > 0 {
             state.free(buffer_ptr);
         }
 
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetText(): leaving");
 
-        result
+        result as c_ulong
     }
 
     #[inline]

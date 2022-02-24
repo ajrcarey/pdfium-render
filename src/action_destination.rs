@@ -6,7 +6,7 @@ pub enum PdfActionDestination {
     RemoteDestination(PdfActionRemoteDestination),
     EmbeddedDestination(PdfActionEmbeddedDestination),
     Launch(PdfActionLaunchDestination),
-    URI(PdfActionURIDestination),
+    Uri(PdfActionURIDestination),
 }
 
 pub struct PdfActionLocalDestination {}

@@ -26,15 +26,32 @@ use std::os::raw::c_float;
 /// on page 402 in the PDF Reference manual version 1.7.
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub enum PdfPageTextRenderMode {
+    /// The text render mode is not recognized by Pdfium.
     Unknown = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_UNKNOWN as isize,
+
+    /// The text will be filled, but not stroked.
     FilledUnstroked = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL as isize,
+
+    /// The text will be stroked, but not filled.
     StrokedUnfilled = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_STROKE as isize,
+
+    /// The text will be filled, then stroked.
     FilledThenStroked = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_STROKE as isize,
+
+    /// The text will be neither filled nor stroked. It will still take up size in the layout, however.
     Invisible = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_INVISIBLE as isize,
+
+    /// The text will be filled and added to the path for clipping.
     FilledUnstrokedClipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_CLIP as isize,
+
+    /// THe text will be stroked and added to the path for clipping.
     StrokedUnfilledClipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_STROKE_CLIP as isize,
+
+    /// The text will be filled, then stroked, and added to the path for clipping.
     FilledThenStrokedClipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP as isize,
-    Clipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP as isize,
+
+    /// The text will be neither filled nor stroked, only added to the path for clipping.
+    InvisibleClipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP as isize,
 }
 
 impl PdfPageTextRenderMode {
@@ -63,7 +80,9 @@ impl PdfPageTextRenderMode {
             FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP => {
                 Ok(PdfPageTextRenderMode::FilledThenStrokedClipping)
             }
-            FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP => Ok(PdfPageTextRenderMode::Clipping),
+            FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP => {
+                Ok(PdfPageTextRenderMode::InvisibleClipping)
+            }
             _ => Err(PdfiumError::UnknownPdfPageTextRenderMode),
         }
     }
@@ -89,7 +108,9 @@ impl PdfPageTextRenderMode {
             PdfPageTextRenderMode::FilledThenStrokedClipping => {
                 FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP
             }
-            PdfPageTextRenderMode::Clipping => FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP,
+            PdfPageTextRenderMode::InvisibleClipping => {
+                FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP
+            }
         }
     }
 }
