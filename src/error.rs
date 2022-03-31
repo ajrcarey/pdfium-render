@@ -36,8 +36,10 @@ pub enum PdfiumError {
     UnknownFormFieldType,
     UnknownActionType,
     PageObjectIndexOutOfBounds,
+    PageAnnotationIndexOutOfBounds,
     UnknownPdfPageObjectType,
     UnknownPdfPageTextRenderMode,
+    UnknownPdfAnnotationType,
 
     /// A wrapped internal library error from Pdfium's FPDF_ERR_* constant values.
     PdfiumLibraryInternalError(PdfiumInternalError),

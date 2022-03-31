@@ -1,4 +1,4 @@
-# Rust test files and build artifacts
+# Do not check Rust test files and build artifacts into source control
 
 docs/
 target/
@@ -10,11 +10,12 @@ test*.jpg
 test*.png
 examples/pkg
 examples/target
+examples/serve
 examples/Cargo.lock
 examples/test*.jpg
 examples/test*.png
 
-# IntelliJ
+# Do not check IntelliJ-specific files into source control
 
 *.iml
 *.ipr

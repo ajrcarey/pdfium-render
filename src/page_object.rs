@@ -120,6 +120,16 @@ impl<'a> PdfPageObject<'a> {
         }
     }
 
+    /// Returns `true` if this [PdfPageObject] has an object type other than [PdfPageObjectType::Unsupported].
+    ///
+    /// The [PdfPageObject::as_text_object()], [PdfPageObject::as_path_object()], [PdfPageObject::as_image_object()],
+    /// [PdfPageObject::as_shading_object()], and [PdfPageObject::as_form_fragment_object()] functions
+    /// can be used to access properties and functions pertaining to a specific page object type.
+    #[inline]
+    pub fn is_supported(&self) -> bool {
+        !self.is_unsupported()
+    }
+
     /// Returns `true` if this [PdfPageObject] has an object type of [PdfPageObjectType::Unsupported].
     ///
     /// Common properties shared by all [PdfPageObject] types can still be accessed for
@@ -190,7 +200,7 @@ pub trait PdfPageObjectCommon<'a> {
     fn has_transparency(&self) -> bool;
 
     /// Returns the bounding box of this [PdfPageObject].
-    fn bounding(&self) -> Result<PdfRect, PdfiumError>;
+    fn bounds(&self) -> Result<PdfRect, PdfiumError>;
 }
 
 pub(crate) mod internal {
@@ -236,7 +246,7 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageObjectCommon::bounding()].
         #[inline]
-        fn bounding_impl(&self) -> Result<PdfRect, PdfiumError> {
+        fn bounds_impl(&self) -> Result<PdfRect, PdfiumError> {
             // Clippy doesn't want us to cast to c_float because c_float == f32 in the
             // development environment, but we don't want to assume that will be the case
             // on every target architecture.
@@ -291,8 +301,8 @@ where
     }
 
     #[inline]
-    fn bounding(&self) -> Result<PdfRect, PdfiumError> {
-        self.bounding_impl()
+    fn bounds(&self) -> Result<PdfRect, PdfiumError> {
+        self.bounds_impl()
     }
 }
 

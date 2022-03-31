@@ -1,5 +1,4 @@
-use pdfium_render::page_object::PdfPageObjectCommon;
-use pdfium_render::pdfium::Pdfium;
+use pdfium_render::prelude::*;
 
 pub fn main() {
     // For general comments about pdfium-render and binding to Pdfium, see comments in export.rs.

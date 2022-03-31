@@ -85,6 +85,12 @@ impl<'a> PdfDocument<'a> {
         &self.handle
     }
 
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfDocument].
+    #[inline]
+    pub(crate) fn get_bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+
     /// Returns the file version of this [PdfDocument].
     pub fn version(&self) -> PdfDocumentVersion {
         let mut version: c_int = 0;

@@ -10,6 +10,7 @@ mod bindgen {
 
 pub mod action;
 pub mod action_destination;
+pub mod annotation;
 pub mod bindings;
 pub mod bitmap;
 pub mod bitmap_config;
@@ -22,6 +23,7 @@ pub mod font;
 pub mod form;
 pub mod metadata;
 pub mod page;
+pub mod page_annotations;
 pub mod page_boundaries;
 pub mod page_object;
 pub mod page_object_form_fragment;
@@ -37,6 +39,20 @@ pub mod pages;
 pub mod pdfium;
 mod utils;
 
+/// A prelude for conveniently importing all public `pdfium-render` functionality at once.
+///
+/// Usage: `use pdfium_render::prelude::*`;
+pub mod prelude {
+    pub use super::{
+        action::*, action_destination::*, annotation::*, bindings::*, bitmap::*, bitmap_config::*,
+        bookmark::*, bookmarks::*, color::*, document::*, error::*, font::*, form::*, metadata::*,
+        page::*, page_annotations::*, page_boundaries::*, page_object::*,
+        page_object_form_fragment::*, page_object_image::*, page_object_path::*,
+        page_object_shading::*, page_object_text::*, page_object_unsupported::*, page_objects::*,
+        page_size::*, page_text::*, pages::*, pdfium::*,
+    };
+}
+
 // Conditional compilation is used to compile different implementations of
 // the PdfiumLibraryBindings trait depending on whether we are compiling to a
 // WASM module or to a native shared library.
@@ -49,9 +65,7 @@ mod wasm;
 
 #[cfg(test)]
 pub mod tests {
-    use crate::bitmap::PdfBitmapRotation;
-    use crate::bitmap_config::PdfBitmapConfig;
-    use crate::pdfium::Pdfium;
+    use crate::prelude::*;
     use image::ImageFormat;
 
     #[test]

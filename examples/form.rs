@@ -1,8 +1,5 @@
 use image::ImageFormat;
-use pdfium_render::bitmap::PdfBitmapRotation;
-use pdfium_render::bitmap_config::PdfBitmapConfig;
-use pdfium_render::color::PdfColor;
-use pdfium_render::pdfium::Pdfium;
+use pdfium_render::prelude::*;
 
 pub fn main() {
     // This example differs from export.rs in that our sample file now includes

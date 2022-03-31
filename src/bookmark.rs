@@ -184,7 +184,7 @@ impl<'a> PdfBookmark<'a> {
 
     /// Returns an iterator over all [PdfBookmark] child nodes of this [PdfBookmark],
     /// including any children of those nodes. To visit only direct children of this [PdfBookmark],
-    /// use [PdfBookMark::iter_direct_children()].
+    /// use [PdfBookmark::iter_direct_children()].
     #[inline]
     pub fn iter_all_descendants(&self) -> PdfBookmarksIterator<'a> {
         PdfBookmarksIterator::new(Some(self.clone()), false, true, true, None)

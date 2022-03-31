@@ -16,7 +16,7 @@ Since `pdfium-render` does not include Pdfium itself, an external pre-packaged W
 * Copy the `pdfium_render_wasm_example.js` and `pdfium_render_wasm_example_bg.wasm` files from `examples/pkg/` into a release folder.
 * Download a pre-packaged WASM build from https://github.com/paulo-coutinho/pdfium-lib/releases and extract the `release/node/pdfium.js` and `release/node/pdfium.wasm` files into your release folder.
 * Copy the `index.html` file from `examples` into your release folder.
-* Optionally copy the `serve.sh` file from `examples` into your release folder; this is a tiny script that will spin up a Python webserver for you. You can ignore this if you have another way of serving the files.
+* Optionally copy the `serve.sh` file from `examples` into your release folder; this is a tiny script that will spin up a development webserver for you using the `basic-http-server` crate. You can ignore this if you have another way of serving the files.
 * Serve the content from your release folder using a webserver or by running `serve.sh`. If you use `serve.sh`, then the content will be available at http://localhost:4000.
 
 You should see the sizes of each individual page in `test/form-test.pdf` logged to the Javascript console, and the first page in the file will be rendered into an HTML canvas element.

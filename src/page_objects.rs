@@ -87,7 +87,7 @@ impl<'a> PdfPageObjects<'a> {
     }
 }
 
-/// An iterator over all the [PdfPage] objects in a [PdfPages] collection.
+/// An iterator over all the [PdfPageObject] objects in a [PdfPageObjects] collection.
 pub struct PdfPageObjectsIterator<'a> {
     objects: &'a PdfPageObjects<'a>,
     next_index: PdfPageObjectIndex,

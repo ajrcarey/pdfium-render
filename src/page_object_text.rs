@@ -175,7 +175,7 @@ impl<'a> PdfPageTextObject<'a> {
 
             assert_eq!(result, buffer_length);
 
-            get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_else(String::new)
+            get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
         } else {
             // The containing PdfPage does not have an FPDF_TEXTPAGE associated with it.
 

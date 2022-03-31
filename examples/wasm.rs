@@ -1,11 +1,5 @@
 #[cfg(target_arch = "wasm32")]
-use pdfium_render::bitmap_config::PdfBitmapConfig;
-#[cfg(target_arch = "wasm32")]
-use pdfium_render::color::PdfColor;
-#[cfg(target_arch = "wasm32")]
-use pdfium_render::pages::PdfPageIndex;
-#[cfg(target_arch = "wasm32")]
-use pdfium_render::pdfium::Pdfium;
+use pdfium_render::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 

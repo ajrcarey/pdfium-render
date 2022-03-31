@@ -12,6 +12,7 @@ use crate::page_objects::PdfPageObjects;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::pages::PdfPageIndex;
+use crate::prelude::PdfPageAnnotations;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ffi::c_void;
@@ -118,12 +119,12 @@ impl PdfRect {
         }
     }
 
-    #[inline]
     /// Creates a new [PdfRect] from the given [PdfPoints] measurements.
     ///
     /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
+    #[inline]
     pub fn new(bottom: PdfPoints, left: PdfPoints, top: PdfPoints, right: PdfPoints) -> Self {
         Self {
             bottom,
@@ -133,12 +134,12 @@ impl PdfRect {
         }
     }
 
-    #[inline]
     /// Creates a new [PdfRect] from the given raw points values.
     ///
     /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
+    #[inline]
     pub fn new_from_values(bottom: f32, left: f32, top: f32, right: f32) -> Self {
         Self::new(
             PdfPoints::new(bottom),
@@ -340,6 +341,12 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub fn objects(&self) -> PdfPageObjects {
         PdfPageObjects::from_pdfium(self, self.bindings)
+    }
+
+    /// Returns the collection of annotations that have been added to this [PdfPage].
+    #[inline]
+    pub fn annotations(&self) -> PdfPageAnnotations {
+        PdfPageAnnotations::from_pdfium(self, self.bindings)
     }
 
     /// Returns a [PdfBitmap] using pixel dimensions, rotation settings, and rendering options

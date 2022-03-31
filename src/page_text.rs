@@ -13,7 +13,7 @@ use std::ptr::null_mut;
 /// The collection of Unicode characters visible in a single [PdfPage].
 ///
 /// Since [PdfPageText] implements both the [ToString] and the [Display] traits, you can use
-/// [PdfPageText::to_string()] to easily return all characters in the containing [PdfPage]
+/// [PdfPageText::all()] to easily return all characters in the containing [PdfPage]
 /// in the order in which they are defined in the PDF file.
 ///
 /// In complex custom layouts, the order in which characters are defined in the PDF file
@@ -123,7 +123,7 @@ impl<'a> PdfPageText<'a> {
 
         assert_eq!(result, chars_count);
 
-        get_string_from_pdfium_utf16le_bytes(buffer.as_bytes().to_vec()).unwrap_or_else(String::new)
+        get_string_from_pdfium_utf16le_bytes(buffer.as_bytes().to_vec()).unwrap_or_default()
     }
 }
 

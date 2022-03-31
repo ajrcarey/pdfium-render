@@ -1,12 +1,10 @@
 //! Defines the [PdfBookmarks] struct, exposing functionality related to the
 //! bookmarks contained within a single `PdfDocument`.
 
-use crate::bindgen::FPDF_WIDESTRING;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmark::PdfBookmark;
 use crate::document::PdfDocument;
 use std::ptr::null_mut;
-use utf16string::{LittleEndian, WString};
 
 /// The bookmarks contained within a single [PdfDocument].
 ///
@@ -15,9 +13,9 @@ use utf16string::{LittleEndian, WString};
 /// use the root's [PdfBookmark::first_child()] and [PdfBookmark::next_sibling()] functions to
 /// traverse the bookmark tree.
 ///
-/// To search the tree for a bookmark with a specific title, use the [PdfBookmarks::find_by_title()] function.
-/// To traverse the tree breadth-first, visiting every bookmark in the tree, create an iterator
-/// using the [PdfBookmarks::iter()] function.
+/// To search the tree for a bookmark with a specific title, use the [PdfBookmarks::find_first_by_title()]
+/// and [PdfBookmarks::find_all_by_title()] functions. To traverse the tree breadth-first, visiting
+/// every bookmark in the tree, create an iterator using the [PdfBookmarks::iter()] function.
 pub struct PdfBookmarks<'a> {
     document: &'a PdfDocument<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -55,12 +53,11 @@ impl<'a> PdfBookmarks<'a> {
     ///
     /// Note that bookmarks are not required to have unique titles, so in theory any number of
     /// bookmarks could match a given title. This function only ever returns the first. To return
-    /// all matches, use [find_all_by_title()].
+    /// all matches, use [PdfBookmarks::find_all_by_title()].
     pub fn find_first_by_title(&self, title: &str) -> Option<PdfBookmark> {
-        let handle = self.bindings.FPDFBookmark_Find(
-            *self.document.get_handle(),
-            WString::<LittleEndian>::from(title).as_ptr() as FPDF_WIDESTRING,
-        );
+        let handle = self
+            .bindings
+            .FPDFBookmark_Find_str(*self.document.get_handle(), title);
 
         if handle.is_null() {
             println!(
@@ -84,7 +81,7 @@ impl<'a> PdfBookmarks<'a> {
     /// Note that bookmarks are not required to have unique titles, so in theory any number of
     /// bookmarks could match a given title. This function returns all matches by performing
     /// a complete breadth-first traversal of the entire bookmark tree. To return just the first
-    /// match, use [find_first_by_title()].
+    /// match, use [PdfBookmarks::find_first_by_title()].
     pub fn find_all_by_title(&self, title: &str) -> Vec<PdfBookmark> {
         self.iter()
             .filter(|bookmark| match bookmark.title() {

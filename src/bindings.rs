@@ -2,12 +2,17 @@
 //! exported by the Pdfium library.
 
 use crate::bindgen::{
-    size_t, FPDF_ACTION, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_IMAGEOBJ_METADATA, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
-    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_RECTF,
+    size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
+    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
+    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJECTMARK, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING,
+    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::error::PdfiumInternalError;
+use crate::utils::utf16le::{
+    get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
+};
 use std::ffi::c_void;
 use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort};
 
@@ -17,6 +22,19 @@ use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c
 /// library by the platform. On WASM, this will be a set of Javascript functions exposed by a
 /// separate WASM module that is imported into the same browser context.
 ///
+/// Pdfium's API uses three different string types: classic C-style null-terminated char arrays,
+/// UTF-8 byte arrays, and a UTF-16LE byte array type named `FPDF_WIDESTRING`. For functions that take a
+/// C-style string or a UTF-8 byte array, `pdfium-render`'s binding will take the standard Rust `&str` type.
+/// For functions that take an `FPDF_WIDESTRING`, `pdfium-render` exposes two functions: the vanilla
+/// `FPDF_*()` function that takes an `FPDF_WIDESTRING`, and an additional `FPDF_*_str()` helper function
+/// that takes a standard Rust `&str` and converts it internally to an `FPDF_WIDESTRING` before calling
+/// Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
+/// `FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
+///
+/// The [PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()] and
+/// [PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()] functions are provided
+/// for converting to and from UTF-16LE in your own code.
+///
 /// Note that the [PdfiumLibraryBindings::FPDF_LoadDocument()] function is not available when
 /// compiling to WASM. Either embed the target PDF document directly using the [include_bytes!()]
 /// macro, or use Javascript's `fetch()` API to retrieve the bytes of the target document over
@@ -25,23 +43,46 @@ pub trait PdfiumLibraryBindings {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
     #[inline]
     #[allow(non_snake_case)]
-    fn TRUE(&self) -> c_int {
+    fn TRUE(&self) -> FPDF_BOOL {
         1
     }
 
     /// Returns the canonical C-style boolean integer value 0, indicating `false`.
     #[inline]
     #[allow(non_snake_case)]
-    fn FALSE(&self) -> c_int {
+    fn FALSE(&self) -> FPDF_BOOL {
         0
     }
 
     /// Converts from a C-style boolean integer to a Rust `bool`.
     ///
-    /// Assumes 0 indicates `false` and 1 indicates `true`.
+    /// Assumes `PdfiumLibraryBindings::TRUE()` indicates `true` and any other value indicates `false`.
     #[inline]
-    fn is_true(&self, bool: c_int) -> bool {
+    fn is_true(&self, bool: FPDF_BOOL) -> bool {
         bool == self.TRUE()
+    }
+
+    /// Converts the given Rust `bool` into a Pdfium `FPDF_BOOL`.
+    #[inline]
+    fn bool_to_pdfium(&self, bool: bool) -> FPDF_BOOL {
+        if bool {
+            self.TRUE()
+        } else {
+            self.FALSE()
+        }
+    }
+
+    /// Converts the given Rust `&str` into an UTF16-LE encoded byte buffer.
+    #[inline]
+    fn get_pdfium_utf16le_bytes_from_str(&self, str: &str) -> Vec<u8> {
+        get_pdfium_utf16le_bytes_from_str(str)
+    }
+
+    /// Converts the bytes in the given buffer from UTF16-LE to a standard Rust `String`.
+    #[inline]
+    #[allow(unused_mut)] // The buffer must be mutable when compiling to WASM.
+    fn get_string_from_pdfium_utf16le_bytes(&self, mut buffer: Vec<u8>) -> Option<String> {
+        get_string_from_pdfium_utf16le_bytes(buffer)
     }
 
     #[allow(non_snake_case)]
@@ -269,6 +310,367 @@ pub trait PdfiumLibraryBindings {
     );
 
     #[allow(non_snake_case)]
+    fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_CreateAnnot(
+        &self,
+        page: FPDF_PAGE,
+        subtype: FPDF_ANNOTATION_SUBTYPE,
+    ) -> FPDF_ANNOTATION;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetAnnotCount(&self, page: FPDF_PAGE) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_ANNOTATION;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetAnnotIndex(&self, page: FPDF_PAGE, annot: FPDF_ANNOTATION) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_CloseAnnot(&self, annot: FPDF_ANNOTATION);
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetSubtype(&self, annot: FPDF_ANNOTATION) -> FPDF_ANNOTATION_SUBTYPE;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_IsObjectSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_UpdateObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AddInkStroke(
+        &self,
+        annot: FPDF_ANNOTATION,
+        points: *const FS_POINTF,
+        point_count: size_t,
+    ) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AppendObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetObjectCount(&self, annot: FPDF_ANNOTATION) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_PAGEOBJECT;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetColor(
+        &self,
+        annot: FPDF_ANNOTATION,
+        color_type: FPDFANNOT_COLORTYPE,
+        R: c_uint,
+        G: c_uint,
+        B: c_uint,
+        A: c_uint,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetColor(
+        &self,
+        annot: FPDF_ANNOTATION,
+        color_type: FPDFANNOT_COLORTYPE,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+        A: *mut c_uint,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetAttachmentPoints(
+        &self,
+        annot: FPDF_ANNOTATION,
+        quad_index: size_t,
+        quad_points: *const FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AppendAttachmentPoints(
+        &self,
+        annot: FPDF_ANNOTATION,
+        quad_points: *const FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_CountAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> size_t;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetAttachmentPoints(
+        &self,
+        annot: FPDF_ANNOTATION,
+        quad_index: size_t,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetVertices(
+        &self,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FS_POINTF,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetInkListCount(&self, annot: FPDF_ANNOTATION) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetInkListPath(
+        &self,
+        annot: FPDF_ANNOTATION,
+        path_index: c_ulong,
+        buffer: *mut FS_POINTF,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetLine(
+        &self,
+        annot: FPDF_ANNOTATION,
+        start: *mut FS_POINTF,
+        end: *mut FS_POINTF,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetBorder(
+        &self,
+        annot: FPDF_ANNOTATION,
+        horizontal_radius: f32,
+        vertical_radius: f32,
+        border_width: f32,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetBorder(
+        &self,
+        annot: FPDF_ANNOTATION,
+        horizontal_radius: *mut f32,
+        vertical_radius: *mut f32,
+        border_width: *mut f32,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetStringValue(
+        &self,
+        annot: FPDF_ANNOTATION,
+        key: &str,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetStringValue_str(
+        &self,
+        annot: FPDF_ANNOTATION,
+        key: &str,
+        value: &str,
+    ) -> FPDF_BOOL {
+        self.FPDFAnnot_SetStringValue(
+            annot,
+            key,
+            get_pdfium_utf16le_bytes_from_str(value).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetStringValue(
+        &self,
+        annot: FPDF_ANNOTATION,
+        key: &str,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetNumberValue(
+        &self,
+        annot: FPDF_ANNOTATION,
+        key: &str,
+        value: *mut f32,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetAP(
+        &self,
+        annot: FPDF_ANNOTATION,
+        appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetAP_str(
+        &self,
+        annot: FPDF_ANNOTATION,
+        appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
+        value: &str,
+    ) -> FPDF_BOOL {
+        self.FPDFAnnot_SetAP(
+            annot,
+            appearanceMode,
+            get_pdfium_utf16le_bytes_from_str(value).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetAP(
+        &self,
+        annot: FPDF_ANNOTATION,
+        appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetLinkedAnnot(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_ANNOTATION;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFlags(&self, annot: FPDF_ANNOTATION) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldFlags(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
+        -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldAtPoint(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        point: *const FS_POINTF,
+    ) -> FPDF_ANNOTATION;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldName(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldType(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
+        -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldValue(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetOptionCount(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetOptionLabel(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        index: c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_IsOptionSelected(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        index: c_int,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFontSize(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        value: *mut f32,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_IsChecked(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFocusableSubtypes(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        subtypes: *const FPDF_ANNOTATION_SUBTYPE,
+        count: size_t,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFocusableSubtypesCount(&self, hHandle: FPDF_FORMHANDLE) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFocusableSubtypes(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
+        count: size_t,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetLink(&self, annot: FPDF_ANNOTATION) -> FPDF_LINK;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormControlCount(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormControlIndex(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldExportValue(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: *const c_char) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
     fn FPDFDOC_InitFormFillEnvironment(
         &self,
         document: FPDF_DOCUMENT,
@@ -331,6 +733,15 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK;
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBookmark_Find_str(&self, document: FPDF_DOCUMENT, title: &str) -> FPDF_BOOKMARK {
+        self.FPDFBookmark_Find(
+            document,
+            get_pdfium_utf16le_bytes_from_str(title).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
 
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetDest(&self, document: FPDF_DOCUMENT, bookmark: FPDF_BOOKMARK) -> FPDF_DEST;
@@ -433,12 +844,21 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPageObj_NewTextObj(
         &self,
         document: FPDF_DOCUMENT,
-        font: FPDF_BYTESTRING,
+        font: &str,
         font_size: c_float,
     ) -> FPDF_PAGEOBJECT;
 
     #[allow(non_snake_case)]
     fn FPDFText_SetText(&self, text_object: FPDF_PAGEOBJECT, text: FPDF_WIDESTRING) -> FPDF_BOOL;
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_SetText_str(&self, text_object: FPDF_PAGEOBJECT, text: &str) -> FPDF_BOOL {
+        self.FPDFText_SetText(
+            text_object,
+            get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
 
     #[allow(non_snake_case)]
     fn FPDFText_SetCharcodes(
@@ -447,6 +867,19 @@ pub trait PdfiumLibraryBindings {
         charcodes: *const c_uint,
         count: size_t,
     ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFText_LoadFont(
+        &self,
+        document: FPDF_DOCUMENT,
+        data: *const c_uchar,
+        size: c_uint,
+        font_type: c_int,
+        cid: FPDF_BOOL,
+    ) -> FPDF_FONT;
+
+    #[allow(non_snake_case)]
+    fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT;
 
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT);
@@ -470,6 +903,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
     fn FPDFPageObj_Transform(
         &self,
         page_object: FPDF_PAGEOBJECT,
@@ -505,11 +939,7 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_PAGEOBJECTMARK;
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_AddMark(
-        &self,
-        page_object: FPDF_PAGEOBJECT,
-        name: FPDF_BYTESTRING,
-    ) -> FPDF_PAGEOBJECTMARK;
+    fn FPDFPageObj_AddMark(&self, page_object: FPDF_PAGEOBJECT, name: &str) -> FPDF_PAGEOBJECTMARK;
 
     #[allow(non_snake_case)]
     fn FPDFPageObj_RemoveMark(
@@ -544,14 +974,14 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPageObjMark_GetParamValueType(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
     ) -> FPDF_OBJECT_TYPE;
 
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamIntValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
         out_value: *mut c_int,
     ) -> FPDF_BOOL;
 
@@ -559,7 +989,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPageObjMark_GetParamStringValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
         buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
@@ -569,7 +999,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPageObjMark_GetParamBlobValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
         buffer: *mut c_void,
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
@@ -581,7 +1011,7 @@ pub trait PdfiumLibraryBindings {
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
         value: c_int,
     ) -> FPDF_BOOL;
 
@@ -591,8 +1021,8 @@ pub trait PdfiumLibraryBindings {
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
-        value: FPDF_BYTESTRING,
+        key: &str,
+        value: &str,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
@@ -601,7 +1031,7 @@ pub trait PdfiumLibraryBindings {
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
         value: *mut c_void,
         value_len: c_ulong,
     ) -> FPDF_BOOL;
@@ -611,7 +1041,7 @@ pub trait PdfiumLibraryBindings {
         &self,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
-        key: FPDF_BYTESTRING,
+        key: &str,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
@@ -633,6 +1063,7 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
     #[deprecated(
         note = "Prefer FPDFPageObj_SetMatrix() over FPDFImageObj_SetMatrix(). FPDFImageObj_SetMatrix() is deprecated and will likely be removed in a future version of Pdfium."
     )]
@@ -726,7 +1157,7 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: FPDF_BYTESTRING);
+    fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str);
 
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetStrokeColor(

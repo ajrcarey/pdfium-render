@@ -23,6 +23,12 @@ pub(crate) mod mem {
 pub(crate) mod utf16le {
     use utf16string::{LittleEndian, WString};
 
+    /// Converts the given Rust &str into an UTF16-LE encoded byte buffer.
+    #[inline]
+    pub(crate) fn get_pdfium_utf16le_bytes_from_str(str: &str) -> Vec<u8> {
+        WString::<LittleEndian>::from(str).into_bytes()
+    }
+
     /// Converts the bytes in the given buffer from UTF16-LE to a standard Rust String.
     #[allow(unused_mut)] // The buffer must be mutable when compiling to WASM.
     pub(crate) fn get_string_from_pdfium_utf16le_bytes(mut buffer: Vec<u8>) -> Option<String> {

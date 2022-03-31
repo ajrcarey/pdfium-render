@@ -1,7 +1,5 @@
 use image::ImageFormat;
-use pdfium_render::bitmap::PdfBitmapRotation;
-use pdfium_render::bitmap_config::PdfBitmapConfig;
-use pdfium_render::pdfium::Pdfium;
+use pdfium_render::prelude::*;
 
 pub fn main() {
     // Attempt to bind to a pdfium library in the current working directory; failing that,

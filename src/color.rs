@@ -22,19 +22,20 @@ impl PdfColor {
     pub const SOLID_RED: PdfColor = PdfColor::new(255, 0, 0, 255);
     pub const SOLID_GREEN: PdfColor = PdfColor::new(0, 255, 0, 255);
     pub const SOLID_BLUE: PdfColor = PdfColor::new(0, 0, 255, 255);
+    pub const SOLID_MAGENTA: PdfColor = PdfColor::new(255, 0, 255, 255);
     pub const SOLID_CYAN: PdfColor = PdfColor::new(0, 255, 255, 255);
     pub const SOLID_YELLOW: PdfColor = PdfColor::new(255, 255, 0, 255);
 
     #[inline]
-    #[allow(dead_code)]
     // The from_pdfium() function is not currently used, but we expect it to be in future
+    #[allow(dead_code)]
     pub(crate) const fn from_pdfium(color: u64) -> Self {
         Self::from_pdfium_with_alpha(color, 255)
     }
 
     #[inline]
-    #[allow(dead_code)]
     // The from_pdfium_with_alpha() function is not currently used, but we expect it to be in future
+    #[allow(dead_code)]
     pub(crate) const fn from_pdfium_with_alpha(color: u64, alpha: u8) -> Self {
         Self::new(
             ((color & 0x00FF0000) >> 16) as u8,
@@ -50,7 +51,7 @@ impl PdfColor {
         self.color()
     }
 
-    /// Returns a tuplet comprising this color encoded as a 32-bit value and this alpha
+    /// Returns a tuple comprising this color encoded as a 32-bit value and this alpha
     /// encoded as an 8-bit value, suitable for passing to Pdfium.
     #[inline]
     pub(crate) fn as_pdfium_color_with_alpha(&self) -> (FPDF_DWORD, u8) {

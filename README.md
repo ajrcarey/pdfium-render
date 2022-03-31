@@ -6,8 +6,7 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
 ```
     // Renders each page in the given test PDF file to a separate JPEG file.
 
-    use pdfium_render::{pdfium::Pdfium, bitmap::PdfBitmapRotation, bitmap_config::PdfBitmapConfig};
-    use image::ImageFormat;
+    use pdfium_render::prelude::*;
 
     // Bind to the system-provided Pdfium library.
     
@@ -24,13 +23,16 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
         .set_maximum_height(2000)
         .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
 
-    // Render each page to a bitmap, saving each as a JPEG.
+    // Render each page to a bitmap image, then export each image to a JPEG file.
  
     document.pages().iter().for_each(|page| {
         page.get_bitmap_with_config(&bitmap_render_config).unwrap()
             .as_image() // Renders this page to an Image::DynamicImage
             .as_rgba8().unwrap()
-            .save_with_format(format!("test-page-{}.jpg", page.index()), ImageFormat::Jpeg).unwrap();
+            .save_with_format(
+              format!("test-page-{}.jpg", page.index()),
+              image::ImageFormat::Jpeg
+            ).unwrap();
     });
 ```
 
@@ -52,14 +54,15 @@ In addition to providing a more natural interface to Pdfium, `pdfium-render` dif
 * Pages rendered by Pdfium can be exported as instances of `Image::DynamicImage` for easy,
   idiomatic post-processing.
 
-More examples, demonstrating page rendering, text extraction, page object introspection, and
+Examples demonstrating page rendering, text extraction, page object introspection, and
 compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 ## What's new
 
-Version 0.5.3 adds bindings to Pdfium's `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions and adds the `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
-to the `pdfium-render` high-level interface. These additions make it possible to extract the text
-from PDF pages and page objects.
+Version 0.5.6 adds the `pdfium_render::prelude`, adds bindings to Pdfium's `FPDFAnnot_*()`
+functions, and adds the `PdfPageAnnotations` collection and `PdfAnnotation` struct to the
+`pdfium-render` high-level interface. Not all annotation-related functionality is currently
+available through the high-level interface.
  
 ## Porting existing Pdfium code from other languages
 
@@ -94,6 +97,24 @@ would translate to the following Rust code:
     bindings.FPDF_DestroyLibrary();
 ```
 
+Pdfium's API uses three different string types: classic C-style null-terminated char arrays,
+UTF-8 byte arrays, and a UTF-16LE byte array type named `FPDF_WIDESTRING`. For functions that take a
+C-style string or a UTF-8 byte array, `pdfium-render`'s binding will take the standard Rust `&str` type.
+For functions that take an `FPDF_WIDESTRING`, `pdfium-render` exposes two functions: the vanilla
+`FPDF_*()` function that takes an `FPDF_WIDESTRING`, and an additional `FPDF_*_str()` helper function
+that takes a standard Rust `&str` and converts it internally to an `FPDF_WIDESTRING` before calling
+Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
+`FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
+
+The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
+`PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` functions are provided
+for converting to and from UTF-16LE in your own code.
+
+Note that the `FPDF_LoadDocument()` function is not available when compiling to WASM.
+Either embed the target PDF document directly using Rust's `include_bytes!()`
+macro, or use Javascript's `fetch()` API to retrieve the bytes of the target document over
+the network, then load those bytes into Pdfium using the `FPDF_LoadMemDocument()` function.
+
 ## External Pdfium builds
 
 `pdfium-render` does not include Pdfium itself. You can either bind to a system-provided library
@@ -111,25 +132,44 @@ inspection and rendering of PDF files in a web browser.
 
 ## Development status
 
-The initial focus of this crate has been on rendering pages in a PDF file; consequently, FPDF_*
+The initial focus of this crate has been on rendering pages in a PDF file; consequently, `FPDF_*`
 functions related to bitmaps and rendering have been prioritised. By 1.0, the functionality of all
-FPDF_* functions exported by all Pdfium modules will be available, with the exception of certain
+`FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain
 functions specific to interactive scripting, user interaction, and printing.
 
-If you need a function that is not currently exposed, just raise an issue.
+* Releases numbered 0.4.x added support for all page rendering Pdfium functions to `pdfium-render`.
+* Releases numbered 0.5.x-0.6.x aim to progressively add support for all read-only Pdfium functions to `pdfium-render`.
+* Releases numbered 0.7.x-0.8.x aim to progressively add support for all Pdfium editing functions to `pdfium-render`.
+* Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.0.
+
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.5.6, 187 (51%) have
+bindings available in `pdfium-render`, with the functionality of roughly two-thirds of these
+available via the high-level interface.
+
+If you need a binding to a Pdfium function that is not currently available, just raise an issue.
 
 ## Version history
 
-* 0.5.5: fixes two bugs in the WASM implementation, one to do with colors, one to do with text extraction.
-  See <https://github.com/ajrcarey/pdfium-render/issues/9> and <https://github.com/ajrcarey/pdfium-render/issues/11>
-  for more information.
-* 0.5.4: changes default setting of `PdfBitmapConfig::set_reverse_byte_order()` to `true` to switch from
-  Pdfium's default BGRA8 pixel format to RGBA8. This is necessary since the `image` crate dropped
-  support for BGRA8 in version 0.24. See <https://github.com/ajrcarey/pdfium-render/issues/9> for more information.
-* 0.5.3: adds bindings for `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and `FPDFFont_*()` functions, exposes `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
-* 0.5.2: adds bindings for `FPDF_GetPageBoundingBox()`, `FPDFDoc_GetPageMode()`, `FPDFPage_Get*Box()`, and `FPDFPage_Set*Box()` functions, exposes `PdfPageBoundaries` collection
-* 0.5.1: adds bindings for `FPDFPage_GetRotation()` and `FPDFPage_SetRotation()` functions, exposes `PdfMetadata` collection
-* 0.5.0: adds rendering of annotations and form field elements, thanks to an excellent contribution from <https://github.com/inzanez>
+* 0.5.6: adds `pdfium_render::prelude`, adds bindings for `FPDFPage_*Annot*()` and `FPDFAnnot_*()`
+  functions, adds `PdfPageAnnotations` collection and `PdfAnnotation` struct to the high-level interface.
+* 0.5.5: fixes two bugs in the WASM implementation, one to do with colors,
+  one to do with text extraction.
+  See <https://github.com/ajrcarey/pdfium-render/issues/9> and
+  <https://github.com/ajrcarey/pdfium-render/issues/11> for more information.
+* 0.5.4: changes default setting of `PdfBitmapConfig::set_reverse_byte_order()` to `true` to
+  switch from Pdfium's default BGRA8 pixel format to RGBA8. This is necessary since
+  the `image` crate dropped support for BGRA8 in version 0.24. See
+  <https://github.com/ajrcarey/pdfium-render/issues/9> for more information.
+* 0.5.3: adds bindings for `FPDFBookmark_*()`, `FPDFPageObj_*()`, `FPDFText_*()`, and
+  `FPDFFont_*()` functions, adds `PdfPageObjects`, `PdfPageText`, and `PdfBookmarks` collections
+  to the high-level interface.
+* 0.5.2: adds bindings for `FPDF_GetPageBoundingBox()`, `FPDFDoc_GetPageMode()`,
+  `FPDFPage_Get*Box()`, and `FPDFPage_Set*Box()` functions, adds `PdfPageBoundaries` collection
+  to the high-level interface.
+* 0.5.1: adds bindings for `FPDFPage_GetRotation()` and `FPDFPage_SetRotation()` functions,
+  adds `PdfMetadata` collection to the high-level interface.
+* 0.5.0: adds rendering of annotations and form field elements, thanks to an excellent contribution
+  from <https://github.com/inzanez>
 * 0.4.2: bug fixes in `PdfBitmapConfig` implementation
 * 0.4.1: improvements to documentation and READMEs
 * 0.4.0: initial release
