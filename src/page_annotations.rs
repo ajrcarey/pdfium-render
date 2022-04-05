@@ -1,10 +1,10 @@
 //! Defines the [PdfPageAnnotations] struct, exposing functionality related to the
 //! annotations that have been added to a single `PdfPage`.
 
-use crate::annotation::PdfAnnotation;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::PdfPage;
+use crate::page_annotation::PdfPageAnnotation;
 use std::ops::Range;
 use std::os::raw::c_int;
 
@@ -44,8 +44,8 @@ impl<'a> PdfPageAnnotations<'a> {
         0..self.len()
     }
 
-    /// Returns a single [PdfAnnotation] from this [PdfPageAnnotations] collection.
-    pub fn get(&self, index: PdfPageAnnotationIndex) -> Result<PdfAnnotation, PdfiumError> {
+    /// Returns a single [PdfPageAnnotation] from this [PdfPageAnnotations] collection.
+    pub fn get(&self, index: PdfPageAnnotationIndex) -> Result<PdfPageAnnotation, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::PageAnnotationIndexOutOfBounds);
         }
@@ -66,7 +66,7 @@ impl<'a> PdfPageAnnotations<'a> {
                 ))
             }
         } else {
-            Ok(PdfAnnotation::from_pdfium(
+            Ok(PdfPageAnnotation::from_pdfium(
                 index,
                 annotation_handle,
                 self.bindings,
@@ -81,7 +81,7 @@ impl<'a> PdfPageAnnotations<'a> {
     }
 }
 
-/// An iterator over all the [PdfAnnotation] objects in a [PdfPageAnnotations] collection.
+/// An iterator over all the [PdfPageAnnotation] objects in a [PdfPageAnnotations] collection.
 pub struct PdfPageAnnotationsIterator<'a> {
     annotations: &'a PdfPageAnnotations<'a>,
     next_index: PdfPageAnnotationIndex,
@@ -98,7 +98,7 @@ impl<'a> PdfPageAnnotationsIterator<'a> {
 }
 
 impl<'a> Iterator for PdfPageAnnotationsIterator<'a> {
-    type Item = PdfAnnotation<'a>;
+    type Item = PdfPageAnnotation<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let next = self.annotations.get(self.next_index);

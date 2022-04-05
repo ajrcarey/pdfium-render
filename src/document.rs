@@ -15,7 +15,7 @@ use std::os::raw::c_int;
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfDocumentVersion {
     /// No version information is available. This is the case if the [PdfDocument]
-    /// was created via a call to [PdfDocument::new()] rather than loaded from a file.
+    /// was created via a call to `PdfDocument::new()` rather than loaded from a file.
     Unset,
 
     /// PDF 1.0, first published in 1993, supported by Acrobat Reader Carousel (1.0) onwards.
@@ -57,9 +57,10 @@ pub enum PdfDocumentVersion {
 
 /// An entry point to all the various object collections contained in a single PDF file.
 /// These collections include:
-/// * [PdfDocument::pages()], all the [PdfPages] in the document
-/// * [PdfDocument::metadata()], all the [PdfMetadata] tags in the document
-/// * [PdfDocument::form()], the [PdfForm] embedded in the document, if any
+/// * [PdfDocument::pages()], all the [PdfPages] in the document.
+/// * [PdfDocument::metadata()], all the [PdfMetadata] tags in the document.
+/// * [PdfDocument::form()], the [PdfForm] optionally embedded in the document.
+/// * [PdfDocument::bookmarks()], all the [PdfBookmarks] in the document.
 pub struct PdfDocument<'a> {
     handle: FPDF_DOCUMENT,
     form: Option<PdfForm<'a>>,

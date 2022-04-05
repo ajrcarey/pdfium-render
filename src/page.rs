@@ -169,6 +169,13 @@ impl PdfPageOrientation {
 }
 
 /// A single page in a [PdfDocument].
+///
+/// In addition to its own intrinsic properties, a [PdfPage] serves as the entry point
+/// to all object collections related to a single page in a PDF file.
+/// These collections include:
+/// * [PdfPage::annotations()], all the user annotations attached to the [PdfPage].
+/// * [PdfPage::boundaries()], all the boundary boxes relating to the [PdfPage].
+/// * [PdfPage::objects()], all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {
     index: PdfPageIndex,
     handle: FPDF_PAGE,

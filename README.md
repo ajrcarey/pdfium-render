@@ -60,9 +60,10 @@ compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tr
 ## What's new
 
 Version 0.5.6 adds the `pdfium_render::prelude`, adds bindings to Pdfium's `FPDFAnnot_*()`
-functions, and adds the `PdfPageAnnotations` collection and `PdfAnnotation` struct to the
-`pdfium-render` high-level interface. Not all annotation-related functionality is currently
-available through the high-level interface.
+and `FPDFPage_*Annot*()` functions, and adds the `PdfPageAnnotations` collection and
+`PdfPageAnnotation` enum to the `pdfium-render` high-level interface. Not all annotation-related
+functionality is currently available through the high-level interface; this will be added
+gradually over time.
  
 ## Porting existing Pdfium code from other languages
 
@@ -150,8 +151,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
-* 0.5.6: adds `pdfium_render::prelude`, adds bindings for `FPDFPage_*Annot*()` and `FPDFAnnot_*()`
-  functions, adds `PdfPageAnnotations` collection and `PdfAnnotation` struct to the high-level interface.
+* 0.5.6: adds `pdfium_render::prelude`, adds bindings for `FPDFAnnot_*()` and `FPDFPage_*Annot*()`
+  functions, adds `PdfPageAnnotations` collection and `PdfPageAnnotation` struct
+  to the high-level interface.
 * 0.5.5: fixes two bugs in the WASM implementation, one to do with colors,
   one to do with text extraction.
   See <https://github.com/ajrcarey/pdfium-render/issues/9> and

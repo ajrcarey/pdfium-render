@@ -46,6 +46,7 @@ impl PdfPageObjectType {
     }
 }
 
+/// A single object on a [PdfPage].
 pub enum PdfPageObject<'a> {
     Text(PdfPageTextObject<'a>),
     Path(PdfPagePathObject<'a>),
@@ -341,11 +342,7 @@ impl<'a> Drop for PdfPageObject<'a> {
         // (Indeed, if we try to, Pdfium segfaults.)
 
         if !self.is_object_memory_owned_by_page() {
-            let object = self.unwrap_as_trait();
-
-            object
-                .get_bindings()
-                .FPDFPageObj_Destroy(*object.get_handle());
+            self.get_bindings().FPDFPageObj_Destroy(*self.get_handle());
         }
     }
 }
