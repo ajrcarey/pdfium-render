@@ -73,10 +73,15 @@ pub mod prelude {
 
 // Conditional compilation is used to compile different implementations of
 // the PdfiumLibraryBindings trait depending on whether we are compiling to a
-// WASM module or to a native shared library.
+// WASM module, a native shared library, or a statically linked library.
 
 #[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "static"))]
 mod native;
+
+#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "static")]
+mod linked;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;

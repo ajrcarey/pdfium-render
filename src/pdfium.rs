@@ -4,14 +4,19 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use std::ffi::OsString;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use libloading::Library;
 
 #[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "static"))]
 use crate::native::NativePdfiumBindings;
+
+#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "static")]
+use crate::linked::StaticPdfiumBindings;
 
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::WasmPdfiumBindings;
@@ -26,10 +31,25 @@ pub struct Pdfium {
 }
 
 impl Pdfium {
+    /// Binds to a Pdfium library that was statically linked into the currently running
+    /// executable, returning a new PdfiumLibraryBindings object that contains bindings to the
+    /// functions exposed by the library. The application will immediately crash if Pdfium
+    /// was not correctly statically linked into the executable at compile time.
+    ///
+    /// This function is only available when the `static` feature is enabled.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "static")]
+    #[inline]
+    pub fn bind_to_statically_linked_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError>
+    {
+        Ok(Box::new(StaticPdfiumBindings {}))
+    }
+
     /// Initializes the external Pdfium library, loading it from the system libraries.
     /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions exposed
     /// by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         let bindings = NativePdfiumBindings::new(
@@ -62,6 +82,7 @@ impl Pdfium {
     /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions
     /// exposed by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_library(
         path: impl ToString,
@@ -79,6 +100,7 @@ impl Pdfium {
     /// On Linux and Android, this will be libpdfium.so or similar; on Windows, this will
     /// be pdfium.dll or similar; on MacOS, this will be libpdfium.dylib or similar.
     #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn pdfium_platform_library_name() -> OsString {
         libloading::library_filename("pdfium")
@@ -87,6 +109,7 @@ impl Pdfium {
     /// Returns the name of the external Pdfium library on the currently running platform,
     /// prefixed with the given path string.
     #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn pdfium_platform_library_name_at_path(path: impl ToString) -> String {
         let mut path = path.to_string();
@@ -166,6 +189,13 @@ impl Drop for Pdfium {
 }
 
 impl Default for Pdfium {
+    #[cfg(feature = "static")]
+    #[inline]
+    fn default() -> Self {
+        Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap())
+    }
+
+    #[cfg(not(feature = "static"))]
     #[inline]
     fn default() -> Self {
         Pdfium::new(Pdfium::bind_to_system_library().unwrap())

@@ -121,6 +121,8 @@ impl PdfPageAnnotationType {
         }
     }
 
+    #[allow(dead_code)]
+    // The as_pdfium() function is not currently used, but we expect it to be in future
     pub(crate) fn as_pdfium(&self) -> FPDF_ANNOTATION_SUBTYPE {
         (match self {
             PdfPageAnnotationType::Unknown => FPDF_ANNOT_UNKNOWN,
@@ -313,7 +315,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Strikeout]
     /// * [PdfPageAnnotationType::Text]
     /// * [PdfPageAnnotationType::Underline]
-    fn is_supported(&self) -> bool {
+    pub fn is_supported(&self) -> bool {
         !self.is_unsupported()
     }
 
@@ -339,7 +341,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Text]
     /// * [PdfPageAnnotationType::Underline]
     #[inline]
-    fn is_unsupported(&self) -> bool {
+    pub fn is_unsupported(&self) -> bool {
         matches!(self, PdfPageAnnotation::Unsupported(_))
     }
 

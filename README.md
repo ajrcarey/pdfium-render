@@ -59,7 +59,10 @@ compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tr
 
 ## What's new
 
-Version 0.5.6 adds the `pdfium_render::prelude`, adds bindings to Pdfium's `FPDFAnnot_*()`
+Version 0.5.7 adds the ability to bind to a build of Pdfium that has been statically linked
+into the final Rust executable.
+
+Version 0.5.6 added the `pdfium_render::prelude`, adds bindings to Pdfium's `FPDFAnnot_*()`
 and `FPDFPage_*Annot*()` functions, and adds the `PdfPageAnnotations` collection and
 `PdfPageAnnotation` enum to the `pdfium-render` high-level interface. Not all annotation-related
 functionality is currently available through the high-level interface; this will be added
@@ -108,28 +111,95 @@ Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBook
 `FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
 
 The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
-`PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` functions are provided
-for converting to and from UTF-16LE in your own code.
+`PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` utility functions are provided
+for converting to and from `FPDF_WIDESTRING` in your own code.
 
 Note that the `FPDF_LoadDocument()` function is not available when compiling to WASM.
 Either embed the target PDF document directly using Rust's `include_bytes!()`
 macro, or use Javascript's `fetch()` API to retrieve the bytes of the target document over
 the network, then load those bytes into Pdfium using the `FPDF_LoadMemDocument()` function.
 
-## External Pdfium builds
+## Binding to Pdfium
 
-`pdfium-render` does not include Pdfium itself. You can either bind to a system-provided library
-or package an external build of Pdfium alongside your Rust application. When compiling to WASM,
-packaging an external build of Pdfium as a separate WASM module is essential.
+`pdfium-render` does not include Pdfium itself. You have several options:
 
-* Native builds of Pdfium for all major platforms _except_ WASM: <https://github.com/bblanchon/pdfium-binaries/releases>
-* WASM builds of Pdfium, suitable for deploying alongside `pdfium-render`: <https://github.com/paulo-coutinho/pdfium-lib/releases>
+* Bind to a dynamically-built Pdfium library provided by the operating system.
+* Bind to a dynamically-built Pdfium library packaged alongside your Rust executable.
+* Bind to a statically-built Pdfium library linked to your executable at compile time.
+
+When compiling to WASM, packaging an external build of Pdfium as a separate WASM module is essential.
+
+## Dynamic linking
+
+Binding to a dynamically-built Pdfium library is the simplest option. On Android, a system-provided
+`libpdfium.so` is packaged as part of the operating system; alternatively, you can package a pre-built
+dynamic library appropriate for your operating system alongside your Rust executable.
+
+* Native builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
+* WASM builds of Pdfium: <https://github.com/paulo-coutinho/pdfium-lib/releases>
+
+At the time of writing, the WASM builds at <https://github.com/bblanchon/pdfium-binaries/releases>
+are compiled with a non-growable WASM heap memory allocator. This means that attempting to open
+a PDF document longer than just a few pages will result in a unrecoverable out of memory error.
+The WASM builds at <https://github.com/paulo-coutinho/pdfium-lib/releases> are recommended as they
+do not have this problem.
+
+## Static linking
+
+If you prefer link Pdfium directly into your executable at compile time, use the optional `static`
+crate feature. This enables the `Pdfium::bind_to_statically_linked_library()` function which binds
+directly to the Pdfium functions included in your executable:
+
+```
+    use pdfium_render::prelude::*;
+
+    let pdfium = Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap());
+```
+
+As a convenience, `pdfium-render` can instruct `cargo` to link a statically-built Pdfium
+library for you. Set the path to the directory containing your pre-built library using
+the `PDFIUM_STATIC_LIB_PATH` environment variable when you run `cargo build`, like so:
+
+```
+    PDFIUM_STATIC_LIB_PATH="/path/containing/your/static/pdfium/library" cargo build
+```
+
+`pdfium-render` will pass the following flags to `cargo`:
+
+```
+    cargo:rustc-link-lib=static=pdfium
+    cargo:rustc-link-search=native=$PDFIUM_STATIC_LIB_PATH
+```
+
+This saves you writing a custom `build.rs` yourself. If you have your own build pipeline
+that links Pdfium statically into your executable, simply leave the `PDFIUM_STATIC_LIB_PATH`
+environment variable unset.
+
+Note that the path you set in `PDFIUM_STATIC_LIB_PATH` should not include the filename of the
+library itself; it should just be the path of the containing directory. You must make sure your
+statically-built library is named in the appropriate way for your target platform
+(`libpdfium.a` on Linux and macOS, for example) in order for the Rust compiler to locate it.
+
+`pdfium-render` will not build Pdfium for you; you must build Pdfium yourself, or source a
+pre-built static archive from elsewhere.
 
 ## Compiling to WASM
 
 See <https://github.com/ajrcarey/pdfium-render/tree/master/examples> for a full example that shows
 how to bundle a Rust application using `pdfium-render` alongside a pre-built Pdfium WASM module for
 inspection and rendering of PDF files in a web browser.
+
+## Optional features
+
+This crate provides the following optional features:
+
+* `bindings`: uses `cbindgen` to generate Rust bindings to the Pdfium functions defined in the
+  `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
+  are not available then the build will fail.
+* `static`: enables binding to a statically-linked build of Pdfium.
+  See the "Static linking" section above.
+
+Neither feature is enabled by default.
 
 ## Development status
 
@@ -143,7 +213,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.7.x-0.8.x aim to progressively add support for all Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.5.6, 187 (51%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.5.7, 187 (51%) have
 bindings available in `pdfium-render`, with the functionality of roughly two-thirds of these
 available via the high-level interface.
 
@@ -151,6 +221,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.5.7: adds support for binding to a statically-linked build of Pdfium, adds `bindgen` and `static` crate features.
 * 0.5.6: adds `pdfium_render::prelude`, adds bindings for `FPDFAnnot_*()` and `FPDFPage_*Annot*()`
   functions, adds `PdfPageAnnotations` collection and `PdfPageAnnotation` struct
   to the high-level interface.
