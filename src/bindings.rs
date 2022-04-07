@@ -13,8 +13,7 @@ use crate::error::PdfiumInternalError;
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
-use std::ffi::c_void;
-use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort};
+use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 
 /// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
@@ -616,7 +615,7 @@ pub trait PdfiumLibraryBindings {
         &self,
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
-        value: *mut f32,
+        value: *mut c_float,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
@@ -668,7 +667,7 @@ pub trait PdfiumLibraryBindings {
     ) -> c_ulong;
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: *const c_char) -> FPDF_BOOL;
+    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFDOC_InitFormFillEnvironment(
