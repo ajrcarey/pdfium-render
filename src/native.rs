@@ -3695,8 +3695,10 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: *const c_char) -> FPDF_BOOL {
-        unsafe { self.extern_FPDFAnnot_SetURI().unwrap()(annot, uri) }
+    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL {
+        let c_uri = CString::new(uri).unwrap();
+
+        unsafe { self.extern_FPDFAnnot_SetURI().unwrap()(annot, c_uri.as_ptr()) }
     }
 
     #[inline]
