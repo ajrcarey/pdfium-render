@@ -92,7 +92,8 @@ pub mod tests {
     use image::ImageFormat;
 
     #[test]
-    fn test() {
+    #[cfg(not(feature = "static"))]
+    fn dynamic_bindings() {
         let bindings = Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
             .or_else(|_| Pdfium::bind_to_system_library());
 
@@ -124,5 +125,15 @@ pub mod tests {
 
                 assert!(result.is_ok());
             });
+    }
+
+    #[test]
+    #[cfg(feature = "static")]
+    fn static_bindings() {
+        use crate::prelude::*;
+
+        // Simply checks that the static bindings contain no compilation errors.
+
+        Pdfium::bind_to_statically_linked_library().unwrap();
     }
 }

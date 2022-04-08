@@ -905,8 +905,10 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: *const c_char) -> FPDF_BOOL {
-        unsafe { crate::bindgen::FPDFAnnot_SetURI(annot, uri) }
+    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL {
+        let c_uri = CString::new(uri).unwrap();
+
+        unsafe { crate::bindgen::FPDFAnnot_SetURI(annot, c_uri.as_ptr()) }
     }
 
     #[inline]

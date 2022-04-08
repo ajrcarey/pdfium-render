@@ -221,9 +221,10 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
-* 0.5.8: fixes a bug in the WASM implementation of certain `FPDFAnnot_*()` functions; corrects
-  an implementation pattern that, in rare situations, could have led to memory leaks in the WASM
-  implementation of various `FPDF_*()` functions.
+* 0.5.9: corrects a bug in the statically linked bindings implementation. Adjusted tests
+  to cover both dynamic and statically linked bindings implementations.
+* 0.5.8: corrects a bug in the WASM implementation of certain `FPDFAnnot_*()` functions. Resolves
+  a potential memory leak affecting the WASM implementation of various `FPDF_*()` functions.
 * 0.5.7: adds support for binding to a statically-linked build of Pdfium, adds `bindgen` and `static` crate features.
 * 0.5.6: adds `pdfium_render::prelude`, adds bindings for `FPDFAnnot_*()` and `FPDFPage_*Annot*()`
   functions, adds `PdfPageAnnotations` collection and `PdfPageAnnotation` struct
