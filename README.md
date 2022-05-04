@@ -59,11 +59,11 @@ compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tr
 
 ## What's new
 
-Version 0.5.7 adds the ability to bind to a build of Pdfium that has been statically linked
+Version 0.5.7 added the ability to bind to a build of Pdfium that has been statically linked
 into the final Rust executable.
 
-Version 0.5.6 added the `pdfium_render::prelude`, adds bindings to Pdfium's `FPDFAnnot_*()`
-and `FPDFPage_*Annot*()` functions, and adds the `PdfPageAnnotations` collection and
+Version 0.5.6 added the `pdfium_render::prelude`, added bindings to Pdfium's `FPDFAnnot_*()`
+and `FPDFPage_*Annot*()` functions, and added the `PdfPageAnnotations` collection and
 `PdfPageAnnotation` enum to the `pdfium-render` high-level interface. Not all annotation-related
 functionality is currently available through the high-level interface; this will be added
 gradually over time.
