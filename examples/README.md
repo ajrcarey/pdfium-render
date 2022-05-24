@@ -10,7 +10,7 @@ Simple examples demonstrating how to use `pdfium-render` on both native and WASM
 
 ## Bundling for WASM
 
-Since `pdfium-render` does not include Pdfium itself, an external pre-packaged WASM build of `pdfium` is required. Suitable builds are available from https://github.com/paulo-coutinho/pdfium-lib/releases.
+Since `pdfium-render` does not include Pdfium itself, an external pre-packaged WASM build of `pdfium` is required. Suitable builds are available from https://github.com/paulocoutinhox/pdfium-lib/releases.
 
 * Build the WASM module for the sample: `cargo install wasm-pack && wasm-pack build examples/ --target no-modules`. This creates a WASM module and supporting Javascript files in `examples/pkg`.
 * Copy the `pdfium_render_wasm_example.js` and `pdfium_render_wasm_example_bg.wasm` files from `examples/pkg/` into a release folder.
