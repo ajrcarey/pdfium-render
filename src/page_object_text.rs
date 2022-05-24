@@ -44,7 +44,7 @@ pub enum PdfPageTextRenderMode {
     /// The text will be filled and added to the path for clipping.
     FilledUnstrokedClipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_CLIP as isize,
 
-    /// THe text will be stroked and added to the path for clipping.
+    /// The text will be stroked and added to the path for clipping.
     StrokedUnfilledClipping = FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_STROKE_CLIP as isize,
 
     /// The text will be filled, then stroked, and added to the path for clipping.

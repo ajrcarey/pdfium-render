@@ -12,11 +12,11 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
     
     let pdfium = Pdfium::new(Pdfium::bind_to_system_library().unwrap());
 
-    // Load a PDF file.
+    // Load a PDF file with no password protection.
     
     let document = pdfium.load_pdf_from_file("test.pdf", None).unwrap();
     
-    // Set our desired bitmap rendering options.
+    // Set bitmap rendering options that will apply to all pages.
  
     let bitmap_render_config = PdfBitmapConfig::new()
         .set_target_width(2000)
@@ -39,18 +39,18 @@ Pdfium exposed by the excellent `pdfium-sys` crate.
 In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from
 `pdfium-sys` in several other important ways:
 
-* `pdfium-render` uses `libloading` to late bind to a Pdfium library at run-time, whereas
-  `pdfium-sys` binds to a library at compile-time. By binding to Pdfium at run-time instead
-  of compile-time, `pdfium-render` can dynamically switch between bundled libraries and
-  system libraries and provide idiomatic Rust error handling in situations where a Pdfium
-  library is not available.
+* `pdfium-render` uses `libloading` to late bind to a Pdfium library at run-time, allowing for
+  run-time selection of system-provided or bundled Pdfium libraries and providing idiomatic
+  Rust error handling in situations where a Pdfium library is not available. This differs from
+  `pdfium-sys` which early binds to a Pdfium library at compile-time; the application will crash
+  if the library cannot be found at run-time.
 * Late binding to Pdfium means that `pdfium-render` can be compiled to WASM for running in a
   browser; this is not possible with `pdfium-sys`.
-* Pdfium is composed as a set of separate modules, each covering a different aspect of PDF creation,
-  rendering, and editing. `pdfium-sys` only provides bindings for the subset of functions exposed
-  by Pdfium's view module; `pdfium-render` aims to ultimately provide bindings to all non-interactive
-  functions exposed by all Pdfium modules, including document creation and editing functions.
-  This is a work in progress. 
+* Pdfium itself is architected as a set of separate modules, each covering a different aspect of
+  PDF creation, rendering, and editing. `pdfium-sys` only provides bindings for the subset of
+  functions exposed by Pdfium's view module; `pdfium-render` aims to ultimately provide bindings
+  to all non-interactive functions exposed by all Pdfium modules, including document creation and
+  editing functions. This is a work in progress. 
 * Pages rendered by Pdfium can be exported as instances of `Image::DynamicImage` for easy,
   idiomatic post-processing.
 
@@ -58,6 +58,8 @@ Examples demonstrating page rendering, text extraction, page object introspectio
 compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 ## What's new
+
+Versions 0.5.8, 0.5.9, and 0.6.0 are bug fix releases.
 
 Version 0.5.7 added the ability to bind to a build of Pdfium that has been statically linked
 into the final Rust executable.
@@ -136,12 +138,12 @@ Binding to a dynamically-built Pdfium library is the simplest option. On Android
 dynamic library appropriate for your operating system alongside your Rust executable.
 
 * Native builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
-* WASM builds of Pdfium: <https://github.com/paulo-coutinho/pdfium-lib/releases>
+* WASM builds of Pdfium: <https://github.com/paulocoutinhox/pdfium-lib/releases>
 
 At the time of writing, the WASM builds at <https://github.com/bblanchon/pdfium-binaries/releases>
 are compiled with a non-growable WASM heap memory allocator. This means that attempting to open
 a PDF document longer than just a few pages will result in a unrecoverable out of memory error.
-The WASM builds at <https://github.com/paulo-coutinho/pdfium-lib/releases> are recommended as they
+The WASM builds at <https://github.com/paulocoutinhox/pdfium-lib/releases> are recommended as they
 do not have this problem.
 
 ## Static linking
@@ -213,7 +215,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.7.x-0.8.x aim to progressively add support for all Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.5.7, 187 (51%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.6.0, 187 (51%) have
 bindings available in `pdfium-render`, with the functionality of roughly two-thirds of these
 available via the high-level interface.
 
@@ -221,6 +223,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.6.0: fixes some typos in documentation, updates upstream Pdfium WASM package source repository name.
 * 0.5.9: corrects a bug in the statically linked bindings implementation. Adjusted tests
   to cover both dynamic and statically linked bindings implementations.
 * 0.5.8: corrects a bug in the WASM implementation of certain `FPDFAnnot_*()` functions. Resolves
