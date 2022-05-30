@@ -124,10 +124,10 @@ impl<'a> PdfForm<'a> {
         // when the user interacts with a form field widget. Since pdfium-render has
         // no concept of interactivity, we can leave all these set to None.
 
-        // We allocate the FPDF_FORMFILLINFO struct on the heap and pin its location
-        // so Rust will not move it around. Pdfium evidently saves the pointer location
-        // when we call FPDFDOC_InitFormFillEnvironment() and expects the same pointer
-        // location to be valid when we later call FPDFDOC_ExitFormFillEnvironment()
+        // We allocate the FPDF_FORMFILLINFO struct on the heap and pin its pointer location
+        // so Rust will not move it around. Pdfium retains the pointer location
+        // when we call FPDFDOC_InitFormFillEnvironment() and expects the pointer
+        // location to still be valid when we later call FPDFDOC_ExitFormFillEnvironment()
         // during drop(); if we don't pin the struct's location it may move, and the
         // call to FPDFDOC_ExitFormFillEnvironment() will segfault.
 

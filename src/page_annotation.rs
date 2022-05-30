@@ -13,13 +13,13 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::page::PdfRect;
-use crate::page_annotation::internal::PdfPageAnnotationPrivate;
 use crate::page_annotation_circle::PdfPageCircleAnnotation;
 use crate::page_annotation_free_text::PdfPageFreeTextAnnotation;
 use crate::page_annotation_highlight::PdfPageHighlightAnnotation;
 use crate::page_annotation_ink::PdfPageInkAnnotation;
 use crate::page_annotation_link::PdfPageLinkAnnotation;
 use crate::page_annotation_popup::PdfPagePopupAnnotation;
+use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 use crate::page_annotation_square::PdfPageSquareAnnotation;
 use crate::page_annotation_squiggly::PdfPageSquigglyAnnotation;
 use crate::page_annotation_stamp::PdfPageStampAnnotation;
@@ -27,7 +27,6 @@ use crate::page_annotation_strikeout::PdfPageStrikeoutAnnotation;
 use crate::page_annotation_text::PdfPageTextAnnotation;
 use crate::page_annotation_underline::PdfPageUnderlineAnnotation;
 use crate::page_annotation_unsupported::PdfPageUnsupportedAnnotation;
-use crate::page_annotations::PdfPageAnnotationIndex;
 
 /// The type of a single [PdfPageAnnotation], as defined in table 8.20 of the PDF Reference,
 /// version 1.7, on page 615.
@@ -182,7 +181,6 @@ pub enum PdfPageAnnotation<'a> {
 impl<'a> PdfPageAnnotation<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
-        index: PdfPageAnnotationIndex,
         handle: FPDF_ANNOTATION,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
@@ -191,44 +189,43 @@ impl<'a> PdfPageAnnotation<'a> {
                 .unwrap_or(PdfPageAnnotationType::Unknown);
 
         match annotation_type {
-            PdfPageAnnotationType::Circle => PdfPageAnnotation::Circle(
-                PdfPageCircleAnnotation::from_pdfium(index, handle, bindings),
-            ),
+            PdfPageAnnotationType::Circle => {
+                PdfPageAnnotation::Circle(PdfPageCircleAnnotation::from_pdfium(handle, bindings))
+            }
             PdfPageAnnotationType::FreeText => PdfPageAnnotation::FreeText(
-                PdfPageFreeTextAnnotation::from_pdfium(index, handle, bindings),
+                PdfPageFreeTextAnnotation::from_pdfium(handle, bindings),
             ),
             PdfPageAnnotationType::Highlight => PdfPageAnnotation::Highlight(
-                PdfPageHighlightAnnotation::from_pdfium(index, handle, bindings),
+                PdfPageHighlightAnnotation::from_pdfium(handle, bindings),
             ),
             PdfPageAnnotationType::Ink => {
-                PdfPageAnnotation::Ink(PdfPageInkAnnotation::from_pdfium(index, handle, bindings))
+                PdfPageAnnotation::Ink(PdfPageInkAnnotation::from_pdfium(handle, bindings))
             }
             PdfPageAnnotationType::Link => {
-                PdfPageAnnotation::Link(PdfPageLinkAnnotation::from_pdfium(index, handle, bindings))
+                PdfPageAnnotation::Link(PdfPageLinkAnnotation::from_pdfium(handle, bindings))
             }
-            PdfPageAnnotationType::Popup => PdfPageAnnotation::Popup(
-                PdfPagePopupAnnotation::from_pdfium(index, handle, bindings),
-            ),
-            PdfPageAnnotationType::Square => PdfPageAnnotation::Square(
-                PdfPageSquareAnnotation::from_pdfium(index, handle, bindings),
-            ),
+            PdfPageAnnotationType::Popup => {
+                PdfPageAnnotation::Popup(PdfPagePopupAnnotation::from_pdfium(handle, bindings))
+            }
+            PdfPageAnnotationType::Square => {
+                PdfPageAnnotation::Square(PdfPageSquareAnnotation::from_pdfium(handle, bindings))
+            }
             PdfPageAnnotationType::Squiggly => PdfPageAnnotation::Squiggly(
-                PdfPageSquigglyAnnotation::from_pdfium(index, handle, bindings),
+                PdfPageSquigglyAnnotation::from_pdfium(handle, bindings),
             ),
-            PdfPageAnnotationType::Stamp => PdfPageAnnotation::Stamp(
-                PdfPageStampAnnotation::from_pdfium(index, handle, bindings),
-            ),
+            PdfPageAnnotationType::Stamp => {
+                PdfPageAnnotation::Stamp(PdfPageStampAnnotation::from_pdfium(handle, bindings))
+            }
             PdfPageAnnotationType::Strikeout => PdfPageAnnotation::Strikeout(
-                PdfPageStrikeoutAnnotation::from_pdfium(index, handle, bindings),
+                PdfPageStrikeoutAnnotation::from_pdfium(handle, bindings),
             ),
             PdfPageAnnotationType::Text => {
-                PdfPageAnnotation::Text(PdfPageTextAnnotation::from_pdfium(index, handle, bindings))
+                PdfPageAnnotation::Text(PdfPageTextAnnotation::from_pdfium(handle, bindings))
             }
             PdfPageAnnotationType::Underline => PdfPageAnnotation::Underline(
-                PdfPageUnderlineAnnotation::from_pdfium(index, handle, bindings),
+                PdfPageUnderlineAnnotation::from_pdfium(handle, bindings),
             ),
             _ => PdfPageAnnotation::Unsupported(PdfPageUnsupportedAnnotation::from_pdfium(
-                index,
                 annotation_type,
                 handle,
                 bindings,
@@ -468,84 +465,26 @@ impl<'a> PdfPageAnnotation<'a> {
 
 /// Functionality common to all [PdfPageAnnotation] objects, regardless of their [PdfPageAnnotationType].
 pub trait PdfPageAnnotationCommon {
-    /// Returns the zero-based page index of this [PdfPageAnnotation] in its containing
-    /// `PdfPageAnnotations` collection.
-    fn index(&self) -> PdfPageAnnotationIndex;
-
     /// Returns the bounding box of this [PdfPageAnnotation].
     fn bounds(&self) -> Result<PdfRect, PdfiumError>;
-}
-
-pub(crate) mod internal {
-    // We want to make the PdfPageAnnotationPrivate trait private while providing a blanket
-    // implementation of PdfPageAnnotationCommon for any type T where T: PdfPageAnnotationPrivate.
-    // Rust complains, however, that by doing so we are leaking the private trait outside
-    // the crate.
-
-    // Instead of making the PdfPageAnnotationPrivate trait private, we leave it public but place it
-    // inside this pub(crate) module in order to prevent it from being visible outside the crate.
-
-    use crate::bindgen::{FPDF_ANNOTATION, FS_RECTF};
-    use crate::bindings::PdfiumLibraryBindings;
-    use crate::error::PdfiumError;
-    use crate::page::PdfRect;
-    use crate::page_annotations::PdfPageAnnotationIndex;
-
-    /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
-    pub trait PdfPageAnnotationPrivate: super::PdfPageAnnotationCommon {
-        /// Returns the internal FPDF_ANNOTATION handle for this [PdfPageANnotation].
-        fn get_handle(&self) -> &FPDF_ANNOTATION;
-
-        /// Internal implementation of [PdfPageAnnotationCommon::index()].
-        fn index_impl(&self) -> PdfPageAnnotationIndex;
-
-        fn get_bindings(&self) -> &dyn PdfiumLibraryBindings;
-
-        /// Internal implementation of [PdfPageObjectCommon::bounding()].
-        #[inline]
-        fn bounds_impl(&self) -> Result<PdfRect, PdfiumError> {
-            let mut rect = FS_RECTF {
-                left: 0_f32,
-                bottom: 0_f32,
-                right: 0_f32,
-                top: 0_f32,
-            };
-
-            let result = self
-                .get_bindings()
-                .FPDFAnnot_GetRect(*self.get_handle(), &mut rect);
-
-            PdfRect::from_pdfium_as_result(result, rect, self.get_bindings())
-        }
-    }
 }
 
 // Blanket implementation for all PdfPageAnnotation types.
 
 impl<T> PdfPageAnnotationCommon for T
 where
-    T: internal::PdfPageAnnotationPrivate,
+    T: PdfPageAnnotationPrivate,
 {
-    #[inline]
-    fn index(&self) -> PdfPageAnnotationIndex {
-        self.index_impl()
-    }
-
     #[inline]
     fn bounds(&self) -> Result<PdfRect, PdfiumError> {
         self.bounds_impl()
     }
 }
 
-impl<'a> internal::PdfPageAnnotationPrivate for PdfPageAnnotation<'a> {
+impl<'a> PdfPageAnnotationPrivate for PdfPageAnnotation<'a> {
     #[inline]
     fn get_handle(&self) -> &FPDF_ANNOTATION {
         self.unwrap_as_trait().get_handle()
-    }
-
-    #[inline]
-    fn index_impl(&self) -> PdfPageAnnotationIndex {
-        self.unwrap_as_trait().index_impl()
     }
 
     #[inline]

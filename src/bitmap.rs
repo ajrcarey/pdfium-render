@@ -13,6 +13,12 @@ use crate::error::PdfiumError;
 use crate::page::PdfPage;
 use image::{DynamicImage, ImageBuffer};
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::{Clamped, JsValue};
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::ImageData;
+
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfBitmapFormat {
@@ -99,8 +105,8 @@ impl<'a> PdfBitmap<'a> {
     pub(crate) fn from_pdfium(
         handle: FPDF_BITMAP,
         config: PdfBitmapRenderSettings,
-        page: &'a PdfPage,
-        document: &'a PdfDocument,
+        page: &'a PdfPage<'a>,
+        document: &'a PdfDocument<'a>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfBitmap {
@@ -160,6 +166,22 @@ impl<'a> PdfBitmap<'a> {
         let buffer_start = self.bindings.FPDFBitmap_GetBuffer(self.handle);
 
         unsafe { std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize) }
+    }
+
+    /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
+    /// this [PdfBitmap], rendering the referenced page if necessary. The resulting ImageData
+    /// can be easily displayed in an HTML <canvas> element like so:
+    ///
+    /// `canvas.getContext('2d').putImageData(image_data);`
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub fn as_image_data(&mut self) -> ImageData {
+        ImageData::new_with_u8_clamped_array_and_sh(
+            Clamped(self.as_bytes()),
+            JsValue::from(self.width()),
+            JsValue::from(self.height()),
+        )
     }
 
     /// Renders this page into a bitmap buffer. Once rendered, the page will not be

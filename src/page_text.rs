@@ -38,12 +38,6 @@ impl<'a> PdfPageText<'a> {
         }
     }
 
-    /// Returns the internal FPDF_TEXTPAGE handle for this [PdfPageText].
-    #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_TEXTPAGE {
-        &self.handle
-    }
-
     /// Returns the total number of characters in all text boxes in the containing [PdfPage].
     ///
     /// The character count includes whitespace and newlines, and so may differ slightly

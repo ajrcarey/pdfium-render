@@ -37,10 +37,33 @@ pub enum PdfiumError {
     UnknownActionType,
     PageObjectIndexOutOfBounds,
     PageAnnotationIndexOutOfBounds,
+    PageFlattenFailure,
     UnknownPdfPageObjectType,
     UnknownPdfPageTextRenderMode,
     UnknownPdfAnnotationType,
+    UnknownPdfSecurityHandlerRevision,
 
-    /// A wrapped internal library error from Pdfium's FPDF_ERR_* constant values.
+    /// A call to a internal Pdfium `FPDF_*` function returned a value indicating failure.
+    ///
+    /// For Pdfium functions that return enumerations, this means the function returned
+    /// a value of -1 rather than a valid enumeration constant.
+    ///
+    /// For Pdfium functions that return C-style boolean integers, this means that the function
+    /// returned a value other than `PdfiumLibraryBindings::TRUE`.
+    PdfiumFunctionReturnValueIndicatedFailure,
+
+    /// A call to a Pdfium function that returns a standard 8-bit color component value
+    /// (for example, `FPDFPageObj_GetStrokeColor()` and `FPDFPageObj_GetStrokeColor()`)
+    /// successfully returned a value, but the value could not be converted from a c_int
+    /// to a standard Rust u8.
+    UnableToConvertPdfiumColorValueToRustu8(std::num::TryFromIntError),
+
+    /// The browser's `Window` object could not be retrieved.
+    WebSysWindowObjectNotAvailable,
+
+    /// An I/O error occurred during a Pdfium file operation.
+    IoError(std::io::Error),
+
+    /// A wrapped internal library error from Pdfium's `FPDF_ERR_*` constant values.
     PdfiumLibraryInternalError(PdfiumInternalError),
 }

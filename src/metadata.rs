@@ -1,5 +1,4 @@
-//! Defines the [PdfMetadata] struct, a collection of all the metadata tags in a
-//! `PdfDocument`.
+//! Defines the [PdfMetadata] struct, a collection of all the metadata tags in a `PdfDocument`.
 
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;

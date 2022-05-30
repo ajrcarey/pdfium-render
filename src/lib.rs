@@ -29,6 +29,7 @@ pub mod page_annotation_highlight;
 pub mod page_annotation_ink;
 pub mod page_annotation_link;
 pub mod page_annotation_popup;
+mod page_annotation_private; // Keep private so that the PdfPageAnnotationPrivate trait is not exposed.
 pub mod page_annotation_square;
 pub mod page_annotation_squiggly;
 pub mod page_annotation_stamp;
@@ -42,6 +43,7 @@ pub mod page_object;
 pub mod page_object_form_fragment;
 pub mod page_object_image;
 pub mod page_object_path;
+mod page_object_private; // Keep private so that the PdfPageObjectPrivate trait is not exposed.
 pub mod page_object_shading;
 pub mod page_object_text;
 pub mod page_object_unsupported;
@@ -50,11 +52,15 @@ pub mod page_size;
 pub mod page_text;
 pub mod pages;
 pub mod pdfium;
+pub mod permissions;
 mod utils;
 
-/// A prelude for conveniently importing all public `pdfium-render` functionality at once.
+/// A prelude for conveniently importing all public `pdfium-render` definitions at once.
 ///
-/// Usage: `use pdfium_render::prelude::*`;
+/// Usage:
+/// ```
+/// use pdfium_render::prelude::*;
+/// ```
 pub mod prelude {
     pub use super::{
         action::*, action_destination::*, bindings::*, bitmap::*, bitmap_config::*, bookmark::*,
@@ -67,7 +73,7 @@ pub mod prelude {
         page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_image::*,
         page_object_path::*, page_object_shading::*, page_object_text::*,
         page_object_unsupported::*, page_objects::*, page_size::*, page_text::*, pages::*,
-        pdfium::*,
+        pdfium::*, permissions::*,
     };
 }
 
@@ -111,17 +117,15 @@ pub mod tests {
             .unwrap()
             .pages()
             .iter()
-            .for_each(|page| {
+            .enumerate()
+            .for_each(|(index, page)| {
                 let result = page
                     .get_bitmap_with_config(&render_config)
                     .unwrap()
                     .as_image()
                     .as_rgba8()
                     .unwrap()
-                    .save_with_format(
-                        format!("form-test-page-{}.jpg", page.index()),
-                        ImageFormat::Jpeg,
-                    );
+                    .save_with_format(format!("form-test-page-{}.jpg", index), ImageFormat::Jpeg);
 
                 assert!(result.is_ok());
             });

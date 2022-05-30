@@ -1,10 +1,10 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING,
-    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
+    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
+    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::{c_void, CString};
@@ -37,6 +37,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT {
+        unsafe { crate::bindgen::FPDF_CreateNewDocument() }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT {
         let c_file_path = CString::new(file_path).unwrap();
         let c_password = CString::new(password.unwrap_or("")).unwrap();
@@ -56,6 +62,55 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
                 c_password.as_ptr(),
             )
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_LoadMemDocument64(
+                data_buf.as_ptr() as *const c_void,
+                data_buf.len() as size_t,
+                c_password.as_ptr(),
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_LoadCustomDocument(
+        &self,
+        pFileAccess: *mut FPDF_FILEACCESS,
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT {
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
+
+        unsafe { crate::bindgen::FPDF_LoadCustomDocument(pFileAccess, c_password.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SaveAsCopy(
+        &self,
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDF_SaveAsCopy(document, pFileWrite, flags) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SaveWithVersion(
+        &self,
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+        fileVersion: c_int,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDF_SaveWithVersion(document, pFileWrite, flags, fileVersion) }
     }
 
     #[inline]
@@ -94,6 +149,18 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
+        unsafe { crate::bindgen::FPDF_GetDocPermissions(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { crate::bindgen::FPDF_GetSecurityHandlerRevision(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { crate::bindgen::FPDF_GetPageCount(document) }
     }
@@ -109,6 +176,56 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_ClosePage(&self, page: FPDF_PAGE) {
         unsafe {
             crate::bindgen::FPDF_ClosePage(page);
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPagesByIndex(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        page_indices: *const c_int,
+        length: c_ulong,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            crate::bindgen::FPDF_ImportPagesByIndex(dest_doc, src_doc, page_indices, length, index)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPages(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        pagerange: &str,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        let c_pagerange = CString::new(pagerange).unwrap();
+
+        unsafe { crate::bindgen::FPDF_ImportPages(dest_doc, src_doc, c_pagerange.as_ptr(), index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportNPagesToOne(
+        &self,
+        src_doc: FPDF_DOCUMENT,
+        output_width: c_float,
+        output_height: c_float,
+        num_pages_on_x_axis: size_t,
+        num_pages_on_y_axis: size_t,
+    ) -> FPDF_DOCUMENT {
+        unsafe {
+            crate::bindgen::FPDF_ImportNPagesToOne(
+                src_doc,
+                output_width,
+                output_height,
+                num_pages_on_x_axis,
+                num_pages_on_y_axis,
+            )
         }
     }
 
@@ -134,6 +251,24 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDF_GetPageLabel(document, page_index, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_New(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        width: c_double,
+        height: c_double,
+    ) -> FPDF_PAGE {
+        unsafe { crate::bindgen::FPDFPage_New(document, page_index, width, height) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int) {
+        unsafe { crate::bindgen::FPDFPage_Delete(document, page_index) }
     }
 
     #[inline]
@@ -288,6 +423,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDFPage_HasTransparency(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPage_GenerateContent(page) }
     }
 
     #[inline]
@@ -933,6 +1074,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { crate::bindgen::FPDFDoc_GetPageMode(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int {
+        unsafe { crate::bindgen::FPDFPage_Flatten(page, nFlag) }
     }
 
     #[inline]
@@ -1841,5 +1988,84 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         length: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDFFont_GetFontName(font, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int {
+        unsafe { crate::bindgen::FPDFFont_GetFlags(font) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int {
+        unsafe { crate::bindgen::FPDFFont_GetWeight(font) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFFont_GetItalicAngle(font, angle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetAscent(
+        &self,
+        font: FPDF_FONT,
+        font_size: c_float,
+        ascent: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFFont_GetAscent(font, font_size, ascent) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetDescent(
+        &self,
+        font: FPDF_FONT,
+        font_size: c_float,
+        descent: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFFont_GetDescent(font, font_size, descent) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetGlyphWidth(
+        &self,
+        font: FPDF_FONT,
+        glyph: c_uint,
+        font_size: c_float,
+        width: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFFont_GetGlyphWidth(font, glyph, font_size, width) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetGlyphPath(
+        &self,
+        font: FPDF_FONT,
+        glyph: c_uint,
+        font_size: c_float,
+    ) -> FPDF_GLYPHPATH {
+        unsafe { crate::bindgen::FPDFFont_GetGlyphPath(font, glyph, font_size) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int {
+        unsafe { crate::bindgen::FPDFGlyphPath_CountGlyphSegments(glyphpath) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFGlyphPath_GetGlyphPathSegment(
+        &self,
+        glyphpath: FPDF_GLYPHPATH,
+        index: c_int,
+    ) -> FPDF_PATHSEGMENT {
+        unsafe { crate::bindgen::FPDFGlyphPath_GetGlyphPathSegment(glyphpath, index) }
     }
 }

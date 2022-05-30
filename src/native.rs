@@ -1,10 +1,11 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_STRING, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DOCUMENT, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_STRING, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
+    FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
@@ -24,19 +25,31 @@ impl NativePdfiumBindings {
         result.extern_FPDF_InitLibrary()?;
         result.extern_FPDF_DestroyLibrary()?;
         result.extern_FPDF_GetLastError()?;
+        result.extern_FPDF_CreateNewDocument()?;
         result.extern_FPDF_LoadDocument()?;
         result.extern_FPDF_LoadMemDocument()?;
+        result.extern_FPDF_LoadMemDocument64()?;
+        result.extern_FPDF_LoadCustomDocument()?;
+        result.extern_FPDF_SaveAsCopy()?;
+        result.extern_FPDF_SaveWithVersion()?;
         result.extern_FPDF_CloseDocument()?;
         result.extern_FPDF_GetFileVersion()?;
         result.extern_FPDF_GetFormType()?;
         result.extern_FPDF_GetMetaText()?;
+        result.extern_FPDF_GetDocPermissions()?;
+        result.extern_FPDF_GetSecurityHandlerRevision()?;
         result.extern_FPDF_GetPageCount()?;
         result.extern_FPDF_LoadPage()?;
         result.extern_FPDF_ClosePage()?;
+        result.extern_FPDF_ImportPagesByIndex()?;
+        result.extern_FPDF_ImportPages()?;
+        result.extern_FPDF_ImportNPagesToOne()?;
         result.extern_FPDF_GetPageLabel()?;
         result.extern_FPDF_GetPageBoundingBox()?;
         result.extern_FPDF_GetPageWidthF()?;
         result.extern_FPDF_GetPageHeightF()?;
+        result.extern_FPDFPage_New()?;
+        result.extern_FPDFPage_Delete()?;
         result.extern_FPDFPage_GetRotation()?;
         result.extern_FPDFPage_SetRotation()?;
         result.extern_FPDFPage_GetMediaBox()?;
@@ -50,6 +63,7 @@ impl NativePdfiumBindings {
         result.extern_FPDFPage_SetTrimBox()?;
         result.extern_FPDFPage_SetArtBox()?;
         result.extern_FPDFPage_HasTransparency()?;
+        result.extern_FPDFPage_GenerateContent()?;
         result.extern_FPDFBitmap_CreateEx()?;
         result.extern_FPDFBitmap_Destroy()?;
         result.extern_FPDFBitmap_FillRect()?;
@@ -119,6 +133,7 @@ impl NativePdfiumBindings {
         result.extern_FPDFDOC_InitFormFillEnvironment()?;
         result.extern_FPDFDOC_ExitFormFillEnvironment()?;
         result.extern_FPDFDoc_GetPageMode()?;
+        result.extern_FPDFPage_Flatten()?;
         result.extern_FPDF_SetFormFieldHighlightColor()?;
         result.extern_FPDF_SetFormFieldHighlightAlpha()?;
         result.extern_FPDF_FFLDraw()?;
@@ -207,6 +222,15 @@ impl NativePdfiumBindings {
         result.extern_FPDFPageObj_GetDashArray()?;
         result.extern_FPDFPageObj_SetDashArray()?;
         result.extern_FPDFFont_GetFontName()?;
+        result.extern_FPDFFont_GetFlags()?;
+        result.extern_FPDFFont_GetWeight()?;
+        result.extern_FPDFFont_GetItalicAngle()?;
+        result.extern_FPDFFont_GetAscent()?;
+        result.extern_FPDFFont_GetDescent()?;
+        result.extern_FPDFFont_GetGlyphWidth()?;
+        result.extern_FPDFFont_GetGlyphPath()?;
+        result.extern_FPDFGlyphPath_CountGlyphSegments()?;
+        result.extern_FPDFGlyphPath_GetGlyphPathSegment()?;
 
         Ok(result)
     }
@@ -231,6 +255,14 @@ impl NativePdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn() -> c_ulong>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_GetLastError\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_CreateNewDocument(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn() -> FPDF_DOCUMENT>, libloading::Error> {
+        unsafe { self.library.get(b"FPDF_CreateNewDocument\0") }
     }
 
     #[inline]
@@ -264,6 +296,74 @@ impl NativePdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_LoadMemDocument\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_LoadMemDocument64(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                data_buf: *const c_void,
+                size: c_ulong,
+                password: FPDF_BYTESTRING,
+            ) -> FPDF_DOCUMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_LoadMemDocument64\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_LoadCustomDocument(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                pFileAccess: *mut FPDF_FILEACCESS,
+                password: FPDF_BYTESTRING,
+            ) -> FPDF_DOCUMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_LoadCustomDocument\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_SaveAsCopy(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                pFileWrite: *mut FPDF_FILEWRITE,
+                flags: FPDF_DWORD,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_SaveAsCopy\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_SaveWithVersion(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                pFileWrite: *mut FPDF_FILEWRITE,
+                flags: FPDF_DWORD,
+                fileVersion: c_int,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_SaveWithVersion\0") }
     }
 
     #[inline]
@@ -305,6 +405,24 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDF_GetDocPermissions(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_ulong>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_GetDocPermissions\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetSecurityHandlerRevision(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_GetSecurityHandlerRevision\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDF_GetPageCount(
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
@@ -329,6 +447,62 @@ impl NativePdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE)>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_ClosePage\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_ImportPagesByIndex(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                dest_doc: FPDF_DOCUMENT,
+                src_doc: FPDF_DOCUMENT,
+                page_indices: *const c_int,
+                length: c_ulong,
+                index: c_int,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_ImportPagesByIndex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_ImportPages(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                dest_doc: FPDF_DOCUMENT,
+                src_doc: FPDF_DOCUMENT,
+                pagerange: FPDF_BYTESTRING,
+                index: c_int,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_ImportPages\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_ImportNPagesToOne(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                src_doc: FPDF_DOCUMENT,
+                output_width: c_float,
+                output_height: c_float,
+                num_pages_on_x_axis: size_t,
+                num_pages_on_y_axis: size_t,
+            ) -> FPDF_DOCUMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_ImportNPagesToOne\0") }
     }
 
     #[inline]
@@ -374,6 +548,35 @@ impl NativePdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> c_float>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_GetPageHeightF\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_New(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                page_index: c_int,
+                width: c_double,
+                height: c_double,
+            ) -> FPDF_PAGE,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_New\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_Delete(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT, page_index: c_int)>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_Delete\0") }
     }
 
     #[inline]
@@ -589,6 +792,14 @@ impl NativePdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> FPDF_BOOL>, libloading::Error> {
         unsafe { self.library.get(b"FPDFPage_HasTransparency\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GenerateContent(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> FPDF_BOOL>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFPage_GenerateContent\0") }
     }
 
     #[inline]
@@ -1520,6 +1731,17 @@ impl NativePdfiumBindings {
     ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
     {
         unsafe { self.library.get(b"FPDFDoc_GetPageMode\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_Flatten(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, nFlag: c_int) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_Flatten\0") }
     }
 
     #[inline]
@@ -2796,6 +3018,122 @@ impl NativePdfiumBindings {
     > {
         unsafe { self.library.get(b"FPDFFont_GetFontName\0") }
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetFlags(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(font: FPDF_FONT) -> c_int>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFFont_GetFlags\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetWeight(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(font: FPDF_FONT) -> c_int>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFFont_GetWeight\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetItalicAngle(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFFont_GetItalicAngle\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetAscent(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                font: FPDF_FONT,
+                font_size: c_float,
+                ascent: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFFont_GetAscent\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetDescent(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                font: FPDF_FONT,
+                font_size: c_float,
+                descent: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFFont_GetDescent\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetGlyphWidth(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                font: FPDF_FONT,
+                glyph: c_uint,
+                font_size: c_float,
+                width: *mut c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFFont_GetGlyphWidth\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFFont_GetGlyphPath(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                font: FPDF_FONT,
+                glyph: c_uint,
+                font_size: c_float,
+            ) -> FPDF_GLYPHPATH,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFFont_GetGlyphPath\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFGlyphPath_CountGlyphSegments(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(glyphpath: FPDF_GLYPHPATH) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFGlyphPath_CountGlyphSegments\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFGlyphPath_GetGlyphPathSegment(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(glyphpath: FPDF_GLYPHPATH, index: c_int) -> FPDF_PATHSEGMENT>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFGlyphPath_GetGlyphPathSegment\0") }
+    }
 }
 
 impl PdfiumLibraryBindings for NativePdfiumBindings {
@@ -2823,6 +3161,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT {
+        unsafe { self.extern_FPDF_CreateNewDocument().unwrap()() }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT {
         let c_file_path = CString::new(file_path).unwrap();
         let c_password = CString::new(password.unwrap_or("")).unwrap();
@@ -2843,6 +3187,57 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
                 bytes.len() as c_int,
                 c_password.as_ptr(),
             )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_LoadMemDocument64(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
+
+        unsafe {
+            self.extern_FPDF_LoadMemDocument64().unwrap()(
+                bytes.as_ptr() as *const c_void,
+                bytes.len() as c_ulong,
+                c_password.as_ptr(),
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_LoadCustomDocument(
+        &self,
+        pFileAccess: *mut FPDF_FILEACCESS,
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT {
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
+
+        unsafe { self.extern_FPDF_LoadCustomDocument().unwrap()(pFileAccess, c_password.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SaveAsCopy(
+        &self,
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDF_SaveAsCopy().unwrap()(document, pFileWrite, flags) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SaveWithVersion(
+        &self,
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+        fileVersion: c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDF_SaveWithVersion().unwrap()(document, pFileWrite, flags, fileVersion)
         }
     }
 
@@ -2882,6 +3277,18 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
+        unsafe { self.extern_FPDF_GetDocPermissions().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { self.extern_FPDF_GetSecurityHandlerRevision().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { self.extern_FPDF_GetPageCount().unwrap()(document) }
     }
@@ -2897,6 +3304,64 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     fn FPDF_ClosePage(&self, page: FPDF_PAGE) {
         unsafe {
             self.extern_FPDF_ClosePage().unwrap()(page);
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPagesByIndex(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        page_indices: *const c_int,
+        length: c_ulong,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDF_ImportPagesByIndex().unwrap()(
+                dest_doc,
+                src_doc,
+                page_indices,
+                length,
+                index,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPages(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        pagerange: &str,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        let c_pagerange = CString::new(pagerange).unwrap();
+
+        unsafe {
+            self.extern_FPDF_ImportPages().unwrap()(dest_doc, src_doc, c_pagerange.as_ptr(), index)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportNPagesToOne(
+        &self,
+        src_doc: FPDF_DOCUMENT,
+        output_width: c_float,
+        output_height: c_float,
+        num_pages_on_x_axis: size_t,
+        num_pages_on_y_axis: size_t,
+    ) -> FPDF_DOCUMENT {
+        unsafe {
+            self.extern_FPDF_ImportNPagesToOne().unwrap()(
+                src_doc,
+                output_width,
+                output_height,
+                num_pages_on_x_axis,
+                num_pages_on_y_axis,
+            )
         }
     }
 
@@ -2922,6 +3387,22 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { self.extern_FPDF_GetPageLabel().unwrap()(document, page_index, buffer, buflen) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_New(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        width: c_double,
+        height: c_double,
+    ) -> FPDF_PAGE {
+        unsafe { self.extern_FPDFPage_New().unwrap()(document, page_index, width, height) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int) {
+        unsafe { self.extern_FPDFPage_Delete().unwrap()(document, page_index) }
     }
 
     #[inline]
@@ -3076,6 +3557,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL {
         unsafe { self.extern_FPDFPage_HasTransparency().unwrap()(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_GenerateContent().unwrap()(page) }
     }
 
     #[inline]
@@ -3723,6 +4210,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { self.extern_FPDFDoc_GetPageMode().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int {
+        unsafe { self.extern_FPDFPage_Flatten().unwrap()(page, nFlag) }
     }
 
     #[inline]
@@ -4670,5 +5163,84 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
         length: c_ulong,
     ) -> c_ulong {
         unsafe { self.extern_FPDFFont_GetFontName().unwrap()(font, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int {
+        unsafe { self.extern_FPDFFont_GetFlags().unwrap()(font) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int {
+        unsafe { self.extern_FPDFFont_GetWeight().unwrap()(font) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFFont_GetItalicAngle().unwrap()(font, angle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetAscent(
+        &self,
+        font: FPDF_FONT,
+        font_size: c_float,
+        ascent: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFFont_GetAscent().unwrap()(font, font_size, ascent) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetDescent(
+        &self,
+        font: FPDF_FONT,
+        font_size: c_float,
+        descent: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFFont_GetDescent().unwrap()(font, font_size, descent) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetGlyphWidth(
+        &self,
+        font: FPDF_FONT,
+        glyph: c_uint,
+        font_size: c_float,
+        width: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFFont_GetGlyphWidth().unwrap()(font, glyph, font_size, width) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetGlyphPath(
+        &self,
+        font: FPDF_FONT,
+        glyph: c_uint,
+        font_size: c_float,
+    ) -> FPDF_GLYPHPATH {
+        unsafe { self.extern_FPDFFont_GetGlyphPath().unwrap()(font, glyph, font_size) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int {
+        unsafe { self.extern_FPDFGlyphPath_CountGlyphSegments().unwrap()(glyphpath) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFGlyphPath_GetGlyphPathSegment(
+        &self,
+        glyphpath: FPDF_GLYPHPATH,
+        index: c_int,
+    ) -> FPDF_PATHSEGMENT {
+        unsafe { self.extern_FPDFGlyphPath_GetGlyphPathSegment().unwrap()(glyphpath, index) }
     }
 }

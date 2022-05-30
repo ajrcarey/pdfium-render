@@ -3,26 +3,19 @@
 
 use crate::bindgen::FPDF_ANNOTATION;
 use crate::bindings::PdfiumLibraryBindings;
-use crate::page_annotation::internal::PdfPageAnnotationPrivate;
-use crate::page_annotations::PdfPageAnnotationIndex;
+use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 
 pub struct PdfPageTextAnnotation<'a> {
-    index: PdfPageAnnotationIndex,
     handle: FPDF_ANNOTATION,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageTextAnnotation<'a> {
     pub(crate) fn from_pdfium(
-        index: PdfPageAnnotationIndex,
         handle: FPDF_ANNOTATION,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        PdfPageTextAnnotation {
-            index,
-            handle,
-            bindings,
-        }
+        PdfPageTextAnnotation { handle, bindings }
     }
 }
 
@@ -30,11 +23,6 @@ impl<'a> PdfPageAnnotationPrivate for PdfPageTextAnnotation<'a> {
     #[inline]
     fn get_handle(&self) -> &FPDF_ANNOTATION {
         &self.handle
-    }
-
-    #[inline]
-    fn index_impl(&self) -> PdfPageAnnotationIndex {
-        self.index
     }
 
     #[inline]

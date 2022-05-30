@@ -1,7 +1,10 @@
 //! Defines the [PdfPage] struct, exposing functionality related to a single page in a
 //! `PdfPages` collection.
 
-use crate::bindgen::{FPDFBitmap_BGRA, FPDF_ANNOT, FPDF_BITMAP, FPDF_BOOL, FPDF_PAGE, FS_RECTF};
+use crate::bindgen::{
+    FPDFBitmap_BGRA, FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_ANNOT,
+    FPDF_BITMAP, FPDF_BOOL, FPDF_PAGE, FS_RECTF,
+};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapRotation};
 use crate::bitmap_config::{PdfBitmapConfig, PdfBitmapRenderSettings};
@@ -11,29 +14,36 @@ use crate::page_boundaries::PdfPageBoundaries;
 use crate::page_objects::PdfPageObjects;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
-use crate::pages::PdfPageIndex;
 use crate::prelude::PdfPageAnnotations;
-use crate::utils::mem::create_byte_buffer;
-use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-use std::ffi::c_void;
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use std::os::raw::c_int;
 use std::ptr::null_mut;
 
 /// The internal coordinate system inside a [PdfDocument] is measured in Points, a
 /// device-independent unit equal to 1/72 inches, roughly 0.358 mm. Points are converted to pixels
 /// when a [PdfPage] is rendered to a [PdfBitmap].
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub struct PdfPoints {
     pub value: f32,
 }
 
 impl PdfPoints {
-    pub const ZERO: PdfPoints = PdfPoints::new(0.0);
+    /// A [PdfPoints] object with the value 0.0.
+    pub const ZERO: PdfPoints = PdfPoints::zero();
 
     /// Creates a new [PdfPoints] object with the given value.
     #[inline]
     pub const fn new(value: f32) -> Self {
         Self { value }
+    }
+
+    /// Creates a new [PdfPoints] object with the value 0.0.
+    ///
+    /// Consider using the compile-time constant value [PdfPoints::ZERO]
+    /// rather than calling this function directly.
+    #[inline]
+    pub const fn zero() -> Self {
+        Self::new(0.0)
     }
 
     /// Creates a new [PdfPoints] object from the given measurement in inches.
@@ -70,6 +80,56 @@ impl PdfPoints {
     #[inline]
     pub fn to_mm(self) -> f32 {
         self.to_cm() * 10.0
+    }
+}
+
+impl Add<PdfPoints> for PdfPoints {
+    type Output = PdfPoints;
+
+    #[inline]
+    fn add(self, rhs: Self) -> Self::Output {
+        PdfPoints::new(self.value + rhs.value)
+    }
+}
+
+impl AddAssign<PdfPoints> for PdfPoints {
+    #[inline]
+    fn add_assign(&mut self, rhs: PdfPoints) {
+        self.value += rhs.value;
+    }
+}
+
+impl Sub<PdfPoints> for PdfPoints {
+    type Output = PdfPoints;
+
+    #[inline]
+    fn sub(self, rhs: Self) -> Self::Output {
+        PdfPoints::new(self.value - rhs.value)
+    }
+}
+
+impl SubAssign<PdfPoints> for PdfPoints {
+    #[inline]
+    fn sub_assign(&mut self, rhs: PdfPoints) {
+        self.value -= rhs.value;
+    }
+}
+
+impl Mul<f32> for PdfPoints {
+    type Output = PdfPoints;
+
+    #[inline]
+    fn mul(self, rhs: f32) -> Self::Output {
+        PdfPoints::new(self.value * rhs)
+    }
+}
+
+impl Div<f32> for PdfPoints {
+    type Output = PdfPoints;
+
+    #[inline]
+    fn div(self, rhs: f32) -> Self::Output {
+        PdfPoints::new(self.value / rhs)
     }
 }
 
@@ -148,6 +208,25 @@ impl PdfRect {
             PdfPoints::new(right),
         )
     }
+
+    /// Returns `true` if the bounds of this [PdfRect] lie entirely within the given rectangle.
+    #[inline]
+    pub fn is_inside(&self, rect: &PdfRect) -> bool {
+        self.left >= rect.left
+            && self.right <= rect.right
+            && self.top <= rect.top
+            && self.bottom >= rect.bottom
+    }
+
+    /// Returns `true` if the bounds of this [PdfRect] lie at least partially within
+    /// the given rectangle.
+    #[inline]
+    pub fn does_overlap(&self, rect: &PdfRect) -> bool {
+        self.left < rect.right
+            && self.right > rect.left
+            && self.bottom < rect.top
+            && self.top > rect.bottom
+    }
 }
 
 /// The orientation of a [PdfPage].
@@ -168,6 +247,37 @@ impl PdfPageOrientation {
     }
 }
 
+/// Content regeneration strategies that instruct `pdfium-render` when, if ever, it should
+/// automatically regenerate the content of a [PdfPage].
+///
+/// Updates to a [PdfPage] are not committed to the underlying document until the page's
+/// content is regenerated. If a page is reloaded or closed without regenerating the page's
+/// content, any changes not applied are lost.
+///
+/// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
+/// this removes the possibility of data loss, and ensures changes can be read back from other
+/// data structures as soon as they are made. However, if many changes are made to a page at once,
+/// then regenerating the content after every change is inefficient; it is faster to stage
+/// all changes first, then regenerate the page's content just once. In this case,
+/// changing the content regeneration strategy for a [PdfPage] can improve performance,
+/// but you must be careful not to forget to commit your changes before closing
+/// or reloading the page.
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum PdfPageContentRegenerationStrategy {
+    /// `pdfium-render` will call the [PdfPage::regenerate_content()] function on any
+    /// change to this [PdfPage]. This is the default setting.
+    AutomaticOnEveryChange,
+
+    /// `pdfium-render` will call the [PdfPage::regenerate_content()] function only when
+    /// this [PdfPage] is about to move out of scope.
+    AutomaticOnDrop,
+
+    /// `pdfium-render` will never call the [PdfPage::regenerate_content()] function.
+    /// You must do so manually after staging your changes, or your changes will be lost
+    /// when this [PdfPage] moves out of scope.
+    Manual,
+}
+
 /// A single page in a [PdfDocument].
 ///
 /// In addition to its own intrinsic properties, a [PdfPage] serves as the entry point
@@ -177,24 +287,32 @@ impl PdfPageOrientation {
 /// * [PdfPage::boundaries()], all the boundary boxes relating to the [PdfPage].
 /// * [PdfPage::objects()], all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {
-    index: PdfPageIndex,
     handle: FPDF_PAGE,
     document: &'a PdfDocument<'a>,
+    label: Option<String>,
+    regeneration_strategy: PdfPageContentRegenerationStrategy,
+    is_content_regeneration_required: bool,
+    objects: PdfPageObjects<'a>,
+    annotations: PdfPageAnnotations<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPage<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
-        index: PdfPageIndex,
         handle: FPDF_PAGE,
+        label: Option<String>,
         document: &'a PdfDocument<'a>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPage {
-            index,
             handle,
             document,
+            label,
+            regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+            is_content_regeneration_required: false,
+            objects: PdfPageObjects::from_pdfium(*document.get_handle(), handle, bindings),
+            annotations: PdfPageAnnotations::from_pdfium(handle, bindings),
             bindings,
         }
     }
@@ -205,58 +323,22 @@ impl<'a> PdfPage<'a> {
         &self.handle
     }
 
-    /// Returns the zero-based page index of this [PdfPage] in its containing [PdfDocument].
-    #[inline]
-    pub fn index(&self) -> PdfPageIndex {
-        self.index
-    }
-
     /// Returns the label assigned to this [PdfPage], if any.
     #[inline]
-    pub fn label(&self) -> Option<String> {
-        // Retrieving the label text from Pdfium is a two-step operation. First, we call
-        // FPDF_GetPageLabel() with a null buffer; this will retrieve the length of
-        // the label text in bytes. If the length is zero, then there is no such tag.
-
-        // If the length is non-zero, then we reserve a byte buffer of the given
-        // length and call FPDF_GetPageLabel() again with a pointer to the buffer;
-        // this will write the label text to the buffer in UTF16LE format.
-
-        let buffer_length = self.bindings.FPDF_GetPageLabel(
-            *self.document.get_handle(),
-            self.index as c_int,
-            std::ptr::null_mut(),
-            0,
-        );
-
-        if buffer_length == 0 {
-            // The label is not present.
-
-            return None;
-        }
-
-        let mut buffer = create_byte_buffer(buffer_length as usize);
-
-        let result = self.bindings.FPDF_GetPageLabel(
-            *self.document.get_handle(),
-            self.index as c_int,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
-
-        assert_eq!(result, buffer_length);
-
-        get_string_from_pdfium_utf16le_bytes(buffer)
+    pub fn label(&self) -> Option<&String> {
+        self.label.as_ref()
     }
 
     /// Returns the width of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
+    #[inline]
     pub fn width(&self) -> PdfPoints {
         PdfPoints::new(self.bindings.FPDF_GetPageWidthF(self.handle))
     }
 
     /// Returns the height of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
+    #[inline]
     pub fn height(&self) -> PdfPoints {
         PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.handle))
     }
@@ -326,6 +408,14 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the collection of text boxes contained within this [PdfPage].
     pub fn text(&self) -> Result<PdfPageText, PdfiumError> {
+        println!(">>>>>> entering page::text()");
+        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+            && self.is_content_regeneration_required
+        {
+            println!("******** in page::text(): regenerating content now");
+            self.regenerate_content_immut()?;
+        }
+
         let text_handle = self.bindings.FPDFText_LoadPage(self.handle);
 
         if text_handle.is_null() {
@@ -344,16 +434,51 @@ impl<'a> PdfPage<'a> {
         }
     }
 
-    /// Returns the collection of page objects contained within this [PdfPage].
+    /// Returns an immutable collection of all the page objects on this [PdfPage].
     #[inline]
-    pub fn objects(&self) -> PdfPageObjects {
-        PdfPageObjects::from_pdfium(self, self.bindings)
+    pub fn objects(&self) -> &PdfPageObjects {
+        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+            && self.is_content_regeneration_required
+        {
+            let result = self.regenerate_content_immut();
+
+            debug_assert!(result.is_ok());
+        }
+
+        &self.objects
     }
 
-    /// Returns the collection of annotations that have been added to this [PdfPage].
+    /// Returns a mutable collection of all the page objects on this [PdfPage].
     #[inline]
-    pub fn annotations(&self) -> PdfPageAnnotations {
-        PdfPageAnnotations::from_pdfium(self, self.bindings)
+    pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
+        // We can't know for sure whether the user will update any page objects,
+        // and we can't track what happens in the PdfPageObjectsMut after we return
+        // a mutable reference to it, but if the user is going to the trouble of retrieving
+        // a mutable reference it seems best to assume they're intending to update something.
+
+        self.is_content_regeneration_required = self.regeneration_strategy
+            != PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
+
+        self.objects.do_regenerate_page_content_after_each_change(
+            self.regeneration_strategy
+                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        );
+
+        &mut self.objects
+    }
+
+    /// Returns an immutable collection of the annotations that have been added to this [PdfPage].
+    #[inline]
+    pub fn annotations(&self) -> &PdfPageAnnotations {
+        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+            && self.is_content_regeneration_required
+        {
+            let result = self.regenerate_content_immut();
+
+            debug_assert!(result.is_ok());
+        }
+
+        &self.annotations
     }
 
     /// Returns a [PdfBitmap] using pixel dimensions, rotation settings, and rendering options
@@ -443,12 +568,151 @@ impl<'a> PdfPage<'a> {
             Ok(handle)
         }
     }
+
+    /// Flattens all annotations and form fields on this [PdfPage] into the page contents.
+    pub fn flatten(&mut self) -> Result<(), PdfiumError> {
+        // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
+        let flag = FLAT_PRINT;
+
+        match self.bindings.FPDFPage_Flatten(self.handle, flag as c_int) as u32 {
+            FLATTEN_SUCCESS => {
+                self.is_content_regeneration_required = true;
+
+                self.regenerate_content()
+            }
+            FLATTEN_NOTHINGTODO => Ok(()),
+            FLATTEN_FAIL => Err(PdfiumError::PageFlattenFailure),
+            _ => Err(PdfiumError::PageFlattenFailure),
+        }
+    }
+
+    /// Sets the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
+    ///
+    /// Updates to a [PdfPage] are not committed to the underlying document until the page's
+    /// content is regenerated. If a page is reloaded or closed without regenerating the page's
+    /// content, any changes not applied are lost.
+    ///
+    /// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
+    /// this removes the possibility of data loss, and ensures changes can be read back from other
+    /// data structures as soon as they are made. However, if many changes are made to a page at once,
+    /// then regenerating the content after every change is inefficient; it is faster to stage
+    /// all changes first, then regenerate the page's content just once. In this case,
+    /// changing the content regeneration strategy for a [PdfPage] can improve performance,
+    /// but you must be careful not to forget to commit your changes before closing
+    /// or reloading the page.
+    #[inline]
+    pub fn set_content_regeneration_strategy(
+        &mut self,
+        strategy: PdfPageContentRegenerationStrategy,
+    ) {
+        self.regeneration_strategy = strategy;
+    }
+
+    /// Marks this [PdfPage] as having staged but unsaved changes that are yet to be committed
+    /// to the underlying document.
+    ///
+    /// If this page's content regeneration strategy is `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange`,
+    /// then the page's content will be generated immediately. Otherwise, the page will be flagged
+    /// for content regeneration at a later point.
+    pub(crate) fn set_content_regeneration_required(&mut self) {
+        self.is_content_regeneration_required = true;
+
+        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+        {
+            let result = self.regenerate_content();
+
+            debug_assert!(result.is_ok());
+        }
+    }
+
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying document.
+    ///
+    /// Updates to a [PdfPage] are not committed to the underlying document until the page's
+    /// content is regenerated. If a page is reloaded or closed without regenerating the page's
+    /// content, any changes not applied are lost.
+    ///
+    /// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
+    /// this removes the possibility of data loss, and ensures changes can be read back from other
+    /// data structures as soon as they are made. However, if many changes are made to a page at once,
+    /// then regenerating the content after every change is inefficient; it is faster to stage
+    /// all changes first, then regenerate the page's content just once. In this case,
+    /// changing the content regeneration strategy for a [PdfPage] can improve performance,
+    /// but you must be careful not to forget to commit your changes before closing
+    /// or reloading the page.
+    #[inline]
+    pub fn regenerate_content(&mut self) -> Result<(), PdfiumError> {
+        // This is a publicly-visible wrapper for the private regenerate_content_immut() function.
+        // It is only available to callers who hold a mutable reference to the page.
+
+        self.regenerate_content_immut()
+    }
+
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying document.
+    pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
+        if self
+            .bindings
+            .is_true(self.bindings.FPDFPage_GenerateContent(self.handle))
+        {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
 }
 
 impl<'a> Drop for PdfPage<'a> {
     /// Closes the [PdfPage], releasing held memory.
     #[inline]
     fn drop(&mut self) {
+        if self.regeneration_strategy != PdfPageContentRegenerationStrategy::Manual
+            && self.is_content_regeneration_required
+        {
+            // Regenerate page content now if necessary, before the PdfPage moves out of scope.
+
+            let result = self.regenerate_content();
+
+            debug_assert!(result.is_ok());
+        }
+
         self.bindings.FPDF_ClosePage(self.handle);
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::page::PdfRect;
+
+    #[test]
+    fn test_pdf_rect_is_inside() {
+        assert!(PdfRect::new_from_values(3.0, 3.0, 9.0, 9.0)
+            .is_inside(&PdfRect::new_from_values(2.0, 2.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 10.0, 10.0)
+            .is_inside(&PdfRect::new_from_values(3.0, 3.0, 9.0, 9.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .is_inside(&PdfRect::new_from_values(5.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .is_inside(&PdfRect::new_from_values(8.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .is_inside(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
+    }
+
+    #[test]
+    fn test_pdf_rect_does_overlap() {
+        assert!(PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .does_overlap(&PdfRect::new_from_values(5.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .does_overlap(&PdfRect::new_from_values(8.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .does_overlap(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
     }
 }

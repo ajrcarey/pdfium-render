@@ -39,7 +39,8 @@ pub fn main() {
                 .unwrap()
                 .pages()
                 .iter() // ... get an iterator across all pages ...
-                .for_each(|page| {
+                .enumerate()
+                .for_each(|(index, page)| {
                     // ... and export each page to a JPEG in the current working directory,
                     // using the rendering configuration we created earlier.
 
@@ -50,7 +51,7 @@ pub fn main() {
                         .as_rgba8() // ... sets the correct color space ...
                         .unwrap()
                         .save_with_format(
-                            format!("export-test-page-{}.jpg", page.index()),
+                            format!("export-test-page-{}.jpg", index),
                             ImageFormat::Jpeg,
                         ); // ... and exports it to a JPEG.
 

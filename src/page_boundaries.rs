@@ -53,7 +53,8 @@ impl PdfPageBoundaryBox {
 /// which must fit within the Trim box, and so on. The Media box therefore contains all other boxes.
 /// Not all boxes are guaranteed to exist for all pages.
 ///
-/// For more information, see: <https://www.pdfscripting.com/public/PDF-Page-Coordinates.cfm#UserSpace>
+/// For more information, see section 10.10.1 on page 962 of the PDF Reference Manual version 1.7,
+/// or visit: <https://www.pdfscripting.com/public/PDF-Page-Coordinates.cfm#UserSpace>
 pub struct PdfPageBoundaries<'a> {
     page: &'a PdfPage<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,

@@ -1,8 +1,10 @@
 //! Defines the [Pdfium] struct, a high-level idiomatic Rust wrapper around Pdfium.
 
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
+use crate::document::{PdfDocument, PdfDocumentVersion};
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::utils::files::get_pdfium_file_accessor_from_reader;
+use std::io::{Read, Seek};
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use std::ffi::OsString;
@@ -24,6 +26,15 @@ use crate::wasm::WasmPdfiumBindings;
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::PdfiumRenderWasmState;
 
+#[cfg(all(target_arch = "wasm32", feature = "fetch"))]
+use wasm_bindgen_futures::JsFuture;
+
+#[cfg(all(target_arch = "wasm32", feature = "fetch"))]
+use js_sys::{ArrayBuffer, Uint8Array};
+
+#[cfg(all(target_arch = "wasm32", feature = "fetch"))]
+use web_sys::{window, Response, Window};
+
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
 pub struct Pdfium {
@@ -36,7 +47,7 @@ impl Pdfium {
     /// functions exposed by the library. The application will immediately crash if Pdfium
     /// was not correctly statically linked into the executable at compile time.
     ///
-    /// This function is only available when the `static` feature is enabled.
+    /// This function is only available when this crate's `static` feature is enabled.
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(feature = "static")]
     #[inline]
@@ -127,39 +138,117 @@ impl Pdfium {
         Self { bindings }
     }
 
-    /// Attempts to open a PdfDocument from the given file path.
+    /// Attempts to open a [PdfDocument] from the given file path.
     ///
     /// If the document is password protected, the given password will be used
     /// to unlock it.
     ///
-    /// This function is not available when compiling to WASM. Either embed the bytes of
-    /// the target PDF document directly into the compiled WASM module using the
-    /// `include_bytes!()` macro, or use Javascript's `fetch()` API to retrieve the bytes
-    /// of the target document over the network, then load those bytes into Pdfium using
-    /// the `load_pdf_from_bytes()` function.
+    /// This function is not available when compiling to WASM. You have several options for
+    /// loading your PDF document data in WASM:
+    ///
+    /// * Use the [Pdfium::load_pdf_from_reader()] function to stream document data into Pdfium
+    /// using a standard Rust reader.
+    /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
+    /// URL using the Javascript `fetch()` API.
+    /// * Use another method to retrieve the bytes of the target document over the network,
+    /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
+    /// * Embed the bytes of the target document directly into the compiled WASM module
+    /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_file(
         &self,
         path: &str,
         password: Option<&str>,
     ) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_load_document_to_result(self.bindings.FPDF_LoadDocument(path, password))
+        self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadDocument(path, password))
     }
 
-    /// Attempts to open a PdfDocument from the given byte buffer.
+    /// Attempts to open a [PdfDocument] from the given byte buffer.
     ///
-    /// If the document is password protected, the given password will be used
-    /// to unlock it.
+    /// If the document is password protected, the given password will be used to unlock it.
     pub fn load_pdf_from_bytes(
         &self,
         bytes: &[u8],
         password: Option<&str>,
     ) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_load_document_to_result(self.bindings.FPDF_LoadMemDocument(bytes, password))
+        self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadMemDocument64(bytes, password))
+    }
+
+    /// Attempts to open a [PdfDocument] from the given reader.
+    ///
+    /// Pdfium will only load the portions of the document it actually needs into memory.
+    /// This is more efficient than loading the entire document into memory, especially when
+    /// working with large documents, and allows for working with documents larger than the
+    /// amount of available memory.
+    ///
+    /// Because Pdfium must know the total content length in advance prior to loading
+    /// any portion of it, the given reader must implement the `Seek` trait as well as
+    /// the `Read` trait.
+    ///
+    /// If the document is password protected, the given password will be used to unlock it.
+    pub fn load_pdf_from_reader<R: Read + Seek + 'static>(
+        &self,
+        reader: R,
+        password: Option<&str>,
+    ) -> Result<PdfDocument, PdfiumError> {
+        let mut reader = get_pdfium_file_accessor_from_reader(reader);
+
+        self.pdfium_document_handle_to_result(
+            self.bindings
+                .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password),
+        )
+        .map(|mut document| {
+            // Give the newly-created document ownership of the reader, so that Pdfium can continue
+            // to read from it on an as-needed basis throughout the lifetime of the document.
+
+            document.set_file_access_reader(reader);
+
+            document
+        })
+    }
+
+    /// Attempts to open a [PdfDocument] by loading document data from the given URL.
+    /// The Javascript `fetch()` API is used to download data over the network.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub async fn load_pdf_from_fetch(
+        url: &str,
+        password: Option<&str>,
+    ) -> Result<PdfDocument, PdfiumError> {
+        if let Some(window) = window() {
+            let fetch_result = JsFuture::from(window.fetch_with_str(url)).await?;
+
+            debug_assert!(fetch_result.is_instance_of::<Response>());
+
+            let response: Response = fetch_result.dyn_into().unwrap();
+
+            let blob: Blob = JsFuture::from(response.blob()?).await?;
+
+            let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer()?).await?;
+
+            let u8_array: Uint8Array = Uint8Array::new_with_byte_offset(array_buffer, 0);
+
+            let bytes: Vec<u8> = u8_array.to_vec();
+
+            Self::load_pdf_from_bytes(bytes.as_slice(), password)
+        } else {
+            Err(PdfiumError::WebSysWindowObjectNotAvailable)
+        }
+    }
+
+    /// Creates a new, empty [PdfDocument] in memory.
+    pub fn create_new_pdf(&self) -> Result<PdfDocument, PdfiumError> {
+        self.pdfium_document_handle_to_result(self.bindings.FPDF_CreateNewDocument())
+            .map(|mut document| {
+                document.set_version(PdfDocumentVersion::DEFAULT_VERSION);
+
+                document
+            })
     }
 
     /// Returns a PdfDocument from the given FPDF_DOCUMENT handle, if possible.
-    fn pdfium_load_document_to_result(
+    fn pdfium_document_handle_to_result(
         &self,
         handle: crate::bindgen::FPDF_DOCUMENT,
     ) -> Result<PdfDocument, PdfiumError> {
@@ -168,7 +257,7 @@ impl Pdfium {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
+                // yet Pdfium's error code indicates success.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -189,12 +278,18 @@ impl Drop for Pdfium {
 }
 
 impl Default for Pdfium {
+    /// Binds to a Pdfium library that was statically linked into the currently running
+    /// executable by calling [Pdfium::bind_to_statically_linked_library()]. This function
+    /// will panic if no statically linked Pdfium functions can be located.
     #[cfg(feature = "static")]
     #[inline]
     fn default() -> Self {
         Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap())
     }
 
+    /// Binds to an external Pdfium library, loading it from the system libraries,
+    /// by calling [Pdfium::bind_to_system_library()]. This function will panic if no
+    /// suitable system library can be loaded.
     #[cfg(not(feature = "static"))]
     #[inline]
     fn default() -> Self {

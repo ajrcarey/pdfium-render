@@ -26,7 +26,15 @@ pub(crate) mod utf16le {
     /// Converts the given Rust &str into an UTF16-LE encoded byte buffer.
     #[inline]
     pub(crate) fn get_pdfium_utf16le_bytes_from_str(str: &str) -> Vec<u8> {
-        WString::<LittleEndian>::from(str).into_bytes()
+        let mut bytes = WString::<LittleEndian>::from(str).into_bytes();
+
+        // Pdfium appears to expect C-style null termination. Since we are dealing with
+        // wide (16-bit) characters, we need two bytes of nulls.
+
+        bytes.push(0);
+        bytes.push(0);
+
+        bytes
     }
 
     /// Converts the bytes in the given buffer from UTF16-LE to a standard Rust String.
@@ -66,6 +74,208 @@ pub(crate) mod utf16le {
             }
         } else {
             None
+        }
+    }
+}
+
+pub(crate) mod files {
+    use crate::bindgen::{FPDF_FILEACCESS, FPDF_FILEWRITE};
+    use std::ffi::c_void;
+    use std::io::{Read, Seek, SeekFrom, Write};
+    use std::ops::Deref;
+    use std::os::raw::{c_int, c_uchar, c_ulong};
+    use std::ptr::null_mut;
+    use std::slice;
+
+    // These functions return wrapped versions of Pdfium's file access structs. They are used
+    // in callback functions to connect Pdfium's file access operations to an underlying
+    // Rust reader or writer.
+
+    // C++ examples such as https://github.com/lydstory/pdfium_example/blob/master/pdfium_rect.cpp
+    // demonstrate that the intention is for the implementor to use C++'s "struct inheritance"
+    // feature to derive their own struct from FPDF_FILEACCESS or FPDF_FILEWRITE that contains
+    // whatever additional custom data they wish.
+
+    // Since Rust does not provide struct inheritance, we define new structs with the same field
+    // layout as Pdfium's PDF_FILEACCESS and PDF_FILEWRITE, adding to each a custom field
+    // that stores the user-provided Rust reader or writer. The callback function invoked by Pdfium
+    // can then access the relevant Rust reader or writer directly in order to fulfil Pdfium's
+    // file access request.
+
+    // The writer will be used immediately and synchronously. It can be dropped as soon as it
+    // is used. The reader, however, can be used repeatedly throughout the lifetime of a document
+    // as Pdfium streams in data from the underlying provider on an as-needed basis. This has two
+    // important ramifications: (a) we must connect the lifetime of the reader to the PdfDocument
+    // we create, so that the reader is not dropped before the document is closed with a call to
+    // FPDF_CloseDocument(); and (b) we must box the reader, so that transferring it into the
+    // PdfDocument will not change its memory location. Breaking either of these two invariants
+    // will result in a segfault.
+
+    /// Returns a wrapped Pdfium `FPDF_FILEACCESS` struct that uses the given reader as an
+    /// input source for Pdfium's file access callback function.
+    ///
+    /// Because Pdfium must know the total content length in advance prior to loading
+    /// any portion of it, the given reader must implement the `Seek` trait as well as
+    /// the `Read` trait.
+    ///
+    /// **This function is _probably_ thread-safe.** However, Pdfium itself makes no
+    /// guarantees around being safe for multi-threading, and so it is not recommended
+    /// to run multiple read operations on separate threads simultaneously.
+    pub(crate) fn get_pdfium_file_accessor_from_reader<R: Read + Seek + 'static>(
+        mut reader: R,
+    ) -> Box<FpdfFileAccessExt> {
+        let content_length = reader.seek(SeekFrom::End(0)).unwrap_or(0);
+
+        let mut result = Box::new(FpdfFileAccessExt {
+            content_length,
+            get_block: Some(read_block_from_callback),
+            file_access_ptr: null_mut(), // We'll update this value in just a moment
+            reader: Box::new(reader),
+        });
+
+        // Update the struct with a pointer to its memory location. This pointer will
+        // be passed to the callback function that Pdfium invokes, allowing that callback to
+        // retrieve the FpdfFileAccessExt struct and, from there, the boxed Rust reader.
+
+        let file_access_ptr: *const FpdfFileAccessExt = result.deref();
+
+        result.as_mut().file_access_ptr = file_access_ptr as *mut FpdfFileAccessExt;
+
+        result
+    }
+
+    // A little trait that lets us perform type-erasure on the user-provided Rust reader.
+    // This means FpdfFileAccessExt does not need to carry a generic parameter, which in turn
+    // means that any PdfDocument containing a bound FpdfFileAccessExt does not need to carry
+    // a generic parameter either.
+
+    trait PdfiumDocumentReader: Read + Seek {}
+
+    impl<R: Read + Seek> PdfiumDocumentReader for R {}
+
+    // An extension of Pdfium's FPDF_FILEACCESS struct that adds an extra field to carry the
+    // user-provided Rust reader.
+
+    #[repr(C)]
+    pub(crate) struct FpdfFileAccessExt {
+        content_length: c_ulong,
+        get_block: Option<
+            unsafe extern "C" fn(
+                reader_ptr: *mut FpdfFileAccessExt,
+                position: c_ulong,
+                buf: *mut c_uchar,
+                size: c_ulong,
+            ) -> c_int,
+        >,
+        file_access_ptr: *mut FpdfFileAccessExt,
+        reader: Box<dyn PdfiumDocumentReader>, // Type-erased equivalent of <R: Read + Seek>
+    }
+
+    impl FpdfFileAccessExt {
+        /// Returns an FPDF_FILEACCESS pointer suitable for passing to FPDF_LoadCustomDocument().
+        #[inline]
+        pub(crate) fn as_fpdf_file_access_mut_ptr(&mut self) -> &mut FPDF_FILEACCESS {
+            unsafe { &mut *(self as *mut FpdfFileAccessExt as *mut FPDF_FILEACCESS) }
+        }
+    }
+
+    extern "C" fn read_block_from_callback(
+        file_access_ptr: *mut FpdfFileAccessExt,
+        position: c_ulong,
+        buf: *mut c_uchar,
+        size: c_ulong,
+    ) -> c_int {
+        #[cfg(target_arch = "wasm32")]
+        {
+            // TODO: AJRC - 27/5/22 - for WASM, we need to deal with indirection: the buffer
+            // provided by Pdfium is in a different WASM address space from the one in which
+            // we are currently running.
+
+            todo!()
+        }
+
+        unsafe {
+            let reader = (*file_access_ptr).reader.as_mut();
+
+            let result = match reader.seek(SeekFrom::Start(position as u64)) {
+                Ok(_) => reader
+                    .read(slice::from_raw_parts_mut(buf, size as usize))
+                    .unwrap_or(0),
+                Err(_) => 0,
+            };
+
+            result as c_int
+        }
+    }
+
+    /// Returns a wrapped Pdfium `FPDF_FILEWRITE` struct that uses the given writer as an
+    /// output source for Pdfium's file writing callback function.
+    ///
+    /// **This function is _probably_ thread-safe.** However, Pdfium itself makes no
+    /// guarantees around being safe for multi-threading, and so it is not recommended
+    /// to run multiple write operations on separate threads simultaneously.
+    pub(crate) fn get_pdfium_file_writer_from_writer<W: Write>(writer: W) -> FpdfFileWriteExt<W> {
+        FpdfFileWriteExt {
+            version: 1,
+            write_block: Some(write_block_from_callback),
+            writer: Box::new(writer),
+        }
+    }
+
+    // An extension of Pdfium's FPDF_FILEWRITE struct that adds an extra field to carry the
+    // user-provided Rust writer.
+
+    #[repr(C)]
+    pub(crate) struct FpdfFileWriteExt<W: Write> {
+        version: c_int,
+        write_block: Option<
+            unsafe extern "C" fn(
+                file_write_ext_ptr: *mut FpdfFileWriteExt<W>,
+                buf: *const c_void,
+                size: c_ulong,
+            ) -> c_int,
+        >,
+        writer: Box<W>,
+    }
+
+    impl<W: Write> FpdfFileWriteExt<W> {
+        /// Returns an FPDF_FILEWRITE pointer suitable for passing to FPDF_SaveAsCopy()
+        /// or FPDF_SaveWithVersion().
+        #[inline]
+        pub(crate) fn as_fpdf_file_write_mut_ptr(&mut self) -> &mut FPDF_FILEWRITE {
+            unsafe { &mut *(self as *mut FpdfFileWriteExt<W> as *mut FPDF_FILEWRITE) }
+        }
+
+        /// Flushes the buffer of the underlying Rust writer.
+        #[inline]
+        pub(crate) fn flush(&mut self) -> std::io::Result<()> {
+            self.writer.flush()
+        }
+    }
+
+    extern "C" fn write_block_from_callback<W: Write>(
+        file_write_ext_ptr: *mut FpdfFileWriteExt<W>,
+        buf: *const c_void,
+        size: c_ulong,
+    ) -> c_int {
+        #[cfg(target_arch = "wasm32")]
+        {
+            // TODO: AJRC - 27/5/22 - for WASM, we need to deal with indirection: the buffer
+            // provided by Pdfium is in a different WASM address space from the one in which
+            // we are currently running.
+
+            todo!()
+        }
+
+        unsafe {
+            match (*file_write_ext_ptr)
+                .writer
+                .as_mut()
+                .write_all(slice::from_raw_parts(buf as *const u8, size as usize))
+            {
+                Ok(()) => 1,
+                Err(_) => 0,
+            }
         }
     }
 }

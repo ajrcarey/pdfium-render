@@ -482,6 +482,7 @@ impl PdfiumRenderWasmState {
     /// callback function in our own local WASM heap.
     fn copy_file_access_to_pdfium(&self, _file_access: *mut FPDF_FILEACCESS) -> usize {
         // TODO: AJRC - 10/2/22 - https://github.com/ajrcarey/pdfium-render/issues/8
+        // AJRC - 27/5/22 - this can probably be built into utils::read_block_from_callback()
         todo!()
     }
 

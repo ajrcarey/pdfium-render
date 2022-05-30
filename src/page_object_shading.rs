@@ -1,28 +1,27 @@
 //! Defines the [PdfPageShadingObject] struct, exposing functionality related to a single
 //! page object of type `PdfPageObjectType::Shading`.
 
-use crate::bindgen::FPDF_PAGEOBJECT;
+use crate::bindgen::{FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::page_object::internal::PdfPageObjectPrivate;
-use crate::page_objects::PdfPageObjectIndex;
+use crate::page_object_private::internal::PdfPageObjectPrivate;
 
 pub struct PdfPageShadingObject<'a> {
-    index: PdfPageObjectIndex,
     is_object_memory_owned_by_page: bool,
-    handle: FPDF_PAGEOBJECT,
+    object_handle: FPDF_PAGEOBJECT,
+    page_handle: Option<FPDF_PAGE>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageShadingObject<'a> {
     pub(crate) fn from_pdfium(
-        index: PdfPageObjectIndex,
-        handle: FPDF_PAGEOBJECT,
+        object_handle: FPDF_PAGEOBJECT,
+        page_handle: FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageShadingObject {
-            index,
             is_object_memory_owned_by_page: true,
-            handle,
+            object_handle,
+            page_handle: Some(page_handle),
             bindings,
         }
     }
@@ -31,12 +30,12 @@ impl<'a> PdfPageShadingObject<'a> {
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageShadingObject<'a> {
     #[inline]
     fn get_handle(&self) -> &FPDF_PAGEOBJECT {
-        &self.handle
+        &self.object_handle
     }
 
     #[inline]
-    fn index_impl(&self) -> PdfPageObjectIndex {
-        self.index
+    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     #[inline]
@@ -45,7 +44,14 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageShadingObject<'a> {
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
+    fn set_object_memory_owned_by_page(&mut self, page: FPDF_PAGE) {
+        self.page_handle = Some(page);
+        self.is_object_memory_owned_by_page = true;
+    }
+
+    #[inline]
+    fn set_object_memory_released_by_page(&mut self) {
+        self.page_handle = None;
+        self.is_object_memory_owned_by_page = false;
     }
 }

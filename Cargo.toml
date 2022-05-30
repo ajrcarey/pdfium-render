@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2018"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
@@ -15,17 +15,20 @@ authors = ["Alastair Carey <alastair@duetto.dev>"]
 [lib]
 name = "pdfium_render"
 crate-type = ["lib", "staticlib", "cdylib"]
+doctest = false
 
 [dependencies]
+bitflags = "^1"
+bytes = "^1"
 image = "^0"
 log = "^0"
-bytes = "^1"
 utf16string = "^0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = { version = "^0", features = ["enable-interning"] }
+wasm-bindgen-futures = { version = "^0", optional = true }
 js-sys = "^0"
-web-sys = { version = "^0", features = ["TextDecoder"] }
+web-sys = { version = "^0", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
 lazy_static = "^1"
 console_log = "^0"
 console_error_panic_hook = "^0"
@@ -35,6 +38,9 @@ libloading = "^0"
 
 [build-dependencies]
 bindgen = { version = "^0" }
+
+[dev-dependencies]
+rand = "^0" # Used by create.rs example
 
 [features]
 default = []

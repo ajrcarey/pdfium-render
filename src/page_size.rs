@@ -2,19 +2,6 @@
 
 use crate::page::PdfPoints;
 
-/// The paper size of a `PdfPage`.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum PdfPagePaperSize {
-    /// A known paper size in portrait orientation.
-    Portrait(PdfPagePaperStandardSize),
-
-    /// A known paper size in landscape orientation.
-    Landscape(PdfPagePaperStandardSize),
-
-    /// A custom paper size, expressed as a (width, height) tuple in [PdfPoints].
-    Custom(PdfPoints, PdfPoints),
-}
-
 /// A standardized paper size.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfPagePaperStandardSize {
@@ -176,61 +163,10 @@ pub enum PdfPagePaperStandardSize {
     ArchE,
 }
 
-impl PdfPagePaperSize {
-    /// Returns the [PdfPagePaperSize] matching the given dimensions,
-    /// or [PdfPagePaperSize::Custom] if no match can be made.
-    #[inline]
-    pub fn from_points(width: PdfPoints, height: PdfPoints) -> Self {
-        let width_mm = width.to_mm().trunc() as u32;
-
-        let height_mm = height.to_mm().trunc() as u32;
-
-        match Self::standard_size_from_mm_dimensions(width_mm, height_mm) {
-            Some(size) => PdfPagePaperSize::Portrait(size),
-            None => {
-                // Try swapping the width and height. This will detect a rotated paper size.
-
-                match Self::standard_size_from_mm_dimensions(height_mm, width_mm) {
-                    Some(size) => PdfPagePaperSize::Landscape(size),
-                    None => {
-                        // Still no match. Return the original result.
-
-                        PdfPagePaperSize::Custom(width, height)
-                    }
-                }
-            }
-        }
-    }
-
-    /// Returns the [PdfPagePaperSize] matching the given dimensions,
-    /// or [PdfPagePaperSize::Custom] if no match can be made.
-    #[inline]
-    pub fn from_inches(width: f32, height: f32) -> Self {
-        Self::from_points(
-            PdfPoints::from_inches(width),
-            PdfPoints::from_inches(height),
-        )
-    }
-
-    /// Returns the [PdfPagePaperSize] matching the given dimensions,
-    /// or [PdfPagePaperSize::Custom] if no match can be made.
-    #[inline]
-    pub fn from_cm(width: f32, height: f32) -> Self {
-        Self::from_points(PdfPoints::from_cm(width), PdfPoints::from_cm(height))
-    }
-
-    /// Returns the [PdfPagePaperSize] matching the given dimensions,
-    /// or [PdfPagePaperSize::Custom] if no match can be made.
-    pub fn from_mm(width: f32, height: f32) -> Self {
-        Self::from_points(PdfPoints::from_mm(width), PdfPoints::from_mm(height))
-    }
-
+impl PdfPagePaperStandardSize {
     /// Returns the [PdfPagePaperStandardSize] variant, if any, that exactly matches the
     /// given dimensions in millimeters.
-    fn standard_size_from_mm_dimensions(
-        width: u32,
-        height: u32,
-    ) -> Option<PdfPagePaperStandardSize> {
+    pub fn from_mm_dimensions(width: u32, height: u32) -> Option<PdfPagePaperStandardSize> {
         match (width, height) {
             (216, 279) => Some(PdfPagePaperStandardSize::USLetterAnsiA),
             (140, 216) => Some(PdfPagePaperStandardSize::USHalfLetter),
@@ -285,6 +221,289 @@ impl PdfPagePaperSize {
             (610, 914) => Some(PdfPagePaperStandardSize::ArchD),
             (762, 1067) => Some(PdfPagePaperStandardSize::ArchE),
             _ => None,
+        }
+    }
+
+    /// Returns the width of this [PdfPagePaperStandardSize] in portrait orientation.
+    pub fn width(&self) -> PdfPoints {
+        PdfPoints::from_mm(match self {
+            PdfPagePaperStandardSize::USLetterAnsiA => 216.0,
+            PdfPagePaperStandardSize::USHalfLetter => 140.0,
+            PdfPagePaperStandardSize::USGovernmentLetter => 203.0,
+            PdfPagePaperStandardSize::USLegal => 216.0,
+            PdfPagePaperStandardSize::USJuniorLegal => 127.0,
+            PdfPagePaperStandardSize::USGovernmentLegal => 216.0,
+            PdfPagePaperStandardSize::USLedgerTabloidAnsiB => 279.0,
+            PdfPagePaperStandardSize::A0x4 => 1682.0,
+            PdfPagePaperStandardSize::A0x2 => 1189.0,
+            PdfPagePaperStandardSize::A0 => 841.0,
+            PdfPagePaperStandardSize::A1 => 594.0,
+            PdfPagePaperStandardSize::A2 => 420.0,
+            PdfPagePaperStandardSize::A3 => 297.0,
+            PdfPagePaperStandardSize::A4 => 210.0,
+            PdfPagePaperStandardSize::A4R => 297.0,
+            PdfPagePaperStandardSize::A5 => 148.0,
+            PdfPagePaperStandardSize::A6 => 105.0,
+            PdfPagePaperStandardSize::A7 => 74.0,
+            PdfPagePaperStandardSize::A8 => 52.0,
+            PdfPagePaperStandardSize::A9 => 37.0,
+            PdfPagePaperStandardSize::A10 => 26.0,
+            PdfPagePaperStandardSize::B0 => 1000.0,
+            PdfPagePaperStandardSize::B1 => 707.0,
+            PdfPagePaperStandardSize::B2 => 500.0,
+            PdfPagePaperStandardSize::B3 => 353.0,
+            PdfPagePaperStandardSize::B4 => 250.0,
+            PdfPagePaperStandardSize::B5 => 176.0,
+            PdfPagePaperStandardSize::B6 => 125.0,
+            PdfPagePaperStandardSize::B7 => 88.0,
+            PdfPagePaperStandardSize::B8 => 62.0,
+            PdfPagePaperStandardSize::B9 => 44.0,
+            PdfPagePaperStandardSize::B10 => 31.0,
+            PdfPagePaperStandardSize::C0 => 917.0,
+            PdfPagePaperStandardSize::C1 => 648.0,
+            PdfPagePaperStandardSize::C2 => 458.0,
+            PdfPagePaperStandardSize::C3 => 324.0,
+            PdfPagePaperStandardSize::C4 => 229.0,
+            PdfPagePaperStandardSize::C5 => 162.0,
+            PdfPagePaperStandardSize::C6 => 114.0,
+            PdfPagePaperStandardSize::C7 => 81.0,
+            PdfPagePaperStandardSize::C8 => 57.0,
+            PdfPagePaperStandardSize::C9 => 40.0,
+            PdfPagePaperStandardSize::C10 => 28.0,
+            PdfPagePaperStandardSize::AnsiBPlus => 330.0,
+            PdfPagePaperStandardSize::AnsiC => 432.0,
+            PdfPagePaperStandardSize::AnsiD => 559.0,
+            PdfPagePaperStandardSize::AnsiE => 864.0,
+            PdfPagePaperStandardSize::ArchA => 229.0,
+            PdfPagePaperStandardSize::ArchB => 305.0,
+            PdfPagePaperStandardSize::ArchC => 457.0,
+            PdfPagePaperStandardSize::ArchD => 610.0,
+            PdfPagePaperStandardSize::ArchE => 762.0,
+        })
+    }
+
+    /// Returns the height of this [PdfPagePaperStandardSize] in portrait orientation.
+    pub fn height(&self) -> PdfPoints {
+        PdfPoints::from_mm(match self {
+            PdfPagePaperStandardSize::USLetterAnsiA => 279.0,
+            PdfPagePaperStandardSize::USHalfLetter => 216.0,
+            PdfPagePaperStandardSize::USGovernmentLetter => 254.0,
+            PdfPagePaperStandardSize::USLegal => 356.0,
+            PdfPagePaperStandardSize::USJuniorLegal => 203.0,
+            PdfPagePaperStandardSize::USGovernmentLegal => 330.0,
+            PdfPagePaperStandardSize::USLedgerTabloidAnsiB => 432.0,
+            PdfPagePaperStandardSize::A0x4 => 2378.0,
+            PdfPagePaperStandardSize::A0x2 => 1682.0,
+            PdfPagePaperStandardSize::A0 => 1189.0,
+            PdfPagePaperStandardSize::A1 => 841.0,
+            PdfPagePaperStandardSize::A2 => 594.0,
+            PdfPagePaperStandardSize::A3 => 420.0,
+            PdfPagePaperStandardSize::A4 => 297.0,
+            PdfPagePaperStandardSize::A4R => 210.0,
+            PdfPagePaperStandardSize::A5 => 210.0,
+            PdfPagePaperStandardSize::A6 => 148.0,
+            PdfPagePaperStandardSize::A7 => 105.0,
+            PdfPagePaperStandardSize::A8 => 74.0,
+            PdfPagePaperStandardSize::A9 => 52.0,
+            PdfPagePaperStandardSize::A10 => 37.0,
+            PdfPagePaperStandardSize::B0 => 1414.0,
+            PdfPagePaperStandardSize::B1 => 1000.0,
+            PdfPagePaperStandardSize::B2 => 707.0,
+            PdfPagePaperStandardSize::B3 => 500.0,
+            PdfPagePaperStandardSize::B4 => 353.0,
+            PdfPagePaperStandardSize::B5 => 250.0,
+            PdfPagePaperStandardSize::B6 => 176.0,
+            PdfPagePaperStandardSize::B7 => 125.0,
+            PdfPagePaperStandardSize::B8 => 88.0,
+            PdfPagePaperStandardSize::B9 => 62.0,
+            PdfPagePaperStandardSize::B10 => 44.0,
+            PdfPagePaperStandardSize::C0 => 1297.0,
+            PdfPagePaperStandardSize::C1 => 917.0,
+            PdfPagePaperStandardSize::C2 => 648.0,
+            PdfPagePaperStandardSize::C3 => 458.0,
+            PdfPagePaperStandardSize::C4 => 324.0,
+            PdfPagePaperStandardSize::C5 => 229.0,
+            PdfPagePaperStandardSize::C6 => 162.0,
+            PdfPagePaperStandardSize::C7 => 114.0,
+            PdfPagePaperStandardSize::C8 => 81.0,
+            PdfPagePaperStandardSize::C9 => 57.0,
+            PdfPagePaperStandardSize::C10 => 40.0,
+            PdfPagePaperStandardSize::AnsiBPlus => 483.0,
+            PdfPagePaperStandardSize::AnsiC => 559.0,
+            PdfPagePaperStandardSize::AnsiD => 864.0,
+            PdfPagePaperStandardSize::AnsiE => 1118.0,
+            PdfPagePaperStandardSize::ArchA => 305.0,
+            PdfPagePaperStandardSize::ArchB => 457.0,
+            PdfPagePaperStandardSize::ArchC => 610.0,
+            PdfPagePaperStandardSize::ArchD => 914.0,
+            PdfPagePaperStandardSize::ArchE => 1067.0,
+        })
+    }
+}
+
+/// The paper size of a `PdfPage`.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum PdfPagePaperSize {
+    /// A known paper size in portrait orientation.
+    Portrait(PdfPagePaperStandardSize),
+
+    /// A known paper size in landscape orientation.
+    Landscape(PdfPagePaperStandardSize),
+
+    /// A custom paper size, expressed as a (width, height) tuple in [PdfPoints].
+    Custom(PdfPoints, PdfPoints),
+}
+
+impl PdfPagePaperSize {
+    /// Returns the [PdfPagePaperSize] matching the given dimensions,
+    /// or [PdfPagePaperSize::Custom] if no match can be made.
+    #[inline]
+    pub fn from_points(width: PdfPoints, height: PdfPoints) -> Self {
+        let width_mm = width.to_mm().trunc() as u32;
+
+        let height_mm = height.to_mm().trunc() as u32;
+
+        match PdfPagePaperStandardSize::from_mm_dimensions(width_mm, height_mm) {
+            Some(size) => PdfPagePaperSize::Portrait(size),
+            None => {
+                // Try swapping the width and height. This will detect a rotated paper size.
+
+                match PdfPagePaperStandardSize::from_mm_dimensions(height_mm, width_mm) {
+                    Some(size) => PdfPagePaperSize::Landscape(size),
+                    None => {
+                        // Still no match. Return the original result.
+
+                        PdfPagePaperSize::Custom(width, height)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Returns the [PdfPagePaperSize] matching the given dimensions,
+    /// or [PdfPagePaperSize::Custom] if no match can be made.
+    #[inline]
+    pub fn from_inches(width: f32, height: f32) -> Self {
+        Self::from_points(
+            PdfPoints::from_inches(width),
+            PdfPoints::from_inches(height),
+        )
+    }
+
+    /// Returns the [PdfPagePaperSize] matching the given dimensions,
+    /// or [PdfPagePaperSize::Custom] if no match can be made.
+    #[inline]
+    pub fn from_cm(width: f32, height: f32) -> Self {
+        Self::from_points(PdfPoints::from_cm(width), PdfPoints::from_cm(height))
+    }
+
+    /// Returns the [PdfPagePaperSize] matching the given dimensions,
+    /// or [PdfPagePaperSize::Custom] if no match can be made.
+    #[inline]
+    pub fn from_mm(width: f32, height: f32) -> Self {
+        Self::from_points(PdfPoints::from_mm(width), PdfPoints::from_mm(height))
+    }
+
+    /// Creates a new portrait [PdfPagePaperSize] from a standard [PdfPagePaperStandardSize].
+    #[inline]
+    pub fn new_portrait(size: PdfPagePaperStandardSize) -> Self {
+        PdfPagePaperSize::Portrait(size)
+    }
+
+    /// Creates a new landscape [PdfPagePaperSize] from a standard [PdfPagePaperStandardSize].
+    #[inline]
+    pub fn new_landscape(size: PdfPagePaperStandardSize) -> Self {
+        PdfPagePaperSize::Landscape(size)
+    }
+
+    /// Creates a new custom [PdfPagePaperSize] from the given dimensions.
+    #[inline]
+    pub fn new_custom(width: PdfPoints, height: PdfPoints) -> Self {
+        PdfPagePaperSize::Custom(width, height)
+    }
+
+    /// Creates a new portrait A4 [PdfPagePaperSize].
+    #[inline]
+    pub fn a4() -> Self {
+        Self::new_portrait(PdfPagePaperStandardSize::A4)
+    }
+
+    /// Creates a new portrait A4R [PdfPagePaperSize], equivalent to landscape A4. In terms of
+    /// paper size, this is equivalent to calling [PdfPagePaperSize::a4().to_landscape()]
+    #[inline]
+    pub fn a4r() -> Self {
+        Self::new_portrait(PdfPagePaperStandardSize::A4R)
+    }
+
+    /// Creates a new portrait A3 [PdfPagePaperSize].
+    #[inline]
+    pub fn a3() -> Self {
+        Self::new_portrait(PdfPagePaperStandardSize::A3)
+    }
+
+    /// Rotates a landscape [PdfPagePaperSize] into a portrait [PdfPagePaperSize] and vice versa,
+    /// consuming this [PdfPagePaperSize].
+    ///
+    /// Custom sizes have their height and width dimensions swapped.
+    pub fn rotate(self) -> Self {
+        match self {
+            PdfPagePaperSize::Portrait(size) => PdfPagePaperSize::Landscape(size),
+            PdfPagePaperSize::Landscape(size) => PdfPagePaperSize::Portrait(size),
+            PdfPagePaperSize::Custom(width, height) => PdfPagePaperSize::Custom(height, width),
+        }
+    }
+
+    /// Rotates a portrait [PdfPagePaperSize] into a landscape [PdfPagePaperSize] if necessary.
+    /// A new [PdfPagePaperSize] value is returned; this [PdfPagePaperSize] is not affected.
+    /// Sizes already in landscape are not changed. Custom sizes are changed only if the
+    /// current height is greater than the width, in which case the dimensions are swapped.
+    pub fn landscape(&self) -> Self {
+        match self {
+            PdfPagePaperSize::Portrait(size) => PdfPagePaperSize::Landscape(*size),
+            PdfPagePaperSize::Landscape(_) => *self,
+            PdfPagePaperSize::Custom(width, height) => {
+                if height > width {
+                    PdfPagePaperSize::Custom(*height, *width)
+                } else {
+                    *self
+                }
+            }
+        }
+    }
+
+    /// Rotates a landscape [PdfPagePaperSize] into a portrait [PdfPagePaperSize] if necessary.
+    /// A new [PdfPagePaperSize] value is returned; this [PdfPagePaperSize] is not affected.
+    /// Sizes already in portrait are not changed. Custom sizes are changed only if the
+    /// current width is greater than the height, in which case the dimensions are swapped.
+    pub fn portrait(&self) -> Self {
+        match self {
+            PdfPagePaperSize::Portrait(_) => *self,
+            PdfPagePaperSize::Landscape(size) => PdfPagePaperSize::Portrait(*size),
+            PdfPagePaperSize::Custom(width, height) => {
+                if width > height {
+                    PdfPagePaperSize::Custom(*height, *width)
+                } else {
+                    *self
+                }
+            }
+        }
+    }
+
+    /// Returns the width of this [PdfPagePaperSize].
+    pub fn width(&self) -> PdfPoints {
+        match self {
+            PdfPagePaperSize::Portrait(size) => size.width(),
+            PdfPagePaperSize::Landscape(size) => size.height(),
+            PdfPagePaperSize::Custom(width, _) => *width,
+        }
+    }
+
+    /// Returns the height of this [PdfPagePaperSize].
+    pub fn height(&self) -> PdfPoints {
+        match self {
+            PdfPagePaperSize::Portrait(size) => size.height(),
+            PdfPagePaperSize::Landscape(size) => size.width(),
+            PdfPagePaperSize::Custom(_, height) => *height,
         }
     }
 }

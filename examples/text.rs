@@ -15,10 +15,11 @@ pub fn main() {
                 .unwrap()
                 .pages()
                 .iter()
-                .for_each(|page| {
+                .enumerate()
+                .for_each(|(index, page)| {
                     // ... output the text on the page to the console.
 
-                    println!("=============== Page {} ===============", page.index());
+                    println!("=============== Page {} ===============", index);
 
                     println!("{}", page.text().unwrap().all());
 

@@ -1,9 +1,9 @@
 //! Defines the [PdfPageAnnotations] struct, exposing functionality related to the
 //! annotations that have been added to a single `PdfPage`.
 
+use crate::bindgen::FPDF_PAGE;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::PdfPage;
 use crate::page_annotation::PdfPageAnnotation;
 use std::ops::Range;
 use std::os::raw::c_int;
@@ -12,24 +12,26 @@ pub type PdfPageAnnotationIndex = usize;
 
 /// The annotations that have been added to a single [PdfPage].
 pub struct PdfPageAnnotations<'a> {
-    page: &'a PdfPage<'a>,
+    page_handle: FPDF_PAGE,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageAnnotations<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
-        page: &'a PdfPage<'a>,
+        page_handle: FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        Self { page, bindings }
+        Self {
+            page_handle,
+            bindings,
+        }
     }
 
     /// Returns the total number of annotations that have been added to the containing [PdfPage].
     #[inline]
     pub fn len(&self) -> PdfPageAnnotationIndex {
-        self.bindings
-            .FPDFPage_GetAnnotCount(*self.page.get_handle()) as PdfPageAnnotationIndex
+        self.bindings.FPDFPage_GetAnnotCount(self.page_handle) as PdfPageAnnotationIndex
     }
 
     /// Returns true if this [PdfPageAnnotations] collection is empty.
@@ -52,7 +54,7 @@ impl<'a> PdfPageAnnotations<'a> {
 
         let annotation_handle = self
             .bindings
-            .FPDFPage_GetAnnot(*self.page.get_handle(), index as c_int);
+            .FPDFPage_GetAnnot(self.page_handle, index as c_int);
 
         if annotation_handle.is_null() {
             if let Some(error) = self.bindings.get_pdfium_last_error() {
@@ -67,7 +69,6 @@ impl<'a> PdfPageAnnotations<'a> {
             }
         } else {
             Ok(PdfPageAnnotation::from_pdfium(
-                index,
                 annotation_handle,
                 self.bindings,
             ))

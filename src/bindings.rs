@@ -4,10 +4,10 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING,
-    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
+    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
+    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::error::PdfiumInternalError;
 use crate::utils::utf16le::{
@@ -93,6 +93,9 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetLastError(&self) -> c_ulong;
 
+    #[allow(non_snake_case)]
+    fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT;
+
     /// This function is not available when compiling to WASM. Either embed the target PDF document
     /// directly using the [include_bytes!()] macro, or use Javascript's `fetch()` API to retrieve
     /// the bytes of the target document over the network, then load those bytes into Pdfium using
@@ -103,6 +106,33 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDF_LoadCustomDocument(
+        &self,
+        pFileAccess: *mut FPDF_FILEACCESS,
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDF_SaveAsCopy(
+        &self,
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDF_SaveWithVersion(
+        &self,
+        document: FPDF_DOCUMENT,
+        pFileWrite: *mut FPDF_FILEWRITE,
+        flags: FPDF_DWORD,
+        fileVersion: c_int,
+    ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
@@ -123,6 +153,12 @@ pub trait PdfiumLibraryBindings {
     ) -> c_ulong;
 
     #[allow(non_snake_case)]
+    fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int;
+
+    #[allow(non_snake_case)]
     fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     #[allow(non_snake_case)]
@@ -130,6 +166,53 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDF_ClosePage(&self, page: FPDF_PAGE);
+
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPagesByIndex(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        page_indices: *const c_int,
+        length: c_ulong,
+        index: c_int,
+    ) -> FPDF_BOOL;
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPagesByIndex_vec(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        page_indices: Vec<c_int>,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        self.FPDF_ImportPagesByIndex(
+            dest_doc,
+            src_doc,
+            page_indices.as_ptr(),
+            page_indices.len() as c_ulong,
+            index,
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_ImportPages(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        pagerange: &str,
+        index: c_int,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDF_ImportNPagesToOne(
+        &self,
+        src_doc: FPDF_DOCUMENT,
+        output_width: c_float,
+        output_height: c_float,
+        num_pages_on_x_axis: size_t,
+        num_pages_on_y_axis: size_t,
+    ) -> FPDF_DOCUMENT;
 
     #[allow(non_snake_case)]
     fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
@@ -145,6 +228,18 @@ pub trait PdfiumLibraryBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_New(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        width: c_double,
+        height: c_double,
+    ) -> FPDF_PAGE;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int);
 
     #[allow(non_snake_case)]
     fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int;
@@ -257,6 +352,9 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
@@ -454,18 +552,18 @@ pub trait PdfiumLibraryBindings {
     fn FPDFAnnot_SetBorder(
         &self,
         annot: FPDF_ANNOTATION,
-        horizontal_radius: f32,
-        vertical_radius: f32,
-        border_width: f32,
+        horizontal_radius: c_float,
+        vertical_radius: c_float,
+        border_width: c_float,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetBorder(
         &self,
         annot: FPDF_ANNOTATION,
-        horizontal_radius: *mut f32,
-        vertical_radius: *mut f32,
-        border_width: *mut f32,
+        horizontal_radius: *mut c_float,
+        vertical_radius: *mut c_float,
+        border_width: *mut c_float,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
@@ -511,7 +609,7 @@ pub trait PdfiumLibraryBindings {
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
-        value: *mut f32,
+        value: *mut c_float,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
@@ -681,6 +779,9 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
@@ -1258,6 +1359,58 @@ pub trait PdfiumLibraryBindings {
         buffer: *mut c_char,
         length: c_ulong,
     ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetAscent(
+        &self,
+        font: FPDF_FONT,
+        font_size: c_float,
+        ascent: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetDescent(
+        &self,
+        font: FPDF_FONT,
+        font_size: c_float,
+        descent: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetGlyphWidth(
+        &self,
+        font: FPDF_FONT,
+        glyph: c_uint,
+        font_size: c_float,
+        width: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetGlyphPath(
+        &self,
+        font: FPDF_FONT,
+        glyph: c_uint,
+        font_size: c_float,
+    ) -> FPDF_GLYPHPATH;
+
+    #[allow(non_snake_case)]
+    fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFGlyphPath_GetGlyphPathSegment(
+        &self,
+        glyphpath: FPDF_GLYPHPATH,
+        index: c_int,
+    ) -> FPDF_PATHSEGMENT;
 
     /// Retrieves the error code of the last error, if any, recorded by the external
     /// Pdfium library and maps it to a [PdfiumInternalError] enum value.

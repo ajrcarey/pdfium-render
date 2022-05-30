@@ -15,36 +15,48 @@ pub fn main() {
                 .unwrap()
                 .pages()
                 .iter()
-                .for_each(|page| {
+                .enumerate()
+                .for_each(|(page_index, page)| {
                     // ... output information about every object on the page to the console.
 
-                    println!("=============== Page {} ===============", page.index());
+                    println!("=============== Page {} ===============", page_index);
 
-                    page.objects().iter().for_each(|object| {
-                        println!(
-                            "Page {} object {} is of type {:#?}",
-                            page.index(),
-                            object.index(),
-                            object.object_type()
-                        );
-
-                        // For text objects, we take the extra step of outputting the text
-                        // contained by the object.
-
-                        if let Some(object) = object.as_text_object() {
+                    page.objects()
+                        .iter()
+                        .enumerate()
+                        .for_each(|(object_index, object)| {
                             println!(
-                                "{} {}-pt: {}",
-                                object.font().name(),
-                                object.font_size().value,
-                                object.text()
+                                "Page {} object {} is of type {:?}",
+                                page_index,
+                                object_index,
+                                object.object_type()
                             );
-                        }
 
-                        // If we wanted to extract _all_ the text contained by all the text objects
-                        // on the page, an easier way would be to simply use
+                            println!(
+                                "Bounds: {:?}, width: {:?}, height: {:?}",
+                                object.bounds(),
+                                object.width(),
+                                object.height()
+                            );
 
-                        // page.text().unwrap().all()
-                    });
+                            // For text objects, we take the extra step of outputting the text
+                            // contained by the object.
+
+                            if let Some(object) = object.as_text_object() {
+                                println!(
+                                    "Text: {} {}-pt {:?}: \"{}\"",
+                                    object.font().name(),
+                                    object.font_size().value,
+                                    object.font().weight().unwrap(),
+                                    object.text()
+                                );
+                            }
+
+                            // If we wanted to extract _all_ the text contained by all the text objects
+                            // on the page, an easier way would be to simply use
+
+                            // page.text().unwrap().all()
+                        });
                 });
         }
         Err(err) => eprintln!("Error loading pdfium library: {:#?}", err),

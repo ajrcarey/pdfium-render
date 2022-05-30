@@ -48,45 +48,48 @@ pub fn main() {
                 .highlight_text_form_fields(PdfColor::SOLID_YELLOW.with_alpha(128))
                 .highlight_checkbox_form_fields(PdfColor::SOLID_BLUE.with_alpha(128));
 
-            document.pages().iter().for_each(|page| {
-                if let Some(label) = page.label() {
-                    println!("Page {} has a label: {}", page.index(), label);
-                }
+            document
+                .pages()
+                .iter()
+                .enumerate()
+                .for_each(|(index, page)| {
+                    if let Some(label) = page.label() {
+                        println!("Page {} has a label: {}", index, label);
+                    }
 
-                if let Ok(rotation) = page.rotation() {
-                    if rotation != PdfBitmapRotation::None {
+                    if let Ok(rotation) = page.rotation() {
+                        if rotation != PdfBitmapRotation::None {
+                            println!(
+                                "Page {} has embedded rotation of type {:#?}",
+                                index, rotation
+                            );
+                        }
+                    }
+
+                    for boundary in page.boundaries().iter() {
                         println!(
-                            "Page {} has embedded rotation of type {:#?}",
-                            page.index(),
-                            rotation
+                            "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
+                            index,
+                            boundary.box_type,
+                            boundary.bounds.left.value,
+                            boundary.bounds.top.value,
+                            boundary.bounds.right.value,
+                            boundary.bounds.bottom.value,
                         );
                     }
-                }
 
-                for boundary in page.boundaries().iter() {
-                    println!(
-                        "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
-                        page.index(),
-                        boundary.box_type,
-                        boundary.bounds.left.value,
-                        boundary.bounds.top.value,
-                        boundary.bounds.right.value,
-                        boundary.bounds.bottom.value,
-                    );
-                }
+                    let mut bitmap = page
+                        .get_bitmap_with_config(&render_config) // Initializes a bitmap with the given configuration for this page ...
+                        .unwrap();
 
-                let mut bitmap = page
-                    .get_bitmap_with_config(&render_config) // Initializes a bitmap with the given configuration for this page ...
-                    .unwrap();
+                    let result = bitmap
+                        .as_image()
+                        .as_rgba8()
+                        .unwrap()
+                        .save_with_format(format!("form-page-{}.jpg", index), ImageFormat::Jpeg);
 
-                let result = bitmap
-                    .as_image()
-                    .as_rgba8()
-                    .unwrap()
-                    .save_with_format(format!("form-page-{}.jpg", page.index()), ImageFormat::Jpeg);
-
-                assert!(result.is_ok());
-            });
+                    assert!(result.is_ok());
+                });
         }
         Err(err) => eprintln!("Error loading pdfium library: {:#?}", err),
     }
