@@ -153,7 +153,7 @@ impl<'a> PdfPageObjects<'a> {
         }
     }
 
-    /// Adds the given [PdfPageObjectText] to this [PdfPageObjects] collection,
+    /// Adds the given [PdfPageTextObject] to this [PdfPageObjects] collection,
     /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
@@ -166,7 +166,7 @@ impl<'a> PdfPageObjects<'a> {
         self.add_object(PdfPageObject::Text(object))
     }
 
-    /// Creates a new [PdfPageObjectText] at the given x and y page co-ordinates
+    /// Creates a new [PdfPageTextObject] at the given x and y page co-ordinates
     /// from the given arguments and adds it to this [PdfPageObjects] collection,
     /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
     ///
@@ -237,7 +237,7 @@ impl<'a> PdfPageObjects<'a> {
 
     /// Deletes the [PdfPageObject] at the given index from this [PdfPageObjects] collection.
     /// The object's memory ownership will be removed from the [PdfPage] containing this [PdfPageObjects]
-    /// collection, and the updated page object will be returned. It can be added back to a
+    /// collection, and the updated page object will be returned. It can be added back into a
     /// page objects collection or discarded, at which point the memory owned by the object will
     /// be dropped.
     ///
@@ -277,7 +277,7 @@ impl<'a> PdfPageObjects<'a> {
     }
 
     /// Copies a single page object with the given source page object index from the given
-    /// source [PdfPage], adding the object to the end of this [PdfPageObjectsMut] collection.
+    /// source [PdfPage], adding the object to the end of this [PdfPageObjects] collection.
     ///
     /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
     /// Pdfium does not currently support or recognize the External Object ("XObject") page object
@@ -300,7 +300,7 @@ impl<'a> PdfPageObjects<'a> {
 
     /// Copies one or more page objects with the given range of indices from the given
     /// source [PdfPage], adding the objects sequentially to the end of this
-    /// [PdfPageObjectsMut] collection.
+    /// [PdfPageObjects] collection.
     ///
     /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
     /// Pdfium does not currently support or recognize the External Object ("XObject") page object
@@ -343,12 +343,13 @@ impl<'a> PdfPageObjects<'a> {
         Ok(())
     }
 
-    /// Copies all page objects in the given [PdfPage] into this [PdfPageObjectsMut] collection,
-    /// appending them to the end of this [PdfPageObjectsMut] collection.
+    /// Copies all page objects in the given [PdfPage] into this [PdfPageObjects] collection,
+    /// appending them to the end of this [PdfPageObjects] collection.
     ///
     /// For finer control over which page objects are imported, use one of the
-    /// [PdfPageObjectsMut::import_object_from_page()] or
-    /// [PdfPageObjectsMut::import_object_range_from_page()] functions.
+    /// [PdfPageObjects::copy_object_from_page()] or
+    /// [PdfPageObjects::copy_object_range_from_page()] functions. To drain page objects
+    /// from the given [PdfPage] rather than copying them, use the [PdfPageObjects::take_all()] function.
     ///
     /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
     /// Pdfium does not currently support or recognize the External Object ("XObject") page object
@@ -372,7 +373,7 @@ impl<'a> PdfPageObjects<'a> {
     }
 
     /// Removes a single page object with the given source page object index from the given
-    /// source [PdfPage], adding the object to the end of this [PdfPageObjectsMut] collection.
+    /// source [PdfPage], adding the object to the end of this [PdfPageObjects] collection.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
@@ -394,7 +395,7 @@ impl<'a> PdfPageObjects<'a> {
 
     /// Removes one or more page objects with the given range of indices from the given
     /// source [PdfPage], adding the objects sequentially to the end of this
-    /// [PdfPageObjectsMut] collection.
+    /// [PdfPageObjects] collection.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
@@ -430,13 +431,14 @@ impl<'a> PdfPageObjects<'a> {
         Ok(())
     }
 
-    /// Removes all page objects in the given [PdfPage] into this [PdfPageObjectsMut] collection,
-    /// appending them to the end of this [PdfPageObjectsMut] collection. The given [PdfPage]
+    /// Removes all page objects in the given [PdfPage] into this [PdfPageObjects] collection,
+    /// appending them to the end of this [PdfPageObjects] collection. The given [PdfPage]
     /// will be drained of all page objects once this operation is completed.
     ///
     /// For finer control over which page objects are imported, use one of the
-    /// [PdfPageObjectsMut::import_object_from_page()] or
-    /// [PdfPageObjectsMut::import_object_range_from_page()] functions.
+    /// [PdfPageObjects::take_object_from_page()] or
+    /// [PdfPageObjects::take_object_range_from_page()] functions. To copy page objects
+    /// from the given [PdfPage] rather than removing them, use the [PdfPageObjects::copy_all()] function.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration

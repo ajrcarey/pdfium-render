@@ -148,7 +148,7 @@ impl Pdfium {
     ///
     /// * Use the [Pdfium::load_pdf_from_reader()] function to stream document data into Pdfium
     /// using a standard Rust reader.
-    /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
+    /// * Use the `Pdfium::load_pdf_from_fetch()` function to download document data from a
     /// URL using the Javascript `fetch()` API.
     /// * Use another method to retrieve the bytes of the target document over the network,
     /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.

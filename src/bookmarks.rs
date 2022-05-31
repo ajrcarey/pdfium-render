@@ -4,6 +4,7 @@
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmark::PdfBookmark;
 use crate::document::PdfDocument;
+use crate::error::{PdfiumError, PdfiumInternalError};
 use std::ptr::null_mut;
 
 /// The bookmarks contained within a single [PdfDocument].
@@ -54,19 +55,19 @@ impl<'a> PdfBookmarks<'a> {
     /// Note that bookmarks are not required to have unique titles, so in theory any number of
     /// bookmarks could match a given title. This function only ever returns the first. To return
     /// all matches, use [PdfBookmarks::find_all_by_title()].
-    pub fn find_first_by_title(&self, title: &str) -> Option<PdfBookmark> {
+    pub fn find_first_by_title(&self, title: &str) -> Result<PdfBookmark, PdfiumError> {
         let handle = self
             .bindings
             .FPDFBookmark_Find_str(*self.document.get_handle(), title);
 
         if handle.is_null() {
-            println!(
-                "find_by_title() got null: {:#?}",
-                self.bindings.get_pdfium_last_error()
-            );
-            None
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
         } else {
-            Some(PdfBookmark::from_pdfium(
+            Ok(PdfBookmark::from_pdfium(
                 handle,
                 None,
                 self.document,

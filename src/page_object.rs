@@ -239,7 +239,7 @@ impl PdfPageObjectLineCap {
     }
 }
 
-/// A single object on a [PdfPage].
+/// A single object on a `PdfPage`.
 pub enum PdfPageObject<'a> {
     Text(PdfPageTextObject<'a>),
     Path(PdfPagePathObject<'a>),
@@ -434,15 +434,19 @@ pub trait PdfPageObjectCommon<'a> {
     /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
     ///
     /// To move, scale, rotate, or skew a [PdfPageObject], consider using one or more of the
-    /// following functions. They all use [transform()] internally, but are probably easier to
-    /// use (and certainly clearer in their intent) in most situations.
+    /// following functions. They all use [PdfPageObjectCommon::transform()] internally, but are probably
+    /// easier to use (and certainly clearer in their intent) in most situations.
     ///
-    /// * [PdfPageObject::translate()]: moves the origin of a [PdfPageObject].
-    /// * [PdfPageObject::scale()]: changes the size of a [PdfPageObject].
-    /// * [PdfPageObject::rotate_clockwise_degrees()], [PdfPageObject::rotate_counter_clockwise_degrees()],
-    /// [PdfPageObject::rotate_clockwise_radians()], [PdfPageObject::rotate_counter_clockwise_radians()]:
+    /// * [PdfPageObjectCommon::translate()]: moves the origin of a [PdfPageObject].
+    /// * [PdfPageObjectCommon::scale()]: changes the size of a [PdfPageObject].
+    /// * [PdfPageObjectCommon::rotate_clockwise_degrees()], [PdfPageObjectCommon::rotate_counter_clockwise_degrees()],
+    /// [PdfPageObjectCommon::rotate_clockwise_radians()], [PdfPageObjectCommon::rotate_counter_clockwise_radians()]:
     /// rotates a [PdfPageObject] around its origin.
-    /// * [PdfPageObject::skew_degrees()], [PdfPageObject::skew_radians()]: skews a [PdfPageObject].
+    /// * [PdfPageObjectCommon::skew_degrees()], [PdfPageObjectCommon::skew_radians()]: skews a [PdfPageObject].
+    ///
+    /// **The order in which transformations are applied to a page object is significant.** The result of
+    /// rotating _then_ translating a page object can be vastly different from translating _then_
+    /// rotating the same page object.
     fn transform(&mut self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64);
 
     /// Moves the origin of this [PdfPageObject] by the given horizontal and vertical delta distances.

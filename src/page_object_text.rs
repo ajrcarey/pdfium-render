@@ -189,15 +189,15 @@ impl<'a> PdfPageTextObject<'a> {
     }
 
     /// Creates a new [PdfPageTextObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a [PdfPage] using the
+    /// will not be rendered until it is added to a `PdfPage` using the
     /// `PdfPageObjects::add_text_object()` function.
     ///
     /// A single space will be used if the given text is empty, in order to avoid
-    /// unexpected behaviour from Pdfium when dealing with an empty string.
-    // Specifically, FPDFPageObj_SetText() will crash if you try to set an empty string on a
+    /// unexpected behaviour from Pdfium when dealing with empty strings.
+    // Specifically, FPDFPageObj_SetText() will crash if we try to apply an empty string to a
     // text object, and FPDFText_LoadPage() will crash if any text object on the page contains
     // an empty string (so it isn't enough to avoid calling FPDFPageObj_SetText() for an empty
-    // text object, you _have_ to set a non-empty string to avoid segfaults).
+    // text object, we _have_ to set a non-empty string to avoid segfaults).
     #[inline]
     pub fn new(
         document: &PdfDocument<'a>,
@@ -216,10 +216,9 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Returns the text contained within this [PdfPageTextObject].
     ///
-    /// Text retrieval in Pdfium is handled by the `PdfPageText` object owned by the [PdfPage]
-    /// containing this [PdfPageTextObject]. If this text object has not been placed on a page,
-    /// or the page has no associated `PdfPageText` object, then text retrieval is not available
-    /// and an empty string will be returned.
+    /// Text retrieval in Pdfium is handled by the `PdfPageText` object owned by the `PdfPage`
+    /// containing this [PdfPageTextObject]. If this text object has not been placed on a page
+    /// then text retrieval will be unavailable and an empty string will be returned.
     pub fn text(&self) -> String {
         // Retrieving the text from Pdfium is a two-step operation. First, we call
         // FPDFTextObj_GetText() with a null buffer; this will retrieve the length of

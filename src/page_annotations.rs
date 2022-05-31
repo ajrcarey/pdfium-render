@@ -10,7 +10,7 @@ use std::os::raw::c_int;
 
 pub type PdfPageAnnotationIndex = usize;
 
-/// The annotations that have been added to a single [PdfPage].
+/// The annotations that have been added to a single `PdfPage`.
 pub struct PdfPageAnnotations<'a> {
     page_handle: FPDF_PAGE,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -28,7 +28,7 @@ impl<'a> PdfPageAnnotations<'a> {
         }
     }
 
-    /// Returns the total number of annotations that have been added to the containing [PdfPage].
+    /// Returns the total number of annotations that have been added to the containing `PdfPage`.
     #[inline]
     pub fn len(&self) -> PdfPageAnnotationIndex {
         self.bindings.FPDFPage_GetAnnotCount(self.page_handle) as PdfPageAnnotationIndex

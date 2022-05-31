@@ -16,18 +16,11 @@ fn main() {
 
             let document = pdfium.create_new_pdf().unwrap();
 
-            println!("version: {:#?}", document.version());
-
             // ... add a new page...
 
             let mut pages = document.pages();
 
             let mut page = pages.create_page_at_start(PdfPagePaperSize::a4()).unwrap();
-
-            println!("page size: {:#?}", page.paper_size());
-            for bounds in page.boundaries().iter() {
-                println!("bounds: {:#?}", bounds);
-            }
 
             // ... add some text objects to the page...
 
@@ -56,20 +49,19 @@ fn main() {
 
                 object.set_blend_mode(PdfPageObjectBlendMode::Multiply);
 
-                // The order of transformations is important here. In particular, the positioning
-                // of the object on the page - the second call to object.translate() - must take
-                // place _after_ the call to object.rotate...(), otherwise the translated
-                // co-ordinates will be rotated as well.
-
                 // Create a little bit of indent space before the text, so the start of "Hello"
                 // is visible without all the rotated objects overlapping too much.
                 object.translate(PdfPoints::new(30.0), PdfPoints::ZERO);
 
-                // Progressively skew the text as we iterate.
+                // The order of transformations is important here. In particular, the positioning
+                // of the object on the page - the call to object.translate() - must take
+                // place _after_ the call to object.rotate...(), otherwise the translated
+                // co-ordinates will be rotated as well.
+
+                // Progressively skew the text as we loop.
                 object.skew_degrees(0.0, index / 2.0);
 
-                // Progressively rotate the text as we iterate.
-
+                // Progressively rotate the text as we loop.
                 object.rotate_clockwise_degrees(degrees as f32);
 
                 // Move the object into position in the center of the page.
@@ -79,7 +71,7 @@ fn main() {
                 page.objects_mut().add_text_object(object).unwrap();
             }
 
-            // ... log details of the text object we just created to the console...
+            // ... log details of the text objects we just created to the console...
 
             page.objects()
                 .iter()

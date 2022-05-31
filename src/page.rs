@@ -408,11 +408,9 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the collection of text boxes contained within this [PdfPage].
     pub fn text(&self) -> Result<PdfPageText, PdfiumError> {
-        println!(">>>>>> entering page::text()");
         if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
             && self.is_content_regeneration_required
         {
-            println!("******** in page::text(): regenerating content now");
             self.regenerate_content_immut()?;
         }
 

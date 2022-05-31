@@ -1,39 +1,42 @@
 # Idiomatic Rust bindings for Pdfium
 
 `pdfium-render` provides an idiomatic high-level Rust interface around the low-level bindings to
-Pdfium exposed by the excellent `pdfium-sys` crate.
+Pdfium provided by the excellent `pdfium-sys` crate.
 
 ```
-    // Renders each page in the given test PDF file to a separate JPEG file.
-
     use pdfium_render::prelude::*;
 
-    // Bind to the system-provided Pdfium library.
+    fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
+        // Renders each page in the given test PDF file to a separate JPEG file.
     
-    let pdfium = Pdfium::new(Pdfium::bind_to_system_library().unwrap());
-
-    // Load a PDF file with no password protection.
+        // Bind to a Pdfium library provided by the operating system.
+        // (We could alternatively use a Pdfium library at a known location.)
+        
+        let pdfium = Pdfium::new(Pdfium::bind_to_system_library()?);
+        
+        // Open the PDF document...
+  
+        let document = pdfium.load_pdf_from_file(path, password)?;
+        
+        // ... set rendering options that will apply to all pages...
+     
+        let bitmap_render_config = PdfBitmapConfig::new()
+            .set_target_width(2000)
+            .set_maximum_height(2000)
+            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
     
-    let document = pdfium.load_pdf_from_file("test.pdf", None).unwrap();
-    
-    // Set bitmap rendering options that will apply to all pages.
- 
-    let bitmap_render_config = PdfBitmapConfig::new()
-        .set_target_width(2000)
-        .set_maximum_height(2000)
-        .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
-
-    // Render each page to a bitmap image, then export each image to a JPEG file.
- 
-    document.pages().iter().for_each(|page| {
-        page.get_bitmap_with_config(&bitmap_render_config).unwrap()
-            .as_image() // Renders this page to an Image::DynamicImage
-            .as_rgba8().unwrap()
-            .save_with_format(
-              format!("test-page-{}.jpg", page.index()),
-              image::ImageFormat::Jpeg
-            ).unwrap();
-    });
+        // ... then render each page to a bitmap image, saving each image to a JPEG file.
+     
+        document.pages().iter().for_each(|page| {
+            page.get_bitmap_with_config(&bitmap_render_config)?
+                .as_image() // Renders this page to an Image::DynamicImage
+                .as_rgba8()?
+                .save_with_format(
+                  format!("test-page-{}.jpg", page.index()),
+                  image::ImageFormat::Jpeg
+                )?;
+        });
+    }
 ```
 
 In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from
@@ -54,30 +57,41 @@ In addition to providing a more natural interface to Pdfium, `pdfium-render` dif
 * Pages rendered by Pdfium can be exported as instances of `Image::DynamicImage` for easy,
   idiomatic post-processing.
 
-Examples demonstrating page rendering, text extraction, page object introspection, and
-compiling to WASM are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
+Examples demonstrating page rendering, text extraction, page object introspection, 
+creation of new documents, document concatenation, multi-page tiled output, and compiling to WASM
+are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 ## What's new
 
-Versions 0.5.8, 0.5.9, and 0.6.0 are bug fix releases.
+Version 0.7.0 is a substantial release that introduces the first set of document editing functions
+into `pdfium-render`. This release includes the following improvements to the high-level interface:
 
-Version 0.5.7 added the ability to bind to a build of Pdfium that has been statically linked
-into the final Rust executable.
+* Adds loading and saving of PDF documents from standard Rust readers and writers.
+* Adds creation of new documents.
+* Adds adding and deleting of pages to documents, and importing of pages from one document into another.
+* Adds adding and deleting of page objects to pages, and importing of page objects from one page into another.
+* Adds additional properties and functions to all page objects, including setting and reading of
+colors, strokes, fills, and blend modes, and object positioning, rotation, scaling, and skewing.
+* Adds the `PdfPermissions` collection, allowing reading of security handlers and permissions for a document.
+* Adds support for loading and saving of PDF documents to WASM - no longer is it necessary to embed
+documents directly into the compiled WASM module.
 
-Version 0.5.6 added the `pdfium_render::prelude`, added bindings to Pdfium's `FPDFAnnot_*()`
-and `FPDFPage_*Annot*()` functions, and added the `PdfPageAnnotations` collection and
-`PdfPageAnnotation` enum to the `pdfium-render` high-level interface. Not all annotation-related
-functionality is currently available through the high-level interface; this will be added
-gradually over time.
+With this release, it is now possible to create a new PDF document from scratch, add pages to it
+(either by creating them from scratch, or by importing them from other documents), add new text objects
+to those pages, and output the newly created document to a file.
+
+The initial editing focus has been on providing full creation and editing support for text objects.
+Later 0.7.x releases will add similar support for creating and editing images, paths, and the other
+types of page objects supported by Pdfium.
  
 ## Porting existing Pdfium code from other languages
 
-The high-level idiomatic Rust interface provided by the `Pdfium` struct is entirely optional;
-the `Pdfium` struct wraps around raw FFI bindings defined in the `PdfiumLibraryBindings`
-trait, and it is completely feasible to simply use the FFI bindings directly
-instead of the high level interface. This makes porting existing code that calls FPDF_* functions
-trivial, while still gaining the benefits of late binding and WASM compatibility.
-For instance, the following code snippet (taken from a C++ sample):
+The high-level idiomatic Rust interface provided by `pdfium-render` is entirely optional;
+the idiomatic interface is built on top of raw FFI bindings defined in the `PdfiumLibraryBindings`
+trait, and it is completely feasible to simply use these raw FFI bindings directly if you prefer.
+This makes porting existing code that calls `FPDF_*` functions trivial, while still gaining the
+benefits of late binding and WASM compatibility. For instance, the following code snippet
+(taken from a C++ sample):
 
 ```
     string test_doc = "test.pdf";
@@ -116,11 +130,6 @@ The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
 `PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` utility functions are provided
 for converting to and from `FPDF_WIDESTRING` in your own code.
 
-Note that the `FPDF_LoadDocument()` function is not available when compiling to WASM.
-Either embed the target PDF document directly using Rust's `include_bytes!()`
-macro, or use Javascript's `fetch()` API to retrieve the bytes of the target document over
-the network, then load those bytes into Pdfium using the `FPDF_LoadMemDocument()` function.
-
 ## Binding to Pdfium
 
 `pdfium-render` does not include Pdfium itself. You have several options:
@@ -142,7 +151,7 @@ dynamic library appropriate for your operating system alongside your Rust execut
 
 At the time of writing, the WASM builds at <https://github.com/bblanchon/pdfium-binaries/releases>
 are compiled with a non-growable WASM heap memory allocator. This means that attempting to open
-a PDF document longer than just a few pages will result in a unrecoverable out of memory error.
+a PDF document longer than just a few pages will result in an unrecoverable out of memory error.
 The WASM builds at <https://github.com/paulocoutinhox/pdfium-lib/releases> are recommended as they
 do not have this problem.
 
@@ -198,31 +207,36 @@ This crate provides the following optional features:
 * `bindings`: uses `cbindgen` to generate Rust bindings to the Pdfium functions defined in the
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
-* `static`: enables binding to a statically-linked build of Pdfium.
-  See the "Static linking" section above.
+* `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 
 Neither feature is enabled by default.
 
 ## Development status
 
-The initial focus of this crate has been on rendering pages in a PDF file; consequently, `FPDF_*`
-functions related to bitmaps and rendering have been prioritised. By 1.0, the functionality of all
+The initial focus of this crate was been on rendering pages in a PDF file; consequently, `FPDF_*`
+functions related to page rendering were prioritised. By 1.0, the functionality of all
 `FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain
 functions specific to interactive scripting, user interaction, and printing.
 
 * Releases numbered 0.4.x added support for all page rendering Pdfium functions to `pdfium-render`.
-* Releases numbered 0.5.x-0.6.x aim to progressively add support for all read-only Pdfium functions to `pdfium-render`.
-* Releases numbered 0.7.x-0.8.x aim to progressively add support for all Pdfium editing functions to `pdfium-render`.
+* Releases numbered 0.5.x-0.6.x added support for most read-only Pdfium functions to `pdfium-render`.
+* Releases numbered 0.7.x aim to progressively add support for all Pdfium page object creation and editing functions to `pdfium-render`. 
+* Releases numbered 0.8.x aim to progressively add support for all other Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.6.0, 187 (51%) have
-bindings available in `pdfium-render`, with the functionality of roughly two-thirds of these
-available via the high-level interface.
+By version 0.8.0, `pdfium-render` should provide useful coverage for all but the most esoteric use cases.
+
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.0, 206 (56%) have
+bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
+available via the `pdfium-render` high-level interface.
 
 If you need a binding to a Pdfium function that is not currently available, just raise an issue.
 
 ## Version history
 
+* 0.7.0: adds `PdfPermissions` collection, adds document loading and saving support, adds
+initial creation and editing support for documents, pages, and text objects,
+and improves WASM document file handling.
 * 0.6.0: fixes some typos in documentation, updates upstream Pdfium WASM package source repository name.
 * 0.5.9: corrects a bug in the statically linked bindings implementation. Adjusted tests
   to cover both dynamic and statically linked bindings implementations.
@@ -249,7 +263,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 * 0.5.1: adds bindings for `FPDFPage_GetRotation()` and `FPDFPage_SetRotation()` functions,
   adds `PdfMetadata` collection to the high-level interface.
 * 0.5.0: adds rendering of annotations and form field elements, thanks to an excellent contribution
-  from <https://github.com/inzanez>
-* 0.4.2: bug fixes in `PdfBitmapConfig` implementation
-* 0.4.1: improvements to documentation and READMEs
-* 0.4.0: initial release
+  from <https://github.com/inzanez>.
+* 0.4.2: bug fixes in `PdfBitmapConfig` implementation.
+* 0.4.1: improvements to documentation and READMEs.
+* 0.4.0: initial release of minimal page rendering functionality.
