@@ -52,20 +52,6 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
-        let c_password = CString::new(password.unwrap_or("")).unwrap();
-
-        unsafe {
-            crate::bindgen::FPDF_LoadMemDocument(
-                bytes.as_ptr() as *const c_void,
-                bytes.len() as c_int,
-                c_password.as_ptr(),
-            )
-        }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
         let c_password = CString::new(password.unwrap_or("")).unwrap();
 
@@ -1318,6 +1304,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetFontSize(&self, text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDFTextObj_GetFontSize(text, size) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_Close(&self, font: FPDF_FONT) {
+        unsafe { crate::bindgen::FPDFFont_Close(font) }
     }
 
     #[inline]

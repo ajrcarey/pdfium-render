@@ -200,6 +200,13 @@ See <https://github.com/ajrcarey/pdfium-render/tree/master/examples> for a full 
 how to bundle a Rust application using `pdfium-render` alongside a pre-built Pdfium WASM module for
 inspection and rendering of PDF files in a web browser.
 
+Some additional convenience functions are available when compiling to WASM:
+
+* The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API
+to download a URL over the network and open it as a PDF document.
+* The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
+ready to display in an HTML `canvas` element.
+
 ## Optional features
 
 This crate provides the following optional features:

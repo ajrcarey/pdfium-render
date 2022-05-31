@@ -125,11 +125,12 @@ impl PdfPageTextRenderMode {
 /// fall out of scope.
 ///
 /// The simplest way to create a page text object that is immediately attached to a page
-/// is to call the `PdfPage::objects_mut().create_text_object()` function.
+/// is to call the `PdfPageObjects::create_text_object()` function.
 ///
-/// To create a detached page text object, use the [PdfPageTextObject::new()] function.
-/// The detached page text object can later be attached to a page by calling
-/// `PdfPage::objects_mut().add_object()` with the detached page object as the parameter.
+/// Creating a detached page text object offers more scope for customization, but you must
+/// add the object to a containing `PdfPage` manually. To create a detached page text object,
+/// use the [PdfPageTextObject::new()] function. The detached page text object can later
+/// be attached to a page by using the `PdfPageObjects::add_object()` function.
 pub struct PdfPageTextObject<'a> {
     is_object_memory_owned_by_page: bool,
     object_handle: FPDF_PAGEOBJECT,
@@ -217,7 +218,7 @@ impl<'a> PdfPageTextObject<'a> {
     /// Returns the text contained within this [PdfPageTextObject].
     ///
     /// Text retrieval in Pdfium is handled by the `PdfPageText` object owned by the `PdfPage`
-    /// containing this [PdfPageTextObject]. If this text object has not been placed on a page
+    /// containing this [PdfPageTextObject]. If this text object has not been attached to a page
     /// then text retrieval will be unavailable and an empty string will be returned.
     pub fn text(&self) -> String {
         // Retrieving the text from Pdfium is a two-step operation. First, we call

@@ -5,8 +5,24 @@ use crate::bindgen::{FPDF_FONT, FPDF_FONT_TRUETYPE, FPDF_FONT_TYPE1};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::page::PdfPoints;
 use crate::utils::mem::create_byte_buffer;
+use bitflags::bitflags;
 use std::os::raw::{c_char, c_int, c_uint};
+
+bitflags! {
+    struct FpdfFontDescriptorFlags: u32 {
+        const FIXED_PITCH_BIT_1 =  0b00000000000000000000000000000001;
+        const SERIF_BIT_2 =        0b00000000000000000000000000000010;
+        const SYMBOLIC_BIT_3 =     0b00000000000000000000000000000100;
+        const SCRIPT_BIT_4 =       0b00000000000000000000000000001000;
+        const NON_SYMBOLIC_BIT_6 = 0b00000000000000000000000000100000;
+        const ITALIC_BIT_7 =       0b00000000000000000000000001000000;
+        const ALL_CAP_BIT_17 =     0b00000000000000010000000000000000;
+        const SMALL_CAP_BIT_18 =   0b00000000000000100000000000000000;
+        const FORCE_BOLD_BIT_19 =  0b00000000000001000000000000000000;
+    }
+}
 
 /// The 14 built-in fonts provided as part of the PDF specification.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -91,6 +107,7 @@ impl PdfFontWeight {
 /// font embedding. Additionally, custom fonts can be directly embedded into any PDF file as
 /// a data stream.
 pub struct PdfFont<'a> {
+    built_in: Option<PdfFontBuiltin>,
     handle: FPDF_FONT,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
@@ -98,18 +115,26 @@ pub struct PdfFont<'a> {
 impl<'a> PdfFont<'a> {
     #[inline]
     pub(crate) fn from_pdfium(handle: FPDF_FONT, bindings: &'a dyn PdfiumLibraryBindings) -> Self {
-        PdfFont { handle, bindings }
+        PdfFont {
+            built_in: None,
+            handle,
+            bindings,
+        }
     }
 
     /// Creates a new [PdfFont] from the given given built-in font argument.
     #[inline]
     pub fn new_built_in(document: &'a PdfDocument<'a>, font: PdfFontBuiltin) -> Self {
-        Self::from_pdfium(
+        let mut result = Self::from_pdfium(
             document
                 .get_bindings()
                 .FPDFText_LoadStandardFont(*document.get_handle(), font.to_pdf_font_name()),
             document.get_bindings(),
-        )
+        );
+
+        result.built_in = Some(font);
+
+        result
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-Roman" font.
@@ -295,13 +320,15 @@ impl<'a> PdfFont<'a> {
         assert_eq!(result, buffer_length);
 
         String::from_utf8(buffer)
-            // Trim any trailing nulls. All non-UTF-16LE strings returned from Pdfium are
-            // generally terminated by one null byte.
+            // Trim any trailing nulls. All strings returned from Pdfium are generally terminated
+            // by one null byte.
             .map(|str| str.trim_end_matches(char::from(0)).to_owned())
             .unwrap_or_else(|_| String::new())
     }
 
     /// Returns the weight of this [PdfFont].
+    ///
+    /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn weight(&self) -> Result<PdfFontWeight, PdfiumError> {
         PdfFontWeight::from_pdfium(self.bindings.FPDFFont_GetWeight(self.handle)).ok_or_else(|| {
             PdfiumError::PdfiumLibraryInternalError(
@@ -310,5 +337,204 @@ impl<'a> PdfFont<'a> {
                     .unwrap_or(PdfiumInternalError::Unknown),
             )
         })
+    }
+
+    /// Returns the italic angle of this [PdfFont]. The italic angle is the angle,
+    /// expressed in degrees counter-clock-wise from the vertical, of the dominant vertical
+    /// strokes of the font. The value is zero for non-italic fonts, and negative for fonts
+    /// that slope to the right (as almost all italic fonts do).
+    ///
+    /// Pdfium may not reliably return the correct value of this property for built-in fonts.
+    pub fn italic_angle(&self) -> Result<i32, PdfiumError> {
+        let mut angle = 0;
+
+        if self.bindings.is_true(
+            self.bindings
+                .FPDFFont_GetItalicAngle(self.handle, &mut angle),
+        ) {
+            Ok(angle)
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Returns the ascent of this [PdfFont] for the given font size. The ascent is the maximum
+    /// height above the baseline reached by glyphs in this font, excluding the height of glyphs
+    /// for accented characters.
+    pub fn ascent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
+        let mut ascent = 0.0;
+
+        if self.bindings.is_true(self.bindings.FPDFFont_GetAscent(
+            self.handle,
+            font_size.value,
+            &mut ascent,
+        )) {
+            Ok(PdfPoints::new(ascent))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Returns the descent of this [PdfFont] for the given font size. The descent is the
+    /// maximum distance below the baseline reached by glyphs in this font, expressed as a
+    /// negative number.
+    pub fn descent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
+        let mut descent = 0.0;
+
+        if self.bindings.is_true(self.bindings.FPDFFont_GetDescent(
+            self.handle,
+            font_size.value,
+            &mut descent,
+        )) {
+            Ok(PdfPoints::new(descent))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Returns the raw font descriptor bitflags for the containing [PdfFont].
+    #[inline]
+    fn get_flags_bits(&self) -> FpdfFontDescriptorFlags {
+        FpdfFontDescriptorFlags::from_bits_truncate(
+            self.bindings.FPDFFont_GetFlags(self.handle) as u32
+        )
+    }
+
+    /// Returns `true` if all the glyphs in this [PdfFont] have the same width.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_fixed_pitch(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::FIXED_PITCH_BIT_1)
+    }
+
+    /// Returns `true` if the glyphs in this [PdfFont] have variable widths.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    #[inline]
+    pub fn is_proportional_pitch(&self) -> bool {
+        !self.is_fixed_pitch()
+    }
+
+    /// Returns `true` if one or more glyphs in this [PdfFont] have serifs - short strokes
+    /// drawn at an angle on the top or bottom of glyph stems to decorate the glyphs.
+    /// For example, Times New Roman is a serif font.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_serif(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::SERIF_BIT_2)
+    }
+
+    /// Returns `true` if no glyphs in this [PdfFont] have serifs - short strokes
+    /// drawn at an angle on the top or bottom of glyph stems to decorate the glyphs.
+    /// For example, Helvetica is a sans-serif font.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    #[inline]
+    pub fn is_sans_serif(&self) -> bool {
+        !self.is_serif()
+    }
+
+    /// Returns `true` if this [PdfFont] contains glyphs outside the Adobe standard Latin
+    /// character set.
+    ///
+    /// This classification of non-symbolic and symbolic fonts is peculiar to PDF. A font may
+    /// contain additional characters that are used in Latin writing systems but are outside the
+    /// Adobe standard Latin character set; PDF considers such a font to be symbolic.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_symbolic(&self) -> bool {
+        // This flag bit and the non-symbolic flag bit cannot both be set or both be clear.
+
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::SYMBOLIC_BIT_3)
+    }
+
+    /// Returns `true` if this [PdfFont] does not contain glyphs outside the Adobe standard
+    /// Latin character set.
+    ///
+    /// This classification of non-symbolic and symbolic fonts is peculiar to PDF. A font may
+    /// contain additional characters that are used in Latin writing systems but are outside the
+    /// Adobe standard Latin character set; PDF considers such a font to be symbolic.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_non_symbolic(&self) -> bool {
+        // This flag bit and the symbolic flag bit cannot both be set or both be clear.
+
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::NON_SYMBOLIC_BIT_6)
+    }
+
+    /// Returns `true` if the glyphs in this [PdfFont] are designed to resemble cursive handwriting.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_cursive(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::SCRIPT_BIT_4)
+    }
+
+    /// Returns `true` if the glyphs in this [PdfFont] include dominant vertical strokes
+    /// that are slanted.
+    ///
+    /// The designed vertical stroke angle can be retrieved using the [PdfFont::italic_angle()] function.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_italic(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::ITALIC_BIT_7)
+    }
+
+    /// Returns `true` if this [PdfFont] contains no lowercase letters by design.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_all_caps(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::ALL_CAP_BIT_17)
+    }
+
+    /// Returns `true` if the lowercase letters in this [PdfFont] have the same shapes as the
+    /// corresponding uppercase letters but are sized proportionally so they have the same size
+    /// and stroke weight as lowercase glyphs in the same typeface family.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_small_caps(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::SMALL_CAP_BIT_18)
+    }
+
+    /// Returns `true` if bold glyphs in this [PdfFont] are painted with extra pixels
+    /// at very small font sizes.
+    ///
+    /// Typically when glyphs are painted at small sizes on low-resolution devices, individual strokes
+    /// of bold glyphs may appear only one pixel wide. Because this is the minimum width of a pixel
+    /// based device, individual strokes of non-bold glyphs may also appear as one pixel wide
+    /// and therefore cannot be distinguished from bold glyphs. If this flag is set, individual
+    /// strokes of bold glyphs may be thickened at small font sizes.
+    ///
+    /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
+    pub fn is_bold_reenforced(&self) -> bool {
+        self.get_flags_bits()
+            .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
+    }
+}
+
+impl<'a> Drop for PdfFont<'a> {
+    /// Closes this [PdfFont], releasing held memory.
+    #[inline]
+    fn drop(&mut self) {
+        self.bindings.FPDFFont_Close(self.handle);
     }
 }

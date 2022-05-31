@@ -124,18 +124,18 @@ pub(crate) mod files {
     pub(crate) fn get_pdfium_file_accessor_from_reader<R: Read + Seek + 'static>(
         mut reader: R,
     ) -> Box<FpdfFileAccessExt> {
-        let content_length = reader.seek(SeekFrom::End(0)).unwrap_or(0);
+        let content_length = reader.seek(SeekFrom::End(0)).unwrap_or(0) as c_ulong;
 
         let mut result = Box::new(FpdfFileAccessExt {
             content_length,
             get_block: Some(read_block_from_callback),
-            file_access_ptr: null_mut(), // We'll update this value in just a moment
+            file_access_ptr: null_mut(), // We'll set this value in just a moment.
             reader: Box::new(reader),
         });
 
-        // Update the struct with a pointer to its memory location. This pointer will
+        // Update the struct with a pointer to its own memory location. This pointer will
         // be passed to the callback function that Pdfium invokes, allowing that callback to
-        // retrieve the FpdfFileAccessExt struct and, from there, the boxed Rust reader.
+        // retrieve this FpdfFileAccessExt struct and, from there, the boxed Rust reader.
 
         let file_access_ptr: *const FpdfFileAccessExt = result.deref();
 
@@ -144,12 +144,12 @@ pub(crate) mod files {
         result
     }
 
-    // A little trait that lets us perform type-erasure on the user-provided Rust reader.
-    // This means FpdfFileAccessExt does not need to carry a generic parameter, which in turn
-    // means that any PdfDocument containing a bound FpdfFileAccessExt does not need to carry
-    // a generic parameter either.
-
-    trait PdfiumDocumentReader: Read + Seek {}
+    trait PdfiumDocumentReader: Read + Seek {
+        // A tiny trait that lets us perform type-erasure on the user-provided Rust reader.
+        // This means FpdfFileAccessExt does not need to carry a generic parameter, which in turn
+        // means that any PdfDocument containing a bound FpdfFileAccessExt does not need to carry
+        // a generic parameter either.
+    }
 
     impl<R: Read + Seek> PdfiumDocumentReader for R {}
 
@@ -172,7 +172,7 @@ pub(crate) mod files {
     }
 
     impl FpdfFileAccessExt {
-        /// Returns an FPDF_FILEACCESS pointer suitable for passing to FPDF_LoadCustomDocument().
+        /// Returns an `FPDF_FILEACCESS` pointer suitable for passing to `FPDF_LoadCustomDocument()`.
         #[inline]
         pub(crate) fn as_fpdf_file_access_mut_ptr(&mut self) -> &mut FPDF_FILEACCESS {
             unsafe { &mut *(self as *mut FpdfFileAccessExt as *mut FPDF_FILEACCESS) }
@@ -239,8 +239,8 @@ pub(crate) mod files {
     }
 
     impl<W: Write> FpdfFileWriteExt<W> {
-        /// Returns an FPDF_FILEWRITE pointer suitable for passing to FPDF_SaveAsCopy()
-        /// or FPDF_SaveWithVersion().
+        /// Returns an `FPDF_FILEWRITE` pointer suitable for passing to `FPDF_SaveAsCopy()`
+        /// or `FPDF_SaveWithVersion()`.
         #[inline]
         pub(crate) fn as_fpdf_file_write_mut_ptr(&mut self) -> &mut FPDF_FILEWRITE {
             unsafe { &mut *(self as *mut FpdfFileWriteExt<W> as *mut FPDF_FILEWRITE) }

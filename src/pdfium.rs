@@ -21,19 +21,19 @@ use crate::native::NativePdfiumBindings;
 use crate::linked::StaticPdfiumBindings;
 
 #[cfg(target_arch = "wasm32")]
-use crate::wasm::WasmPdfiumBindings;
+use crate::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings};
 
 #[cfg(target_arch = "wasm32")]
-use crate::wasm::PdfiumRenderWasmState;
+use wasm_bindgen::JsCast;
 
-#[cfg(all(target_arch = "wasm32", feature = "fetch"))]
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen_futures::JsFuture;
 
-#[cfg(all(target_arch = "wasm32", feature = "fetch"))]
+#[cfg(target_arch = "wasm32")]
 use js_sys::{ArrayBuffer, Uint8Array};
 
-#[cfg(all(target_arch = "wasm32", feature = "fetch"))]
-use web_sys::{window, Response, Window};
+#[cfg(target_arch = "wasm32")]
+use web_sys::{window, Blob, Response};
 
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
@@ -43,7 +43,7 @@ pub struct Pdfium {
 
 impl Pdfium {
     /// Binds to a Pdfium library that was statically linked into the currently running
-    /// executable, returning a new PdfiumLibraryBindings object that contains bindings to the
+    /// executable, returning a new [PdfiumLibraryBindings] object that contains bindings to the
     /// functions exposed by the library. The application will immediately crash if Pdfium
     /// was not correctly statically linked into the executable at compile time.
     ///
@@ -57,7 +57,7 @@ impl Pdfium {
     }
 
     /// Initializes the external Pdfium library, loading it from the system libraries.
-    /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions exposed
+    /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions exposed
     /// by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
@@ -73,7 +73,7 @@ impl Pdfium {
     }
 
     /// Initializes the external Pdfium library, binding to an external WASM module.
-    /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions exposed
+    /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions exposed
     /// by the library, or an error if the library is not available.
     ///
     /// It is essential that the exported `initialize_pdfium_render()` function be called
@@ -90,7 +90,7 @@ impl Pdfium {
     }
 
     /// Initializes the external pdfium library, loading it from the given path.
-    /// Returns a new PdfiumLibraryBindings object that contains bindings to the functions
+    /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions
     /// exposed by the library, or an error if the library could not be loaded.
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
@@ -108,8 +108,8 @@ impl Pdfium {
     }
 
     /// Returns the name of the external Pdfium library on the currently running platform.
-    /// On Linux and Android, this will be libpdfium.so or similar; on Windows, this will
-    /// be pdfium.dll or similar; on MacOS, this will be libpdfium.dylib or similar.
+    /// On Linux and Android, this will be `libpdfium.so` or similar; on Windows, this will
+    /// be `pdfium.dll` or similar; on MacOS, this will be `libpdfium.dylib` or similar.
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
     #[inline]
@@ -149,7 +149,8 @@ impl Pdfium {
     /// * Use the [Pdfium::load_pdf_from_reader()] function to stream document data into Pdfium
     /// using a standard Rust reader.
     /// * Use the `Pdfium::load_pdf_from_fetch()` function to download document data from a
-    /// URL using the Javascript `fetch()` API.
+    /// URL using the browser's built-in `fetch()` API. This function is only available when
+    /// compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
     /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
@@ -212,26 +213,38 @@ impl Pdfium {
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
-    pub async fn load_pdf_from_fetch(
-        url: &str,
+    pub async fn load_pdf_from_fetch<'a>(
+        &'a self,
+        url: impl ToString,
         password: Option<&str>,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'a>, PdfiumError> {
         if let Some(window) = window() {
-            let fetch_result = JsFuture::from(window.fetch_with_str(url)).await?;
+            let fetch_result = JsFuture::from(window.fetch_with_str(url.to_string().as_str()))
+                .await
+                .map_err(PdfiumError::WebSysFetchError)?;
 
             debug_assert!(fetch_result.is_instance_of::<Response>());
 
-            let response: Response = fetch_result.dyn_into().unwrap();
+            let response: Response = fetch_result
+                .dyn_into()
+                .map_err(|_| PdfiumError::WebSysInvalidResponseError)?;
 
-            let blob: Blob = JsFuture::from(response.blob()?).await?;
+            let blob: Blob =
+                JsFuture::from(response.blob().map_err(PdfiumError::WebSysFetchError)?)
+                    .await
+                    .map_err(PdfiumError::WebSysFetchError)?
+                    .into();
 
-            let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer()?).await?;
+            let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
+                .await
+                .map_err(PdfiumError::WebSysFetchError)?
+                .into();
 
-            let u8_array: Uint8Array = Uint8Array::new_with_byte_offset(array_buffer, 0);
+            let u8_array: Uint8Array = Uint8Array::new(&array_buffer);
 
             let bytes: Vec<u8> = u8_array.to_vec();
 
-            Self::load_pdf_from_bytes(bytes.as_slice(), password)
+            self.load_pdf_from_bytes(bytes.as_slice(), password)
         } else {
             Err(PdfiumError::WebSysWindowObjectNotAvailable)
         }

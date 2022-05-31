@@ -16,11 +16,13 @@ pub type PdfPageObjectIndex = usize;
 
 /// The page objects contained within a single [PdfPage].
 ///
-/// Content in a PDF page is structured as a stream of [PdfPageObject] objects of different types:
-/// text objects, image objects, path objects, and so on. Note that Pdfium does not support or
-/// recognize all PDF page object types. For instance, Pdfium does not currently support or
-/// recognize the External Object ("XObject") page object type supported by Adobe Acrobat and
-/// Foxit's commercial PDF SDK. In these cases, Pdfium will return `PdfPageObjectType::Unsupported`.
+/// Content on a page is structured as a stream of [PdfPageObject] objects of different types:
+/// text objects, image objects, path objects, and so on.
+///
+/// Note that Pdfium does not support or recognize all PDF page object types. For instance,
+/// Pdfium does not currently support or recognize the External Object ("XObject") page object type
+/// supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium will return
+/// `PdfPageObjectType::Unsupported`.
 pub struct PdfPageObjects<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,

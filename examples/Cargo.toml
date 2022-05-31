@@ -14,7 +14,9 @@ path = "wasm.rs"
 
 [dependencies]
 pdfium-render = { path = "../" }
-wasm-bindgen = "^0"
+image = "^0"
 js-sys = "^0"
 log = "^0"
-image = "^0"
+wasm-bindgen = "^0"
+wasm-bindgen-futures = "^0"
+web-sys = { version = "^0", features = ["ImageData"] }

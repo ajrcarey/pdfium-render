@@ -430,23 +430,24 @@ pub trait PdfPageObjectCommon<'a> {
     /// Applies the given transformation, expressed as six values representing the six configurable
     /// elements of a nine-element 3x3 PDF transformation matrix, to this [PdfPageObject].
     ///
-    /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
-    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
-    ///
     /// To move, scale, rotate, or skew a [PdfPageObject], consider using one or more of the
-    /// following functions. They all use [PdfPageObjectCommon::transform()] internally, but are probably
-    /// easier to use (and certainly clearer in their intent) in most situations.
+    /// following functions. Internally they all use [PdfPageObjectCommon::transform()], but are
+    /// probably easier to use (and certainly clearer in their intent) in most situations.
     ///
-    /// * [PdfPageObjectCommon::translate()]: moves the origin of a [PdfPageObject].
+    /// * [PdfPageObjectCommon::translate()]: changes the position of a [PdfPageObject].
     /// * [PdfPageObjectCommon::scale()]: changes the size of a [PdfPageObject].
     /// * [PdfPageObjectCommon::rotate_clockwise_degrees()], [PdfPageObjectCommon::rotate_counter_clockwise_degrees()],
     /// [PdfPageObjectCommon::rotate_clockwise_radians()], [PdfPageObjectCommon::rotate_counter_clockwise_radians()]:
     /// rotates a [PdfPageObject] around its origin.
-    /// * [PdfPageObjectCommon::skew_degrees()], [PdfPageObjectCommon::skew_radians()]: skews a [PdfPageObject].
+    /// * [PdfPageObjectCommon::skew_degrees()], [PdfPageObjectCommon::skew_radians()]: skews a [PdfPageObject]
+    /// relative to its axes.
     ///
-    /// **The order in which transformations are applied to a page object is significant.** The result of
-    /// rotating _then_ translating a page object can be vastly different from translating _then_
-    /// rotating the same page object.
+    /// **The order in which transformations are applied to a page object is significant.**
+    /// For example, the result of rotating _then_ translating a page object may be vastly different
+    /// from translating _then_ rotating the same page object.
+    ///
+    /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
+    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
     fn transform(&mut self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64);
 
     /// Moves the origin of this [PdfPageObject] by the given horizontal and vertical delta distances.
@@ -803,7 +804,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
 }
 
 impl<'a> Drop for PdfPageObject<'a> {
-    /// Closes the [PdfPageObject], releasing held memory.
+    /// Closes this [PdfPageObject], releasing held memory.
     #[inline]
     fn drop(&mut self) {
         // The documentation for FPDFPageObj_Destroy() states that we only need

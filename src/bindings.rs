@@ -104,8 +104,12 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
 
+    /// Note that all calls to FPDF_LoadMemDocument() are internally upgraded to FPDF_LoadMemDocument64().
+    #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
+    fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
+        self.FPDF_LoadMemDocument64(bytes, password)
+    }
 
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
@@ -939,6 +943,9 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetFontSize(&self, text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_Close(&self, font: FPDF_FONT);
 
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewTextObj(

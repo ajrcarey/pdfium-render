@@ -27,7 +27,6 @@ impl NativePdfiumBindings {
         result.extern_FPDF_GetLastError()?;
         result.extern_FPDF_CreateNewDocument()?;
         result.extern_FPDF_LoadDocument()?;
-        result.extern_FPDF_LoadMemDocument()?;
         result.extern_FPDF_LoadMemDocument64()?;
         result.extern_FPDF_LoadCustomDocument()?;
         result.extern_FPDF_SaveAsCopy()?;
@@ -165,6 +164,7 @@ impl NativePdfiumBindings {
         result.extern_FPDFText_SetCharcodes()?;
         result.extern_FPDFText_LoadFont()?;
         result.extern_FPDFText_LoadStandardFont()?;
+        result.extern_FPDFFont_Close()?;
         result.extern_FPDFPage_InsertObject()?;
         result.extern_FPDFPage_RemoveObject()?;
         result.extern_FPDFPage_CountObjects()?;
@@ -279,23 +279,6 @@ impl NativePdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_LoadDocument\0") }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn extern_FPDF_LoadMemDocument(
-        &self,
-    ) -> Result<
-        Symbol<
-            unsafe extern "C" fn(
-                data_buf: *const c_void,
-                size: c_int,
-                password: FPDF_BYTESTRING,
-            ) -> FPDF_DOCUMENT,
-        >,
-        libloading::Error,
-    > {
-        unsafe { self.library.get(b"FPDF_LoadMemDocument\0") }
     }
 
     #[inline]
@@ -2176,6 +2159,14 @@ impl NativePdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDFFont_Close(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(font: FPDF_FONT)>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFFont_Close\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFPage_InsertObject(
         &self,
     ) -> Result<
@@ -3173,20 +3164,6 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
 
         unsafe {
             self.extern_FPDF_LoadDocument().unwrap()(c_file_path.as_ptr(), c_password.as_ptr())
-        }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
-        let c_password = CString::new(password.unwrap_or("")).unwrap();
-
-        unsafe {
-            self.extern_FPDF_LoadMemDocument().unwrap()(
-                bytes.as_ptr() as *const c_void,
-                bytes.len() as c_int,
-                c_password.as_ptr(),
-            )
         }
     }
 
@@ -4509,6 +4486,12 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
         let c_font = CString::new(font).unwrap();
 
         unsafe { self.extern_FPDFText_LoadStandardFont().unwrap()(document, c_font.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_Close(&self, font: FPDF_FONT) {
+        unsafe { self.extern_FPDFFont_Close().unwrap()(font) }
     }
 
     #[inline]

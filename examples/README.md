@@ -6,6 +6,10 @@ Simple examples demonstrating how to use `pdfium-render` on both native and WASM
 * `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered. Run this example via `cargo run --example form`. See comments in the source file for more details.
 * `text.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console. Run this example via `cargo run --example text`.
 * `objects.rs`: outputs information about each page object on each page in `test/export-test.pdf` to the console. Run this example via `cargo run --example objects`.
+* `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`. Run this example via `cargo run --example concat`.
+* `create.rs`: generates a new document by placing text objects onto a blank page, saving the new document to `test/create-test.pdf`. Run this example via `cargo run --example create`.
+* `tile.rs`: generates a new document by tiling pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf`, saving the new document to `test/tile-test.pdf`. Run this example via `cargo run --example tile`.
+* `fonts.rs`: outputs to the console information about the 14 built-in PDF fonts retrieved from Pdfium. Run this example via `cargo run --example fonts`.
 * `wasm.rs`: demonstrates `pdfium-render` running in a browser. This requires some manual bundling of the correct resources; read on.
 
 ## Bundling for WASM
@@ -16,6 +20,7 @@ Since `pdfium-render` does not include Pdfium itself, an external pre-packaged W
 * Copy the `pdfium_render_wasm_example.js` and `pdfium_render_wasm_example_bg.wasm` files from `examples/pkg/` into a release folder.
 * Download a pre-packaged WASM build from https://github.com/paulocoutinhox/pdfium-lib/releases and extract the `release/node/pdfium.js` and `release/node/pdfium.wasm` files into your release folder.
 * Copy the `index.html` file from `examples` into your release folder.
+* Copy a sample PDF file into your release folder and name it `test.pdf`. There are some suitable samples in https://github.com/ajrcarey/pdfium-render/tree/master/test.
 * Optionally copy the `serve.sh` file from `examples` into your release folder; this is a tiny script that will spin up a development webserver for you using the `basic-http-server` crate. You can ignore this if you have another way of serving the files.
 * Serve the content from your release folder using a webserver or by running `serve.sh`. If you use `serve.sh`, then the content will be available at http://localhost:4000.
 

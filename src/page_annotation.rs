@@ -494,7 +494,7 @@ impl<'a> PdfPageAnnotationPrivate for PdfPageAnnotation<'a> {
 }
 
 impl<'a> Drop for PdfPageAnnotation<'a> {
-    /// Closes the [PdfPageAnnotation], releasing held memory.
+    /// Closes this [PdfPageAnnotation], releasing held memory.
     #[inline]
     fn drop(&mut self) {
         self.get_bindings().FPDFPage_CloseAnnot(*self.get_handle());

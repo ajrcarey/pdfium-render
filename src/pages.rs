@@ -211,15 +211,17 @@ impl<'a> PdfPages<'a> {
         }
     }
 
-    /// Creates a new [PdfDocument] from the pages in this [PdfPages] collection. The pages
-    /// in this collection will be arranged into a tiled grid, the size of each shrinking
-    /// or expanding as necessary to fit the given [PdfPagePaperSize].
+    /// Creates a new [PdfDocument] by copying the pages in this [PdfPages] collection
+    /// into tiled grids, the size of tile each shrinking or expanding as necessary to fit
+    /// the given [PdfPagePaperSize].
     ///
     /// For example, to output all pages in this [PdfPages] collection into a new
     /// A3 landscape document with six source pages tiled on each destination page arranged
     /// into a 2 row x 3 column grid, you would call:
     ///
+    /// ```
     /// PdfPages::tile_into_new_document(2, 3, PdfPagePaperSize::a3().to_landscape())
+    /// ```
     pub fn tile_into_new_document(
         &self,
         rows_per_page: u8,

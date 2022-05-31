@@ -266,7 +266,7 @@ impl<'a> PdfDocument<'a> {
 }
 
 impl<'a> Drop for PdfDocument<'a> {
-    /// Closes this PdfDocument, releasing held memory and, if the document was loaded
+    /// Closes this [PdfDocument], releasing held memory and, if the document was loaded
     /// from a file, the file handle on the document.
     #[inline]
     fn drop(&mut self) {

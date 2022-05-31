@@ -281,7 +281,7 @@ pub enum PdfPageContentRegenerationStrategy {
 /// A single page in a [PdfDocument].
 ///
 /// In addition to its own intrinsic properties, a [PdfPage] serves as the entry point
-/// to all object collections related to a single page in a PDF file.
+/// to all object collections related to a single page in a document.
 /// These collections include:
 /// * [PdfPage::annotations()], all the user annotations attached to the [PdfPage].
 /// * [PdfPage::boundaries()], all the boundary boxes relating to the [PdfPage].
@@ -586,7 +586,7 @@ impl<'a> PdfPage<'a> {
 
     /// Sets the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
     ///
-    /// Updates to a [PdfPage] are not committed to the underlying document until the page's
+    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
     /// content, any changes not applied are lost.
     ///
@@ -607,7 +607,7 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Marks this [PdfPage] as having staged but unsaved changes that are yet to be committed
-    /// to the underlying document.
+    /// to the underlying [PdfDocument].
     ///
     /// If this page's content regeneration strategy is `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange`,
     /// then the page's content will be generated immediately. Otherwise, the page will be flagged
@@ -623,9 +623,9 @@ impl<'a> PdfPage<'a> {
         }
     }
 
-    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying document.
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     ///
-    /// Updates to a [PdfPage] are not committed to the underlying document until the page's
+    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
     /// content, any changes not applied are lost.
     ///
@@ -663,7 +663,7 @@ impl<'a> PdfPage<'a> {
 }
 
 impl<'a> Drop for PdfPage<'a> {
-    /// Closes the [PdfPage], releasing held memory.
+    /// Closes this [PdfPage], releasing held memory.
     #[inline]
     fn drop(&mut self) {
         if self.regeneration_strategy != PdfPageContentRegenerationStrategy::Manual

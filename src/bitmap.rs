@@ -176,11 +176,11 @@ impl<'a> PdfBitmap<'a> {
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
-    pub fn as_image_data(&mut self) -> ImageData {
+    pub fn as_image_data(&mut self) -> Result<ImageData, JsValue> {
         ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(self.as_bytes()),
-            JsValue::from(self.width()),
-            JsValue::from(self.height()),
+            self.width(),
+            self.height(),
         )
     }
 

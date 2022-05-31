@@ -1,22 +1,21 @@
 #[cfg(target_arch = "wasm32")]
 use pdfium_render::prelude::*;
+
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::ImageData;
 
 // See https://github.com/ajrcarey/pdfium-render/tree/master/examples for information
 // on how to build and package this example alongside a WASM build of Pdfium, suitable
 // for running in a browser.
 
-// We embed the sample PDF file directly into our WASM binary.
-
-#[cfg(target_arch = "wasm32")]
-const PDF: &[u8] = include_bytes!("../test/form-test.pdf");
-
-/// Logs the width and height of each page in the sample PDF, along with other
-/// document metrics, to the Javascript console.
+/// Downloads the given url, opens it as a PDF document, then Logs the width and height of
+/// each page in the document, along with other document metrics, to the Javascript console.
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub fn log_page_metrics_to_console() {
+pub async fn log_page_metrics_to_console(url: String) {
     // Our only option when targeting WASM is to bind to the "system library"
     // (a separate WASM build of Pdfium).
 
@@ -24,7 +23,7 @@ pub fn log_page_metrics_to_console() {
 
     let pdfium = Pdfium::new(bindings);
 
-    let document = pdfium.load_pdf_from_bytes(PDF, None).unwrap();
+    let document = pdfium.load_pdf_from_fetch(url, None).await.unwrap();
 
     // Output metadata and form information for the PDF file to the console.
 
@@ -47,44 +46,51 @@ pub fn log_page_metrics_to_console() {
 
     // Report labels, boundaries, and metrics for each page to the console.
 
-    document.pages().iter().for_each(|page| {
-        if let Some(label) = page.label() {
-            log::info!("Page {} has a label: {}", page.index(), label);
-        }
+    document
+        .pages()
+        .iter()
+        .enumerate()
+        .for_each(|(index, page)| {
+            if let Some(label) = page.label() {
+                log::info!("Page {} has a label: {}", index, label);
+            }
 
-        log::info!(
-            "Page {} width: {}, height: {}",
-            page.index(),
-            page.width().value,
-            page.height().value
-        );
-
-        for boundary in page.boundaries().iter() {
             log::info!(
-                "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
-                page.index(),
-                boundary.box_type,
-                boundary.bounds.left.value,
-                boundary.bounds.top.value,
-                boundary.bounds.right.value,
-                boundary.bounds.bottom.value,
+                "Page {} width: {}, height: {}",
+                index,
+                page.width().value,
+                page.height().value
             );
-        }
 
-        log::info!(
-            "Page {} has paper size {:#?}",
-            page.index(),
-            page.paper_size()
-        );
-    });
+            for boundary in page.boundaries().iter() {
+                log::info!(
+                    "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
+                    index,
+                    boundary.box_type,
+                    boundary.bounds.left.value,
+                    boundary.bounds.top.value,
+                    boundary.bounds.right.value,
+                    boundary.bounds.bottom.value,
+                );
+            }
+
+            log::info!("Page {} has paper size {:#?}", index, page.paper_size());
+        });
 }
 
-/// Returns the raw image byte data for a nominated page in the PDF file.
+/// Downloads the given url, opens it as a PDF document, then returns the ImageData for
+/// the given page index using the given bitmap dimensions.
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub fn get_image_data_for_page(index: PdfPageIndex, width: u16, height: u16) -> Vec<u8> {
+pub async fn get_image_data_for_page(
+    url: String,
+    index: PdfPageIndex,
+    width: u16,
+    height: u16,
+) -> ImageData {
     Pdfium::new(Pdfium::bind_to_system_library().unwrap())
-        .load_pdf_from_bytes(PDF, None)
+        .load_pdf_from_fetch(url, None)
+        .await
         .unwrap()
         .pages()
         .get(index)
@@ -97,8 +103,8 @@ pub fn get_image_data_for_page(index: PdfPageIndex, width: u16, height: u16) -> 
                 .highlight_checkbox_form_fields(PdfColor::SOLID_BLUE.with_alpha(128)),
         )
         .unwrap()
-        .as_bytes()
-        .to_owned()
+        .as_image_data()
+        .unwrap()
 }
 
 // Source files in examples/ directory are expected to always have a main() entry-point.

@@ -30,7 +30,7 @@
 
                 // Load the wasm_bindgen-wrapped WASM module containing our Rust application.
 
-                wasm_bindgen('pdfium_render_wasm_example_bg.wasm').then(function () {
+                wasm_bindgen('pdfium_render_wasm_example_bg.wasm').then(async function () {
                     // The functions exported by our Rust application are now available.
 
                     // First, we call pdfium-render's exported initialize_pdfium_render() function,
@@ -40,24 +40,32 @@
 
                     const debug = false; // Set this to true to see more debugging information in the Javascript console.
 
+                    // URL of the target document. It will be retrieved over the network using
+                    // the browser's built-in fetch() function.
+
+                    const targetDocument = "./test.pdf";
+
                     console.assert(
                         initialize_pdfium_render(Module, debug),
                         "Initialization of pdfium-render failed!"
                     );
 
                     // Now we can call the Rust functions we exported in example/wasm.rs.
-                    // The first function dumps sizing metrics for each page to the console.
+                    // Both functions were defined as async, so we await both of them.
+                    // (Strictly speaking this is optional for the first function, since it
+                    // doesn't return a value.)
 
-                    log_page_metrics_to_console();
+                    // The first function dumps sizing metrics for each page in our target PDF file
+                    // to the console.
 
-                    // The second function generates the raw bitmap byte data for a single page in
-                    // a sample PDF file. We can use this byte data to render the page to an HTML canvas.
+                    await log_page_metrics_to_console(targetDocument);
 
-                    const pageIndex = 0; // Render the first page.
+                    // The second function generates the ImageData object for a single page in
+                    // our target PDF file. We can render this ImageData directly to an HTML canvas.
+
+                    const pageIndex = 0; // Zero-based index of the page we wish to render.
                     const width = 1414;
                     const height = 1999;
-
-                    const image_bytes = get_image_data_for_page(pageIndex, width, height);
 
                     const canvas = document.getElementById("canvas");
 
@@ -65,10 +73,10 @@
                     canvas.height = height;
 
                     const context = canvas.getContext("2d");
-                    const image = context.createImageData(width, height);
 
-                    image.data.set(image_bytes);
-                    context.putImageData(image, 0, 0);
+                    const imageData = await get_image_data_for_page(targetDocument, pageIndex, width, height);
+
+                    context.putImageData(imageData, 0, 0);
                 });
             };
         </script>

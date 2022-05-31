@@ -9,18 +9,18 @@ use std::os::raw::c_int;
 
 bitflags! {
     struct FpdfPermissions: u32 {
-        const RESERVED_BIT_1 =                          0b100000000000;
-        const RESERVED_BIT_2 =                          0b010000000000;
-        const CAN_PRINT_BIT_3 =                         0b001000000000;
-        const CAN_MODIFY_BIT_4 =                        0b000100000000;
-        const CAN_EXTRACT_TEXT_AND_GRAPHICS_BIT_5 =     0b000010000000;
-        const CAN_ANNOTATE_AND_FORM_FILL_BIT_6 =        0b000001000000;
-        const RESERVED_BIT_7 =                          0b000000100000;
-        const RESERVED_BIT_8 =                          0b000000010000;
-        const V3_CAN_FORM_FILL_BIT_9 =                  0b000000001000;
-        const V3_CAN_EXTRACT_TEXT_AND_GRAPHICS_BIT_10 = 0b000000000100;
-        const V3_CAN_ASSEMBLE_DOCUMENT_BIT_11 =         0b000000000010;
-        const V3_CAN_PRINT_HIGH_QUALITY_BIT_12 =        0b000000000001;
+        const RESERVED_BIT_1 =                          0b00000000000000000000000000000001;
+        const RESERVED_BIT_2 =                          0b00000000000000000000000000000010;
+        const CAN_PRINT_BIT_3 =                         0b00000000000000000000000000000100;
+        const CAN_MODIFY_BIT_4 =                        0b00000000000000000000000000001000;
+        const CAN_EXTRACT_TEXT_AND_GRAPHICS_BIT_5 =     0b00000000000000000000000000010000;
+        const CAN_ANNOTATE_AND_FORM_FILL_BIT_6 =        0b00000000000000000000000000100000;
+        const RESERVED_BIT_7 =                          0b00000000000000000000000001000000;
+        const RESERVED_BIT_8 =                          0b00000000000000000000000010000000;
+        const V3_CAN_FORM_FILL_BIT_9 =                  0b00000000000000000000000100000000;
+        const V3_CAN_EXTRACT_TEXT_AND_GRAPHICS_BIT_10 = 0b00000000000000000000001000000000;
+        const V3_CAN_ASSEMBLE_DOCUMENT_BIT_11 =         0b00000000000000000000010000000000;
+        const V3_CAN_PRINT_HIGH_QUALITY_BIT_12 =        0b00000000000000000000100000000000;
     }
 }
 

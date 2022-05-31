@@ -5,6 +5,9 @@ use crate::bindgen::{
     FPDF_ERR_UNKNOWN,
 };
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::JsValue;
+
 /// A wrapped internal library error from Pdfium's FPDF_ERR_* constant values.
 #[derive(Debug)]
 pub enum PdfiumInternalError {
@@ -58,8 +61,17 @@ pub enum PdfiumError {
     /// to a standard Rust u8.
     UnableToConvertPdfiumColorValueToRustu8(std::num::TryFromIntError),
 
-    /// The browser's `Window` object could not be retrieved.
+    /// The browser's built-in `Window` object could not be retrieved.
+    #[cfg(target_arch = "wasm32")]
     WebSysWindowObjectNotAvailable,
+
+    /// An error was returned when attempting to use the browser's built-in `fetch()` API.
+    #[cfg(target_arch = "wasm32")]
+    WebSysFetchError(JsValue),
+
+    /// An invalid Response object was returned when attempting to use the browser's built-in `fetch()` API.
+    #[cfg(target_arch = "wasm32")]
+    WebSysInvalidResponseError,
 
     /// An I/O error occurred during a Pdfium file operation.
     IoError(std::io::Error),
