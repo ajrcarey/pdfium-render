@@ -250,7 +250,7 @@ impl PdfPageOrientation {
 /// Content regeneration strategies that instruct `pdfium-render` when, if ever, it should
 /// automatically regenerate the content of a [PdfPage].
 ///
-/// Updates to a [PdfPage] are not committed to the underlying document until the page's
+/// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
 /// content is regenerated. If a page is reloaded or closed without regenerating the page's
 /// content, any changes not applied are lost.
 ///
@@ -645,7 +645,7 @@ impl<'a> PdfPage<'a> {
         self.regenerate_content_immut()
     }
 
-    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying document.
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
         if self
             .bindings

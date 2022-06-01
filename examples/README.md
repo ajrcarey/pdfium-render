@@ -17,14 +17,14 @@ Simple examples demonstrating how to use `pdfium-render` on both native and WASM
 Since `pdfium-render` does not include Pdfium itself, an external pre-packaged WASM build of `pdfium` is required. Suitable builds are available from https://github.com/paulocoutinhox/pdfium-lib/releases.
 
 * Build the WASM module for the sample: `cargo install wasm-pack && wasm-pack build examples/ --target no-modules`. This creates a WASM module and supporting Javascript files in `examples/pkg`.
-* Copy the `pdfium_render_wasm_example.js` and `pdfium_render_wasm_example_bg.wasm` files from `examples/pkg/` into a release folder.
+* Copy the `pdfium_render_wasm_example.js` and `pdfium_render_wasm_example_bg.wasm` files from `examples/pkg` into a release folder.
 * Download a pre-packaged WASM build from https://github.com/paulocoutinhox/pdfium-lib/releases and extract the `release/node/pdfium.js` and `release/node/pdfium.wasm` files into your release folder.
 * Copy the `index.html` file from `examples` into your release folder.
-* Copy a sample PDF file into your release folder and name it `test.pdf`. There are some suitable samples in https://github.com/ajrcarey/pdfium-render/tree/master/test.
+* Copy a sample PDF file into your release folder and name it `test.pdf`. Any well-formed, non-secured PDF is a suitable sample, including the test files in https://github.com/ajrcarey/pdfium-render/tree/master/test.
 * Optionally copy the `serve.sh` file from `examples` into your release folder; this is a tiny script that will spin up a development webserver for you using the `basic-http-server` crate. You can ignore this if you have another way of serving the files.
 * Serve the content from your release folder using a webserver or by running `serve.sh`. If you use `serve.sh`, then the content will be available at http://localhost:4000.
 
-You should see the sizes of each individual page in `test/form-test.pdf` logged to the Javascript console, and the first page in the file will be rendered into an HTML canvas element.
+You should see the sizes of each individual page in your sample file logged to the Javascript console, and the first page in the file will be rendered into an HTML canvas element.
 
 Comments in the `index.html` file explain how to instantiate both the compiled Pdfium and the example
 WASM modules and bind them together dynamically at run time. The basic recipe is simple:

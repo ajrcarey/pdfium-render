@@ -80,7 +80,7 @@ With this release, it is now possible to create a new PDF document from scratch,
 (either by creating them from scratch, or by importing them from other documents), add new text objects
 to those pages, and output the newly created document to a file.
 
-The initial editing focus has been on providing full creation and editing support for text objects.
+The initial editing focus has been on providing creation and editing support for text objects.
 Later 0.7.x releases will add similar support for creating and editing images, paths, and the other
 types of page objects supported by Pdfium.
  
@@ -204,8 +204,10 @@ Some additional convenience functions are available when compiling to WASM:
 
 * The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API
 to download a URL over the network and open it as a PDF document.
+* The `Pdfium::load_pdf_from_blob()` function opens a PDF document from the byte data in a Javascript
+`Blob` or `File` object, including `File` objects returned from an `<input type="file">` element. 
 * The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
-ready to display in an HTML `canvas` element.
+ready to display in an HTML `<canvas>` element.
 
 ## Optional features
 

@@ -4,14 +4,22 @@
 use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmarks::PdfBookmarks;
-use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::error::PdfiumError;
 use crate::form::PdfForm;
 use crate::metadata::PdfMetadata;
 use crate::pages::PdfPages;
 use crate::permissions::PdfPermissions;
-use crate::utils::files::{get_pdfium_file_writer_from_writer, FpdfFileAccessExt};
-use std::io::Write;
+use crate::utils::files::FpdfFileAccessExt;
 use std::os::raw::c_int;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::utils::files::get_pdfium_file_writer_from_writer;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::error::PdfiumInternalError;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::io::Write;
 
 /// The file version of a [PdfDocument].
 ///
@@ -219,6 +227,9 @@ impl<'a> PdfDocument<'a> {
     }
 
     /// Writes this [PdfDocument] to the given writer.
+    ///
+    /// This function is not available when compiling to WASM.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn save_to_writer<W: Write>(&self, writer: W) -> Result<(), PdfiumError> {
         // TODO: AJRC - 25/5/22 - investigate supporting the FPDF_INCREMENTAL, FPDF_NO_INCREMENTAL,
         // and FPDF_REMOVE_SECURITY flags defined in fpdf_save.h. There's not a lot of information

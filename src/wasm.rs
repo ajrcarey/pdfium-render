@@ -1,10 +1,10 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
-    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
+    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use js_sys::{Array, Function, Object, Reflect, Uint8Array};
@@ -44,6 +44,8 @@ pub struct PdfiumRenderWasmState {
     malloc_js_fn: Option<Function>,
     free_js_fn: Option<Function>,
     call_js_fn: Option<Function>,
+    add_js_fn: Option<Function>,
+    remove_js_fn: Option<Function>,
     debug: bool,
     state: HashMap<String, JsValue>,
 }
@@ -90,6 +92,16 @@ impl PdfiumRenderWasmState {
         self.call_js_fn = Some(Function::from(
             Reflect::get(&module, &JsValue::from("ccall"))
                 .map_err(|_| "Module.ccall() not defined")?,
+        ));
+
+        self.add_js_fn = Some(Function::from(
+            Reflect::get(&module, &JsValue::from("addFunction"))
+                .map_err(|_| "Module.addFunction() not defined")?,
+        ));
+
+        self.remove_js_fn = Some(Function::from(
+            Reflect::get(&module, &JsValue::from("removeFunction"))
+                .map_err(|_| "Module.removeFunction() not defined")?,
         ));
 
         // We don't define a fixed binding to it, but check now that the Module.HEAPU8 accessor works.
@@ -480,10 +492,62 @@ impl PdfiumRenderWasmState {
     /// We instead create a new FPDF_FILEACCESS struct in Pdfium's WASM heap that contains
     /// a wrapper function that serves as a conduit between Pdfium's memory heap and the
     /// callback function in our own local WASM heap.
-    fn copy_file_access_to_pdfium(&self, _file_access: *mut FPDF_FILEACCESS) -> usize {
-        // TODO: AJRC - 10/2/22 - https://github.com/ajrcarey/pdfium-render/issues/8
-        // AJRC - 27/5/22 - this can probably be built into utils::read_block_from_callback()
-        todo!()
+    fn copy_file_access_to_pdfium(&self, file_access: *mut FPDF_FILEACCESS) -> usize {
+        // TODO: AJRC - 1/6/22 - tracking issue: https://github.com/ajrcarey/pdfium-render/issues/8
+        // In theory, the approach below could work; but it's academic so long as
+        // emscripten's Module.addFunction() utility isn't actually exposed by Pdfium.
+
+        // Only Javascript has simultaneous access to both Pdfium's WASM heap and our
+        // own local WASM heap, so the conduit function we provide must be a Javascript function.
+        // We can use emscripten's Module.addFunction() utility to get a C-style function pointer
+        // from a Javascript function or closure; see:
+        // https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
+
+        // First, create a Javascript closure that can be invoked as a callback from Pdfium.
+
+        let callback = Closure::once_into_js(Box::new(
+            move |param: *mut c_void, position: c_ulong, pBuf: *mut c_uchar, size: c_ulong| {
+                // TODO: AJRC - 1/6/22 - once Pdfium calls back into Javascript, Javascript
+                // passes control to this Rust closure. We could then theoretically transfer buffers
+                // between Pdfium's WASM memory heap and our own.
+            },
+        ));
+
+        // Make the Javascript closure available to Pdfium using emscripten's
+        // Module.addFunction() utility. This gives us a callback pointer (in Pdfium's WASM heap)
+        // that we can pass to Pdfium.
+
+        let callback_ptr = self
+            .add_js_fn
+            .as_ref()
+            .unwrap()
+            .call2(&JsValue::null(), &callback, &JsValue::from_str("viiii"))
+            .map(|result| result.as_f64().unwrap())
+            .unwrap() as usize;
+
+        let file_access_with_js_callback = unsafe {
+            FPDF_FILEACCESS {
+                m_FileLen: (*file_access).m_FileLen,
+                m_GetBlock: Some(
+                    // Transmute our callback pointer (which is just a usize right now)
+                    // into a function pointer.
+                    std::mem::transmute::<
+                        usize,
+                        unsafe extern "C" fn(
+                            param: *mut c_void,
+                            position: c_ulong,
+                            pBuf: *mut c_uchar,
+                            size: c_ulong,
+                        ) -> c_int,
+                    >(callback_ptr),
+                ),
+                m_Param: (*file_access).m_Param,
+            }
+        };
+
+        let file_access_ptr = self.copy_struct_to_pdfium(&file_access_with_js_callback);
+
+        file_access_ptr
     }
 
     /// Calls FPDF_GetLastError(), returning the result.
@@ -533,6 +597,8 @@ impl Default for PdfiumRenderWasmState {
             malloc_js_fn: None,
             free_js_fn: None,
             call_js_fn: None,
+            add_js_fn: None,
+            remove_js_fn: None,
             debug: false,
             state: HashMap::new(),
         }
@@ -925,39 +991,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_LoadMemDocument64(): leaving");
 
         result
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_LoadCustomDocument(
-        &self,
-        _pFileAccess: *mut FPDF_FILEACCESS,
-        _password: Option<&str>,
-    ) -> FPDF_DOCUMENT {
-        todo!()
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_SaveAsCopy(
-        &self,
-        _document: FPDF_DOCUMENT,
-        _pFileWrite: *mut FPDF_FILEWRITE,
-        _flags: FPDF_DWORD,
-    ) -> FPDF_BOOL {
-        todo!()
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_SaveWithVersion(
-        &self,
-        _document: FPDF_DOCUMENT,
-        _pFileWrite: *mut FPDF_FILEWRITE,
-        _flags: FPDF_DWORD,
-        _fileVersion: c_int,
-    ) -> FPDF_BOOL {
-        todo!()
     }
 
     #[inline]

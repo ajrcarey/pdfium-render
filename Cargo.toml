@@ -25,13 +25,13 @@ log = "^0"
 utf16string = "^0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = { version = "^0", features = ["enable-interning"] }
-wasm-bindgen-futures = { version = "^0" }
-js-sys = "^0"
-web-sys = { version = "^0", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
 lazy_static = "^1"
 console_log = "^0"
 console_error_panic_hook = "^0"
+js-sys = "^0"
+wasm-bindgen = { version = "^0", features = ["enable-interning"] }
+wasm-bindgen-futures = { version = "^0" }
+web-sys = { version = "^0", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 libloading = "^0"

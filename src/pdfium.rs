@@ -3,8 +3,6 @@
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::{PdfDocument, PdfDocumentVersion};
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::utils::files::get_pdfium_file_accessor_from_reader;
-use std::io::{Read, Seek};
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use std::ffi::OsString;
@@ -12,13 +10,17 @@ use std::ffi::OsString;
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use libloading::Library;
 
-#[cfg(not(target_arch = "wasm32"))]
-#[cfg(not(feature = "static"))]
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use crate::native::NativePdfiumBindings;
 
-#[cfg(not(target_arch = "wasm32"))]
-#[cfg(feature = "static")]
+#[cfg(all(not(target_arch = "wasm32"), feature = "static"))]
 use crate::linked::StaticPdfiumBindings;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::utils::files::get_pdfium_file_accessor_from_reader;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::io::{Read, Seek};
 
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings};
@@ -145,12 +147,12 @@ impl Pdfium {
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading your PDF document data in WASM:
-    ///
-    /// * Use the [Pdfium::load_pdf_from_reader()] function to stream document data into Pdfium
-    /// using a standard Rust reader.
     /// * Use the `Pdfium::load_pdf_from_fetch()` function to download document data from a
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
+    /// * Use the `Pdfium::load_pdf_from_blob()` function to load document data from a
+    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
     /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
@@ -187,6 +189,20 @@ impl Pdfium {
     /// the `Read` trait.
     ///
     /// If the document is password protected, the given password will be used to unlock it.
+    ///
+    /// This function is not available when compiling to WASM. You have several options for
+    /// loading your PDF document data in WASM:
+    /// * Use the `Pdfium::load_pdf_from_fetch()` function to download document data from a
+    /// URL using the browser's built-in `fetch()` API. This function is only available when
+    /// compiling to WASM.
+    /// * Use the `Pdfium::load_pdf_from_blob()` function to load document data from a
+    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// `<input type="file">` element). This function is only available when compiling to WASM.
+    /// * Use another method to retrieve the bytes of the target document over the network,
+    /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
+    /// * Embed the bytes of the target document directly into the compiled WASM module
+    /// using the `include_bytes!()` macro.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_reader<R: Read + Seek + 'static>(
         &self,
         reader: R,
@@ -210,6 +226,8 @@ impl Pdfium {
 
     /// Attempts to open a [PdfDocument] by loading document data from the given URL.
     /// The Javascript `fetch()` API is used to download data over the network.
+    ///
+    /// If the document is password protected, the given password will be used to unlock it.
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
@@ -235,19 +253,40 @@ impl Pdfium {
                     .map_err(PdfiumError::WebSysFetchError)?
                     .into();
 
-            let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
-                .await
-                .map_err(PdfiumError::WebSysFetchError)?
-                .into();
-
-            let u8_array: Uint8Array = Uint8Array::new(&array_buffer);
-
-            let bytes: Vec<u8> = u8_array.to_vec();
-
-            self.load_pdf_from_bytes(bytes.as_slice(), password)
+            self.load_pdf_from_blob(blob, password).await
         } else {
             Err(PdfiumError::WebSysWindowObjectNotAvailable)
         }
+    }
+
+    /// Attempts to open a [PdfDocument] by loading document data from the given Blob.
+    /// A File object returned from a FileList is a suitable Blob:
+    ///
+    /// ```
+    /// <input id="filePicker" type="file">
+    ///
+    /// const file = document.getElementById('filePicker').files[0];
+    /// ```
+    ///
+    /// If the document is password protected, the given password will be used to unlock it.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub async fn load_pdf_from_blob<'a>(
+        &'a self,
+        blob: Blob,
+        password: Option<&str>,
+    ) -> Result<PdfDocument<'a>, PdfiumError> {
+        let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
+            .await
+            .map_err(PdfiumError::WebSysFetchError)?
+            .into();
+
+        let u8_array: Uint8Array = Uint8Array::new(&array_buffer);
+
+        let bytes: Vec<u8> = u8_array.to_vec();
+
+        self.load_pdf_from_bytes(bytes.as_slice(), password)
     }
 
     /// Creates a new, empty [PdfDocument] in memory.

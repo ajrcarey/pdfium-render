@@ -185,15 +185,6 @@ pub(crate) mod files {
         buf: *mut c_uchar,
         size: c_ulong,
     ) -> c_int {
-        #[cfg(target_arch = "wasm32")]
-        {
-            // TODO: AJRC - 27/5/22 - for WASM, we need to deal with indirection: the buffer
-            // provided by Pdfium is in a different WASM address space from the one in which
-            // we are currently running.
-
-            todo!()
-        }
-
         unsafe {
             let reader = (*file_access_ptr).reader.as_mut();
 
@@ -258,15 +249,6 @@ pub(crate) mod files {
         buf: *const c_void,
         size: c_ulong,
     ) -> c_int {
-        #[cfg(target_arch = "wasm32")]
-        {
-            // TODO: AJRC - 27/5/22 - for WASM, we need to deal with indirection: the buffer
-            // provided by Pdfium is in a different WASM address space from the one in which
-            // we are currently running.
-
-            todo!()
-        }
-
         unsafe {
             match (*file_write_ext_ptr)
                 .writer
