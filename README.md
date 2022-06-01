@@ -73,8 +73,7 @@ into `pdfium-render`. This release includes the following improvements to the hi
 * Adds additional properties and functions to all page objects, including setting and reading of
 colors, strokes, fills, and blend modes, and object positioning, rotation, scaling, and skewing.
 * Adds the `PdfPermissions` collection, allowing reading of security handlers and permissions for a document.
-* Adds support for loading and saving of PDF documents to WASM - no longer is it necessary to embed
-documents directly into the compiled WASM module.
+* Adds additional convenience functions for loading documents over the network when compiling to WASM.
 
 With this release, it is now possible to create a new PDF document from scratch, add pages to it
 (either by creating them from scratch, or by importing them from other documents), add new text objects
