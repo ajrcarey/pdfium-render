@@ -1314,6 +1314,61 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPath_MoveTo(path, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPath_LineTo(path, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_BezierTo(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        x1: c_float,
+        y1: c_float,
+        x2: c_float,
+        y2: c_float,
+        x3: c_float,
+        y3: c_float,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPath_BezierTo(path, x1, y1, x2, y2, x3, y3) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPath_Close(path) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_SetDrawMode(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        fillmode: c_int,
+        stroke: FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPath_SetDrawMode(path, fillmode, stroke) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_GetDrawMode(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        fillmode: *mut c_int,
+        stroke: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPath_GetDrawMode(path, fillmode, stroke) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFPageObj_NewTextObj(
         &self,
         document: FPDF_DOCUMENT,

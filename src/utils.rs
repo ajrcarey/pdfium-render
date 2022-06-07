@@ -121,6 +121,8 @@ pub(crate) mod files {
     /// **This function is _probably_ thread-safe.** However, Pdfium itself makes no
     /// guarantees around being safe for multi-threading, and so it is not recommended
     /// to run multiple read operations on separate threads simultaneously.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+    // This field is never used when compiling to WASM.
     pub(crate) fn get_pdfium_file_accessor_from_reader<R: Read + Seek + 'static>(
         mut reader: R,
     ) -> Box<FpdfFileAccessExt> {
@@ -153,11 +155,10 @@ pub(crate) mod files {
 
     impl<R: Read + Seek> PdfiumDocumentReader for R {}
 
-    // An extension of Pdfium's FPDF_FILEACCESS struct that adds an extra field to carry the
-    // user-provided Rust reader.
-
     #[repr(C)]
     pub(crate) struct FpdfFileAccessExt {
+        // An extension of Pdfium's FPDF_FILEACCESS struct that adds an extra field to carry the
+        // user-provided Rust reader.
         content_length: c_ulong,
         get_block: Option<
             unsafe extern "C" fn(
@@ -173,13 +174,16 @@ pub(crate) mod files {
 
     impl FpdfFileAccessExt {
         /// Returns an `FPDF_FILEACCESS` pointer suitable for passing to `FPDF_LoadCustomDocument()`.
+        #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+        // This field is never used when compiling to WASM.
         #[inline]
         pub(crate) fn as_fpdf_file_access_mut_ptr(&mut self) -> &mut FPDF_FILEACCESS {
             unsafe { &mut *(self as *mut FpdfFileAccessExt as *mut FPDF_FILEACCESS) }
         }
     }
 
-    extern "C" fn read_block_from_callback(
+    // The callback function invoked by Pdfium.
+    pub(crate) extern "C" fn read_block_from_callback(
         file_access_ptr: *mut FpdfFileAccessExt,
         position: c_ulong,
         buf: *mut c_uchar,
@@ -205,36 +209,49 @@ pub(crate) mod files {
     /// **This function is _probably_ thread-safe.** However, Pdfium itself makes no
     /// guarantees around being safe for multi-threading, and so it is not recommended
     /// to run multiple write operations on separate threads simultaneously.
-    pub(crate) fn get_pdfium_file_writer_from_writer<W: Write>(writer: W) -> FpdfFileWriteExt<W> {
+    pub(crate) fn get_pdfium_file_writer_from_writer<W: Write + 'static>(
+        writer: &mut W,
+    ) -> FpdfFileWriteExt {
         FpdfFileWriteExt {
             version: 1,
             write_block: Some(write_block_from_callback),
-            writer: Box::new(writer),
+            writer,
         }
     }
 
-    // An extension of Pdfium's FPDF_FILEWRITE struct that adds an extra field to carry the
-    // user-provided Rust writer.
+    trait PdfiumDocumentWriter: Write {
+        // A tiny trait that lets us perform type-erasure on the user-provided Rust writer.
+        // This means FpdfFileWriteExt does not need to carry a generic parameter, which simplifies
+        // callback overloading in the WASM bindings implementation.
+
+        // Additionally, since Pdfium's save operations are synchronous and immediate, we do
+        // not need to take ownership of the user-provided Rust writer; a temporary mutable
+        // reference is sufficient.
+    }
+
+    impl<W: Write> PdfiumDocumentWriter for W {}
 
     #[repr(C)]
-    pub(crate) struct FpdfFileWriteExt<W: Write> {
+    pub(crate) struct FpdfFileWriteExt<'a> {
+        // An extension of Pdfium's FPDF_FILEWRITE struct that adds an extra field to carry the
+        // user-provided Rust writer.
         version: c_int,
         write_block: Option<
             unsafe extern "C" fn(
-                file_write_ext_ptr: *mut FpdfFileWriteExt<W>,
+                file_write_ext_ptr: *mut FpdfFileWriteExt,
                 buf: *const c_void,
                 size: c_ulong,
             ) -> c_int,
         >,
-        writer: Box<W>,
+        writer: &'a mut dyn PdfiumDocumentWriter, // Type-erased equivalent of <W: Write>
     }
 
-    impl<W: Write> FpdfFileWriteExt<W> {
+    impl<'a> FpdfFileWriteExt<'a> {
         /// Returns an `FPDF_FILEWRITE` pointer suitable for passing to `FPDF_SaveAsCopy()`
         /// or `FPDF_SaveWithVersion()`.
         #[inline]
         pub(crate) fn as_fpdf_file_write_mut_ptr(&mut self) -> &mut FPDF_FILEWRITE {
-            unsafe { &mut *(self as *mut FpdfFileWriteExt<W> as *mut FPDF_FILEWRITE) }
+            unsafe { &mut *(self as *mut FpdfFileWriteExt as *mut FPDF_FILEWRITE) }
         }
 
         /// Flushes the buffer of the underlying Rust writer.
@@ -244,20 +261,22 @@ pub(crate) mod files {
         }
     }
 
-    extern "C" fn write_block_from_callback<W: Write>(
-        file_write_ext_ptr: *mut FpdfFileWriteExt<W>,
+    // The callback function invoked by Pdfium.
+    pub(crate) extern "C" fn write_block_from_callback(
+        file_write_ext_ptr: *mut FpdfFileWriteExt,
         buf: *const c_void,
         size: c_ulong,
     ) -> c_int {
-        unsafe {
+        let result = unsafe {
             match (*file_write_ext_ptr)
                 .writer
-                .as_mut()
                 .write_all(slice::from_raw_parts(buf as *const u8, size as usize))
             {
                 Ok(()) => 1,
                 Err(_) => 0,
             }
-        }
+        };
+
+        result
     }
 }

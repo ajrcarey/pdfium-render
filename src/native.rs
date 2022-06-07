@@ -165,6 +165,12 @@ impl NativePdfiumBindings {
         result.extern_FPDFText_LoadFont()?;
         result.extern_FPDFText_LoadStandardFont()?;
         result.extern_FPDFFont_Close()?;
+        result.extern_FPDFPath_MoveTo()?;
+        result.extern_FPDFPath_LineTo()?;
+        result.extern_FPDFPath_BezierTo()?;
+        result.extern_FPDFPath_Close()?;
+        result.extern_FPDFPath_SetDrawMode()?;
+        result.extern_FPDFPath_GetDrawMode()?;
         result.extern_FPDFPage_InsertObject()?;
         result.extern_FPDFPage_RemoveObject()?;
         result.extern_FPDFPage_CountObjects()?;
@@ -2163,6 +2169,92 @@ impl NativePdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(font: FPDF_FONT)>, libloading::Error> {
         unsafe { self.library.get(b"FPDFFont_Close\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_MoveTo(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPath_MoveTo\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_LineTo(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPath_LineTo\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_BezierTo(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                path: FPDF_PAGEOBJECT,
+                x1: c_float,
+                y1: c_float,
+                x2: c_float,
+                y2: c_float,
+                x3: c_float,
+                y3: c_float,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPath_BezierTo\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_Close(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(path: FPDF_PAGEOBJECT) -> FPDF_BOOL>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFPath_Close\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_SetDrawMode(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                path: FPDF_PAGEOBJECT,
+                fillmode: c_int,
+                stroke: FPDF_BOOL,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPath_SetDrawMode\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_GetDrawMode(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                path: FPDF_PAGEOBJECT,
+                fillmode: *mut c_int,
+                stroke: *mut FPDF_BOOL,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPath_GetDrawMode\0") }
     }
 
     #[inline]
@@ -4492,6 +4584,61 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFFont_Close(&self, font: FPDF_FONT) {
         unsafe { self.extern_FPDFFont_Close().unwrap()(font) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPath_MoveTo().unwrap()(path, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPath_LineTo().unwrap()(path, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_BezierTo(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        x1: c_float,
+        y1: c_float,
+        x2: c_float,
+        y2: c_float,
+        x3: c_float,
+        y3: c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPath_BezierTo().unwrap()(path, x1, y1, x2, y2, x3, y3) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPath_Close().unwrap()(path) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_SetDrawMode(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        fillmode: c_int,
+        stroke: FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPath_SetDrawMode().unwrap()(path, fillmode, stroke) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_GetDrawMode(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        fillmode: *mut c_int,
+        stroke: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPath_GetDrawMode().unwrap()(path, fillmode, stroke) }
     }
 
     #[inline]

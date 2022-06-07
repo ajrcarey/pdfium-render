@@ -3,10 +3,13 @@
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::color::PdfColor;
+use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
-use crate::page::{PdfPage, PdfPoints};
+use crate::page::{PdfPage, PdfPoints, PdfRect};
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
+use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
 use std::ops::{Range, RangeInclusive};
@@ -43,6 +46,12 @@ impl<'a> PdfPageObjects<'a> {
             bindings,
             do_regenerate_page_content_after_each_change: false,
         }
+    }
+
+    /// Returns the internal `FPDF_PAGE` handle for the [PdfPage] containing this [PdfPageObjects] collection.
+    #[inline]
+    pub(crate) fn get_page_handle(&self) -> &FPDF_PAGE {
+        &self.page_handle
     }
 
     /// Sets whether or not this [PdfPageObjects] collection should trigger content regeneration
@@ -131,16 +140,7 @@ impl<'a> PdfPageObjects<'a> {
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        self.bindings
-            .FPDFPage_InsertObject(self.page_handle, *object.get_handle());
-
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            // Update the object's ownership.
-
-            object.set_object_memory_owned_by_page(self.page_handle);
-
+        object.add_object_to_page(self).and_then(|_| {
             if self.do_regenerate_page_content_after_each_change {
                 self.bindings.FPDFPage_GenerateContent(self.page_handle);
 
@@ -152,7 +152,7 @@ impl<'a> PdfPageObjects<'a> {
             } else {
                 Ok(object)
             }
-        }
+        })
     }
 
     /// Adds the given [PdfPageTextObject] to this [PdfPageObjects] collection,
@@ -161,6 +161,7 @@ impl<'a> PdfPageObjects<'a> {
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
+    #[inline]
     pub fn add_text_object(
         &mut self,
         object: PdfPageTextObject<'a>,
@@ -196,6 +197,195 @@ impl<'a> PdfPageObjects<'a> {
         self.add_text_object(object)
     }
 
+    /// Adds the given [PdfPagePathObject] to this [PdfPageObjects] collection,
+    /// returning the path object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn add_path_object(
+        &mut self,
+        object: PdfPagePathObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.add_object(PdfPageObject::Path(object))
+    }
+
+    /// Creates a new [PdfPagePathObject] for the given line, with the given
+    /// stroke settings applied. The new path object will be added to this [PdfPageObjects] collection
+    /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    pub fn create_path_object_line(
+        &mut self,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_line_from_bindings(
+            self.bindings,
+            x1,
+            y1,
+            x2,
+            y2,
+            stroke_color,
+            stroke_width,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    /// Creates a new [PdfPagePathObject] for the given rectangle, with the given
+    /// fill and stroke settings applied. Both the stroke color and the stroke width must be
+    /// provided for the rectangle to be stroked. The new path object will be added to
+    /// this [PdfPageObjects] collection and then returned, wrapped inside a generic
+    /// [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    pub fn create_path_object_rect(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_rect_from_bindings(
+            self.bindings,
+            rect,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with a circle that fills
+    /// the given rectangle, with the given fill and stroke settings applied. Both the stroke color
+    /// and the stroke width must be provided for the circle to be stroked. The new path object
+    /// will be added to this [PdfPageObjects] collection and then returned, wrapped inside a generic
+    /// [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    pub fn create_path_object_circle(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_circle_from_bindings(
+            self.bindings,
+            rect,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with a circle centered
+    /// at the given coordinates, with the given radius, and with the given fill and stroke settings
+    /// applied. Both the stroke color and the stroke width must be provided for the circle to be
+    /// stroked. The new path object will be added to this [PdfPageObjects] collection and then
+    /// returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    pub fn create_path_object_circle_at(
+        &mut self,
+        center_x: PdfPoints,
+        center_y: PdfPoints,
+        radius: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_circle_at_from_bindings(
+            self.bindings,
+            center_x,
+            center_y,
+            radius,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with an ellipse that fills
+    /// the given rectangle, with the given fill and stroke settings applied. Both the stroke color
+    /// and the stroke width must be provided for the ellipse to be stroked. The new path object
+    /// will be added to this [PdfPageObjects] collection and then returned, wrapped inside a generic
+    /// [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    pub fn create_path_object_ellipse(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_ellipse_from_bindings(
+            self.bindings,
+            rect,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with an ellipse centered
+    /// at the given coordinates, with the given radii, and with the given fill and stroke settings
+    /// applied. Both the stroke color and the stroke width must be provided for the ellipse to be
+    /// stroked. The new path object will be added to this [PdfPageObjects] collection and then
+    /// returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_path_object_ellipse_at(
+        &mut self,
+        center_x: PdfPoints,
+        center_y: PdfPoints,
+        x_radius: PdfPoints,
+        y_radius: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_ellipse_at_from_bindings(
+            self.bindings,
+            center_x,
+            center_y,
+            x_radius,
+            y_radius,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
     /// Deletes the given [PdfPageObject] from this [PdfPageObjects] collection. The object's
     /// memory ownership will be removed from the [PdfPage] containing this [PdfPageObjects]
     /// collection, and the updated page object will be returned. It can be added back to a
@@ -209,14 +399,7 @@ impl<'a> PdfPageObjects<'a> {
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if self.bindings.is_true(
-            self.bindings
-                .FPDFPage_RemoveObject(self.page_handle, *object.get_handle()),
-        ) {
-            // Update the object's ownership.
-
-            object.set_object_memory_released_by_page();
-
+        object.remove_object_from_page().and_then(|_| {
             if self.do_regenerate_page_content_after_each_change {
                 self.bindings.FPDFPage_GenerateContent(self.page_handle);
 
@@ -228,13 +411,7 @@ impl<'a> PdfPageObjects<'a> {
             } else {
                 Ok(object)
             }
-        } else {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
-            ))
-        }
+        })
     }
 
     /// Deletes the [PdfPageObject] at the given index from this [PdfPageObjects] collection.
@@ -278,102 +455,6 @@ impl<'a> PdfPageObjects<'a> {
         }
     }
 
-    /// Copies a single page object with the given source page object index from the given
-    /// source [PdfPage], adding the object to the end of this [PdfPageObjects] collection.
-    ///
-    /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
-    /// Pdfium does not currently support or recognize the External Object ("XObject") page object
-    /// type supported by Adobe Acrobat and Foxit's commercial PDF SDK. If the page object is
-    /// of a type not supported by Pdfium, it will be silently ignored and not copied.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    pub fn copy_object_from_page(
-        &mut self,
-        source: &'a PdfPage<'a>,
-        source_page_object_index: PdfPageObjectIndex,
-    ) -> Result<(), PdfiumError> {
-        self.copy_object_range_from_page(
-            source,
-            source_page_object_index..=source_page_object_index,
-        )
-    }
-
-    /// Copies one or more page objects with the given range of indices from the given
-    /// source [PdfPage], adding the objects sequentially to the end of this
-    /// [PdfPageObjects] collection.
-    ///
-    /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
-    /// Pdfium does not currently support or recognize the External Object ("XObject") page object
-    /// type supported by Adobe Acrobat and Foxit's commercial PDF SDK. Page objects not supported
-    /// by Pdfium will be silently ignored by this function and will not copied.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    pub fn copy_object_range_from_page(
-        &mut self,
-        source: &'a PdfPage<'a>,
-        source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
-    ) -> Result<(), PdfiumError> {
-        for index in source_page_object_range {
-            let object = source.objects().get(index)?;
-
-            let clone = match object {
-                PdfPageObject::Text(ref object) => Some(self.create_text_object(
-                    object.bounds()?.left,
-                    object.bounds()?.bottom,
-                    object.text(),
-                    &object.font(),
-                    object.font_size(),
-                )?),
-                // TODO: AJRC - 30/5/22 - inline cloning of all supported page object types
-                // PdfPageObject::Path(_) => {}
-                // PdfPageObject::Image(_) => {}
-                // PdfPageObject::Shading(_) => {}
-                // PdfPageObject::FormFragment(_) => {}
-                PdfPageObject::Unsupported(_) => None,
-                _ => unimplemented!(),
-            };
-
-            if let Some(clone) = clone {
-                self.add_object(clone)?;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Copies all page objects in the given [PdfPage] into this [PdfPageObjects] collection,
-    /// appending them to the end of this [PdfPageObjects] collection.
-    ///
-    /// For finer control over which page objects are imported, use one of the
-    /// [PdfPageObjects::copy_object_from_page()] or
-    /// [PdfPageObjects::copy_object_range_from_page()] functions. To drain page objects
-    /// from the given [PdfPage] rather than copying them, use the [PdfPageObjects::take_all()] function.
-    ///
-    /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
-    /// Pdfium does not currently support or recognize the External Object ("XObject") page object
-    /// type supported by Adobe Acrobat and Foxit's commercial PDF SDK. Page objects not supported
-    /// by Pdfium will be silently ignored by this function and will not copied.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    ///
-    /// Calling this function is equivalent to
-    ///
-    /// ```
-    /// self.import_object_range_from_page(
-    ///     page, // Source
-    ///     page.objects().as_range_inclusive(), // Select all page objects
-    /// );
-    /// ```
-    pub fn copy_all(&mut self, page: &'a PdfPage<'a>) -> Result<(), PdfiumError> {
-        self.copy_object_range_from_page(page, page.objects().as_range_inclusive())
-    }
-
     /// Removes a single page object with the given source page object index from the given
     /// source [PdfPage], adding the object to the end of this [PdfPageObjects] collection.
     ///
@@ -408,27 +489,35 @@ impl<'a> PdfPageObjects<'a> {
     /// will be triggered on the source page.
     pub fn take_object_range_from_page(
         &mut self,
-        source: &mut PdfPage<'a>,
+        source: &'a mut PdfPage<'a>,
         source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
     ) -> Result<(), PdfiumError> {
-        for index in source_page_object_range {
-            let mut object = source.objects_mut().delete_object_at_index(index)?;
+        self.take_object_range_from_handles(
+            *source.get_handle(),
+            source.get_document(),
+            source_page_object_range,
+        )
+    }
 
-            // Update the object's ownership.
+    // Take a raw FPDF_PAGE handle to avoid cascading lifetime problems associated with borrowing
+    // &'a mut PdfPage<'a>.
+    pub(crate) fn take_object_range_from_handles(
+        &mut self,
+        page: FPDF_PAGE,
+        document: &PdfDocument,
+        source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
+    ) -> Result<(), PdfiumError> {
+        let source = PdfPage::from_pdfium(page, None, document, self.bindings);
 
-            object.set_object_memory_owned_by_page(self.page_handle);
+        // Make sure we iterate over the range backwards. The collection's length will reduce
+        // each time we remove an object from it, and we must avoid overflow or Pdfium may segfault.
 
-            // Avoid a lifetime ownership problem when transferring the object from one collection
-            // to another by dropping the object and creating a new one from the same handle.
+        for index in source_page_object_range.rev() {
+            let mut object = source.objects().get(index)?;
 
-            self.add_object(PdfPageObject::from_pdfium(
-                *object.get_handle(),
-                self.page_handle,
-                self.bindings,
-            ))?;
+            object.remove_object_from_page()?;
+            object.add_object_to_page(self)?;
         }
-
-        source.set_content_regeneration_required();
 
         Ok(())
     }
@@ -436,11 +525,6 @@ impl<'a> PdfPageObjects<'a> {
     /// Removes all page objects in the given [PdfPage] into this [PdfPageObjects] collection,
     /// appending them to the end of this [PdfPageObjects] collection. The given [PdfPage]
     /// will be drained of all page objects once this operation is completed.
-    ///
-    /// For finer control over which page objects are imported, use one of the
-    /// [PdfPageObjects::take_object_from_page()] or
-    /// [PdfPageObjects::take_object_range_from_page()] functions. To copy page objects
-    /// from the given [PdfPage] rather than removing them, use the [PdfPageObjects::copy_all()] function.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
@@ -458,8 +542,8 @@ impl<'a> PdfPageObjects<'a> {
     ///     page.objects().as_range_inclusive(), // Select all page objects
     /// );
     /// ```
-    pub fn take_all(&mut self, page: &'a mut PdfPage<'a>) -> Result<(), PdfiumError> {
-        self.take_object_range_from_page(page, page.objects().as_range_inclusive())
+    pub fn take_all(&mut self, source: &'a mut PdfPage<'a>) -> Result<(), PdfiumError> {
+        self.take_object_range_from_page(source, source.objects().as_range_inclusive())
     }
 }
 

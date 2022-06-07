@@ -20,7 +20,13 @@ use crate::linked::StaticPdfiumBindings;
 use crate::utils::files::get_pdfium_file_accessor_from_reader;
 
 #[cfg(not(target_arch = "wasm32"))]
+use std::fs::File;
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::io::{Read, Seek};
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::Path;
 
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings};
@@ -140,6 +146,17 @@ impl Pdfium {
         Self { bindings }
     }
 
+    /// Attempts to open a [PdfDocument] from the given byte buffer.
+    ///
+    /// If the document is password protected, the given password will be used to unlock it.
+    pub fn load_pdf_from_bytes(
+        &self,
+        bytes: &[u8],
+        password: Option<&str>,
+    ) -> Result<PdfDocument, PdfiumError> {
+        self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadMemDocument64(bytes, password))
+    }
+
     /// Attempts to open a [PdfDocument] from the given file path.
     ///
     /// If the document is password protected, the given password will be used
@@ -160,21 +177,10 @@ impl Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_file(
         &self,
-        path: &str,
+        path: &(impl AsRef<Path> + ?Sized),
         password: Option<&str>,
     ) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadDocument(path, password))
-    }
-
-    /// Attempts to open a [PdfDocument] from the given byte buffer.
-    ///
-    /// If the document is password protected, the given password will be used to unlock it.
-    pub fn load_pdf_from_bytes(
-        &self,
-        bytes: &[u8],
-        password: Option<&str>,
-    ) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadMemDocument64(bytes, password))
+        self.load_pdf_from_reader(File::open(path).map_err(PdfiumError::IoError)?, password)
     }
 
     /// Attempts to open a [PdfDocument] from the given reader.
@@ -188,7 +194,8 @@ impl Pdfium {
     /// any portion of it, the given reader must implement the `Seek` trait as well as
     /// the `Read` trait.
     ///
-    /// If the document is password protected, the given password will be used to unlock it.
+    /// If the document is password protected, the given password will be used
+    /// to unlock it.
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading your PDF document data in WASM:

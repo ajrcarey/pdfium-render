@@ -4,19 +4,16 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
+    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
+    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::error::PdfiumInternalError;
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
 use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
-
-#[cfg(not(target_arch = "wasm32"))]
-use crate::bindgen::FPDF_FILEWRITE;
 
 /// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
@@ -99,10 +96,9 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT;
 
-    /// This function is not available when compiling to WASM. You must use the
-    /// [PdfiumLibraryBindings::FPDF_LoadMemDocument()] function instead.
-    /// Convenience functions that load documents via the Javascript `fetch()` API or from
-    /// Javascript `File` and `Blob` objects are available in the `Pdfium` struct.
+    /// This function is not available when compiling to WASM. You must use one of the
+    /// [PdfiumLibraryBindings::FPDF_LoadMemDocument()], [PdfiumLibraryBindings::FPDF_LoadMemDocument64()],
+    /// or [PdfiumLibraryBindings::FPDF_LoadCustomDocument()] functions instead.
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
@@ -118,11 +114,6 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
 
-    /// This function is not available when compiling to WASM. You must use the
-    /// [PdfiumLibraryBindings::FPDF_LoadMemDocument()] function instead.
-    /// Convenience functions that load documents via the Javascript `fetch()` API or from
-    /// Javascript `File` and `Blob` objects are available in the `Pdfium` struct.
-    #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn FPDF_LoadCustomDocument(
         &self,
@@ -130,8 +121,6 @@ pub trait PdfiumLibraryBindings {
         password: Option<&str>,
     ) -> FPDF_DOCUMENT;
 
-    /// This function is not available when compiling to WASM.
-    #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn FPDF_SaveAsCopy(
         &self,
@@ -140,8 +129,6 @@ pub trait PdfiumLibraryBindings {
         flags: FPDF_DWORD,
     ) -> FPDF_BOOL;
 
-    /// This function is not available when compiling to WASM.
-    #[cfg(not(target_arch = "wasm32"))]
     #[allow(non_snake_case)]
     fn FPDF_SaveWithVersion(
         &self,
@@ -959,6 +946,44 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFFont_Close(&self, font: FPDF_FONT);
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn FPDFPath_BezierTo(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        x1: c_float,
+        y1: c_float,
+        x2: c_float,
+        y2: c_float,
+        x3: c_float,
+        y3: c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_SetDrawMode(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        fillmode: c_int,
+        stroke: FPDF_BOOL,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_GetDrawMode(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        fillmode: *mut c_int,
+        stroke: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewTextObj(

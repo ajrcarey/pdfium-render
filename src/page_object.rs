@@ -1,6 +1,7 @@
 //! Defines the [PdfPageObject] enum, exposing functionality related to a single page object.
 
 use crate::bindgen::{
+    FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING,
     FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND, FPDF_LINEJOIN_BEVEL,
     FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJ_FORM,
     FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING, FPDF_PAGEOBJ_TEXT,
@@ -8,7 +9,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
-use crate::error::PdfiumError;
+use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object_form_fragment::PdfPageFormFragmentObject;
 use crate::page_object_image::PdfPageImageObject;
@@ -17,6 +18,7 @@ use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_shading::PdfPageShadingObject;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_object_unsupported::PdfPageUnsupportedObject;
+use crate::page_objects::PdfPageObjects;
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
@@ -25,7 +27,7 @@ use std::os::raw::{c_int, c_uint};
 /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
 /// Pdfium does not currently support or recognize the External Object ("XObject") page object
 /// type supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium
-/// will return `PdfPageObjectType::Unsupported`.
+/// will return [PdfPageObjectType::Unsupported].
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub enum PdfPageObjectType {
     Unsupported = FPDF_PAGEOBJ_UNKNOWN as isize,
@@ -236,6 +238,80 @@ impl PdfPageObjectLineCap {
             PdfPageObjectLineCap::Round => FPDF_LINECAP_ROUND,
             PdfPageObjectLineCap::Square => FPDF_LINECAP_PROJECTING_SQUARE,
         }
+    }
+}
+
+/// Sets the method used to determine the path region to fill.
+///
+/// The default fill mode used by `pdfium-render` when creating new [PdfPagePathObject]
+/// instances is [PdfPageObjectFillMode::Winding]. The fill mode can be changed on an
+/// object-by-object basis by calling the [PdfPageObjectCommon::set_fill_and_stroke_mode()] function.
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum PdfPageObjectFillMode {
+    /// The path will not be filled.
+    None = FPDF_FILLMODE_NONE as isize,
+
+    /// The even-odd rule will be used to determine the path region to fill.
+    ///
+    /// The even-odd rule determines whether a point is inside a path by drawing a ray from that
+    /// point in any direction and simply counting the number of path segments that cross the
+    /// ray, regardless of direction. If this number is odd, the point is inside; if even, the
+    /// point is outside. This yields the same results as the nonzero winding number rule
+    /// for paths with simple shapes, but produces different results for more complex shapes.
+    ///
+    /// More information, including visual examples, can be found in Section 4.4.2 of
+    /// The PDF Reference Manual, version 1.7, on page 233.
+    EvenOdd = FPDF_FILLMODE_ALTERNATE as isize,
+
+    /// The non-zero winding number rule will be used to determine the path region to fill.
+    ///
+    /// The nonzero winding number rule determines whether a given point is inside a
+    /// path by conceptually drawing a ray from that point to infinity in any direction
+    /// and then examining the places where a segment of the path crosses the ray. Start-
+    /// ing with a count of 0, the rule adds 1 each time a path segment crosses the ray
+    /// from left to right and subtracts 1 each time a segment crosses from right to left.
+    /// After counting all the crossings, if the result is 0, the point is outside the path;
+    /// otherwise, it is inside.
+    ///
+    /// This is the default fill mode used by `pdfium-render` when creating new [PdfPagePathObject]
+    /// instances. The fill mode can be changed on an object-by-object basis by calling the
+    /// [PdfPageObjectCommon::set_fill_and_stroke_mode()] function.
+    ///
+    /// More information, including visual examples, can be found in Section 4.4.2 of
+    /// The PDF Reference Manual, version 1.7, on page 232.
+    Winding = FPDF_FILLMODE_WINDING as isize,
+}
+
+impl PdfPageObjectFillMode {
+    #[inline]
+    pub(crate) fn from_pdfium(value: c_int) -> Result<PdfPageObjectFillMode, PdfiumError> {
+        match value as u32 {
+            FPDF_FILLMODE_NONE => Ok(PdfPageObjectFillMode::None),
+            FPDF_FILLMODE_ALTERNATE => Ok(PdfPageObjectFillMode::EvenOdd),
+            FPDF_FILLMODE_WINDING => Ok(PdfPageObjectFillMode::Winding),
+            _ => Err(PdfiumError::UnknownPdfPagePathFillMode),
+        }
+    }
+
+    #[inline]
+    #[allow(dead_code)]
+    // The as_pdfium() function is not currently used, but we expect it to be in future
+    pub(crate) fn as_pdfium(&self) -> c_uint {
+        match self {
+            PdfPageObjectFillMode::None => FPDF_FILLMODE_NONE,
+            PdfPageObjectFillMode::EvenOdd => FPDF_FILLMODE_ALTERNATE,
+            PdfPageObjectFillMode::Winding => FPDF_FILLMODE_WINDING,
+        }
+    }
+}
+
+impl Default for PdfPageObjectFillMode {
+    /// Returns the default fill mode used when creating new [PdfPagePathObject]
+    /// instances. The fill mode can be changed on an object-by-object basis by calling the
+    /// [PdfPageObjectCommon::set_fill_and_stroke_mode()] function.
+    #[inline]
+    fn default() -> Self {
+        PdfPageObjectFillMode::Winding
     }
 }
 
@@ -522,19 +598,24 @@ pub trait PdfPageObjectCommon<'a> {
     }
 
     /// Sets the blend mode that will be applied when painting this [PdfPageObject].
+    ///
+    /// Note that Pdfium does not currently expose a function to read the currently set blend mode.
     fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode);
 
     /// Returns the color of any filled paths in this [PdfPageObject].
     fn fill_color(&self) -> Result<PdfColor, PdfiumError>;
 
     /// Sets the color of any filled paths in this [PdfPageObject].
-    fn set_fill_color(&self, fill_color: PdfColor) -> Result<(), PdfiumError>;
+    fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError>;
 
     /// Returns the color of any stroked lines in this [PdfPageObject].
     fn stroke_color(&self) -> Result<PdfColor, PdfiumError>;
 
     /// Sets the color of any stroked lines in this [PdfPageObject].
-    fn set_stroke_color(&self, stroke_color: PdfColor) -> Result<(), PdfiumError>;
+    ///
+    /// Even if this object's path is set with a visible color and a non-zero stroke width,
+    /// the object's stroke mode must be set in order for strokes to actually be visible.
+    fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError>;
 
     /// Returns the width of any stroked lines in this [PdfPageObject].
     fn stroke_width(&self) -> Result<PdfPoints, PdfiumError>;
@@ -545,7 +626,10 @@ pub trait PdfPageObjectCommon<'a> {
     /// 1 device pixel wide. However, some devices cannot reproduce 1-pixel lines,
     /// and on high-resolution devices, they are nearly invisible. Since the results of rendering
     /// such zero-width lines are device-dependent, their use is not recommended.
-    fn set_stroke_width(&self, stroke_width: PdfPoints) -> Result<(), PdfiumError>;
+    ///
+    /// Even if this object's path is set with a visible color and a non-zero stroke width,
+    /// the object's stroke mode must be set in order for strokes to actually be visible.
+    fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Returns the line join style that will be used when painting stroked path segments
     /// in this [PdfPageObject].
@@ -553,7 +637,7 @@ pub trait PdfPageObjectCommon<'a> {
 
     /// Sets the line join style that will be used when painting stroked path segments
     /// in this [PdfPageObject].
-    fn set_line_join(&self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError>;
+    fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError>;
 
     /// Returns the line cap style that will be used when painting stroked path segments
     /// in this [PdfPageObject].
@@ -561,7 +645,29 @@ pub trait PdfPageObjectCommon<'a> {
 
     /// Sets the line join style that will be used when painting stroked path segments
     /// in this [PdfPageObject].
-    fn set_line_cap(&self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError>;
+    fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError>;
+
+    /// Returns the method used to determine which subpaths of any path in this [PdfPageObject]
+    /// should be filled.
+    fn fill_mode(&self) -> Result<PdfPageObjectFillMode, PdfiumError>;
+
+    /// Returns `true` if this [PdfPageObject] will be stroked, regardless of the path's
+    /// stroke settings.
+    ///
+    /// Even if this path is set to be stroked, the stroke must be configured with a visible color
+    /// and a non-zero width in order to actually be visible.
+    fn is_stroked(&self) -> Result<bool, PdfiumError>;
+
+    /// Sets the method used to determine which subpaths of any path in this [PdfPageObject]
+    /// should be filled, and whether or not any path in this [PdfPageObject] should be stroked.
+    ///
+    /// Even if this object's path is set to be stroked, the stroke must be configured with
+    /// a visible color and a non-zero width in order to actually be visible.
+    fn set_fill_and_stroke_mode(
+        &mut self,
+        fill_mode: PdfPageObjectFillMode,
+        do_stroke: bool,
+    ) -> Result<(), PdfiumError>;
 }
 
 // Blanket implementation for all PdfPageObject types.
@@ -625,7 +731,7 @@ where
         }
     }
 
-    fn set_fill_color(&self, fill_color: PdfColor) -> Result<(), PdfiumError> {
+    fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPageObj_SetFillColor(
@@ -676,7 +782,7 @@ where
         }
     }
 
-    fn set_stroke_color(&self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
+    fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPageObj_SetStrokeColor(
@@ -706,7 +812,7 @@ where
         }
     }
 
-    fn set_stroke_width(&self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
+    fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
         if self.get_bindings().is_true(
             self.get_bindings()
                 .FPDFPageObj_SetStrokeWidth(*self.get_handle(), stroke_width.value),
@@ -725,7 +831,7 @@ where
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
 
-    fn set_line_join(&self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
+    fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
         if self.get_bindings().is_true(
             self.get_bindings()
                 .FPDFPageObj_SetLineJoin(*self.get_handle(), line_join.as_pdfium() as c_int),
@@ -744,7 +850,7 @@ where
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
 
-    fn set_line_cap(&self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
+    fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
         if self.get_bindings().is_true(
             self.get_bindings()
                 .FPDFPageObj_SetLineCap(*self.get_handle(), line_cap.as_pdfium() as c_int),
@@ -752,6 +858,75 @@ where
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
+        }
+    }
+
+    fn fill_mode(&self) -> Result<PdfPageObjectFillMode, PdfiumError> {
+        let mut raw_fill_mode: c_int = 0;
+
+        let mut _raw_stroke: FPDF_BOOL = self.get_bindings().FALSE();
+
+        if self
+            .get_bindings()
+            .is_true(self.get_bindings().FPDFPath_GetDrawMode(
+                *self.get_handle(),
+                &mut raw_fill_mode,
+                &mut _raw_stroke,
+            ))
+        {
+            PdfPageObjectFillMode::from_pdfium(raw_fill_mode)
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    fn is_stroked(&self) -> Result<bool, PdfiumError> {
+        let mut _raw_fill_mode: c_int = 0;
+
+        let mut raw_stroke: FPDF_BOOL = self.get_bindings().FALSE();
+
+        if self
+            .get_bindings()
+            .is_true(self.get_bindings().FPDFPath_GetDrawMode(
+                *self.get_handle(),
+                &mut _raw_fill_mode,
+                &mut raw_stroke,
+            ))
+        {
+            Ok(self.get_bindings().is_true(raw_stroke))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    fn set_fill_and_stroke_mode(
+        &mut self,
+        fill_mode: PdfPageObjectFillMode,
+        do_stroke: bool,
+    ) -> Result<(), PdfiumError> {
+        if self
+            .get_bindings()
+            .is_true(self.get_bindings().FPDFPath_SetDrawMode(
+                *self.get_handle(),
+                fill_mode.as_pdfium() as c_int,
+                self.get_bindings().bool_to_pdfium(do_stroke),
+            ))
+        {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
         }
     }
 }
@@ -773,32 +948,32 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 
     #[inline]
-    fn set_object_memory_owned_by_page(&mut self, page: FPDF_PAGE) {
+    fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
         // Trying to define a self.unwrap_as_trait_mut() fn gets us into all sorts of
         // arguments with the borrow checker. It's easier just to unwrap the inner object inline.
 
         match self {
-            PdfPageObject::Text(object) => object.set_object_memory_owned_by_page(page),
-            PdfPageObject::Path(object) => object.set_object_memory_owned_by_page(page),
-            PdfPageObject::Image(object) => object.set_object_memory_owned_by_page(page),
-            PdfPageObject::Shading(object) => object.set_object_memory_owned_by_page(page),
-            PdfPageObject::FormFragment(object) => object.set_object_memory_owned_by_page(page),
-            PdfPageObject::Unsupported(object) => object.set_object_memory_owned_by_page(page),
+            PdfPageObject::Text(object) => object.add_object_to_page(page_objects),
+            PdfPageObject::Path(object) => object.add_object_to_page(page_objects),
+            PdfPageObject::Image(object) => object.add_object_to_page(page_objects),
+            PdfPageObject::Shading(object) => object.add_object_to_page(page_objects),
+            PdfPageObject::FormFragment(object) => object.add_object_to_page(page_objects),
+            PdfPageObject::Unsupported(object) => object.add_object_to_page(page_objects),
         }
     }
 
     #[inline]
-    fn set_object_memory_released_by_page(&mut self) {
+    fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
         // Trying to define a self.unwrap_as_trait_mut() fn gets us into all sorts of
         // arguments with the borrow checker. It's easier just to unwrap the inner object inline.
 
         match self {
-            PdfPageObject::Text(object) => object.set_object_memory_released_by_page(),
-            PdfPageObject::Path(object) => object.set_object_memory_released_by_page(),
-            PdfPageObject::Image(object) => object.set_object_memory_released_by_page(),
-            PdfPageObject::Shading(object) => object.set_object_memory_released_by_page(),
-            PdfPageObject::FormFragment(object) => object.set_object_memory_released_by_page(),
-            PdfPageObject::Unsupported(object) => object.set_object_memory_released_by_page(),
+            PdfPageObject::Text(object) => object.remove_object_from_page(),
+            PdfPageObject::Path(object) => object.remove_object_from_page(),
+            PdfPageObject::Image(object) => object.remove_object_from_page(),
+            PdfPageObject::Shading(object) => object.remove_object_from_page(),
+            PdfPageObject::FormFragment(object) => object.remove_object_from_page(),
+            PdfPageObject::Unsupported(object) => object.remove_object_from_page(),
         }
     }
 }

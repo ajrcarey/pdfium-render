@@ -1,7 +1,7 @@
 # Idiomatic Rust bindings for Pdfium
 
-`pdfium-render` provides an idiomatic high-level Rust interface around the low-level bindings to
-Pdfium provided by the excellent `pdfium-sys` crate.
+`pdfium-render` provides an idiomatic high-level Rust interface to Pdfium, the C++ PDF library
+used by the Google Chromium project.
 
 ```
     use pdfium_render::prelude::*;
@@ -39,26 +39,22 @@ Pdfium provided by the excellent `pdfium-sys` crate.
     }
 ```
 
-In addition to providing a more natural interface to Pdfium, `pdfium-render` differs from
-`pdfium-sys` in several other important ways:
+`pdfium-render` binds to a Pdfium library at run-time, allowing for run-time selection of
+system-provided or bundled Pdfium libraries and providing idiomatic Rust error handling in
+situations where a Pdfium library is not available. A key advantage of binding to Pdfium at run-time
+rather than compile-time is that a Rust application using `pdfium-render` can be compiled to WASM
+for running in a browser alongside a WASM-packaged build of Pdfium.
 
-* `pdfium-render` uses `libloading` to late bind to a Pdfium library at run-time, allowing for
-  run-time selection of system-provided or bundled Pdfium libraries and providing idiomatic
-  Rust error handling in situations where a Pdfium library is not available. This differs from
-  `pdfium-sys` which early binds to a Pdfium library at compile-time; the application will crash
-  if the library cannot be found at run-time.
-* Late binding to Pdfium means that `pdfium-render` can be compiled to WASM for running in a
-  browser; this is not possible with `pdfium-sys`.
-* Pdfium itself is architected as a set of separate modules, each covering a different aspect of
-  PDF creation, rendering, and editing. `pdfium-sys` only provides bindings for the subset of
-  functions exposed by Pdfium's view module; `pdfium-render` aims to ultimately provide bindings
-  to all non-interactive functions exposed by all Pdfium modules, including document creation and
-  editing functions. This is a work in progress. 
-* Pages rendered by Pdfium can be exported as instances of `Image::DynamicImage` for easy,
-  idiomatic post-processing.
+Pdfium itself is architected as a set of separate modules, each covering a different aspect of
+PDF document creation, rendering, and editing. `pdfium-render` aims to ultimately provide bindings
+to all non-interactive functions exposed by all Pdfium modules, including document creation and
+editing functions. This is a work in progress. 
 
-Examples demonstrating page rendering, text extraction, page object introspection, 
-creation of new documents, document concatenation, multi-page tiled output, and compiling to WASM
+## Examples
+
+A variety of short, commented examples that demonstrate all the major Pdfium document handling
+features -- rendering pages to bitmaps, text extraction, page object introspection, dynamic
+creation of new documents, document concatenation, multi-page tiled output, and compiling to WASM --
 are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 ## What's new
@@ -73,7 +69,7 @@ into `pdfium-render`. This release includes the following improvements to the hi
 * Adds additional properties and functions to all page objects, including setting and reading of
 colors, strokes, fills, and blend modes, and object positioning, rotation, scaling, and skewing.
 * Adds the `PdfPermissions` collection, allowing reading of security handlers and permissions for a document.
-* Adds additional convenience functions for loading documents over the network when compiling to WASM.
+* Adds additional convenience functions for loading and saving documents when compiling to WASM.
 
 With this release, it is now possible to create a new PDF document from scratch, add pages to it
 (either by creating them from scratch, or by importing them from other documents), add new text objects
@@ -82,6 +78,8 @@ to those pages, and output the newly created document to a file.
 The initial editing focus has been on providing creation and editing support for text objects.
 Later 0.7.x releases will add similar support for creating and editing images, paths, and the other
 types of page objects supported by Pdfium.
+
+Version 0.7.1 adds basic path support and construction of path segments.
  
 ## Porting existing Pdfium code from other languages
 
@@ -199,12 +197,24 @@ See <https://github.com/ajrcarey/pdfium-render/tree/master/examples> for a full 
 how to bundle a Rust application using `pdfium-render` alongside a pre-built Pdfium WASM module for
 inspection and rendering of PDF files in a web browser.
 
-Some additional convenience functions are available when compiling to WASM:
+The `Pdfium::load_pdf_from_file()` and `Pdfium::load_pdf_from_reader()` functions are not available
+when running in the browser. The `Pdfium::load_pdf_from_bytes()` function is available, and
+the following additional functions are provided:
 
 * The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API
 to download a URL over the network and open it as a PDF document.
 * The `Pdfium::load_pdf_from_blob()` function opens a PDF document from the byte data in a Javascript
 `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element. 
+
+The `PdfDocument::save_to_file()` function is not available when running in the browser.
+The `PdfDocument::save_to_bytes()` and `PdfDocument::save_to_writer()` functions are
+available, and the following additional function is provided:
+
+* The `PdfDocument::save_to_blob()` function returns the byte data for the document as a
+Javascript `Blob` object.
+
+The following additional function is provided during rendering:
+
 * The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
 ready to display in an HTML `<canvas>` element.
 
@@ -221,7 +231,7 @@ Neither feature is enabled by default.
 
 ## Development status
 
-The initial focus of this crate was been on rendering pages in a PDF file; consequently, `FPDF_*`
+The initial focus of this crate was on rendering pages in a PDF file; consequently, `FPDF_*`
 functions related to page rendering were prioritised. By 1.0, the functionality of all
 `FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain
 functions specific to interactive scripting, user interaction, and printing.
@@ -232,9 +242,10 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all other Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.0.
 
-By version 0.8.0, `pdfium-render` should provide useful coverage for all but the most esoteric use cases.
+By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
+use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.0, 206 (56%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.1, 222 (60%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -242,9 +253,11 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.1: adds path segment creation to the `PdfPagePathObject` object, rectangle and circle
+  convenience functions, and the `PdfPageObjects::add_path_object()` function.
 * 0.7.0: adds `PdfPermissions` collection, adds document loading and saving support, adds
-initial creation and editing support for documents, pages, and text objects,
-and improves WASM document file handling.
+  initial creation and editing support for documents, pages, and text objects,
+  and improves WASM document file handling.
 * 0.6.0: fixes some typos in documentation, updates upstream Pdfium WASM package source repository name.
 * 0.5.9: corrects a bug in the statically linked bindings implementation. Adjusted tests
   to cover both dynamic and statically linked bindings implementations.

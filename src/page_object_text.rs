@@ -18,6 +18,7 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page::PdfPoints;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::page_objects::PdfPageObjects;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 
@@ -88,8 +89,8 @@ impl PdfPageTextRenderMode {
 
     #[inline]
     #[allow(dead_code)]
-    // The to_pdfium() function is not currently used, but we expect it to be in future
-    pub(crate) fn to_pdfium(self) -> FPDF_TEXT_RENDERMODE {
+    // The as_pdfium() function is not currently used, but we expect it to be in future
+    pub(crate) fn as_pdfium(&self) -> FPDF_TEXT_RENDERMODE {
         match self {
             PdfPageTextRenderMode::Unknown => FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_UNKNOWN,
             PdfPageTextRenderMode::FilledUnstroked => FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL,
@@ -330,9 +331,22 @@ impl<'a> PdfPageTextObject<'a> {
     }
 
     /// Sets the text rendering mode for the text contained within this [PdfPageTextObject].
-    pub fn set_render_mode(&mut self, render_mode: PdfPageTextRenderMode) {
-        self.get_bindings()
-            .FPDFTextObj_SetTextRenderMode(self.object_handle, render_mode.to_pdfium());
+    pub fn set_render_mode(
+        &mut self,
+        render_mode: PdfPageTextRenderMode,
+    ) -> Result<(), PdfiumError> {
+        if self.get_bindings().is_true(
+            self.get_bindings()
+                .FPDFTextObj_SetTextRenderMode(self.object_handle, render_mode.as_pdfium()),
+        ) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
     }
 }
 
@@ -352,15 +366,41 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
         self.is_object_memory_owned_by_page
     }
 
-    #[inline]
-    fn set_object_memory_owned_by_page(&mut self, page: FPDF_PAGE) {
-        self.page_handle = Some(page);
-        self.is_object_memory_owned_by_page = true;
+    fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
+        let page_handle = *page_objects.get_page_handle();
+
+        self.bindings
+            .FPDFPage_InsertObject(page_handle, self.object_handle);
+
+        if let Some(error) = self.bindings.get_pdfium_last_error() {
+            Err(PdfiumError::PdfiumLibraryInternalError(error))
+        } else {
+            self.page_handle = Some(page_handle);
+            self.is_object_memory_owned_by_page = true;
+
+            Ok(())
+        }
     }
 
-    #[inline]
-    fn set_object_memory_released_by_page(&mut self) {
-        self.page_handle = None;
-        self.is_object_memory_owned_by_page = false;
+    fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
+        if let Some(page_handle) = self.page_handle {
+            if self.bindings.is_true(
+                self.bindings
+                    .FPDFPage_RemoveObject(page_handle, self.object_handle),
+            ) {
+                self.page_handle = None;
+                self.is_object_memory_owned_by_page = false;
+
+                Ok(())
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    self.bindings
+                        .get_pdfium_last_error()
+                        .unwrap_or(PdfiumInternalError::Unknown),
+                ))
+            }
+        } else {
+            Err(PdfiumError::PageObjectNotAttachedToPage)
+        }
     }
 }

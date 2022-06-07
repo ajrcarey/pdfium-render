@@ -32,6 +32,7 @@ pub enum PdfiumError {
     #[cfg(not(target_arch = "wasm32"))]
     LoadLibraryError(libloading::Error),
 
+    UnrecognizedPath,
     PageIndexOutOfBounds,
     UnknownBitmapFormat,
     UnknownBitmapRotation,
@@ -39,12 +40,15 @@ pub enum PdfiumError {
     UnknownFormFieldType,
     UnknownActionType,
     PageObjectIndexOutOfBounds,
+    PageObjectNotAttachedToPage,
     PageAnnotationIndexOutOfBounds,
     PageFlattenFailure,
     UnknownPdfPageObjectType,
     UnknownPdfPageTextRenderMode,
+    UnknownPdfPagePathFillMode,
     UnknownPdfAnnotationType,
     UnknownPdfSecurityHandlerRevision,
+    UnsupportedPdfPageObjectType,
 
     /// A call to a internal Pdfium `FPDF_*` function returned a value indicating failure.
     ///
@@ -62,7 +66,6 @@ pub enum PdfiumError {
     UnableToConvertPdfiumColorValueToRustu8(std::num::TryFromIntError),
 
     /// The browser's built-in `Window` object could not be retrieved.
-    #[cfg(target_arch = "wasm32")]
     WebSysWindowObjectNotAvailable,
 
     /// An error was returned when attempting to use the browser's built-in `fetch()` API.
@@ -72,6 +75,31 @@ pub enum PdfiumError {
     /// An invalid Response object was returned when attempting to use the browser's built-in `fetch()` API.
     #[cfg(target_arch = "wasm32")]
     WebSysInvalidResponseError,
+
+    /// An error was returned when attempting to construct a `Blob` object from a byte buffer.
+    #[cfg(target_arch = "wasm32")]
+    JsSysErrorConstructingBlobFromBytes,
+
+    /// An error occurred when attempting to retrieve the function table for the compiled
+    /// Pdfium WASM module.
+    #[cfg(target_arch = "wasm32")]
+    JsSysErrorRetrievingFunctionTable(JsValue),
+
+    /// An error occurred when attempting to retrieve an exported function from
+    /// `pdfium-render`'s WASM module.
+    #[cfg(target_arch = "wasm32")]
+    JsSysErrorRetrievingFunction(JsValue),
+
+    /// An error occurred when attempting to update an entry in Pdfium's WASM function table.
+    #[cfg(target_arch = "wasm32")]
+    JsSysErrorPatchingFunctionTable(JsValue),
+
+    /// No previously cached function was available for a WASM function table restore operation.
+    ///
+    /// This error should never occur; if it does, it indicates a programming error in pdfium-render.
+    /// Please file an issue: https://github.com/ajrcarey/pdfium-render/issues
+    #[cfg(target_arch = "wasm32")]
+    NoPreviouslyCachedFunctionSet,
 
     /// An I/O error occurred during a Pdfium file operation.
     IoError(std::io::Error),

@@ -1,5 +1,4 @@
 use pdfium_render::prelude::*;
-use std::fs::File;
 
 fn main() {
     // For general comments about pdfium-render and binding to Pdfium, see comments in export.rs.
@@ -51,7 +50,7 @@ fn main() {
                 .pages()
                 .tile_into_new_document(2, 3, PdfPagePaperSize::a3().landscape())
                 .unwrap()
-                .save_to_writer(File::create("test/tile-test.pdf").unwrap())
+                .save_to_file("test/tile-test.pdf")
                 .unwrap();
         }
         Err(err) => eprintln!("Error loading pdfium library: {:#?}", err),

@@ -10,7 +10,7 @@
         <canvas id="canvas" style="max-width: 100%; height: auto; border: 1px solid black;"></canvas>
 
         <script>
-            // Initialize Pdfium's emscripten-wrapped WASM module.
+            // Initialize Pdfium's Emscripten-wrapped WASM module.
 
             Module.onRuntimeInitialized = async _ => {
                 // Pdfium's WASM module has now been loaded and initialized. We can now
@@ -20,7 +20,7 @@
 
                 // In addition to any functions exported by our Rust application, pdfium-render will
                 // always export an initialization function, initialize_pdfium_render(),
-                // which must be called from Javascript prior to the use of any Pdfium functionality.
+                // which _must_ be called from Javascript prior to the use of any Pdfium functionality.
 
                 const {
                     initialize_pdfium_render,
@@ -30,33 +30,30 @@
 
                 // Load the wasm_bindgen-wrapped WASM module containing our Rust application.
 
-                wasm_bindgen('pdfium_render_wasm_example_bg.wasm').then(async function () {
+                wasm_bindgen('pdfium_render_wasm_example_bg.wasm').then(async function (rustModule) {
                     // The functions exported by our Rust application are now available.
 
                     // First, we call pdfium-render's exported initialize_pdfium_render() function,
-                    // passing in the Pdfium WASM module and, optionally, a debug flag.
-                    // pdfium-render will bind to the functions it needs, returning a boolean value
-                    // indicating success or failure.
-
-                    const debug = false; // Set this to true to see more debugging information in the Javascript console.
-
-                    // URL of the target document. It will be retrieved over the network using
-                    // the browser's built-in fetch() function.
-
-                    const targetDocument = "./test.pdf";
+                    // passing in the WASM modules for both Pdfium and our Rust code, along with a debug flag.
+                    // pdfium-render will bind to the functions it needs from the Pdfium WASM module and
+                    // return a boolean value indicating success or failure.
 
                     console.assert(
-                        initialize_pdfium_render(Module, debug),
+                        initialize_pdfium_render(
+                        	Module, // Emscripten-wrapped Pdfium WASM module
+                        	rustModule, // wasm_bindgen-wrapped WASM module built from our Rust application
+                        	false, // Debugging flag - set this to true to get tracing information logged to the Javascript console
+                    	),
                         "Initialization of pdfium-render failed!"
                     );
 
                     // Now we can call the Rust functions we exported in example/wasm.rs.
-                    // Both functions were defined as async, so we await both of them.
-                    // (Strictly speaking this is optional for the first function, since it
-                    // doesn't return a value.)
 
                     // The first function dumps sizing metrics for each page in our target PDF file
-                    // to the console.
+                    // to the console. The file will be retrieved over the network using the browser's
+                    // built-in fetch() function.
+                    
+                    const targetDocument = "./test.pdf";
 
                     await log_page_metrics_to_console(targetDocument);
 

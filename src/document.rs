@@ -5,21 +5,31 @@ use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmarks::PdfBookmarks;
 use crate::error::PdfiumError;
+use crate::error::PdfiumInternalError;
 use crate::form::PdfForm;
 use crate::metadata::PdfMetadata;
 use crate::pages::PdfPages;
 use crate::permissions::PdfPermissions;
+use crate::utils::files::get_pdfium_file_writer_from_writer;
 use crate::utils::files::FpdfFileAccessExt;
+use std::io::Cursor;
+use std::io::Write;
 use std::os::raw::c_int;
 
 #[cfg(not(target_arch = "wasm32"))]
-use crate::utils::files::get_pdfium_file_writer_from_writer;
+use std::fs::File;
 
 #[cfg(not(target_arch = "wasm32"))]
-use crate::error::PdfiumInternalError;
+use std::path::Path;
 
-#[cfg(not(target_arch = "wasm32"))]
-use std::io::Write;
+#[cfg(target_arch = "wasm32")]
+use js_sys::{Array, Uint8Array};
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::JsValue;
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::Blob;
 
 /// The file version of a [PdfDocument].
 ///
@@ -118,6 +128,9 @@ pub struct PdfDocument<'a> {
     form: Option<PdfForm<'a>>,
     bindings: &'a dyn PdfiumLibraryBindings,
     output_version: Option<PdfDocumentVersion>,
+
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+    // This field is never used when compiling to WASM.
     file_access_reader: Option<Box<FpdfFileAccessExt>>,
 }
 
@@ -150,6 +163,8 @@ impl<'a> PdfDocument<'a> {
 
     /// Binds an `FPDF_FILEACCESS` reader to the lifetime of this [PdfDocument], so that
     /// it will always be available for Pdfium to read data from as needed.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+    // This function is never used when compiling to WASM.
     #[inline]
     pub(crate) fn set_file_access_reader(&mut self, reader: Box<FpdfFileAccessExt>) {
         self.file_access_reader = Some(reader);
@@ -210,7 +225,6 @@ impl<'a> PdfDocument<'a> {
     ///  or [PdfPages::copy_page_range_from_document()] functions.
     ///
     /// Calling this function is equivalent to
-    ///
     /// ```
     /// self.pages().copy_page_range_from_document(
     ///     document, // Source
@@ -227,10 +241,7 @@ impl<'a> PdfDocument<'a> {
     }
 
     /// Writes this [PdfDocument] to the given writer.
-    ///
-    /// This function is not available when compiling to WASM.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn save_to_writer<W: Write>(&self, writer: W) -> Result<(), PdfiumError> {
+    pub fn save_to_writer<W: Write + 'static>(&self, writer: &mut W) -> Result<(), PdfiumError> {
         // TODO: AJRC - 25/5/22 - investigate supporting the FPDF_INCREMENTAL, FPDF_NO_INCREMENTAL,
         // and FPDF_REMOVE_SECURITY flags defined in fpdf_save.h. There's not a lot of information
         // on what they actually do, however.
@@ -258,10 +269,14 @@ impl<'a> PdfDocument<'a> {
 
         match self.bindings.is_true(result) {
             true => {
-                // Pdfium's return value indicated success. Flush the buffer,
-                // returning any final I/O error.
+                // Pdfium's return value indicated success. Flush the buffer and return the writer
+                // back to the caller.
 
-                pdfium_file_writer.flush().map_err(PdfiumError::IoError)
+                pdfium_file_writer
+                    .flush()
+                    // pdfium_file_writer
+                    //     .into_writer::<W>()
+                    .map_err(PdfiumError::IoError)
             }
             false => {
                 // Pdfium's return value indicated failure.
@@ -273,6 +288,44 @@ impl<'a> PdfDocument<'a> {
                 ))
             }
         }
+    }
+
+    /// Writes this [PdfDocument] to the file at the given path.
+    ///
+    /// This function is not available when compiling to WASM.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[inline]
+    pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
+        self.save_to_writer(&mut File::create(path).map_err(PdfiumError::IoError)?)
+    }
+
+    /// Writes this [PdfDocument] to a new byte buffer, returning the byte buffer.
+    #[inline]
+    pub fn save_to_bytes(&self) -> Result<Vec<u8>, PdfiumError> {
+        let mut cursor = Cursor::new(Vec::new());
+
+        self.save_to_writer(&mut cursor)?;
+
+        Ok(cursor.into_inner())
+    }
+
+    /// Writes this [PdfDocument] to a new Blob, returning the Blob.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    #[inline]
+    pub fn save_to_blob(&self) -> Result<Blob, PdfiumError> {
+        let bytes = self.save_to_bytes()?;
+
+        let array = Uint8Array::new_with_length(bytes.len() as u32);
+
+        array.copy_from(bytes.as_slice());
+
+        let blob =
+            Blob::new_with_u8_array_sequence(&JsValue::from(Array::of1(&JsValue::from(array))))
+                .map_err(|_| PdfiumError::JsSysErrorConstructingBlobFromBytes)?;
+
+        Ok(blob)
     }
 }
 

@@ -1,6 +1,5 @@
 use pdfium_render::prelude::*;
 use rand::random;
-use std::fs::File;
 
 fn main() {
     // For general comments about pdfium-render and binding to Pdfium, see comments in export.rs.
@@ -71,7 +70,7 @@ fn main() {
                 page.objects_mut().add_text_object(object).unwrap();
             }
 
-            // ... log details of the text objects we just created to the console...
+            // ... log details of the objects we just created to the console...
 
             page.objects()
                 .iter()
@@ -93,9 +92,7 @@ fn main() {
 
             // ... and save the result to a file.
 
-            document
-                .save_to_writer(File::create("test/create-test.pdf").unwrap())
-                .unwrap();
+            document.save_to_file("test/create-test.pdf").unwrap();
         }
         Err(err) => eprintln!("Error loading pdfium library: {:#?}", err),
     }

@@ -87,14 +87,20 @@ impl<'a> PdfPages<'a> {
     /// Creates a new, empty [PdfPage] with the given [PdfPagePaperSize] and inserts it
     /// at the start of this [PdfPages] collection, shuffling down all other pages.
     #[inline]
-    pub fn create_page_at_start(&mut self, size: PdfPagePaperSize) -> Result<PdfPage, PdfiumError> {
+    pub fn create_page_at_start(
+        &mut self,
+        size: PdfPagePaperSize,
+    ) -> Result<PdfPage<'a>, PdfiumError> {
         self.create_page_at_index(size, 0)
     }
 
     /// Creates a new, empty [PdfPage] with the given [PdfPagePaperSize] and adds it
     /// to the end of this [PdfPages] collection.
     #[inline]
-    pub fn create_page_at_end(&mut self, size: PdfPagePaperSize) -> Result<PdfPage, PdfiumError> {
+    pub fn create_page_at_end(
+        &mut self,
+        size: PdfPagePaperSize,
+    ) -> Result<PdfPage<'a>, PdfiumError> {
         self.create_page_at_index(size, self.len())
     }
 
@@ -104,7 +110,7 @@ impl<'a> PdfPages<'a> {
         &mut self,
         size: PdfPagePaperSize,
         index: PdfPageIndex,
-    ) -> Result<PdfPage, PdfiumError> {
+    ) -> Result<PdfPage<'a>, PdfiumError> {
         self.pdfium_page_handle_to_result(
             index,
             self.bindings.FPDFPage_New(
@@ -280,7 +286,7 @@ impl<'a> PdfPages<'a> {
     }
 
     /// Returns a single [PdfPage] from this [PdfPages] collection.
-    pub fn get(&self, index: PdfPageIndex) -> Result<PdfPage, PdfiumError> {
+    pub fn get(&self, index: PdfPageIndex) -> Result<PdfPage<'a>, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::PageIndexOutOfBounds);
         }
@@ -297,7 +303,7 @@ impl<'a> PdfPages<'a> {
         &self,
         index: PdfPageIndex,
         handle: FPDF_PAGE,
-    ) -> Result<PdfPage, PdfiumError> {
+    ) -> Result<PdfPage<'a>, PdfiumError> {
         if handle.is_null() {
             if let Some(error) = self.bindings.get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))

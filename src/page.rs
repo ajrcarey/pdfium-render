@@ -323,6 +323,12 @@ impl<'a> PdfPage<'a> {
         &self.handle
     }
 
+    /// Returns the [PdfDocument] containing this [PdfPage].
+    #[inline]
+    pub(crate) fn get_document(&self) -> &PdfDocument {
+        self.document
+    }
+
     /// Returns the label assigned to this [PdfPage], if any.
     #[inline]
     pub fn label(&self) -> Option<&String> {
@@ -584,6 +590,25 @@ impl<'a> PdfPage<'a> {
         }
     }
 
+    /// Returns the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
+    ///
+    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
+    /// content is regenerated. If a page is reloaded or closed without regenerating the page's
+    /// content, any changes not applied are lost.
+    ///
+    /// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
+    /// this removes the possibility of data loss, and ensures changes can be read back from other
+    /// data structures as soon as they are made. However, if many changes are made to a page at once,
+    /// then regenerating the content after every change is inefficient; it is faster to stage
+    /// all changes first, then regenerate the page's content just once. In this case,
+    /// changing the content regeneration strategy for a [PdfPage] can improve performance,
+    /// but you must be careful not to forget to commit your changes before closing
+    /// or reloading the page.
+    #[inline]
+    pub fn content_regeneration_strategy(&self) -> PdfPageContentRegenerationStrategy {
+        self.regeneration_strategy
+    }
+
     /// Sets the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
     ///
     /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
@@ -604,23 +629,6 @@ impl<'a> PdfPage<'a> {
         strategy: PdfPageContentRegenerationStrategy,
     ) {
         self.regeneration_strategy = strategy;
-    }
-
-    /// Marks this [PdfPage] as having staged but unsaved changes that are yet to be committed
-    /// to the underlying [PdfDocument].
-    ///
-    /// If this page's content regeneration strategy is `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange`,
-    /// then the page's content will be generated immediately. Otherwise, the page will be flagged
-    /// for content regeneration at a later point.
-    pub(crate) fn set_content_regeneration_required(&mut self) {
-        self.is_content_regeneration_required = true;
-
-        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
-        {
-            let result = self.regenerate_content();
-
-            debug_assert!(result.is_ok());
-        }
     }
 
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].

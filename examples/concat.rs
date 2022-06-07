@@ -1,5 +1,4 @@
 use pdfium_render::prelude::*;
-use std::fs::File;
 
 fn main() {
     // For general comments about pdfium-render and binding to Pdfium, see comments in export.rs.
@@ -110,9 +109,7 @@ fn main() {
 
             // ... and save the final result.
 
-            document
-                .save_to_writer(File::create("test/concat-test.pdf").unwrap())
-                .unwrap();
+            document.save_to_file("test/concat-test.pdf").unwrap();
         }
         Err(err) => eprintln!("Error loading pdfium library: {:#?}", err),
     }
