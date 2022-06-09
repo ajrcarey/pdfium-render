@@ -266,7 +266,11 @@ impl<'a> PdfPages<'a> {
     ///  or [PdfPages::copy_page_range_from_document()] functions.
     #[inline]
     pub fn append(&mut self, document: &PdfDocument) -> Result<(), PdfiumError> {
-        self.copy_page_range_from_document(document, self.as_range_inclusive(), self.len())
+        self.copy_page_range_from_document(
+            document,
+            document.pages().as_range_inclusive(),
+            self.len(),
+        )
     }
 
     /// Creates a new [PdfDocument] by copying the pages in this [PdfPages] collection

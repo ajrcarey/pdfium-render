@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.7.2"
+version = "0.7.3"
 edition = "2018"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."

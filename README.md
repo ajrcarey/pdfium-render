@@ -266,9 +266,10 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.3: corrects a bug in the implementation of `PdfPages::append()` introduced in 0.7.2. 
 * 0.7.2: adds object groups for manipulating and transforming groups of page objects as if they
   were a single object, and the `PdfPages::watermark()` function for applying individualized
-  watermarks to any or all pages in a document.
+  watermarks to any or all pages in a document. Fixes a potential double-free bug in `PdfFont::drop()`.
 * 0.7.1: adds path segment creation to the `PdfPagePathObject` object, convenience functions for
   quickly creating rectangles, ellipses, and circles, and the `PdfPageObjects::add_path_object()` function.
 * 0.7.0: adds `PdfPermissions` collection, adds document loading and saving support, adds
