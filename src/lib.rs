@@ -41,6 +41,7 @@ pub mod page_annotations;
 pub mod page_boundaries;
 pub mod page_object;
 pub mod page_object_form_fragment;
+pub mod page_object_group;
 pub mod page_object_image;
 pub mod page_object_path;
 mod page_object_private; // Keep private so that the PdfPageObjectPrivate trait is not exposed.
@@ -99,11 +100,13 @@ pub mod tests {
 
     #[test]
     #[cfg(not(feature = "static"))]
-    fn dynamic_bindings() {
-        let bindings = Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-            .or_else(|_| Pdfium::bind_to_system_library());
+    fn dynamic_bindings() -> Result<(), PdfiumError> {
+        let pdfium = Pdfium::new(
+            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+                .or_else(|_| Pdfium::bind_to_system_library())?,
+        );
 
-        assert!(bindings.is_ok());
+        let document = pdfium.load_pdf_from_file("./test/form-test.pdf", None)?;
 
         let render_config = PdfBitmapConfig::new()
             .set_target_width(2000)
@@ -112,23 +115,18 @@ pub mod tests {
             .render_form_data(true)
             .render_annotations(true);
 
-        Pdfium::new(bindings.unwrap())
-            .load_pdf_from_file("./test/form-test.pdf", None)
-            .unwrap()
-            .pages()
-            .iter()
-            .enumerate()
-            .for_each(|(index, page)| {
-                let result = page
-                    .get_bitmap_with_config(&render_config)
-                    .unwrap()
-                    .as_image()
-                    .as_rgba8()
-                    .unwrap()
-                    .save_with_format(format!("form-test-page-{}.jpg", index), ImageFormat::Jpeg);
+        for (index, page) in document.pages().iter().enumerate() {
+            let result = page
+                .get_bitmap_with_config(&render_config)?
+                .as_image()
+                .as_rgba8()
+                .ok_or(PdfiumError::ImageError)?
+                .save_with_format(format!("form-test-page-{}.jpg", index), ImageFormat::Jpeg);
 
-                assert!(result.is_ok());
-            });
+            assert!(result.is_ok());
+        }
+
+        Ok(())
     }
 
     #[test]

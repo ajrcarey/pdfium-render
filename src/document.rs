@@ -217,29 +217,6 @@ impl<'a> PdfDocument<'a> {
         PdfPermissions::new(self)
     }
 
-    /// Copies all pages in the given [PdfDocument] into this [PdfDocument], appending them
-    /// to the end of this document's [PdfPages] collection.
-    ///
-    /// For finer control over which pages are imported, and where they should be inserted,
-    /// use one of the [PdfPages::copy_page_from_document()], [PdfPages::copy_pages_from_document()],
-    ///  or [PdfPages::copy_page_range_from_document()] functions.
-    ///
-    /// Calling this function is equivalent to
-    /// ```
-    /// self.pages().copy_page_range_from_document(
-    ///     document, // Source
-    ///     document.pages().as_range_inclusive(), // Select all pages
-    ///     self.pages().len() // Append to end of current document
-    /// );
-    /// ```
-    pub fn append(&mut self, document: &PdfDocument) -> Result<(), PdfiumError> {
-        self.pages().copy_page_range_from_document(
-            document,
-            document.pages().as_range_inclusive(),
-            self.pages().len(),
-        )
-    }
-
     /// Writes this [PdfDocument] to the given writer.
     pub fn save_to_writer<W: Write + 'static>(&self, writer: &mut W) -> Result<(), PdfiumError> {
         // TODO: AJRC - 25/5/22 - investigate supporting the FPDF_INCREMENTAL, FPDF_NO_INCREMENTAL,
@@ -272,11 +249,7 @@ impl<'a> PdfDocument<'a> {
                 // Pdfium's return value indicated success. Flush the buffer and return the writer
                 // back to the caller.
 
-                pdfium_file_writer
-                    .flush()
-                    // pdfium_file_writer
-                    //     .into_writer::<W>()
-                    .map_err(PdfiumError::IoError)
+                pdfium_file_writer.flush().map_err(PdfiumError::IoError)
             }
             false => {
                 // Pdfium's return value indicated failure.

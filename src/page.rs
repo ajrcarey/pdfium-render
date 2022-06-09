@@ -317,7 +317,7 @@ impl<'a> PdfPage<'a> {
         }
     }
 
-    /// Returns the internal FPDF_PAGE handle for this [PdfPage].
+    /// Returns the internal `FPDF_PAGE` handle for this [PdfPage].
     #[inline]
     pub(crate) fn get_handle(&self) -> &FPDF_PAGE {
         &self.handle
@@ -327,6 +327,12 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub(crate) fn get_document(&self) -> &PdfDocument {
         self.document
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfPage].
+    #[inline]
+    pub(crate) fn get_bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the label assigned to this [PdfPage], if any.
@@ -542,7 +548,7 @@ impl<'a> PdfPage<'a> {
         ))
     }
 
-    /// Returns a raw FPDF_BITMAP handle to an empty bitmap with the given width and height.
+    /// Returns a `FPDF_BITMAP` handle to an empty bitmap with the given width and height.
     fn create_empty_bitmap_handle(
         &self,
         width: i32,
@@ -655,14 +661,20 @@ impl<'a> PdfPage<'a> {
 
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
-        if self
-            .bindings
-            .is_true(self.bindings.FPDFPage_GenerateContent(self.handle))
-        {
+        Self::regenerate_content_immut_for_handle(self.handle, self.bindings)
+    }
+
+    /// Commits any staged but unsaved changes to the page identified by the given internal
+    /// `FPDF_PAGE` handle to the underlying [PdfDocument] containing that page.
+    pub(crate) fn regenerate_content_immut_for_handle(
+        page: FPDF_PAGE,
+        bindings: &dyn PdfiumLibraryBindings,
+    ) -> Result<(), PdfiumError> {
+        if bindings.is_true(bindings.FPDFPage_GenerateContent(page)) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
+                bindings
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))

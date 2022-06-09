@@ -9,7 +9,8 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::PdfiumError::PdfiumLibraryInternalError;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::PdfPage;
+use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints};
+use crate::page_object_group::PdfPageGroupObject;
 use crate::page_size::PdfPagePaperSize;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
@@ -82,6 +83,46 @@ impl<'a> PdfPages<'a> {
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPages { document, bindings }
+    }
+
+    /// Returns the number of pages in this [PdfPages] collection.
+    pub fn len(&self) -> PdfPageIndex {
+        self.bindings.FPDF_GetPageCount(*self.document.get_handle()) as PdfPageIndex
+    }
+
+    /// Returns `true` if this [PdfPages] collection is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns a Range from `0..(number of pages)` for this [PdfPages] collection.
+    #[inline]
+    pub fn as_range(&self) -> Range<PdfPageIndex> {
+        0..self.len()
+    }
+
+    /// Returns an inclusive Range from `0..=(number of pages - 1)` for this [PdfPages] collection.
+    #[inline]
+    pub fn as_range_inclusive(&self) -> RangeInclusive<PdfPageIndex> {
+        if self.is_empty() {
+            0..=0
+        } else {
+            0..=(self.len() - 1)
+        }
+    }
+
+    /// Returns a single [PdfPage] from this [PdfPages] collection.
+    pub fn get(&self, index: PdfPageIndex) -> Result<PdfPage<'a>, PdfiumError> {
+        if index >= self.len() {
+            return Err(PdfiumError::PageIndexOutOfBounds);
+        }
+
+        self.pdfium_page_handle_to_result(
+            index,
+            self.bindings
+                .FPDF_LoadPage(*self.document.get_handle(), index as c_int),
+        )
     }
 
     /// Creates a new, empty [PdfPage] with the given [PdfPagePaperSize] and inserts it
@@ -217,6 +258,17 @@ impl<'a> PdfPages<'a> {
         }
     }
 
+    /// Copies all pages in the given source [PdfDocument], appending them sequentially
+    /// to the end of this [PdfPages] collection.
+    ///
+    /// For finer control over which pages are imported, and where they should be inserted,
+    /// use one of the [PdfPages::copy_page_from_document()], [PdfPages::copy_pages_from_document()],
+    ///  or [PdfPages::copy_page_range_from_document()] functions.
+    #[inline]
+    pub fn append(&mut self, document: &PdfDocument) -> Result<(), PdfiumError> {
+        self.copy_page_range_from_document(document, self.as_range_inclusive(), self.len())
+    }
+
     /// Creates a new [PdfDocument] by copying the pages in this [PdfPages] collection
     /// into tiled grids, the size of tile each shrinking or expanding as necessary to fit
     /// the given [PdfPagePaperSize].
@@ -258,47 +310,7 @@ impl<'a> PdfPages<'a> {
         }
     }
 
-    /// Returns the number of pages in this [PdfPages] collection.
-    pub fn len(&self) -> PdfPageIndex {
-        self.bindings.FPDF_GetPageCount(*self.document.get_handle()) as PdfPageIndex
-    }
-
-    /// Returns `true` if this [PdfPages] collection is empty.
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns a Range from `0..(number of pages)` for this [PdfPages] collection.
-    #[inline]
-    pub fn as_range(&self) -> Range<PdfPageIndex> {
-        0..self.len()
-    }
-
-    /// Returns an inclusive Range from `0..=(number of pages - 1)` for this [PdfPages] collection.
-    #[inline]
-    pub fn as_range_inclusive(&self) -> RangeInclusive<PdfPageIndex> {
-        if self.is_empty() {
-            0..=0
-        } else {
-            0..=(self.len() - 1)
-        }
-    }
-
-    /// Returns a single [PdfPage] from this [PdfPages] collection.
-    pub fn get(&self, index: PdfPageIndex) -> Result<PdfPage<'a>, PdfiumError> {
-        if index >= self.len() {
-            return Err(PdfiumError::PageIndexOutOfBounds);
-        }
-
-        self.pdfium_page_handle_to_result(
-            index,
-            self.bindings
-                .FPDF_LoadPage(*self.document.get_handle(), index as c_int),
-        )
-    }
-
-    /// Returns a PdfPage from the given FPDF_PAGE handle, if possible.
+    /// Returns a PdfPage from the given `FPDF_PAGE` handle, if possible.
     fn pdfium_page_handle_to_result(
         &self,
         index: PdfPageIndex,
@@ -376,6 +388,73 @@ impl<'a> PdfPages<'a> {
                 .FPDFDoc_GetPageMode(*self.document.get_handle()),
         )
         .unwrap_or(PdfPageMode::UnsetOrUnknown)
+    }
+
+    /// Applies the given watermarking closure to each [PdfPage] in this [PdfPages] collection.
+    ///
+    /// The closure receives four arguments:
+    /// * An empty [PdfPageGroupObject] for you to populate with the page objects that make up your watermark.
+    /// * The zero-based index of the [PdfPage] currently being processed.
+    /// * The width of the [PdfPage] currently being processed, in [PdfPoints].
+    /// * The height of the [PdfPage] currently being processed, in [PdfPoints].
+    ///
+    /// If the current page should not be watermarked, simply leave the group empty.
+    ///
+    /// The closure can return a `Result<(), PdfiumError>`; this makes it easy to use the `?` unwrapping
+    /// operator within the closure.
+    ///
+    /// For example, the following snippet adds a page number to the very top of every page in a document
+    /// except for the first page.
+    ///
+    /// ```
+    ///     document.pages().watermark(|group, index, width, height| {
+    ///         if index == 0 {
+    ///             // Don't watermark the first page.
+    ///
+    ///             Ok(())
+    ///         } else {
+    ///             let mut page_number = PdfPageTextObject::new(
+    ///                 &document,
+    ///                 format!("Page {}", index + 1),
+    ///                 &PdfFont::helvetica(&document),
+    ///                 PdfPoints::new(14.0),
+    ///             )?;
+    ///
+    ///             page_number.translate(
+    ///                 (width - page_number.width()?) / 2.0, // Horizontally center the page number...
+    ///                 height - page_number.height()?, // ... and vertically position it at the page top.
+    ///             )?;
+    ///
+    ///             group.push(&mut page_number.into())
+    ///         }
+    ///     })?;
+    /// ```
+    pub fn watermark<F>(&self, watermarker: F) -> Result<(), PdfiumError>
+    where
+        F: Fn(
+            &mut PdfPageGroupObject<'a>,
+            PdfPageIndex,
+            PdfPoints,
+            PdfPoints,
+        ) -> Result<(), PdfiumError>,
+    {
+        for (index, page) in self.iter().enumerate() {
+            let mut group = PdfPageGroupObject::from_pdfium(
+                *page.get_handle(),
+                self.bindings,
+                page.content_regeneration_strategy()
+                    == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+            );
+
+            watermarker(
+                &mut group,
+                index as PdfPageIndex,
+                page.width(),
+                page.height(),
+            )?;
+        }
+
+        Ok(())
     }
 
     /// Returns an iterator over all the pages in this [PdfPages] collection.

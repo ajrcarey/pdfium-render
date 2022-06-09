@@ -59,7 +59,7 @@ impl PdfPageObjectType {
 /// backdrop color.
 ///
 /// A formal definition of these blend modes can be found in Section 7.2.4 of
-/// The PDF Reference Manual, version 1.7, on page 520.
+/// the PDF Reference Manual, version 1.7, on page 520.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfPageObjectBlendMode {
     /// Selects the source color, ignoring the backdrop.
@@ -165,7 +165,7 @@ impl PdfPageObjectBlendMode {
 /// connect at an angle; segments that meet or intersect fortuitously receive no special treatment.
 ///
 /// A formal definition of these styles can be found in Section 4.3.2 of
-/// The PDF Reference Manual, version 1.7, on page 216.
+/// the PDF Reference Manual, version 1.7, on page 216.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfPageObjectLineJoin {
     /// The outer edges of the strokes for the two path segments are extended
@@ -206,7 +206,7 @@ impl PdfPageObjectLineJoin {
 /// The shape that should be used at the ends of open stroked paths.
 ///
 /// A formal definition of these styles can be found in Section 4.3.2 of
-/// The PDF Reference Manual, version 1.7, on page 216.
+/// the PDF Reference Manual, version 1.7, on page 216.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfPageObjectLineCap {
     /// The stroke is squared off at the endpoint of the path. There is no
@@ -260,7 +260,7 @@ pub enum PdfPageObjectFillMode {
     /// for paths with simple shapes, but produces different results for more complex shapes.
     ///
     /// More information, including visual examples, can be found in Section 4.4.2 of
-    /// The PDF Reference Manual, version 1.7, on page 233.
+    /// the PDF Reference Manual, version 1.7, on page 233.
     EvenOdd = FPDF_FILLMODE_ALTERNATE as isize,
 
     /// The non-zero winding number rule will be used to determine the path region to fill.
@@ -278,7 +278,7 @@ pub enum PdfPageObjectFillMode {
     /// [PdfPageObjectCommon::set_fill_and_stroke_mode()] function.
     ///
     /// More information, including visual examples, can be found in Section 4.4.2 of
-    /// The PDF Reference Manual, version 1.7, on page 232.
+    /// the PDF Reference Manual, version 1.7, on page 232.
     Winding = FPDF_FILLMODE_WINDING as isize,
 }
 
@@ -366,7 +366,19 @@ impl<'a> PdfPageObject<'a> {
     }
 
     #[inline]
-    pub(crate) fn unwrap_as_trait(&'a self) -> &'a dyn PdfPageObjectPrivate<'a> {
+    pub(crate) fn unwrap_as_trait(&self) -> &dyn PdfPageObjectPrivate<'a> {
+        match self {
+            PdfPageObject::Text(object) => object,
+            PdfPageObject::Path(object) => object,
+            PdfPageObject::Image(object) => object,
+            PdfPageObject::Shading(object) => object,
+            PdfPageObject::FormFragment(object) => object,
+            PdfPageObject::Unsupported(object) => object,
+        }
+    }
+
+    #[inline]
+    pub(crate) fn unwrap_as_trait_mut(&mut self) -> &mut dyn PdfPageObjectPrivate<'a> {
         match self {
             PdfPageObject::Text(object) => object,
             PdfPageObject::Path(object) => object,
@@ -524,11 +536,19 @@ pub trait PdfPageObjectCommon<'a> {
     ///
     /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
     /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
-    fn transform(&mut self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64);
+    fn transform(
+        &mut self,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) -> Result<(), PdfiumError>;
 
     /// Moves the origin of this [PdfPageObject] by the given horizontal and vertical delta distances.
     #[inline]
-    fn translate(&mut self, delta_x: PdfPoints, delta_y: PdfPoints) {
+    fn translate(&mut self, delta_x: PdfPoints, delta_y: PdfPoints) -> Result<(), PdfiumError> {
         self.transform(
             1.0,
             0.0,
@@ -542,7 +562,11 @@ pub trait PdfPageObjectCommon<'a> {
     /// Changes the size of this [PdfPageObject], scaling it by the given horizontal and
     /// vertical scale factors.
     #[inline]
-    fn scale(&mut self, horizontal_scale_factor: f64, vertical_scale_factor: f64) {
+    fn scale(
+        &mut self,
+        horizontal_scale_factor: f64,
+        vertical_scale_factor: f64,
+    ) -> Result<(), PdfiumError> {
         self.transform(
             horizontal_scale_factor,
             0.0,
@@ -555,52 +579,52 @@ pub trait PdfPageObjectCommon<'a> {
 
     /// Rotates this [PdfPageObject] counter-clockwise by the given number of degrees.
     #[inline]
-    fn rotate_counter_clockwise_degrees(&mut self, degrees: f32) {
+    fn rotate_counter_clockwise_degrees(&mut self, degrees: f32) -> Result<(), PdfiumError> {
         self.rotate_counter_clockwise_radians(degrees.to_radians())
     }
 
     /// Rotates this [PdfPageObject] clockwise by the given number of degrees.
     #[inline]
-    fn rotate_clockwise_degrees(&mut self, degrees: f32) {
+    fn rotate_clockwise_degrees(&mut self, degrees: f32) -> Result<(), PdfiumError> {
         self.rotate_counter_clockwise_degrees(-degrees)
     }
 
     /// Rotates this [PdfPageObject] counter-clockwise by the given number of radians.
     #[inline]
-    fn rotate_counter_clockwise_radians(&mut self, radians: f32) {
+    fn rotate_counter_clockwise_radians(&mut self, radians: f32) -> Result<(), PdfiumError> {
         let cos_theta = radians.cos() as f64;
 
         let sin_theta = radians.sin() as f64;
 
-        self.transform(cos_theta, sin_theta, -sin_theta, cos_theta, 0.0, 0.0);
+        self.transform(cos_theta, sin_theta, -sin_theta, cos_theta, 0.0, 0.0)
     }
 
     /// Rotates this [PdfPageObject] clockwise by the given number of radians.
     #[inline]
-    fn rotate_clockwise_radians(&mut self, radians: f32) {
+    fn rotate_clockwise_radians(&mut self, radians: f32) -> Result<(), PdfiumError> {
         self.rotate_counter_clockwise_radians(-radians.to_degrees())
     }
 
     /// Skews the axes of this [PdfPageObject] by the given angles in degrees.
     #[inline]
-    fn skew_degrees(&mut self, x_axis_skew: f32, y_axis_skew: f32) {
+    fn skew_degrees(&mut self, x_axis_skew: f32, y_axis_skew: f32) -> Result<(), PdfiumError> {
         self.skew_radians(x_axis_skew.to_radians(), y_axis_skew.to_radians())
     }
 
     /// Skews the axes of this [PdfPageObject] by the given angles in radians.
     #[inline]
-    fn skew_radians(&mut self, x_axis_skew: f32, y_axis_skew: f32) {
+    fn skew_radians(&mut self, x_axis_skew: f32, y_axis_skew: f32) -> Result<(), PdfiumError> {
         let tan_alpha = x_axis_skew.tan() as f64;
 
         let tan_beta = y_axis_skew.tan() as f64;
 
-        self.transform(1.0, tan_alpha, tan_beta, 1.0, 0.0, 0.0);
+        self.transform(1.0, tan_alpha, tan_beta, 1.0, 0.0, 0.0)
     }
 
     /// Sets the blend mode that will be applied when painting this [PdfPageObject].
     ///
     /// Note that Pdfium does not currently expose a function to read the currently set blend mode.
-    fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode);
+    fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) -> Result<(), PdfiumError>;
 
     /// Returns the color of any filled paths in this [PdfPageObject].
     fn fill_color(&self) -> Result<PdfColor, PdfiumError>;
@@ -643,11 +667,11 @@ pub trait PdfPageObjectCommon<'a> {
     /// in this [PdfPageObject].
     fn line_cap(&self) -> Result<PdfPageObjectLineCap, PdfiumError>;
 
-    /// Sets the line join style that will be used when painting stroked path segments
+    /// Sets the line cap style that will be used when painting stroked path segments
     /// in this [PdfPageObject].
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError>;
 
-    /// Returns the method used to determine which subpaths of any path in this [PdfPageObject]
+    /// Returns the method used to determine which sub-paths of any path in this [PdfPageObject]
     /// should be filled.
     fn fill_mode(&self) -> Result<PdfPageObjectFillMode, PdfiumError>;
 
@@ -658,7 +682,7 @@ pub trait PdfPageObjectCommon<'a> {
     /// and a non-zero width in order to actually be visible.
     fn is_stroked(&self) -> Result<bool, PdfiumError>;
 
-    /// Sets the method used to determine which subpaths of any path in this [PdfPageObject]
+    /// Sets the method used to determine which sub-paths of any path in this [PdfPageObject]
     /// should be filled, and whether or not any path in this [PdfPageObject] should be stroked.
     ///
     /// Even if this object's path is set to be stroked, the stroke must be configured with
@@ -687,16 +711,30 @@ where
     }
 
     #[inline]
-    fn transform(&mut self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
+    fn transform(
+        &mut self,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) -> Result<(), PdfiumError> {
         self.transform_impl(a, b, c, d, e, f)
     }
 
     #[inline]
-    fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) {
+    fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) -> Result<(), PdfiumError> {
         self.get_bindings()
-            .FPDFPageObj_SetBlendMode(*self.get_handle(), blend_mode.as_pdfium());
+            .FPDFPageObj_SetBlendMode(*self.get_object_handle(), blend_mode.as_pdfium());
+
+        match self.get_bindings().get_pdfium_last_error() {
+            Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
+            None => Ok(()),
+        }
     }
 
+    #[inline]
     fn fill_color(&self) -> Result<PdfColor, PdfiumError> {
         let mut r = 0;
 
@@ -709,7 +747,7 @@ where
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPageObj_GetFillColor(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
@@ -731,11 +769,12 @@ where
         }
     }
 
+    #[inline]
     fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPageObj_SetFillColor(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 fill_color.red() as c_uint,
                 fill_color.green() as c_uint,
                 fill_color.blue() as c_uint,
@@ -748,6 +787,7 @@ where
         }
     }
 
+    #[inline]
     fn stroke_color(&self) -> Result<PdfColor, PdfiumError> {
         let mut r = 0;
 
@@ -760,7 +800,7 @@ where
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPageObj_GetStrokeColor(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
@@ -782,11 +822,12 @@ where
         }
     }
 
+    #[inline]
     fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPageObj_SetStrokeColor(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 stroke_color.red() as c_uint,
                 stroke_color.green() as c_uint,
                 stroke_color.blue() as c_uint,
@@ -799,12 +840,13 @@ where
         }
     }
 
+    #[inline]
     fn stroke_width(&self) -> Result<PdfPoints, PdfiumError> {
         let mut width = 0.0;
 
         if self.get_bindings().is_true(
             self.get_bindings()
-                .FPDFPageObj_GetStrokeWidth(*self.get_handle(), &mut width),
+                .FPDFPageObj_GetStrokeWidth(*self.get_object_handle(), &mut width),
         ) {
             Ok(PdfPoints::new(width))
         } else {
@@ -812,10 +854,11 @@ where
         }
     }
 
+    #[inline]
     fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
         if self.get_bindings().is_true(
             self.get_bindings()
-                .FPDFPageObj_SetStrokeWidth(*self.get_handle(), stroke_width.value),
+                .FPDFPageObj_SetStrokeWidth(*self.get_object_handle(), stroke_width.value),
         ) {
             Ok(())
         } else {
@@ -823,18 +866,20 @@ where
         }
     }
 
+    #[inline]
     fn line_join(&self) -> Result<PdfPageObjectLineJoin, PdfiumError> {
         PdfPageObjectLineJoin::from_pdfium(
             self.get_bindings()
-                .FPDFPageObj_GetLineJoin(*self.get_handle()),
+                .FPDFPageObj_GetLineJoin(*self.get_object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
 
+    #[inline]
     fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
         if self.get_bindings().is_true(
             self.get_bindings()
-                .FPDFPageObj_SetLineJoin(*self.get_handle(), line_join.as_pdfium() as c_int),
+                .FPDFPageObj_SetLineJoin(*self.get_object_handle(), line_join.as_pdfium() as c_int),
         ) {
             Ok(())
         } else {
@@ -842,18 +887,20 @@ where
         }
     }
 
+    #[inline]
     fn line_cap(&self) -> Result<PdfPageObjectLineCap, PdfiumError> {
         PdfPageObjectLineCap::from_pdfium(
             self.get_bindings()
-                .FPDFPageObj_GetLineCap(*self.get_handle()),
+                .FPDFPageObj_GetLineCap(*self.get_object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
 
+    #[inline]
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
         if self.get_bindings().is_true(
             self.get_bindings()
-                .FPDFPageObj_SetLineCap(*self.get_handle(), line_cap.as_pdfium() as c_int),
+                .FPDFPageObj_SetLineCap(*self.get_object_handle(), line_cap.as_pdfium() as c_int),
         ) {
             Ok(())
         } else {
@@ -861,6 +908,7 @@ where
         }
     }
 
+    #[inline]
     fn fill_mode(&self) -> Result<PdfPageObjectFillMode, PdfiumError> {
         let mut raw_fill_mode: c_int = 0;
 
@@ -869,7 +917,7 @@ where
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPath_GetDrawMode(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 &mut raw_fill_mode,
                 &mut _raw_stroke,
             ))
@@ -884,6 +932,7 @@ where
         }
     }
 
+    #[inline]
     fn is_stroked(&self) -> Result<bool, PdfiumError> {
         let mut _raw_fill_mode: c_int = 0;
 
@@ -892,7 +941,7 @@ where
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPath_GetDrawMode(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 &mut _raw_fill_mode,
                 &mut raw_stroke,
             ))
@@ -907,6 +956,7 @@ where
         }
     }
 
+    #[inline]
     fn set_fill_and_stroke_mode(
         &mut self,
         fill_mode: PdfPageObjectFillMode,
@@ -915,7 +965,7 @@ where
         if self
             .get_bindings()
             .is_true(self.get_bindings().FPDFPath_SetDrawMode(
-                *self.get_handle(),
+                *self.get_object_handle(),
                 fill_mode.as_pdfium() as c_int,
                 self.get_bindings().bool_to_pdfium(do_stroke),
             ))
@@ -933,8 +983,23 @@ where
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
-    fn get_handle(&self) -> &FPDF_PAGEOBJECT {
-        self.unwrap_as_trait().get_handle()
+    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
+        self.unwrap_as_trait().get_object_handle()
+    }
+
+    #[inline]
+    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
+        self.unwrap_as_trait().get_page_handle()
+    }
+
+    #[inline]
+    fn set_page_handle(&mut self, page: FPDF_PAGE) {
+        self.unwrap_as_trait_mut().set_page_handle(page);
+    }
+
+    #[inline]
+    fn clear_page_handle(&mut self) {
+        self.unwrap_as_trait_mut().clear_page_handle();
     }
 
     #[inline]
@@ -949,32 +1014,54 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
 
     #[inline]
     fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
-        // Trying to define a self.unwrap_as_trait_mut() fn gets us into all sorts of
-        // arguments with the borrow checker. It's easier just to unwrap the inner object inline.
-
-        match self {
-            PdfPageObject::Text(object) => object.add_object_to_page(page_objects),
-            PdfPageObject::Path(object) => object.add_object_to_page(page_objects),
-            PdfPageObject::Image(object) => object.add_object_to_page(page_objects),
-            PdfPageObject::Shading(object) => object.add_object_to_page(page_objects),
-            PdfPageObject::FormFragment(object) => object.add_object_to_page(page_objects),
-            PdfPageObject::Unsupported(object) => object.add_object_to_page(page_objects),
-        }
+        self.unwrap_as_trait_mut().add_object_to_page(page_objects)
     }
 
     #[inline]
     fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
-        // Trying to define a self.unwrap_as_trait_mut() fn gets us into all sorts of
-        // arguments with the borrow checker. It's easier just to unwrap the inner object inline.
+        self.unwrap_as_trait_mut().remove_object_from_page()
+    }
+}
 
-        match self {
-            PdfPageObject::Text(object) => object.remove_object_from_page(),
-            PdfPageObject::Path(object) => object.remove_object_from_page(),
-            PdfPageObject::Image(object) => object.remove_object_from_page(),
-            PdfPageObject::Shading(object) => object.remove_object_from_page(),
-            PdfPageObject::FormFragment(object) => object.remove_object_from_page(),
-            PdfPageObject::Unsupported(object) => object.remove_object_from_page(),
-        }
+impl<'a> From<PdfPageFormFragmentObject<'a>> for PdfPageObject<'a> {
+    #[inline]
+    fn from(object: PdfPageFormFragmentObject<'a>) -> Self {
+        Self::FormFragment(object)
+    }
+}
+
+impl<'a> From<PdfPageImageObject<'a>> for PdfPageObject<'a> {
+    #[inline]
+    fn from(object: PdfPageImageObject<'a>) -> Self {
+        Self::Image(object)
+    }
+}
+
+impl<'a> From<PdfPagePathObject<'a>> for PdfPageObject<'a> {
+    #[inline]
+    fn from(object: PdfPagePathObject<'a>) -> Self {
+        Self::Path(object)
+    }
+}
+
+impl<'a> From<PdfPageShadingObject<'a>> for PdfPageObject<'a> {
+    #[inline]
+    fn from(object: PdfPageShadingObject<'a>) -> Self {
+        Self::Shading(object)
+    }
+}
+
+impl<'a> From<PdfPageTextObject<'a>> for PdfPageObject<'a> {
+    #[inline]
+    fn from(object: PdfPageTextObject<'a>) -> Self {
+        Self::Text(object)
+    }
+}
+
+impl<'a> From<PdfPageUnsupportedObject<'a>> for PdfPageObject<'a> {
+    #[inline]
+    fn from(object: PdfPageUnsupportedObject<'a>) -> Self {
+        Self::Unsupported(object)
     }
 }
 
@@ -991,7 +1078,8 @@ impl<'a> Drop for PdfPageObject<'a> {
         // (Indeed, if we try to, Pdfium segfaults.)
 
         if !self.is_object_memory_owned_by_page() {
-            self.get_bindings().FPDFPageObj_Destroy(*self.get_handle());
+            self.get_bindings()
+                .FPDFPageObj_Destroy(*self.get_object_handle());
         }
     }
 }

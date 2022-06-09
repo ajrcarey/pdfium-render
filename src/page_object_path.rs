@@ -8,7 +8,6 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::page_objects::PdfPageObjects;
 use crate::prelude::{PdfDocument, PdfPageObjectFillMode};
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Path`.
@@ -57,7 +56,6 @@ use crate::prelude::{PdfDocument, PdfPageObjectFillMode};
 /// The detached path object can later be attached to a page by using the
 /// `PdfPageObjects::add_object()` function.
 pub struct PdfPagePathObject<'a> {
-    is_object_memory_owned_by_page: bool,
     object_handle: FPDF_PAGEOBJECT,
     page_handle: Option<FPDF_PAGE>,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -73,7 +71,6 @@ impl<'a> PdfPagePathObject<'a> {
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPagePathObject {
-            is_object_memory_owned_by_page: true,
             object_handle,
             page_handle: Some(page_handle),
             bindings,
@@ -105,7 +102,6 @@ impl<'a> PdfPagePathObject<'a> {
             }
         } else {
             let mut result = PdfPagePathObject {
-                is_object_memory_owned_by_page: false,
                 object_handle: handle,
                 page_handle: None,
                 bindings,
@@ -671,55 +667,27 @@ impl<'a> PdfPagePathObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     #[inline]
-    fn get_handle(&self) -> &FPDF_PAGEOBJECT {
+    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
         &self.object_handle
+    }
+
+    #[inline]
+    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
+        &self.page_handle
+    }
+
+    #[inline]
+    fn set_page_handle(&mut self, page: FPDF_PAGE) {
+        self.page_handle = Some(page);
+    }
+
+    #[inline]
+    fn clear_page_handle(&mut self) {
+        self.page_handle = None;
     }
 
     #[inline]
     fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
-    }
-
-    #[inline]
-    fn is_object_memory_owned_by_page(&self) -> bool {
-        self.is_object_memory_owned_by_page
-    }
-
-    fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
-        let page_handle = *page_objects.get_page_handle();
-
-        self.bindings
-            .FPDFPage_InsertObject(page_handle, self.object_handle);
-
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            self.page_handle = Some(page_handle);
-            self.is_object_memory_owned_by_page = true;
-
-            Ok(())
-        }
-    }
-
-    fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
-        if let Some(page_handle) = self.page_handle {
-            if self.bindings.is_true(
-                self.bindings
-                    .FPDFPage_RemoveObject(page_handle, self.object_handle),
-            ) {
-                self.page_handle = None;
-                self.is_object_memory_owned_by_page = false;
-
-                Ok(())
-            } else {
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.bindings
-                        .get_pdfium_last_error()
-                        .unwrap_or(PdfiumInternalError::Unknown),
-                ))
-            }
-        } else {
-            Err(PdfiumError::PageObjectNotAttachedToPage)
-        }
     }
 }

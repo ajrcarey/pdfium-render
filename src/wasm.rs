@@ -60,7 +60,7 @@ pub struct PdfiumRenderWasmState {
 impl PdfiumRenderWasmState {
     const BYTES_PER_PIXEL: i32 = 4;
 
-    /// Returns exclusive access to the global [PdfiumRenderWasmState] singleton.
+    /// Returns shared read-only access to the global [PdfiumRenderWasmState] singleton.
     #[inline]
     pub fn lock() -> RwLockReadGuard<'static, PdfiumRenderWasmState> {
         match PDFIUM_RENDER_WASM_STATE.try_read() {
@@ -77,6 +77,7 @@ impl PdfiumRenderWasmState {
         }
     }
 
+    /// Returns exclusive read-write access to the global [PdfiumRenderWasmState] singleton.
     #[inline]
     pub fn lock_mut() -> RwLockWriteGuard<'static, PdfiumRenderWasmState> {
         match PDFIUM_RENDER_WASM_STATE.try_write() {
@@ -760,9 +761,7 @@ impl PdfiumRenderWasmState {
     }
 
     /// Calls FPDF_GetLastError(), returning the result.
-    ///
-    /// We make this available as a separate function so that it can be used as part of
-    /// a Mutex locking transaction.
+    #[inline]
     fn get_last_error(&self) -> c_ulong {
         self.call(
             "FPDF_GetLastError",
@@ -775,6 +774,7 @@ impl PdfiumRenderWasmState {
     }
 
     /// Stores the given key / value pair.
+    #[inline]
     fn set(&mut self, key: &str, value: JsValue) {
         log::debug!(
             "pdfium-render::PdfiumRenderWasmState::set(): setting key: {}, value: {:#?}",
@@ -786,6 +786,7 @@ impl PdfiumRenderWasmState {
     }
 
     /// Retrieves the value associated with the given key, if any.
+    #[inline]
     fn get(&self, key: &str) -> Option<&JsValue> {
         let value = self.state.get(key);
 
@@ -799,6 +800,7 @@ impl PdfiumRenderWasmState {
     }
 
     /// Retrieves the value associated with the given key, if any, removing the key and value.
+    #[inline]
     fn take(&mut self, key: &str) -> Option<JsValue> {
         let value = self.state.remove(key);
 
@@ -1377,7 +1379,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             match state.patch_pdfium_function_table(entry, "write_block_from_callback_wasm") {
                 Ok(_) => {}
                 Err(err) => {
-                    log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveAsCopy(): aborting with error {:#?}", err);
+                    log::error!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveAsCopy(): aborting with error {:#?}", err);
 
                     return self.FALSE();
                 }
@@ -1418,7 +1420,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             match state.unpatch_pdfium_function_table(entry) {
                 Ok(_) => {}
                 Err(err) => {
-                    log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveAsCopy(): aborting with error {:#?}", err);
+                    log::error!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveAsCopy(): aborting with error {:#?}", err);
 
                     return self.FALSE();
                 }
@@ -1448,7 +1450,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             match state.patch_pdfium_function_table(entry, "write_block_from_callback_wasm") {
                 Ok(_) => {}
                 Err(err) => {
-                    log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveWithVersion(): aborting with error {:#?}", err);
+                    log::error!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveWithVersion(): aborting with error {:#?}", err);
 
                     return self.FALSE();
                 }
@@ -1491,7 +1493,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             match state.unpatch_pdfium_function_table(entry) {
                 Ok(_) => {}
                 Err(err) => {
-                    log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveWithVersion(): aborting with error {:#?}", err);
+                    log::error!("pdfium-render::PdfiumLibraryBindings::FPDF_SaveWithVersion(): aborting with error {:#?}", err);
 
                     return self.FALSE();
                 }

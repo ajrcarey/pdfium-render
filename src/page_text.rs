@@ -1,10 +1,12 @@
 //! Defines the [PdfPageText] struct, exposing functionality related to the
 //! collection of Unicode characters visible in a single `PdfPage`.
 
-use crate::bindgen::FPDF_TEXTPAGE;
+use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::page::{PdfPage, PdfRect};
-use crate::utils::mem::create_sized_buffer;
+use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::page_object_text::PdfPageTextObject;
+use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use image::EncodableLayout;
 use std::fmt::{Display, Formatter};
@@ -12,13 +14,14 @@ use std::ptr::null_mut;
 
 /// The collection of Unicode characters visible in a single [PdfPage].
 ///
-/// Since [PdfPageText] implements both the [ToString] and the [Display] traits, you can use
-/// [PdfPageText::all()] to easily return all characters in the containing [PdfPage]
-/// in the order in which they are defined in the PDF file.
+/// Use the [PdfPageText::all()] function to easily return all characters in the containing
+/// [PdfPage] in the order in which they are defined in the PDF file.
 ///
-/// In complex custom layouts, the order in which characters are defined in the PDF file
+/// In complex custom layouts, the order in which characters are defined in the document
 /// and the order in which they appear visually during rendering (and thus the order in
 /// which they are read by a user) may not necessarily match.
+///
+/// [PdfPageText] implements both the [ToString] and the [Display] traits.
 pub struct PdfPageText<'a> {
     handle: FPDF_TEXTPAGE,
     page: &'a PdfPage<'a>,
@@ -54,9 +57,9 @@ impl<'a> PdfPageText<'a> {
     }
 
     /// Returns all characters that lie within the containing [PdfPage], in the order in which
-    /// they are defined in the PDF file.
+    /// they are defined in the document.
     ///
-    /// In complex custom layouts, the order in which characters are defined in the PDF file
+    /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in
     /// which they are read by a user) may not necessarily match.
     pub fn all(&self) -> String {
@@ -64,9 +67,9 @@ impl<'a> PdfPageText<'a> {
     }
 
     /// Returns all characters that lie within the bounds of the given [PdfRect] in the
-    /// containing [PdfPage], in the order in which they are defined in the PDF file.
+    /// containing [PdfPage], in the order in which they are defined in the document.
     ///
-    /// In complex custom layouts, the order in which characters are defined in the PDF file
+    /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in
     /// which they are read by a user) may not necessarily match.
     pub fn inside_rect(&self, rect: PdfRect) -> String {
@@ -118,6 +121,35 @@ impl<'a> PdfPageText<'a> {
         assert_eq!(result, chars_count);
 
         get_string_from_pdfium_utf16le_bytes(buffer.as_bytes().to_vec()).unwrap_or_default()
+    }
+
+    /// Returns all characters assigned to the given [PdfPageTextObject] in this [PdfPageText] object.
+    pub fn for_object(&self, object: &PdfPageTextObject) -> String {
+        let buffer_length = self.bindings.FPDFTextObj_GetText(
+            *object.get_object_handle(),
+            self.handle,
+            std::ptr::null_mut(),
+            0,
+        );
+
+        if buffer_length == 0 {
+            // There is no text.
+
+            return String::new();
+        }
+
+        let mut buffer = create_byte_buffer(buffer_length as usize);
+
+        let result = self.bindings.FPDFTextObj_GetText(
+            *object.get_object_handle(),
+            self.handle,
+            buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+            buffer_length,
+        );
+
+        assert_eq!(result, buffer_length);
+
+        get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
     }
 }
 

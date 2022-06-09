@@ -9,6 +9,7 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page::{PdfPage, PdfPoints, PdfRect};
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
+use crate::page_object_group::PdfPageGroupObject;
 use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
@@ -123,7 +124,7 @@ impl<'a> PdfPageObjects<'a> {
         }
     }
 
-    /// Returns an iterator over all the page objects in this [PdfPageObjects] collection.
+    /// Returns an iterator over all the [PdfPageObject] objects in this [PdfPageObjects] collection.
     #[inline]
     pub fn iter(&self) -> PdfPageObjectsIterator {
         PdfPageObjectsIterator::new(self)
@@ -192,7 +193,7 @@ impl<'a> PdfPageObjects<'a> {
             self.bindings,
         )?;
 
-        object.translate(x, y);
+        object.translate(x, y)?;
 
         self.add_text_object(object)
     }
@@ -386,6 +387,20 @@ impl<'a> PdfPageObjects<'a> {
         self.add_path_object(object)
     }
 
+    /// Creates a new object group that can accept any [PdfPageObject] in this [PdfPageObjects]
+    /// collection.
+    ///
+    /// The newly created group will be empty; you will need to manually add to it the objects you
+    /// want to manipulate. Alternatively, you can create a populated group
+    /// from an iterator by calling the iterator's [PdfPageObjectsIterator::into_group()] function.
+    pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
+        PdfPageGroupObject::from_pdfium(
+            self.page_handle,
+            self.bindings,
+            self.do_regenerate_page_content_after_each_change,
+        )
+    }
+
     /// Deletes the given [PdfPageObject] from this [PdfPageObjects] collection. The object's
     /// memory ownership will be removed from the [PdfPage] containing this [PdfPageObjects]
     /// collection, and the updated page object will be returned. It can be added back to a
@@ -533,15 +548,6 @@ impl<'a> PdfPageObjects<'a> {
     /// Likewise, if the given source [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the source page.
-    ///
-    /// Calling this function is equivalent to
-    ///
-    /// ```
-    /// self.take_object_range_from_page(
-    ///     page, // Source
-    ///     page.objects().as_range_inclusive(), // Select all page objects
-    /// );
-    /// ```
     pub fn take_all(&mut self, source: &'a mut PdfPage<'a>) -> Result<(), PdfiumError> {
         self.take_object_range_from_page(source, source.objects().as_range_inclusive())
     }

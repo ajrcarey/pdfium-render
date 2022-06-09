@@ -11,26 +11,27 @@ used by the Google Chromium project.
     
         // Bind to a Pdfium library provided by the operating system.
         // (We could alternatively use a Pdfium library at a known location.)
-        
+
         let pdfium = Pdfium::new(Pdfium::bind_to_system_library()?);
-        
+
         // Open the PDF document...
-  
+
         let document = pdfium.load_pdf_from_file(path, password)?;
-        
+
         // ... set rendering options that will apply to all pages...
-     
+
         let bitmap_render_config = PdfBitmapConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
             .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
-    
+
         // ... then render each page to a bitmap image, saving each image to a JPEG file.
-     
+
         document.pages().iter().for_each(|page| {
             page.get_bitmap_with_config(&bitmap_render_config)?
-                .as_image() // Renders this page to an Image::DynamicImage
-                .as_rgba8()?
+                .as_image() // Renders this page to an Image::DynamicImage...
+                .as_rgba8() // ... then converts it to an Image::Image
+                .ok_or(PdfiumError::ImageError)?
                 .save_with_format(
                   format!("test-page-{}.jpg", page.index()),
                   image::ImageFormat::Jpeg
@@ -52,10 +53,17 @@ editing functions. This is a work in progress.
 
 ## Examples
 
-A variety of short, commented examples that demonstrate all the major Pdfium document handling
-features -- rendering pages to bitmaps, text extraction, page object introspection, dynamic
-creation of new documents, document concatenation, multi-page tiled output, and compiling to WASM --
-are available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
+Short, commented examples that demonstrate all the major Pdfium document handling features are
+available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. These examples cover:
+
+* Rendering pages to bitmaps.
+* Text extraction.
+* Page object introspection.
+* Creation of new documents.
+* Document concatenation.
+* Multi-page tiled output.
+* Watermarking.
+* Compiling to WASM.
 
 ## What's new
 
@@ -79,7 +87,12 @@ The initial editing focus has been on providing creation and editing support for
 Later 0.7.x releases will add similar support for creating and editing images, paths, and the other
 types of page objects supported by Pdfium.
 
-Version 0.7.1 adds basic path support and construction of path segments.
+Version 0.7.1 adds path support, construction of both straight and curved path segments, and
+convenience functions to easily create filled and stroked rectangles, ellipses, and circles.
+
+Version 0.7.2 adds object groups for manipulating and transforming groups of page objects as if they
+were a single object, and the `PdfPages::watermark()` function for applying individualized
+watermarks to any or all pages in a document.
  
 ## Porting existing Pdfium code from other languages
 
@@ -253,8 +266,11 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
-* 0.7.1: adds path segment creation to the `PdfPagePathObject` object, rectangle and circle
-  convenience functions, and the `PdfPageObjects::add_path_object()` function.
+* 0.7.2: adds object groups for manipulating and transforming groups of page objects as if they
+  were a single object, and the `PdfPages::watermark()` function for applying individualized
+  watermarks to any or all pages in a document.
+* 0.7.1: adds path segment creation to the `PdfPagePathObject` object, convenience functions for
+  quickly creating rectangles, ellipses, and circles, and the `PdfPageObjects::add_path_object()` function.
 * 0.7.0: adds `PdfPermissions` collection, adds document loading and saving support, adds
   initial creation and editing support for documents, pages, and text objects,
   and improves WASM document file handling.

@@ -18,7 +18,6 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page::PdfPoints;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::page_objects::PdfPageObjects;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 
@@ -133,7 +132,6 @@ impl PdfPageTextRenderMode {
 /// use the [PdfPageTextObject::new()] function. The detached page text object can later
 /// be attached to a page by using the `PdfPageObjects::add_object()` function.
 pub struct PdfPageTextObject<'a> {
-    is_object_memory_owned_by_page: bool,
     object_handle: FPDF_PAGEOBJECT,
     page_handle: Option<FPDF_PAGE>,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -147,7 +145,6 @@ impl<'a> PdfPageTextObject<'a> {
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextObject {
-            is_object_memory_owned_by_page: true,
             object_handle,
             page_handle: Some(page_handle),
             bindings,
@@ -178,7 +175,6 @@ impl<'a> PdfPageTextObject<'a> {
             }
         } else {
             let mut result = PdfPageTextObject {
-                is_object_memory_owned_by_page: false,
                 object_handle: handle,
                 page_handle: None,
                 bindings,
@@ -216,11 +212,58 @@ impl<'a> PdfPageTextObject<'a> {
         )
     }
 
+    /// Returns the text rendering mode for the text contained within this [PdfPageTextObject].
+    pub fn render_mode(&self) -> PdfPageTextRenderMode {
+        PdfPageTextRenderMode::from_pdfium(
+            self.get_bindings()
+                .FPDFTextObj_GetTextRenderMode(self.object_handle) as u32,
+        )
+        .unwrap_or(PdfPageTextRenderMode::Unknown)
+    }
+
+    /// Returns the font size of the text contained within this [PdfPageTextObject],
+    /// expressed in [PdfPoints].
+    pub fn font_size(&self) -> PdfPoints {
+        let mut result = 0.0;
+
+        if self.get_bindings().is_true(
+            self.get_bindings()
+                .FPDFTextObj_GetFontSize(self.object_handle, &mut result),
+        ) {
+            PdfPoints::new(result)
+        } else {
+            PdfPoints::ZERO
+        }
+    }
+
+    /// Returns the [PdfFont] used to render the text contained within this [PdfPageTextObject].
+    pub fn font(&self) -> PdfFont {
+        PdfFont::from_pdfium(
+            self.get_bindings().FPDFTextObj_GetFont(self.object_handle),
+            self.get_bindings(),
+        )
+    }
+
     /// Returns the text contained within this [PdfPageTextObject].
     ///
     /// Text retrieval in Pdfium is handled by the `PdfPageText` object owned by the `PdfPage`
     /// containing this [PdfPageTextObject]. If this text object has not been attached to a page
     /// then text retrieval will be unavailable and an empty string will be returned.
+    ///
+    /// When retrieving the text from many [PdfPageTextObject] objects (for instance, as part of
+    /// a loop or an iterator), it may be faster to open the `PdfPageText` object once and keep
+    /// it open while processing the text objects, like so:
+    ///
+    /// ```
+    /// let text_page = page.text()?; // Opens the text page once.
+    ///
+    /// for object in <some object iterator> {
+    ///     let object_text = text_page.for_object(object)?;
+    /// }
+    /// ```
+    ///
+    /// The `PdfPageText` object will be closed when the binding to it (`text_page` in the example above)
+    /// falls out of scope.
     pub fn text(&self) -> String {
         // Retrieving the text from Pdfium is a two-step operation. First, we call
         // FPDFTextObj_GetText() with a null buffer; this will retrieve the length of
@@ -275,38 +318,6 @@ impl<'a> PdfPageTextObject<'a> {
         }
     }
 
-    /// Returns the text rendering mode for the text contained within this [PdfPageTextObject].
-    pub fn render_mode(&self) -> PdfPageTextRenderMode {
-        PdfPageTextRenderMode::from_pdfium(
-            self.get_bindings()
-                .FPDFTextObj_GetTextRenderMode(self.object_handle) as u32,
-        )
-        .unwrap_or(PdfPageTextRenderMode::Unknown)
-    }
-
-    /// Returns the font size of the text contained within this [PdfPageTextObject],
-    /// expressed in [PdfPoints].
-    pub fn font_size(&self) -> PdfPoints {
-        let mut result = 0.0;
-
-        if self.get_bindings().is_true(
-            self.get_bindings()
-                .FPDFTextObj_GetFontSize(self.object_handle, &mut result),
-        ) {
-            PdfPoints::new(result)
-        } else {
-            PdfPoints::ZERO
-        }
-    }
-
-    /// Returns the [PdfFont] used to render the text contained within this [PdfPageTextObject].
-    pub fn font(&self) -> PdfFont {
-        PdfFont::from_pdfium(
-            self.get_bindings().FPDFTextObj_GetFont(self.object_handle),
-            self.get_bindings(),
-        )
-    }
-
     /// Sets the text contained within this [PdfPageTextObject], replacing any existing text.
     ///
     /// A single space will be used if the given text is empty, in order to avoid
@@ -352,55 +363,27 @@ impl<'a> PdfPageTextObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     #[inline]
-    fn get_handle(&self) -> &FPDF_PAGEOBJECT {
+    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
         &self.object_handle
+    }
+
+    #[inline]
+    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
+        &self.page_handle
+    }
+
+    #[inline]
+    fn set_page_handle(&mut self, page: FPDF_PAGE) {
+        self.page_handle = Some(page);
+    }
+
+    #[inline]
+    fn clear_page_handle(&mut self) {
+        self.page_handle = None;
     }
 
     #[inline]
     fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
-    }
-
-    #[inline]
-    fn is_object_memory_owned_by_page(&self) -> bool {
-        self.is_object_memory_owned_by_page
-    }
-
-    fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
-        let page_handle = *page_objects.get_page_handle();
-
-        self.bindings
-            .FPDFPage_InsertObject(page_handle, self.object_handle);
-
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            self.page_handle = Some(page_handle);
-            self.is_object_memory_owned_by_page = true;
-
-            Ok(())
-        }
-    }
-
-    fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
-        if let Some(page_handle) = self.page_handle {
-            if self.bindings.is_true(
-                self.bindings
-                    .FPDFPage_RemoveObject(page_handle, self.object_handle),
-            ) {
-                self.page_handle = None;
-                self.is_object_memory_owned_by_page = false;
-
-                Ok(())
-            } else {
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.bindings
-                        .get_pdfium_last_error()
-                        .unwrap_or(PdfiumInternalError::Unknown),
-                ))
-            }
-        } else {
-            Err(PdfiumError::PageObjectNotAttachedToPage)
-        }
     }
 }

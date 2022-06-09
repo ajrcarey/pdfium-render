@@ -50,6 +50,9 @@ pub enum PdfiumError {
     UnknownPdfSecurityHandlerRevision,
     UnsupportedPdfPageObjectType,
 
+    /// The setting cannot be returned because this `PdfPageGroupObject` is empty.
+    EmptyPageObjectGroup,
+
     /// A call to a internal Pdfium `FPDF_*` function returned a value indicating failure.
     ///
     /// For Pdfium functions that return enumerations, this means the function returned
@@ -100,6 +103,9 @@ pub enum PdfiumError {
     /// Please file an issue: https://github.com/ajrcarey/pdfium-render/issues
     #[cfg(target_arch = "wasm32")]
     NoPreviouslyCachedFunctionSet,
+
+    /// An error occurred during an image processing operation.
+    ImageError,
 
     /// An I/O error occurred during a Pdfium file operation.
     IoError(std::io::Error),
