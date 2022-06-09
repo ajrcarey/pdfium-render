@@ -110,6 +110,7 @@ pub struct PdfFont<'a> {
     built_in: Option<PdfFontBuiltin>,
     handle: FPDF_FONT,
     bindings: &'a dyn PdfiumLibraryBindings,
+    is_font_memory_loaded: bool,
 }
 
 impl<'a> PdfFont<'a> {
@@ -119,6 +120,7 @@ impl<'a> PdfFont<'a> {
             built_in: None,
             handle,
             bindings,
+            is_font_memory_loaded: false,
         }
     }
 
@@ -133,6 +135,7 @@ impl<'a> PdfFont<'a> {
         );
 
         result.built_in = Some(font);
+        result.is_font_memory_loaded = true;
 
         result
     }
@@ -278,7 +281,11 @@ impl<'a> PdfFont<'a> {
                 ))
             }
         } else {
-            Ok(PdfFont::from_pdfium(handle, bindings))
+            let mut result = PdfFont::from_pdfium(handle, bindings);
+
+            result.is_font_memory_loaded = true;
+
+            Ok(result)
         }
     }
 
@@ -535,6 +542,19 @@ impl<'a> Drop for PdfFont<'a> {
     /// Closes this [PdfFont], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings.FPDFFont_Close(self.handle);
+        // The documentation for FPDFText_LoadFont() and FPDFText_LoadStandardFont() both state
+        // that the font loaded by the function can be closed by calling FPDFFont_Close().
+        // I had taken this to mean that _any_ FPDF_Font handle returned from a Pdfium function
+        // should be closed via FPDFFont_Close(), but testing suggests this is not the case;
+        // rather, it is only fonts specifically loaded by calling FPDFText_LoadFont() or
+        // FPDFText_LoadStandardFont() that need to be actively closed.
+
+        // In other words, retrieving a handle to a font that already exists in a document evidently
+        // does not allocate any additional resources, so we don't need to free anything.
+        // (Indeed, if we try to, Pdfium segfaults.)
+
+        if self.is_font_memory_loaded {
+            self.bindings.FPDFFont_Close(self.handle);
+        }
     }
 }
