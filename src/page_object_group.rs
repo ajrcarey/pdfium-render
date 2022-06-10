@@ -1,5 +1,5 @@
 //! Defines the [PdfPageGroupObject] struct, exposing functionality related to a group of
-//! page objects contained in the same [PdfPageObjects] collection.
+//! page objects contained in the same `PdfPageObjects` collection.
 
 use crate::bindgen::{FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
@@ -14,9 +14,14 @@ use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_objects::PdfPageObjectIndex;
 use crate::prelude::PdfPageObjectCommon;
 
-/// A group of `PdfPageObject` objects contained in the same [PdfPageObjects] collection.
+/// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
 /// The page objects contained in the group can be manipulated and transformed together
 /// as if they were a single object.
+///
+/// Groups are bound to specific pages in the document. To create an empty group, use either the
+/// `PdfPageObjects::create_new_group()` function or the [PdfPageGroupObject::empty()] function.
+/// To create a populated group, use one of the [PdfPageGroupObject::new()],
+/// [PdfPageGroupObject::from_vec()], or [PdfPageGroupObject::from_slice()] functions.
 pub struct PdfPageGroupObject<'a> {
     object_handles: Vec<FPDF_PAGEOBJECT>,
     page: FPDF_PAGE,
@@ -53,6 +58,36 @@ impl<'a> PdfPageGroupObject<'a> {
 
         for mut object in page.objects().iter().filter(predicate) {
             result.push(&mut object)?;
+        }
+
+        Ok(result)
+    }
+
+    /// Creates a new [PdfPageGroupObject] that includes the given page objects on the
+    /// given [PdfPage].
+    #[inline]
+    pub fn from_vec(
+        page: &'a PdfPage<'a>,
+        mut objects: Vec<PdfPageObject<'a>>,
+    ) -> Result<Self, PdfiumError> {
+        Self::from_slice(page, objects.as_mut_slice())
+    }
+
+    /// Creates a new [PdfPageGroupObject] that includes the given page objects on the
+    /// given [PdfPage].
+    pub fn from_slice(
+        page: &'a PdfPage<'a>,
+        objects: &mut [PdfPageObject<'a>],
+    ) -> Result<Self, PdfiumError> {
+        let mut result = Self::from_pdfium(
+            *page.get_handle(),
+            page.get_bindings(),
+            page.content_regeneration_strategy()
+                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        );
+
+        for object in objects.iter_mut() {
+            result.push(object)?;
         }
 
         Ok(result)
@@ -146,13 +181,13 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPageGroupObjectIterator::new(self)
     }
 
-    /// Returns the text contained within all [PdfPageTextObject] objects in this group.
+    /// Returns the text contained within all `PdfPageTextObject` objects in this group.
     #[inline]
     pub fn text(&self) -> String {
         self.text_separated("")
     }
 
-    /// Returns the text contained within all [PdfPageTextObject] objects in this group,
+    /// Returns the text contained within all `PdfPageTextObject` objects in this group,
     /// separating each text fragment with the given separator.
     pub fn text_separated(&self, separator: &str) -> String {
         let mut strings = Vec::with_capacity(self.len());

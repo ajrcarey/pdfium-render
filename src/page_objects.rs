@@ -388,11 +388,11 @@ impl<'a> PdfPageObjects<'a> {
     }
 
     /// Creates a new object group that can accept any [PdfPageObject] in this [PdfPageObjects]
-    /// collection.
+    /// collection. The newly created group will be empty; you will need to manually add to it
+    /// the objects you want to manipulate.
     ///
-    /// The newly created group will be empty; you will need to manually add to it the objects you
-    /// want to manipulate. Alternatively, you can create a populated group
-    /// from an iterator by calling the iterator's [PdfPageObjectsIterator::into_group()] function.
+    /// To create a populated group, call the [PdfPageGroupObjects::new()] function with
+    /// a predicate function that selects the objects on this page to include in the new group.
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
         PdfPageGroupObject::from_pdfium(
             self.page_handle,
