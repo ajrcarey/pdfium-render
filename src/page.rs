@@ -462,7 +462,7 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
         // We can't know for sure whether the user will update any page objects,
-        // and we can't track what happens in the PdfPageObjectsMut after we return
+        // and we can't track what happens in the PdfPageObjects after we return
         // a mutable reference to it, but if the user is going to the trouble of retrieving
         // a mutable reference it seems best to assume they're intending to update something.
 

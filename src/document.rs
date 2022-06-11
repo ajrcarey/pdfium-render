@@ -189,31 +189,31 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns the collection of [PdfPages] in this [PdfDocument].
     #[inline]
-    pub fn pages(&self) -> PdfPages {
+    pub fn pages(&'a self) -> PdfPages<'a> {
         PdfPages::new(self, self.bindings)
     }
 
     /// Returns the collection of [PdfMetadata] tags in this [PdfDocument].
     #[inline]
-    pub fn metadata(&self) -> PdfMetadata {
+    pub fn metadata(&'a self) -> PdfMetadata<'a> {
         PdfMetadata::new(self, self.bindings)
     }
 
     /// Returns a reference to the [PdfForm] embedded in this [PdfDocument], if any.
     #[inline]
-    pub fn form(&self) -> Option<&PdfForm> {
+    pub fn form(&'a self) -> Option<&PdfForm<'a>> {
         self.form.as_ref()
     }
 
     /// Returns the collection of [PdfBookmarks] in this [PdfDocument].
     #[inline]
-    pub fn bookmarks(&self) -> PdfBookmarks {
+    pub fn bookmarks(&'a self) -> PdfBookmarks<'a> {
         PdfBookmarks::new(self, self.bindings)
     }
 
     /// Returns the collection of [PdfPermissions] for this [PdfDocument].
     #[inline]
-    pub fn permissions(&self) -> PdfPermissions {
+    pub fn permissions(&'a self) -> PdfPermissions<'a> {
         PdfPermissions::new(self)
     }
 

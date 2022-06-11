@@ -7,12 +7,11 @@ use crate::color::PdfColor;
 use crate::error::PdfiumError;
 use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints, PdfRect};
 use crate::page_object::{
-    PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectFillMode, PdfPageObjectLineCap,
-    PdfPageObjectLineJoin,
+    PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectCommon, PdfPageObjectFillMode,
+    PdfPageObjectLineCap, PdfPageObjectLineJoin,
 };
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_objects::PdfPageObjectIndex;
-use crate::prelude::PdfPageObjectCommon;
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
 /// The page objects contained in the group can be manipulated and transformed together
@@ -30,6 +29,7 @@ pub struct PdfPageGroupObject<'a> {
 }
 
 impl<'a> PdfPageGroupObject<'a> {
+    #[inline]
     pub(crate) fn from_pdfium(
         page: FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
@@ -43,18 +43,24 @@ impl<'a> PdfPageGroupObject<'a> {
         }
     }
 
+    /// Creates a new, empty [PdfPageGroupObject] that can be used to hold any page objects
+    /// on the given [PdfPage].
+    pub fn empty(page: &'a PdfPage<'a>) -> Self {
+        Self::from_pdfium(
+            *page.get_handle(),
+            page.get_bindings(),
+            page.content_regeneration_strategy()
+                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        )
+    }
+
     /// Creates a new [PdfPageGroupObject] that includes any page objects on the given [PdfPage]
     /// matching the given predicate function.
     pub fn new<F>(page: &'a PdfPage<'a>, predicate: F) -> Result<Self, PdfiumError>
     where
         F: Fn(&PdfPageObject) -> bool,
     {
-        let mut result = Self::from_pdfium(
-            *page.get_handle(),
-            page.get_bindings(),
-            page.content_regeneration_strategy()
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
+        let mut result = Self::empty(page);
 
         for mut object in page.objects().iter().filter(predicate) {
             result.push(&mut object)?;
@@ -152,6 +158,40 @@ impl<'a> PdfPageGroupObject<'a> {
         for object in objects.iter_mut() {
             self.push(object)?;
         }
+
+        // Regenerate page content now, if necessary.
+
+        self.do_regenerate_page_content_after_each_change =
+            do_regenerate_page_content_after_each_change;
+
+        if self.do_regenerate_page_content_after_each_change {
+            PdfPage::regenerate_content_immut_for_handle(self.page, self.bindings)?;
+        }
+
+        Ok(())
+    }
+
+    /// Removes every [PdfPageObject] in this group from the group's containing [PdfPage].
+    ///
+    /// Each object's memory ownership will be removed from the [PdfPageObjects] collection for
+    /// this group's containing [PdfPage]. The objects will also be removed from this group,
+    /// and the memory owned by each object will be freed. The group will be empty at the end of
+    /// this operation.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn remove_objects_from_page(&mut self) -> Result<(), PdfiumError> {
+        // Hold off regenerating page content until all objects have been processed.
+
+        let do_regenerate_page_content_after_each_change =
+            self.do_regenerate_page_content_after_each_change;
+
+        self.do_regenerate_page_content_after_each_change = false;
+
+        self.apply_to_each(|object| object.remove_object_from_page())
+            .map(|_| self.object_handles.clear())?;
 
         // Regenerate page content now, if necessary.
 

@@ -71,8 +71,8 @@ pub mod prelude {
         page_annotation_popup::*, page_annotation_square::*, page_annotation_squiggly::*,
         page_annotation_stamp::*, page_annotation_strikeout::*, page_annotation_text::*,
         page_annotation_underline::*, page_annotation_unsupported::*, page_annotations::*,
-        page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_image::*,
-        page_object_path::*, page_object_shading::*, page_object_text::*,
+        page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_group::*,
+        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
         page_object_unsupported::*, page_objects::*, page_size::*, page_text::*, pages::*,
         pdfium::*, permissions::*,
     };

@@ -95,7 +95,7 @@ impl<'a> PdfPageObjects<'a> {
     }
 
     /// Returns a single [PdfPageObject] from this [PdfPageObjects] collection.
-    pub fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject, PdfiumError> {
+    pub fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::PageObjectIndexOutOfBounds);
         }
@@ -401,7 +401,7 @@ impl<'a> PdfPageObjects<'a> {
         )
     }
 
-    /// Deletes the given [PdfPageObject] from this [PdfPageObjects] collection. The object's
+    /// Removes the given [PdfPageObject] from this [PdfPageObjects] collection. The object's
     /// memory ownership will be removed from the [PdfPage] containing this [PdfPageObjects]
     /// collection, and the updated page object will be returned. It can be added back to a
     /// page objects collection or dropped, at which point the memory owned by the object will
@@ -410,7 +410,7 @@ impl<'a> PdfPageObjects<'a> {
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
-    pub fn delete_object(
+    pub fn remove_object(
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
@@ -429,19 +429,19 @@ impl<'a> PdfPageObjects<'a> {
         })
     }
 
-    /// Deletes the [PdfPageObject] at the given index from this [PdfPageObjects] collection.
+    /// Removes the [PdfPageObject] at the given index from this [PdfPageObjects] collection.
     /// The object's memory ownership will be removed from the [PdfPage] containing this [PdfPageObjects]
     /// collection, and the updated page object will be returned. It can be added back into a
     /// page objects collection or discarded, at which point the memory owned by the object will
-    /// be dropped.
+    /// be freed.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
-    pub fn delete_object_at_index(
+    pub fn remove_object_at_index(
         &mut self,
         index: PdfPageObjectIndex,
-    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+    ) -> Result<PdfPageObject, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::PageObjectIndexOutOfBounds);
         }
@@ -462,7 +462,7 @@ impl<'a> PdfPageObjects<'a> {
                 ))
             }
         } else {
-            self.delete_object(PdfPageObject::from_pdfium(
+            self.remove_object(PdfPageObject::from_pdfium(
                 object_handle,
                 self.page_handle,
                 self.bindings,
@@ -482,7 +482,7 @@ impl<'a> PdfPageObjects<'a> {
     /// will be triggered on the source page.
     pub fn take_object_from_page(
         &mut self,
-        source: &'a mut PdfPage<'a>,
+        source: &mut PdfPage,
         source_page_object_index: PdfPageObjectIndex,
     ) -> Result<(), PdfiumError> {
         self.take_object_range_from_page(
@@ -504,7 +504,7 @@ impl<'a> PdfPageObjects<'a> {
     /// will be triggered on the source page.
     pub fn take_object_range_from_page(
         &mut self,
-        source: &'a mut PdfPage<'a>,
+        source: &mut PdfPage,
         source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
     ) -> Result<(), PdfiumError> {
         self.take_object_range_from_handles(
@@ -548,7 +548,7 @@ impl<'a> PdfPageObjects<'a> {
     /// Likewise, if the given source [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the source page.
-    pub fn take_all(&mut self, source: &'a mut PdfPage<'a>) -> Result<(), PdfiumError> {
+    pub fn take_all(&mut self, source: &mut PdfPage) -> Result<(), PdfiumError> {
         self.take_object_range_from_page(source, source.objects().as_range_inclusive())
     }
 }
