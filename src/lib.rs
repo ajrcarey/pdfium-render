@@ -100,7 +100,51 @@ pub mod tests {
 
     #[test]
     #[cfg(not(feature = "static"))]
-    fn dynamic_bindings() -> Result<(), PdfiumError> {
+    fn test_readme_example() -> Result<(), PdfiumError> {
+        // Runs the code in the main example at the top of README.md.
+
+        fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
+            // Renders each page in the given test PDF file to a separate JPEG file.
+
+            // Bind to a Pdfium library in the same directory as our application;
+            // failing that, fall back to using a Pdfium library provided by the operating system.
+
+            let pdfium = Pdfium::new(
+                Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+                    .or_else(|_| Pdfium::bind_to_system_library())?,
+            );
+
+            // Open the PDF document...
+
+            let document = pdfium.load_pdf_from_file(path, password)?;
+
+            // ... set rendering options that will apply to all pages...
+
+            let bitmap_render_config = PdfBitmapConfig::new()
+                .set_target_width(2000)
+                .set_maximum_height(2000)
+                .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+
+            // ... then render each page to a bitmap image, saving each image to a JPEG file.
+
+            for (index, page) in document.pages().iter().enumerate() {
+                page.get_bitmap_with_config(&bitmap_render_config)?
+                    .as_image() // Renders this page to an Image::DynamicImage...
+                    .as_rgba8() // ... then converts it to an Image::Image
+                    .ok_or(PdfiumError::ImageError)?
+                    .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg)
+                    .map_err(|_| PdfiumError::ImageError)?;
+            }
+
+            Ok(())
+        }
+
+        export_pdf_to_jpegs("./test/export-test.pdf", None)
+    }
+
+    #[test]
+    #[cfg(not(feature = "static"))]
+    fn test_dynamic_bindings() -> Result<(), PdfiumError> {
         let pdfium = Pdfium::new(
             Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
                 .or_else(|_| Pdfium::bind_to_system_library())?,
@@ -131,7 +175,7 @@ pub mod tests {
 
     #[test]
     #[cfg(feature = "static")]
-    fn static_bindings() {
+    fn test_static_bindings() {
         use crate::prelude::*;
 
         // Simply checks that the static bindings contain no compilation errors.

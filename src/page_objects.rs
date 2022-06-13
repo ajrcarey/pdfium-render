@@ -143,10 +143,20 @@ impl<'a> PdfPageObjects<'a> {
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         object.add_object_to_page(self).and_then(|_| {
             if self.do_regenerate_page_content_after_each_change {
-                self.bindings.FPDFPage_GenerateContent(self.page_handle);
+                if !self
+                    .bindings
+                    .is_true(self.bindings.FPDFPage_GenerateContent(self.page_handle))
+                {
+                    if let Some(error) = self.bindings.get_pdfium_last_error() {
+                        Err(PdfiumError::PdfiumLibraryInternalError(error))
+                    } else {
+                        // This would be an unusual situation; an FPDF_BOOL result indicating failure,
+                        // yet pdfium's error code indicates success.
 
-                if let Some(error) = self.bindings.get_pdfium_last_error() {
-                    Err(PdfiumError::PdfiumLibraryInternalError(error))
+                        Err(PdfiumError::PdfiumLibraryInternalError(
+                            PdfiumInternalError::Unknown,
+                        ))
+                    }
                 } else {
                     Ok(object)
                 }
@@ -387,12 +397,24 @@ impl<'a> PdfPageObjects<'a> {
         self.add_path_object(object)
     }
 
-    /// Creates a new object group that can accept any [PdfPageObject] in this [PdfPageObjects]
-    /// collection. The newly created group will be empty; you will need to manually add to it
-    /// the objects you want to manipulate.
-    ///
-    /// To create a populated group, call the [PdfPageGroupObjects::new()] function with
-    /// a predicate function that selects the objects on this page to include in the new group.
+    /// Creates a new [PdfPageGroupObject] object group that includes any page objects in this
+    /// [PdfPageObjects] collection matching the given predicate function.
+    pub fn create_group<F>(&'a self, predicate: F) -> Result<PdfPageGroupObject<'a>, PdfiumError>
+    where
+        F: Fn(&PdfPageObject) -> bool,
+    {
+        let mut result = self.create_empty_group();
+
+        for mut object in self.iter().filter(predicate) {
+            result.push(&mut object)?;
+        }
+
+        Ok(result)
+    }
+
+    /// Creates a new [PdfPageGroupObject] object group that can accept any [PdfPageObject]
+    /// in this [PdfPageObjects] collection. The newly created group will be empty;
+    /// you will need to manually add to it the objects you want to manipulate.
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
         PdfPageGroupObject::from_pdfium(
             self.page_handle,

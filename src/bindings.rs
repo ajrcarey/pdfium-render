@@ -1471,7 +1471,13 @@ pub trait PdfiumLibraryBindings {
             crate::bindgen::FPDF_ERR_PASSWORD => Some(PdfiumInternalError::PasswordError),
             crate::bindgen::FPDF_ERR_SECURITY => Some(PdfiumInternalError::SecurityError),
             crate::bindgen::FPDF_ERR_PAGE => Some(PdfiumInternalError::PageError),
-            _ => Some(PdfiumInternalError::Unknown),
+            // The Pdfium documentation says "... if the previous SDK call succeeded, [then] the
+            // return value of this function is not defined". On Linux, at least, a return value
+            // of FPDF_ERR_SUCCESS seems to be consistently returned; on Windows, however, the
+            // return values are indeed unpredictable. See https://github.com/ajrcarey/pdfium-render/issues/24.
+            // Therefore, if the return value does not match one of the FPDF_ERR_* constants, we must
+            // assume success.
+            _ => None,
         }
     }
 }

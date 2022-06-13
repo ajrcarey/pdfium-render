@@ -8,11 +8,14 @@ used by the Google Chromium project.
 
     fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
         // Renders each page in the given test PDF file to a separate JPEG file.
-    
-        // Bind to a Pdfium library provided by the operating system.
-        // (We could alternatively use a Pdfium library at a known location.)
 
-        let pdfium = Pdfium::new(Pdfium::bind_to_system_library()?);
+        // Bind to a Pdfium library in the same directory as our application;
+        // failing that, fall back to using a Pdfium library provided by the operating system.
+
+        let pdfium = Pdfium::new(
+            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+                .or_else(|_| Pdfium::bind_to_system_library())?,
+        );
 
         // Open the PDF document...
 
@@ -27,16 +30,19 @@ used by the Google Chromium project.
 
         // ... then render each page to a bitmap image, saving each image to a JPEG file.
 
-        document.pages().iter().for_each(|page| {
+        for (index, page) in document.pages().iter().enumerate() {
             page.get_bitmap_with_config(&bitmap_render_config)?
                 .as_image() // Renders this page to an Image::DynamicImage...
                 .as_rgba8() // ... then converts it to an Image::Image
                 .ok_or(PdfiumError::ImageError)?
                 .save_with_format(
-                  format!("test-page-{}.jpg", page.index()),
-                  image::ImageFormat::Jpeg
-                )?;
-        });
+                    format!("test-page-{}.jpg", index), 
+                    image::ImageFormat::Jpeg
+                )
+                .map_err(|_| PdfiumError::ImageError)?;
+        }
+
+        Ok(())
     }
 ```
 
@@ -258,7 +264,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.1, 222 (60%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.5, 222 (60%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -266,6 +272,12 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.5: corrects a bug in error handling on Windows. See <https://github.com/ajrcarey/pdfium-render/issues/24>
+  for more information.
+* 0.7.4: adds the `PdfPageGroupObject::remove_objects_from_page()` function; renamed
+  `PdfPageObjects::delete_object()` and `PdfPageObjects::delete_object_at_index()` functions to
+  `PdfPageObjects::remove_object()` and `PdfPageObjects::remove_object_at_index()` as these
+  names better reflect the underlying operation that occurs.
 * 0.7.3: corrects a bug in the implementation of `PdfPages::append()` introduced in 0.7.2. 
 * 0.7.2: adds object groups for manipulating and transforming groups of page objects as if they
   were a single object, and the `PdfPages::watermark()` function for applying individualized

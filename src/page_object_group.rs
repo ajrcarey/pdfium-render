@@ -60,7 +60,12 @@ impl<'a> PdfPageGroupObject<'a> {
     where
         F: Fn(&PdfPageObject) -> bool,
     {
-        let mut result = Self::empty(page);
+        let mut result = Self::from_pdfium(
+            *page.get_handle(),
+            page.get_bindings(),
+            page.content_regeneration_strategy()
+                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        );
 
         for mut object in page.objects().iter().filter(predicate) {
             result.push(&mut object)?;
@@ -173,7 +178,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
     /// Removes every [PdfPageObject] in this group from the group's containing [PdfPage].
     ///
-    /// Each object's memory ownership will be removed from the [PdfPageObjects] collection for
+    /// Each object's memory ownership will be removed from the `PdfPageObjects` collection for
     /// this group's containing [PdfPage]. The objects will also be removed from this group,
     /// and the memory owned by each object will be freed. The group will be empty at the end of
     /// this operation.
