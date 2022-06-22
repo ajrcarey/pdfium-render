@@ -49,6 +49,9 @@ pub enum PdfiumError {
     UnknownPdfAnnotationType,
     UnknownPdfSecurityHandlerRevision,
     UnsupportedPdfPageObjectType,
+    TextSegmentIndexOutOfBounds,
+    CharIndexOutOfBounds,
+    NoCharsInPageObject,
 
     /// The setting cannot be returned because this `PdfPageGroupObject` is empty.
     EmptyPageObjectGroup,

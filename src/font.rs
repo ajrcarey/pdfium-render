@@ -11,7 +11,7 @@ use bitflags::bitflags;
 use std::os::raw::{c_char, c_int, c_uint};
 
 bitflags! {
-    struct FpdfFontDescriptorFlags: u32 {
+    pub(crate) struct FpdfFontDescriptorFlags: u32 {
         const FIXED_PITCH_BIT_1 =  0b00000000000000000000000000000001;
         const SERIF_BIT_2 =        0b00000000000000000000000000000010;
         const SYMBOLIC_BIT_3 =     0b00000000000000000000000000000100;

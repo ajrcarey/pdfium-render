@@ -17,7 +17,10 @@ use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page::PdfPoints;
+use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::page_text::PdfPageText;
+use crate::page_text_chars::PdfPageTextChars;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 
@@ -221,9 +224,24 @@ impl<'a> PdfPageTextObject<'a> {
         .unwrap_or(PdfPageTextRenderMode::Unknown)
     }
 
-    /// Returns the font size of the text contained within this [PdfPageTextObject],
-    /// expressed in [PdfPoints].
-    pub fn font_size(&self) -> PdfPoints {
+    /// Returns the effective size of the text when rendered, taking into account both the
+    /// font size specified in this text object as well as any vertical scale factor applied
+    /// to the text object's transformation matrix.
+    ///
+    /// To retrieve only the specified font size, ignoring any vertical scaling, use the
+    /// [PdfPageTextObject::unscaled_font_size()] function.
+    #[inline]
+    pub fn scaled_font_size(&self) -> PdfPoints {
+        PdfPoints::new(self.unscaled_font_size().value * (self.get_vertical_scale() as f32))
+    }
+
+    /// Returns the font size of the text specified in this [PdfPageTextObject].
+    ///
+    /// Note that the effective size of the text when rendered may differ from the font size
+    /// if a scaling factor has been applied to this text object's transformation matrix.
+    /// To retrieve the effective font size, taking vertical scaling into account, use the
+    /// [PdfPageTextObject::scaled_font_size()] function.
+    pub fn unscaled_font_size(&self) -> PdfPoints {
         let mut result = 0.0;
 
         if self.get_bindings().is_true(
@@ -246,12 +264,12 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Returns the text contained within this [PdfPageTextObject].
     ///
-    /// Text retrieval in Pdfium is handled by the `PdfPageText` object owned by the `PdfPage`
+    /// Text retrieval in Pdfium is handled by the [PdfPageText] object owned by the `PdfPage`
     /// containing this [PdfPageTextObject]. If this text object has not been attached to a page
     /// then text retrieval will be unavailable and an empty string will be returned.
     ///
     /// When retrieving the text from many [PdfPageTextObject] objects (for instance, as part of
-    /// a loop or an iterator), it may be faster to open the `PdfPageText` object once and keep
+    /// a loop or an iterator), it may be faster to open the [PdfPageText] object once and keep
     /// it open while processing the text objects, like so:
     ///
     /// ```
@@ -262,7 +280,7 @@ impl<'a> PdfPageTextObject<'a> {
     /// }
     /// ```
     ///
-    /// The `PdfPageText` object will be closed when the binding to it (`text_page` in the example above)
+    /// The [PdfPageText] object will be closed when the binding to it (`text_page` in the example above)
     /// falls out of scope.
     pub fn text(&self) -> String {
         // Retrieving the text from Pdfium is a two-step operation. First, we call
@@ -358,6 +376,16 @@ impl<'a> PdfPageTextObject<'a> {
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
         }
+    }
+
+    /// Returns a collection of the characters contained within this [PdfPageTextObject],
+    /// using character retrieval functionality provided by the given [PdfPageText] object.
+    ///
+    /// The return result will be empty if this [PdfPageTextObject] is not attached to the `PdfPage`
+    /// containing the given [PdfPageText] object.
+    #[inline]
+    pub fn chars(&self, text: &'a PdfPageText<'a>) -> Result<PdfPageTextChars, PdfiumError> {
+        text.chars_for_object(self)
     }
 }
 

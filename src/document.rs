@@ -187,13 +187,13 @@ impl<'a> PdfDocument<'a> {
         self.output_version = Some(version);
     }
 
-    /// Returns the collection of [PdfPages] in this [PdfDocument].
+    /// Returns a collection of all the [PdfPages] in this [PdfDocument].
     #[inline]
     pub fn pages(&'a self) -> PdfPages<'a> {
         PdfPages::new(self, self.bindings)
     }
 
-    /// Returns the collection of [PdfMetadata] tags in this [PdfDocument].
+    /// Returns a collection of all the [PdfMetadata] tags in this [PdfDocument].
     #[inline]
     pub fn metadata(&'a self) -> PdfMetadata<'a> {
         PdfMetadata::new(self, self.bindings)
@@ -205,13 +205,13 @@ impl<'a> PdfDocument<'a> {
         self.form.as_ref()
     }
 
-    /// Returns the collection of [PdfBookmarks] in this [PdfDocument].
+    /// Returns a collection of all the [PdfBookmarks] in this [PdfDocument].
     #[inline]
     pub fn bookmarks(&'a self) -> PdfBookmarks<'a> {
         PdfBookmarks::new(self, self.bindings)
     }
 
-    /// Returns the collection of [PdfPermissions] for this [PdfDocument].
+    /// Returns a collection of all the [PdfPermissions] applied to this [PdfDocument].
     #[inline]
     pub fn permissions(&'a self) -> PdfPermissions<'a> {
         PdfPermissions::new(self)

@@ -99,6 +99,8 @@ convenience functions to easily create filled and stroked rectangles, ellipses, 
 Version 0.7.2 adds object groups for manipulating and transforming groups of page objects as if they
 were a single object, and the `PdfPages::watermark()` function for applying individualized
 watermarks to any or all pages in a document.
+
+Version 0.7.6 adds additional properties to the `PdfPageText` and `PdfPageObject` objects.
  
 ## Porting existing Pdfium code from other languages
 
@@ -264,7 +266,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.5, 222 (60%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.6, 238 (65%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -272,6 +274,12 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.6: adds retrieval of text settings on a character-by-character basis to the `PdfPageText` and
+  `PdfPageTextObject` objects; adds `PdfPageTextSegment` and `PdfPageTextChar` structs to the 
+  high-level interface; adds retrieval of current transformation settings to all page objects;
+  adds the `PdfPageTextObject::scaled_font_size()` function and renames `PdfPageTextObject::font_size()`
+  to `PdfPageTextObject::unscaled_font_size()` as these names make clearer the differences between
+  scaled and unscaled font sizes in text objects; adds bindings for all remaining `FPDFText_*()` functions.
 * 0.7.5: corrects a bug in error handling on Windows. See <https://github.com/ajrcarey/pdfium-render/issues/24>
   for more information.
 * 0.7.4: adds the `PdfPageGroupObject::remove_objects_from_page()` function; renamed

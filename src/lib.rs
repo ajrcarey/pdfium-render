@@ -51,7 +51,12 @@ pub mod page_object_unsupported;
 pub mod page_objects;
 pub mod page_size;
 pub mod page_text;
+pub mod page_text_char;
+pub mod page_text_chars;
+pub mod page_text_segment;
+pub mod page_text_segments;
 pub mod pages;
+pub mod paragraph;
 pub mod pdfium;
 pub mod permissions;
 mod utils;
@@ -73,7 +78,8 @@ pub mod prelude {
         page_annotation_underline::*, page_annotation_unsupported::*, page_annotations::*,
         page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_group::*,
         page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
-        page_object_unsupported::*, page_objects::*, page_size::*, page_text::*, pages::*,
+        page_object_unsupported::*, page_objects::*, page_size::*, page_text::*, page_text_char::*,
+        page_text_chars::*, page_text_segment::*, page_text_segments::*, pages::*, paragraph::*,
         pdfium::*, permissions::*,
     };
 }

@@ -1222,6 +1222,181 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint {
+        unsafe { crate::bindgen::FPDFText_GetUnicode(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
+        unsafe { crate::bindgen::FPDFText_GetFontSize(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFontInfo(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        flags: *mut c_int,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDFText_GetFontInfo(text_page, index, buffer, buflen, flags) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        unsafe { crate::bindgen::FPDFText_GetFontWeight(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetTextRenderMode(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+    ) -> FPDF_TEXT_RENDERMODE {
+        unsafe { crate::bindgen::FPDFText_GetTextRenderMode(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFillColor(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+        A: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetFillColor(text_page, index, R, G, B, A) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetStrokeColor(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+        A: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetStrokeColor(text_page, index, R, G, B, A) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float {
+        unsafe { crate::bindgen::FPDFText_GetCharAngle(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharBox(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        left: *mut c_double,
+        right: *mut c_double,
+        bottom: *mut c_double,
+        top: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetCharBox(text_page, index, left, right, bottom, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetLooseCharBox(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        rect: *mut FS_RECTF,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetLooseCharBox(text_page, index, rect) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetMatrix(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        matrix: *mut FS_MATRIX,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetMatrix(text_page, index, matrix) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharOrigin(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        x: *mut c_double,
+        y: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetCharOrigin(text_page, index, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharIndexAtPos(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        x: c_double,
+        y: c_double,
+        xTolerance: c_double,
+        yTolerance: c_double,
+    ) -> c_int {
+        unsafe {
+            crate::bindgen::FPDFText_GetCharIndexAtPos(text_page, x, y, xTolerance, yTolerance)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetText(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        start_index: c_int,
+        count: c_int,
+        result: *mut c_ushort,
+    ) -> c_int {
+        unsafe { crate::bindgen::FPDFText_GetText(text_page, start_index, count, result) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_CountRects(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        start_index: c_int,
+        count: c_int,
+    ) -> c_int {
+        unsafe { crate::bindgen::FPDFText_CountRects(text_page, start_index, count) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetRect(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        rect_index: c_int,
+        left: *mut c_double,
+        top: *mut c_double,
+        right: *mut c_double,
+        bottom: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFText_GetRect(text_page, rect_index, left, top, right, bottom) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFText_GetBoundedText(
         &self,
         text_page: FPDF_TEXTPAGE,

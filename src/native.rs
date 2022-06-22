@@ -150,6 +150,22 @@ impl NativePdfiumBindings {
         result.extern_FPDFText_LoadPage()?;
         result.extern_FPDFText_ClosePage()?;
         result.extern_FPDFText_CountChars()?;
+        result.extern_FPDFText_GetUnicode()?;
+        result.extern_FPDFText_GetFontSize()?;
+        result.extern_FPDFText_GetFontInfo()?;
+        result.extern_FPDFText_GetFontWeight()?;
+        result.extern_FPDFText_GetTextRenderMode()?;
+        result.extern_FPDFText_GetFillColor()?;
+        result.extern_FPDFText_GetStrokeColor()?;
+        result.extern_FPDFText_GetCharAngle()?;
+        result.extern_FPDFText_GetCharBox()?;
+        result.extern_FPDFText_GetLooseCharBox()?;
+        result.extern_FPDFText_GetMatrix()?;
+        result.extern_FPDFText_GetCharOrigin()?;
+        result.extern_FPDFText_GetCharIndexAtPos()?;
+        result.extern_FPDFText_GetText()?;
+        result.extern_FPDFText_CountRects()?;
+        result.extern_FPDFText_GetRect()?;
         result.extern_FPDFText_GetBoundedText()?;
         result.extern_FPDFFormObj_CountObjects()?;
         result.extern_FPDFFormObj_GetObject()?;
@@ -1956,6 +1972,267 @@ impl NativePdfiumBindings {
     ) -> Result<Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE) -> c_int>, libloading::Error>
     {
         unsafe { self.library.get(b"FPDFText_CountChars\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetUnicode(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetUnicode\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetFontSize(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_double>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetFontSize\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetFontInfo(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+                flags: *mut c_int,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetFontInfo\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetFontWeight(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetFontWeight\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetTextRenderMode(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_TEXT_RENDERMODE,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetTextRenderMode\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetFillColor(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                R: *mut c_uint,
+                G: *mut c_uint,
+                B: *mut c_uint,
+                A: *mut c_uint,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetFillColor\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetStrokeColor(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                R: *mut c_uint,
+                G: *mut c_uint,
+                B: *mut c_uint,
+                A: *mut c_uint,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetStrokeColor\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetCharAngle(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_float>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetCharAngle\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetCharBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                left: *mut c_double,
+                right: *mut c_double,
+                bottom: *mut c_double,
+                top: *mut c_double,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetCharBox\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetLooseCharBox(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                rect: *mut FS_RECTF,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetLooseCharBox\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetMatrix(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                matrix: *mut FS_MATRIX,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetMatrix\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetCharOrigin(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                index: c_int,
+                x: *mut c_double,
+                y: *mut c_double,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetCharOrigin\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetCharIndexAtPos(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                x: c_double,
+                y: c_double,
+                xTolerance: c_double,
+                yTolerance: c_double,
+            ) -> c_int,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetCharIndexAtPos\0") }
+    }
+
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetText(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                start_index: c_int,
+                count: c_int,
+                result: *mut c_ushort,
+            ) -> c_int,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetText\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_CountRects(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                start_index: c_int,
+                count: c_int,
+            ) -> c_int,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_CountRects\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetRect(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                rect_index: c_int,
+                left: *mut c_double,
+                top: *mut c_double,
+                right: *mut c_double,
+                bottom: *mut c_double,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetRect\0") }
     }
 
     #[inline]
@@ -4437,6 +4714,173 @@ impl PdfiumLibraryBindings for NativePdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFText_CountChars(&self, text_page: FPDF_TEXTPAGE) -> c_int {
         unsafe { self.extern_FPDFText_CountChars().unwrap()(text_page) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint {
+        unsafe { self.extern_FPDFText_GetUnicode().unwrap()(text_page, index) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
+        unsafe { self.extern_FPDFText_GetFontSize().unwrap()(text_page, index) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFontInfo(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        flags: *mut c_int,
+    ) -> c_ulong {
+        unsafe {
+            self.extern_FPDFText_GetFontInfo().unwrap()(text_page, index, buffer, buflen, flags)
+        }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        unsafe { self.extern_FPDFText_GetFontWeight().unwrap()(text_page, index) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetTextRenderMode(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+    ) -> FPDF_TEXT_RENDERMODE {
+        unsafe { self.extern_FPDFText_GetTextRenderMode().unwrap()(text_page, index) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetFillColor(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+        A: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_GetFillColor().unwrap()(text_page, index, R, G, B, A) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetStrokeColor(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+        A: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_GetStrokeColor().unwrap()(text_page, index, R, G, B, A) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float {
+        unsafe { self.extern_FPDFText_GetCharAngle().unwrap()(text_page, index) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharBox(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        left: *mut c_double,
+        right: *mut c_double,
+        bottom: *mut c_double,
+        top: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFText_GetCharBox().unwrap()(text_page, index, left, right, bottom, top)
+        }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetLooseCharBox(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        rect: *mut FS_RECTF,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_GetLooseCharBox().unwrap()(text_page, index, rect) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetMatrix(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        matrix: *mut FS_MATRIX,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_GetMatrix().unwrap()(text_page, index, matrix) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharOrigin(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+        x: *mut c_double,
+        y: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_GetCharOrigin().unwrap()(text_page, index, x, y) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharIndexAtPos(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        x: c_double,
+        y: c_double,
+        xTolerance: c_double,
+        yTolerance: c_double,
+    ) -> c_int {
+        unsafe {
+            self.extern_FPDFText_GetCharIndexAtPos().unwrap()(
+                text_page, x, y, xTolerance, yTolerance,
+            )
+        }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetText(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        start_index: c_int,
+        count: c_int,
+        result: *mut c_ushort,
+    ) -> c_int {
+        unsafe { self.extern_FPDFText_GetText().unwrap()(text_page, start_index, count, result) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_CountRects(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        start_index: c_int,
+        count: c_int,
+    ) -> c_int {
+        unsafe { self.extern_FPDFText_CountRects().unwrap()(text_page, start_index, count) }
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetRect(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        rect_index: c_int,
+        left: *mut c_double,
+        top: *mut c_double,
+        right: *mut c_double,
+        bottom: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFText_GetRect().unwrap()(text_page, rect_index, left, top, right, bottom)
+        }
     }
 
     #[inline]

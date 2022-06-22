@@ -209,6 +209,18 @@ impl PdfRect {
         )
     }
 
+    /// Returns the width of this [PdfRect].
+    #[inline]
+    pub fn width(&self) -> PdfPoints {
+        self.right - self.left
+    }
+
+    /// Returns the height of this [PdfRect].
+    #[inline]
+    pub fn height(&self) -> PdfPoints {
+        self.top - self.bottom
+    }
+
     /// Returns `true` if the bounds of this [PdfRect] lie entirely within the given rectangle.
     #[inline]
     pub fn is_inside(&self, rect: &PdfRect) -> bool {
@@ -288,8 +300,8 @@ pub enum PdfPageContentRegenerationStrategy {
 /// * [PdfPage::objects()], all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {
     handle: FPDF_PAGE,
-    document: &'a PdfDocument<'a>,
     label: Option<String>,
+    document: &'a PdfDocument<'a>,
     regeneration_strategy: PdfPageContentRegenerationStrategy,
     is_content_regeneration_required: bool,
     objects: PdfPageObjects<'a>,
@@ -307,8 +319,8 @@ impl<'a> PdfPage<'a> {
     ) -> Self {
         PdfPage {
             handle,
-            document,
             label,
+            document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             is_content_regeneration_required: false,
             objects: PdfPageObjects::from_pdfium(*document.get_handle(), handle, bindings),
@@ -325,7 +337,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the [PdfDocument] containing this [PdfPage].
     #[inline]
-    pub(crate) fn get_document(&self) -> &PdfDocument {
+    pub(crate) fn get_document(&self) -> &'a PdfDocument<'a> {
         self.document
     }
 
@@ -505,13 +517,7 @@ impl<'a> PdfPage<'a> {
 
         let handle = self.create_empty_bitmap_handle(config.width, config.height, config.format)?;
 
-        Ok(PdfBitmap::from_pdfium(
-            handle,
-            config,
-            self,
-            self.document,
-            self.bindings,
-        ))
+        Ok(PdfBitmap::from_pdfium(handle, config, &self, self.bindings))
     }
 
     /// Returns a [PdfBitmap] with the given pixel dimensions and render-time rotation
@@ -542,8 +548,7 @@ impl<'a> PdfPage<'a> {
                 form_field_highlight: vec![],
                 render_flags: FPDF_ANNOT as i32,
             },
-            self,
-            self.document,
+            &self,
             self.bindings,
         ))
     }

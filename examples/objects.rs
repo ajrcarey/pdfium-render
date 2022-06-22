@@ -39,7 +39,7 @@ pub fn main() -> Result<(), PdfiumError> {
                 println!(
                     "Text: {} {}-pt {:?}: \"{}\"",
                     object.font().name(),
-                    object.font_size().value,
+                    object.unscaled_font_size().value,
                     object.font().weight()?,
                     object.text()
                 );

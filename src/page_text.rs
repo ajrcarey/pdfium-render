@@ -4,8 +4,12 @@
 use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::page::{PdfPage, PdfRect};
+use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
+use crate::page_text_chars::PdfPageTextChars;
+use crate::page_text_segments::PdfPageTextSegments;
+use crate::prelude::PdfiumError;
 use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use image::EncodableLayout;
@@ -41,7 +45,13 @@ impl<'a> PdfPageText<'a> {
         }
     }
 
-    /// Returns the total number of characters in all text boxes in the containing [PdfPage].
+    /// Returns the internal `FPDF_TEXTPAGE` handle for this [PdfPageText].
+    #[inline]
+    pub(crate) fn get_handle(&self) -> &FPDF_TEXTPAGE {
+        &self.handle
+    }
+
+    /// Returns the total number of characters in all text segments in the containing [PdfPage].
     ///
     /// The character count includes whitespace and newlines, and so may differ slightly
     /// from the result of calling `PdfPageText::all().len()`.
@@ -56,8 +66,51 @@ impl<'a> PdfPageText<'a> {
         self.len() == 0
     }
 
+    /// Returns a collection of all the [PdfPageTextSegment] text segments in the containing [PdfPage].
+    #[inline]
+    pub fn segments(&self) -> PdfPageTextSegments {
+        PdfPageTextSegments::new(self, self.len(), self.bindings)
+    }
+
+    /// Returns a collection of all the [PdfPageTextChar] characters in the containing [PdfPage].
+    #[inline]
+    pub fn chars(&self) -> PdfPageTextChars {
+        PdfPageTextChars::new(self, 0, self.len(), self.bindings)
+    }
+
+    /// Returns a collection of all the [PdfPageTextChar] characters in the given [PdfPageTextObject].
+    ///
+    /// The return result will be empty if the given [PdfPageTextObject] is not attached to the
+    /// containing [PdfPage].
+    #[inline]
+    pub fn chars_for_object(
+        &self,
+        object: &PdfPageTextObject,
+    ) -> Result<PdfPageTextChars, PdfiumError> {
+        let bounds = object.bounds()?;
+
+        let tolerance_x = bounds.width() / 2.0;
+        let tolerance_y = bounds.height() / 2.0;
+        let center_height = bounds.bottom + tolerance_y;
+
+        let chars = self.chars();
+
+        match (
+            chars.get_char_near_point(bounds.left, tolerance_x, center_height, tolerance_y),
+            chars.get_char_near_point(bounds.right, tolerance_x, center_height, tolerance_y),
+        ) {
+            (Some(start), Some(end)) => Ok(PdfPageTextChars::new(
+                self,
+                start.index() as i32,
+                (end.index() - start.index() + 1) as i32,
+                self.bindings,
+            )),
+            _ => Err(PdfiumError::NoCharsInPageObject),
+        }
+    }
+
     /// Returns all characters that lie within the containing [PdfPage], in the order in which
-    /// they are defined in the document.
+    /// they are defined in the document, concatenated into a single string.
     ///
     /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in
@@ -67,7 +120,8 @@ impl<'a> PdfPageText<'a> {
     }
 
     /// Returns all characters that lie within the bounds of the given [PdfRect] in the
-    /// containing [PdfPage], in the order in which they are defined in the document.
+    /// containing [PdfPage], in the order in which they are defined in the document,
+    /// concatenated into a single string
     ///
     /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in
@@ -123,7 +177,8 @@ impl<'a> PdfPageText<'a> {
         get_string_from_pdfium_utf16le_bytes(buffer.as_bytes().to_vec()).unwrap_or_default()
     }
 
-    /// Returns all characters assigned to the given [PdfPageTextObject] in this [PdfPageText] object.
+    /// Returns all characters assigned to the given [PdfPageTextObject] in this [PdfPageText] object,
+    /// concatenated into a single string.
     pub fn for_object(&self, object: &PdfPageTextObject) -> String {
         let buffer_length = self.bindings.FPDFTextObj_GetText(
             *object.get_object_handle(),
