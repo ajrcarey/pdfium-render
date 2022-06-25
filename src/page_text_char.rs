@@ -42,8 +42,9 @@ impl<'a> PdfPageTextChar<'a> {
 
     /// Returns the raw Unicode literal value for this character.
     ///
-    /// To return the string representation of this Unicode literal,
-    /// use the [PdfPageTextChar::unicode_str()] function.
+    /// To return Rust's Unicode `char` representation of this Unicode literal, use the
+    /// [PdfPageTextChar::unicode_char()] function. To return the string representation of this
+    /// Unicode literal, use the [PdfPageTextChar::unicode_string()] function.
     #[inline]
     pub fn unicode_value(&self) -> u32 {
         self.bindings
@@ -53,10 +54,22 @@ impl<'a> PdfPageTextChar<'a> {
     /// Returns Rust's Unicode `char` representation for this character, if available.
     ///
     /// To return the raw Unicode literal value for this character,
-    /// use the [PdfPageTextChar::unicode_value()] function.
+    /// use the [PdfPageTextChar::unicode_value()] function. To return the string representation of
+    /// this `char`, use the [PdfPageTextChar::unicode_string()] function.
     #[inline]
     pub fn unicode_char(&self) -> Option<char> {
         char::from_u32(self.unicode_value())
+    }
+
+    /// Returns a string containing Rust's Unicode `char` representation for this character,
+    /// if available.
+    ///
+    /// To return the raw Unicode literal value for this character,
+    /// use the [PdfPageTextChar::unicode_value()] function. To return Rust's Unicode `char`
+    /// representation of this Unicode literal, use the [PdfPageTextChar::unicode_char()] function.
+    #[inline]
+    pub fn unicode_string(&self) -> Option<String> {
+        self.unicode_char().map(|char| char.to_string())
     }
 
     /// Returns the effective size of this character when rendered, taking into account both the
@@ -85,7 +98,7 @@ impl<'a> PdfPageTextChar<'a> {
     }
 
     /// Returns the font name and raw font descriptor flags for the font applied to this character.
-    fn font(&self) -> (String, FpdfFontDescriptorFlags) {
+    fn font(&self) -> (Option<String>, FpdfFontDescriptorFlags) {
         // Retrieving the font name from Pdfium is a two-step operation. First, we call
         // FPDFText_GetFontInfo() with a null buffer; this will retrieve the length of
         // the font name in bytes. If the length is zero, then there is no font name.
@@ -109,7 +122,7 @@ impl<'a> PdfPageTextChar<'a> {
             // The font name is not present.
 
             return (
-                String::new(),
+                None,
                 FpdfFontDescriptorFlags::from_bits_truncate(flags as u32),
             );
         }
@@ -131,14 +144,15 @@ impl<'a> PdfPageTextChar<'a> {
                 // Trim any trailing nulls. All strings returned from Pdfium are generally terminated
                 // by one null byte.
                 .map(|str| str.trim_end_matches(char::from(0)).to_owned())
-                .unwrap_or_else(|_| String::new()),
+                .ok(),
             FpdfFontDescriptorFlags::from_bits_truncate(flags as u32),
         )
     }
 
     /// Returns the name of the font applied to this character.
+    #[inline]
     pub fn font_name(&self) -> String {
-        self.font().0
+        self.font().0.unwrap_or_default()
     }
 
     /// Returns the weight of this [PdfFont].
@@ -373,7 +387,10 @@ impl<'a> PdfPageTextChar<'a> {
     }
 
     /// Returns a precise bounding box for this character, taking the character's specific
-    /// glyph shape into account.
+    /// shape into account.
+    ///
+    /// To return a loose bounding box that covers the entire glyph bounds, use the
+    /// [PdfPageTextChar::loose_bounds()] function.
     pub fn tight_bounds(&self) -> Result<PdfRect, PdfiumError> {
         let mut left = 0.0;
 
@@ -404,8 +421,10 @@ impl<'a> PdfPageTextChar<'a> {
         )
     }
 
-    /// Returns a loose bounding box for this character, covering the entire glyph bounds, rather than
-    /// taking the character's specific glyph shape into account.
+    /// Returns a loose bounding box for this character, covering the entire glyph bounds.
+    ///
+    /// To return a tight bounding box that takes this character's specific shape into
+    /// account, use the [PdfPageTextChar::tight_bounds()] function.
     pub fn loose_bounds(&self) -> Result<PdfRect, PdfiumError> {
         let mut bounds = FS_RECTF {
             left: 0.0,
