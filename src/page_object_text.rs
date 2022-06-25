@@ -387,6 +387,19 @@ impl<'a> PdfPageTextObject<'a> {
     pub fn chars(&self, text: &'a PdfPageText<'a>) -> Result<PdfPageTextChars, PdfiumError> {
         text.chars_for_object(self)
     }
+
+    /// Returns `true` if any of the characters contained within this [PdfPageTextObject] have a
+    /// glyph shape that descends below the font baseline.
+    ///
+    /// Character retrieval functionality is provided by the given [PdfPageText] object.
+    ///
+    /// The return result will always be `false` if this [PdfPageTextObject] is not attached to the
+    /// `PdfPage` containing the given [PdfPageText] object.
+    #[inline]
+    pub fn has_descenders(&self, text: &'a PdfPageText<'a>) -> Result<bool, PdfiumError> {
+        self.chars(text)
+            .map(|chars| chars.iter().any(|char| char.has_descender()))
+    }
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {

@@ -642,4 +642,16 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn origin_y(&self) -> Result<PdfPoints, PdfiumError> {
         self.origin().map(|result| result.1)
     }
+
+    /// Returns `true` if the glyph shape of this character descends below the font baseline.
+    #[inline]
+    pub fn has_descender(&self) -> bool {
+        self.tight_bounds()
+            .map(|bounds| bounds.bottom.value)
+            .unwrap_or(0.0)
+            < self
+                .loose_bounds()
+                .map(|bounds| bounds.bottom.value)
+                .unwrap_or(0.0)
+    }
 }
