@@ -102,52 +102,6 @@ watermarks to any or all pages in a document.
 
 Version 0.7.6 adds additional properties to the `PdfPageText` and `PdfPageObject` objects.
  
-## Porting existing Pdfium code from other languages
-
-The high-level idiomatic Rust interface provided by `pdfium-render` is entirely optional;
-the idiomatic interface is built on top of raw FFI bindings defined in the `PdfiumLibraryBindings`
-trait, and it is completely feasible to simply use these raw FFI bindings directly if you prefer.
-This makes porting existing code that calls `FPDF_*` functions trivial, while still gaining the
-benefits of late binding and WASM compatibility. For instance, the following code snippet
-(taken from a C++ sample):
-
-```
-    string test_doc = "test.pdf";
-
-    FPDF_InitLibrary();
-    FPDF_DOCUMENT doc = FPDF_LoadDocument(test_doc, NULL);
-    // ... do something with doc
-    FPDF_CloseDocument(doc);
-    FPDF_DestroyLibrary();
-```
-
-would translate to the following Rust code:
-
-```
-    let bindings = Pdfium::bind_to_system_library().unwrap();
-    
-    let test_doc = "test.pdf";
-
-    bindings.FPDF_InitLibrary();
-    let doc = bindings.FPDF_LoadDocument(test_doc, None);
-    // ... do something with doc
-    bindings.FPDF_CloseDocument(doc);
-    bindings.FPDF_DestroyLibrary();
-```
-
-Pdfium's API uses three different string types: classic C-style null-terminated char arrays,
-UTF-8 byte arrays, and a UTF-16LE byte array type named `FPDF_WIDESTRING`. For functions that take a
-C-style string or a UTF-8 byte array, `pdfium-render`'s binding will take the standard Rust `&str` type.
-For functions that take an `FPDF_WIDESTRING`, `pdfium-render` exposes two functions: the vanilla
-`FPDF_*()` function that takes an `FPDF_WIDESTRING`, and an additional `FPDF_*_str()` helper function
-that takes a standard Rust `&str` and converts it internally to an `FPDF_WIDESTRING` before calling
-Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
-`FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
-
-The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
-`PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` utility functions are provided
-for converting to and from `FPDF_WIDESTRING` in your own code.
-
 ## Binding to Pdfium
 
 `pdfium-render` does not include Pdfium itself. You have several options:
@@ -161,7 +115,8 @@ When compiling to WASM, packaging an external build of Pdfium as a separate WASM
 ## Dynamic linking
 
 Binding to a dynamically-built Pdfium library is the simplest option. On Android, a system-provided
-`libpdfium.so` is packaged as part of the operating system; alternatively, you can package a pre-built
+`libpdfium.so` is packaged as part of the operating system (although recent versions of Android no
+longer permit user applications to access it); alternatively, you can package a pre-built
 dynamic library appropriate for your operating system alongside your Rust executable.
 
 * Native builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
@@ -249,6 +204,52 @@ This crate provides the following optional features:
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 
 Neither feature is enabled by default.
+
+## Porting existing Pdfium code from other languages
+
+The high-level idiomatic Rust interface provided by `pdfium-render` is entirely optional;
+the idiomatic interface is built on top of raw FFI bindings defined in the `PdfiumLibraryBindings`
+trait, and it is completely feasible to simply use these raw FFI bindings directly if you prefer.
+This makes porting existing code that calls `FPDF_*` functions trivial, while still gaining the
+benefits of late binding and WASM compatibility. For instance, the following code snippet
+(taken from a C++ sample):
+
+```
+    string test_doc = "test.pdf";
+
+    FPDF_InitLibrary();
+    FPDF_DOCUMENT doc = FPDF_LoadDocument(test_doc, NULL);
+    // ... do something with doc
+    FPDF_CloseDocument(doc);
+    FPDF_DestroyLibrary();
+```
+
+would translate to the following Rust code:
+
+```
+    let bindings = Pdfium::bind_to_system_library().unwrap();
+    
+    let test_doc = "test.pdf";
+
+    bindings.FPDF_InitLibrary();
+    let doc = bindings.FPDF_LoadDocument(test_doc, None);
+    // ... do something with doc
+    bindings.FPDF_CloseDocument(doc);
+    bindings.FPDF_DestroyLibrary();
+```
+
+Pdfium's API uses three different string types: classic C-style null-terminated char arrays,
+UTF-8 byte arrays, and a UTF-16LE byte array type named `FPDF_WIDESTRING`. For functions that take a
+C-style string or a UTF-8 byte array, `pdfium-render`'s binding will take the standard Rust `&str` type.
+For functions that take an `FPDF_WIDESTRING`, `pdfium-render` exposes two functions: the vanilla
+`FPDF_*()` function that takes an `FPDF_WIDESTRING`, and an additional `FPDF_*_str()` helper function
+that takes a standard Rust `&str` and converts it internally to an `FPDF_WIDESTRING` before calling
+Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
+`FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
+
+The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
+`PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` utility functions are provided
+for converting to and from `FPDF_WIDESTRING` in your own code.
 
 ## Development status
 
