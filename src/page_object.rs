@@ -440,7 +440,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns a mutable reference to the underlying [PdfPageTextObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::Text].
     #[inline]
-    pub fn as_text_object_mut(&mut self) -> Option<&'a mut PdfPageTextObject> {
+    pub fn as_text_object_mut(&mut self) -> Option<&mut PdfPageTextObject<'a>> {
         match self {
             PdfPageObject::Text(object) => Some(object),
             _ => None,

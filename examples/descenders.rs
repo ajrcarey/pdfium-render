@@ -12,8 +12,6 @@ fn main() -> Result<(), PdfiumError> {
         .pages()
         .create_page_at_end(PdfPagePaperSize::a4())?;
 
-    // Create a new text object.
-
     let object = page.objects_mut().create_text_object(
         PdfPoints::new(100.0),
         PdfPoints::new(100.0),
@@ -22,20 +20,35 @@ fn main() -> Result<(), PdfiumError> {
         PdfPoints::new(12.0),
     )?;
 
-    let object = object.as_text_object().unwrap();
-
     let text = page.text()?;
 
-    // Check the text object for descenders.
+    // Create a new text object.
 
-    println!("has descenders? {:?}", object.has_descenders(&text));
+    if let Some(object) = object.as_text_object() {
+        // Check the text object for descenders.
 
-    // Check each character in the text object to see if it's a descender.
+        println!(
+            "Text object has descenders? {:?}",
+            object.has_descenders(&text).unwrap_or(false)
+        );
 
-    for char in object.chars(&text)?.iter() {
-        if char.has_descender() {
-            println!("{:?} has a descender", char.unicode_string().unwrap());
+        // Check each character in the text object to see if it's a descender.
+
+        for (index, char) in object.chars(&text)?.iter().enumerate() {
+            if char.has_descender() {
+                println!(
+                    "Character {}: \"{}\" descends {} points below the baseline",
+                    index,
+                    char.unicode_string().unwrap(),
+                    object.get_vertical_translation().value - char.tight_bounds()?.bottom.value
+                );
+            }
         }
+
+        println!(
+            "Maximum descent of text object: {}",
+            object.descent(&text)?.value
+        );
     }
 
     Ok(())

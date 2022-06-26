@@ -392,7 +392,7 @@ impl<'a> PdfFont<'a> {
 
     /// Returns the descent of this [PdfFont] for the given font size. The descent is the
     /// maximum distance below the baseline reached by glyphs in this font, expressed as a
-    /// negative number.
+    /// negative points value.
     pub fn descent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
         let mut descent = 0.0;
 

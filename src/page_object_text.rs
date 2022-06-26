@@ -380,11 +380,8 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Returns a collection of the characters contained within this [PdfPageTextObject],
     /// using character retrieval functionality provided by the given [PdfPageText] object.
-    ///
-    /// The return result will be empty if this [PdfPageTextObject] is not attached to the `PdfPage`
-    /// containing the given [PdfPageText] object.
     #[inline]
-    pub fn chars(&self, text: &'a PdfPageText<'a>) -> Result<PdfPageTextChars, PdfiumError> {
+    pub fn chars(&self, text: &'a PdfPageText<'a>) -> Result<PdfPageTextChars<'a>, PdfiumError> {
         text.chars_for_object(self)
     }
 
@@ -392,13 +389,31 @@ impl<'a> PdfPageTextObject<'a> {
     /// glyph shape that descends below the font baseline.
     ///
     /// Character retrieval functionality is provided by the given [PdfPageText] object.
-    ///
-    /// The return result will always be `false` if this [PdfPageTextObject] is not attached to the
-    /// `PdfPage` containing the given [PdfPageText] object.
     #[inline]
-    pub fn has_descenders(&self, text: &'a PdfPageText<'a>) -> Result<bool, PdfiumError> {
+    pub fn has_descenders(&self, text: &PdfPageText) -> Result<bool, PdfiumError> {
         self.chars(text)
             .map(|chars| chars.iter().any(|char| char.has_descender()))
+    }
+
+    /// Returns the descent of this [PdfPageTextObject]. The descent is the maximum distance below
+    /// the baseline reached by any glyph in any of the characters contained in this text object,
+    /// expressed as a negative points value.
+    ///
+    /// Character retrieval and bounds measurement is provided by the given [PdfPageText] object.
+    pub fn descent(&self, text: &PdfPageText) -> Result<PdfPoints, PdfiumError> {
+        let object_bottom = self.get_vertical_translation();
+
+        let mut maximum_descent = object_bottom;
+
+        for char in self.chars(text)?.iter() {
+            let char_bottom = char.tight_bounds()?.bottom;
+
+            if char_bottom < maximum_descent {
+                maximum_descent = char_bottom;
+            }
+        }
+
+        Ok(maximum_descent - object_bottom)
     }
 }
 
