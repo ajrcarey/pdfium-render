@@ -692,7 +692,8 @@ impl<'a> PdfParagraph<'a> {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::prelude::*;
+    use crate::paragraph::PdfParagraph;
+    use crate::prelude::*; // Temporary until PdfParagraph is included in the prelude.
 
     #[test]
     fn test_paragraph_construction() -> Result<(), PdfiumError> {
