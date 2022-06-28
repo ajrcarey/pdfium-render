@@ -7,9 +7,10 @@ use crate::color::PdfColor;
 use crate::error::PdfiumError;
 use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints, PdfRect};
 use crate::page_object::{
-    PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectCommon, PdfPageObjectFillMode,
-    PdfPageObjectLineCap, PdfPageObjectLineJoin,
+    PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectCommon, PdfPageObjectLineCap,
+    PdfPageObjectLineJoin,
 };
+use crate::page_object_path::PdfPathFillMode;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_objects::PdfPageObjectIndex;
 
@@ -443,10 +444,16 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn set_fill_and_stroke_mode(
         &mut self,
-        fill_mode: PdfPageObjectFillMode,
+        fill_mode: PdfPathFillMode,
         do_stroke: bool,
     ) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.set_fill_and_stroke_mode(fill_mode, do_stroke))
+        self.apply_to_each(|object| {
+            if let Some(object) = object.as_path_object_mut() {
+                object.set_fill_and_stroke_mode(fill_mode, do_stroke)
+            } else {
+                Ok(())
+            }
+        })
     }
 
     /// Applies the given closure to each [PdfPageObject] in this group.

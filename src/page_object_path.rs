@@ -1,14 +1,92 @@
 //! Defines the [PdfPagePathObject] struct, exposing functionality related to a single
 //! page object of type `PdfPageObjectType::Path`.
 
-use crate::bindgen::{FPDF_PAGE, FPDF_PAGEOBJECT};
+use crate::bindgen::{
+    FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING, FPDF_PAGE,
+    FPDF_PAGEOBJECT,
+};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::prelude::{PdfDocument, PdfPageObjectFillMode};
+use crate::prelude::PdfDocument;
+use std::os::raw::{c_int, c_uint};
+
+/// Sets the method used to determine the path region to fill.
+///
+/// The default fill mode used by `pdfium-render` when creating new [PdfPagePathObject]
+/// instances is [PdfPathFillMode::Winding]. The fill mode can be changed on an
+/// object-by-object basis by calling the [PdfPagePathObject::set_fill_and_stroke_mode()] function.
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum PdfPathFillMode {
+    /// The path will not be filled.
+    None = FPDF_FILLMODE_NONE as isize,
+
+    /// The even-odd rule will be used to determine the path region to fill.
+    ///
+    /// The even-odd rule determines whether a point is inside a path by drawing a ray from that
+    /// point in any direction and simply counting the number of path segments that cross the
+    /// ray, regardless of direction. If this number is odd, the point is inside; if even, the
+    /// point is outside. This yields the same results as the nonzero winding number rule
+    /// for paths with simple shapes, but produces different results for more complex shapes.
+    ///
+    /// More information, including visual examples, can be found in Section 4.4.2 of
+    /// the PDF Reference Manual, version 1.7, on page 233.
+    EvenOdd = FPDF_FILLMODE_ALTERNATE as isize,
+
+    /// The non-zero winding number rule will be used to determine the path region to fill.
+    ///
+    /// The nonzero winding number rule determines whether a given point is inside a
+    /// path by conceptually drawing a ray from that point to infinity in any direction
+    /// and then examining the places where a segment of the path crosses the ray. Start-
+    /// ing with a count of 0, the rule adds 1 each time a path segment crosses the ray
+    /// from left to right and subtracts 1 each time a segment crosses from right to left.
+    /// After counting all the crossings, if the result is 0, the point is outside the path;
+    /// otherwise, it is inside.
+    ///
+    /// This is the default fill mode used by `pdfium-render` when creating new [PdfPagePathObject]
+    /// instances. The fill mode can be changed on an object-by-object basis by calling the
+    /// [PdfPagePathObject::set_fill_and_stroke_mode()] function.
+    ///
+    /// More information, including visual examples, can be found in Section 4.4.2 of
+    /// the PDF Reference Manual, version 1.7, on page 232.
+    Winding = FPDF_FILLMODE_WINDING as isize,
+}
+
+impl PdfPathFillMode {
+    #[inline]
+    pub(crate) fn from_pdfium(value: c_int) -> Result<PdfPathFillMode, PdfiumError> {
+        match value as u32 {
+            FPDF_FILLMODE_NONE => Ok(PdfPathFillMode::None),
+            FPDF_FILLMODE_ALTERNATE => Ok(PdfPathFillMode::EvenOdd),
+            FPDF_FILLMODE_WINDING => Ok(PdfPathFillMode::Winding),
+            _ => Err(PdfiumError::UnknownPdfPagePathFillMode),
+        }
+    }
+
+    #[inline]
+    #[allow(dead_code)]
+    // The as_pdfium() function is not currently used, but we expect it to be in future
+    pub(crate) fn as_pdfium(&self) -> c_uint {
+        match self {
+            PdfPathFillMode::None => FPDF_FILLMODE_NONE,
+            PdfPathFillMode::EvenOdd => FPDF_FILLMODE_ALTERNATE,
+            PdfPathFillMode::Winding => FPDF_FILLMODE_WINDING,
+        }
+    }
+}
+
+impl Default for PdfPathFillMode {
+    /// Returns the default fill mode used when creating new [PdfPagePathObject]
+    /// instances. The fill mode can be changed on an object-by-object basis by calling the
+    /// [PdfPagePathObject::set_fill_and_stroke_mode()] function.
+    #[inline]
+    fn default() -> Self {
+        PdfPathFillMode::Winding
+    }
+}
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Path`.
 ///
@@ -127,9 +205,9 @@ impl<'a> PdfPagePathObject<'a> {
             let fill_mode = if let Some(fill_color) = fill_color {
                 result.set_fill_color(fill_color)?;
 
-                PdfPageObjectFillMode::default()
+                PdfPathFillMode::default()
             } else {
-                PdfPageObjectFillMode::None
+                PdfPathFillMode::None
             };
 
             result.set_fill_and_stroke_mode(fill_mode, do_stroke)?;
@@ -658,6 +736,90 @@ impl<'a> PdfPagePathObject<'a> {
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
                 self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Returns the method used to determine which sub-paths of any path in this [PdfPagePathObject]
+    /// should be filled.
+    #[inline]
+    pub fn fill_mode(&self) -> Result<PdfPathFillMode, PdfiumError> {
+        let mut raw_fill_mode: c_int = 0;
+
+        let mut _raw_stroke: FPDF_BOOL = self.get_bindings().FALSE();
+
+        if self
+            .get_bindings()
+            .is_true(self.get_bindings().FPDFPath_GetDrawMode(
+                *self.get_object_handle(),
+                &mut raw_fill_mode,
+                &mut _raw_stroke,
+            ))
+        {
+            PdfPathFillMode::from_pdfium(raw_fill_mode)
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Returns `true` if this [PdfPagePathObject] will be stroked, regardless of the path's
+    /// stroke settings.
+    ///
+    /// Even if this path is set to be stroked, the stroke must be configured with a visible color
+    /// and a non-zero width in order to actually be visible.
+    #[inline]
+    pub fn is_stroked(&self) -> Result<bool, PdfiumError> {
+        let mut _raw_fill_mode: c_int = 0;
+
+        let mut raw_stroke: FPDF_BOOL = self.get_bindings().FALSE();
+
+        if self
+            .get_bindings()
+            .is_true(self.get_bindings().FPDFPath_GetDrawMode(
+                *self.get_object_handle(),
+                &mut _raw_fill_mode,
+                &mut raw_stroke,
+            ))
+        {
+            Ok(self.get_bindings().is_true(raw_stroke))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Sets the method used to determine which sub-paths of any path in this [PdfPagePathObject]
+    /// should be filled, and whether or not any path in this [PdfPagePathObject] should be stroked.
+    ///
+    /// Even if this object's path is set to be stroked, the stroke must be configured with
+    /// a visible color and a non-zero width in order to actually be visible.
+    #[inline]
+    pub fn set_fill_and_stroke_mode(
+        &mut self,
+        fill_mode: PdfPathFillMode,
+        do_stroke: bool,
+    ) -> Result<(), PdfiumError> {
+        if self
+            .get_bindings()
+            .is_true(self.get_bindings().FPDFPath_SetDrawMode(
+                *self.get_object_handle(),
+                fill_mode.as_pdfium() as c_int,
+                self.get_bindings().bool_to_pdfium(do_stroke),
+            ))
+        {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.get_bindings()
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
