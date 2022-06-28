@@ -155,7 +155,7 @@ impl<'a> PdfPageTextChar<'a> {
         self.font().0.unwrap_or_default()
     }
 
-    /// Returns the weight of this [PdfFont].
+    /// Returns the weight of the font applied to this character.
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     #[inline]
@@ -249,9 +249,6 @@ impl<'a> PdfPageTextChar<'a> {
 
     /// Returns `true` if the glyphs in the font applied to this character include dominant
     /// vertical strokes that are slanted.
-    ///
-    /// The designed vertical stroke angle for this character can be retrieved using the
-    /// [PdfPageTextChar::italic_angle()] function.
     ///
     /// Pdfium may not reliably return the correct value of this flag for built-in fonts.
     pub fn font_is_italic(&self) -> bool {
@@ -468,7 +465,7 @@ impl<'a> PdfPageTextChar<'a> {
         }
     }
 
-    /// Returns the current horizontal and vertical translation of the origin of this [PdfPageObject].
+    /// Returns the current horizontal and vertical translation of the origin of this character.
     #[inline]
     pub fn get_translation(&self) -> (PdfPoints, PdfPoints) {
         (

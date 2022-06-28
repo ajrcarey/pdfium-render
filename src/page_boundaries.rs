@@ -83,6 +83,24 @@ impl<'a> PdfPageBoundaries<'a> {
         }
     }
 
+    /// Sets the boundary box matching the given [PdfPageBoundaryBoxType] to the given [PdfRect]
+    /// for the containing [PdfPage].
+    #[inline]
+    pub fn set(
+        &mut self,
+        box_type: PdfPageBoundaryBoxType,
+        rect: PdfRect,
+    ) -> Result<(), PdfiumError> {
+        match box_type {
+            PdfPageBoundaryBoxType::Media => self.set_media(rect),
+            PdfPageBoundaryBoxType::Art => self.set_art(rect),
+            PdfPageBoundaryBoxType::Bleed => self.set_bleed(rect),
+            PdfPageBoundaryBoxType::Trim => self.set_trim(rect),
+            PdfPageBoundaryBoxType::Crop => self.set_crop(rect),
+            PdfPageBoundaryBoxType::Bounding => Ok(()), // The bounding box is implicit and cannot be set directly.
+        }
+    }
+
     /// Returns the Media boundary box defined for the containing [PdfPage], if any.
     /// The Media box is the full page size, equivalent to the target paper size when the document
     /// is printed.

@@ -58,7 +58,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// matching the given predicate function.
     pub fn new<F>(page: &'a PdfPage<'a>, predicate: F) -> Result<Self, PdfiumError>
     where
-        F: Fn(&PdfPageObject) -> bool,
+        F: FnMut(&PdfPageObject) -> bool,
     {
         let mut result = Self::from_pdfium(
             *page.get_handle(),
@@ -114,6 +114,12 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Returns `true` if this group already contains the given page object.
+    #[inline]
+    pub fn contains(&self, object: &PdfPageObject) -> bool {
+        self.object_handles.contains(object.get_object_handle())
     }
 
     /// Adds a single [PdfPageObject] to this group.

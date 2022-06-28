@@ -11,7 +11,9 @@ Simple examples demonstrating how to use `pdfium-render` on both native and WASM
 * `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`. Run this example via `cargo run --example path`.
 * `tile.rs`: generates a new document by tiling pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf`, saving the new document to `test/tile-test.pdf`. Run this example via `cargo run --example tile`.
 * `fonts.rs`: outputs to the console information about the 14 built-in PDF fonts retrieved from Pdfium. Run this example via `cargo run --example fonts`.
-* `watermark.rs`: adds a watermark to each page in a previously-generated document, saving the watermarked document to `test/watermark-test.pdf`. Run this example via `cargo run --example watermark`. 
+* `watermark.rs`: adds a watermark to each page in a previously-generated document, saving the watermarked document to `test/watermark-test.pdf`. Run this example via `cargo run --example watermark`.
+* `chars.rs`: iterates over the individual characters in a text object to determine the bounding boxes of each word in the text object. Run this example via `cargo run --example chars`.
+* `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline. Run this example via `cargo run --example descenders`.
 * `wasm.rs`: demonstrates `pdfium-render` running in a browser. This requires some manual bundling of the correct resources; read on.
 
 ## Bundling for WASM

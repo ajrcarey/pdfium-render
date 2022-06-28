@@ -440,7 +440,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns a mutable reference to the underlying [PdfPageTextObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::Text].
     #[inline]
-    pub fn as_text_object_mut(&mut self) -> Option<&mut PdfPageTextObject<'a>> {
+    pub fn as_text_object_mut(&mut self) -> Option<&'a mut PdfPageTextObject> {
         match self {
             PdfPageObject::Text(object) => Some(object),
             _ => None,
@@ -534,6 +534,11 @@ pub trait PdfPageObjectCommon<'a> {
     fn has_transparency(&self) -> bool;
 
     /// Returns the bounding box of this [PdfPageObject].
+    ///
+    /// For text objects, the bottom of the bounding box is set to the font baseline. Any characters
+    /// in the text object that have glyph shapes that descends below the font baseline will extend
+    /// beneath the bottom of this bounding box. To measure the distance of the maximum descent of
+    /// any glyphs, use the [PdfPageTextObject::descent()] function.
     fn bounds(&self) -> Result<PdfRect, PdfiumError>;
 
     /// Returns the width of this [PdfPageObject].
@@ -599,6 +604,12 @@ pub trait PdfPageObjectCommon<'a> {
         e: f64,
         f: f64,
     ) -> Result<(), PdfiumError>;
+
+    /// Transforms this [PdfPageObject] by applying the transformation matrix read from the given [PdfPageObject].
+    ///
+    /// Any translation, rotation, scaling, or skewing transformations currently applied to the
+    /// given [PdfPageObject] will be immediately applied to this [PdfPageObject].
+    fn transform_from(&mut self, other: &PdfPageObject) -> Result<(), PdfiumError>;
 
     /// Moves the origin of this [PdfPageObject] by the given horizontal and vertical delta distances.
     #[inline]
@@ -907,6 +918,11 @@ where
         f: f64,
     ) -> Result<(), PdfiumError> {
         self.transform_impl(a, b, c, d, e, f)
+    }
+
+    #[inline]
+    fn transform_from(&mut self, other: &PdfPageObject) -> Result<(), PdfiumError> {
+        self.set_matrix(other.matrix()?)
     }
 
     #[inline]

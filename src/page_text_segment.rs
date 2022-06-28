@@ -52,7 +52,7 @@ impl<'a> PdfPageTextSegment<'a> {
     }
 
     /// Returns all characters that lie within the bounds of this [PdfPageTextSegment] in the
-    /// containing [PdfPage], in the order in which they are defined in the document.
+    /// containing `PdfPage`, in the order in which they are defined in the document.
     ///
     /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in

@@ -66,19 +66,19 @@ impl<'a> PdfPageText<'a> {
         self.len() == 0
     }
 
-    /// Returns a collection of all the [PdfPageTextSegment] text segments in the containing [PdfPage].
+    /// Returns a collection of all the `PdfPageTextSegment` text segments in the containing [PdfPage].
     #[inline]
     pub fn segments(&self) -> PdfPageTextSegments {
         PdfPageTextSegments::new(self, self.len(), self.bindings)
     }
 
-    /// Returns a collection of all the [PdfPageTextChar] characters in the containing [PdfPage].
+    /// Returns a collection of all the `PdfPageTextChar` characters in the containing [PdfPage].
     #[inline]
     pub fn chars(&self) -> PdfPageTextChars {
         PdfPageTextChars::new(self, 0, self.len(), self.bindings)
     }
 
-    /// Returns a collection of all the [PdfPageTextChar] characters in the given [PdfPageTextObject].
+    /// Returns a collection of all the `PdfPageTextChar` characters in the given [PdfPageTextObject].
     ///
     /// The return result will be empty if the given [PdfPageTextObject] is not attached to the
     /// containing [PdfPage].
