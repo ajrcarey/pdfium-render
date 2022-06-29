@@ -130,10 +130,17 @@ impl<'a> PdfPageGroupObject<'a> {
                 if *page_handle != self.page {
                     // The object is attached to a different page.
 
-                    object.remove_object_from_page()?;
-                    object.add_object_to_page_handle(self.page)?;
+                    // In theory, transferring ownership of the page object from its current
+                    // page to the page referenced by this group should be possible:
 
-                    false
+                    // object.remove_object_from_page()?;
+                    // object.add_object_to_page_handle(self.page)?;
+
+                    // But in practice, as per https://github.com/ajrcarey/pdfium-render/issues/18,
+                    // transferring memory ownership of a page object from one page to another
+                    // generally segfaults Pdfium. Instead, return an error.
+
+                    return Err(PdfiumError::PageObjectAlreadyAttachedToDifferentPage);
                 } else {
                     // The object is already attached to this group's parent page.
 

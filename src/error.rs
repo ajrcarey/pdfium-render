@@ -41,6 +41,7 @@ pub enum PdfiumError {
     UnknownActionType,
     PageObjectIndexOutOfBounds,
     PageObjectNotAttachedToPage,
+    PageObjectAlreadyAttachedToDifferentPage,
     PageAnnotationIndexOutOfBounds,
     PageFlattenFailure,
     UnknownPdfPageObjectType,
