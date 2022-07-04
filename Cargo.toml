@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.7.6"
+version = "0.7.7"
 edition = "2018"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
@@ -22,12 +22,12 @@ bitflags = "^1"
 bytes = "^1"
 image = "^0"
 iter_tools = "^0"
+lazy_static = "^1"
 log = "^0"
 maybe-owned = "^0"
 utf16string = "^0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-lazy_static = "^1"
 console_log = "^0"
 console_error_panic_hook = "^0"
 js-sys = "^0"
@@ -46,9 +46,14 @@ bindgen = { version = "^0" }
 # Note that dependencies for the WASM example in examples/wasm.rs are specified separately
 # in examples/Cargo.toml.
 rand = "^0" # Used by examples/create.rs
-rayon = "^1" # Used by examples/threads.rs
+rayon = "^1" # Used by examples/thread_safe
+
+[[example]]
+name = "thread_safe"
+required-features = ["thread_safe"] # Needed by examples/thread_safe
 
 [features]
-default = []
+default = ["thread_safe"]
 bindings = []
 static = []
+thread_safe = []

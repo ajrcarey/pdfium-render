@@ -117,12 +117,8 @@ pub(crate) mod files {
     /// Because Pdfium must know the total content length in advance prior to loading
     /// any portion of it, the given reader must implement the `Seek` trait as well as
     /// the `Read` trait.
-    ///
-    /// **This function is _probably_ thread-safe.** However, Pdfium itself makes no
-    /// guarantees around being safe for multi-threading, and so it is not recommended
-    /// to run multiple read operations on separate threads simultaneously.
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
-    // This field is never used when compiling to WASM.
+    // This function is never used when compiling to WASM.
     pub(crate) fn get_pdfium_file_accessor_from_reader<R: Read + Seek + 'static>(
         mut reader: R,
     ) -> Box<FpdfFileAccessExt> {
@@ -175,7 +171,9 @@ pub(crate) mod files {
     impl FpdfFileAccessExt {
         /// Returns an `FPDF_FILEACCESS` pointer suitable for passing to `FPDF_LoadCustomDocument()`.
         #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
-        // This field is never used when compiling to WASM.
+        // This function is never used when compiling to WASM.
+        #[cfg_attr(feature = "thread_safe", allow(dead_code))]
+        // This function is never used when compiling with the thread_safe feature enabled.
         #[inline]
         pub(crate) fn as_fpdf_file_access_mut_ptr(&mut self) -> &mut FPDF_FILEACCESS {
             unsafe { &mut *(self as *mut FpdfFileAccessExt as *mut FPDF_FILEACCESS) }
@@ -205,10 +203,6 @@ pub(crate) mod files {
 
     /// Returns a wrapped Pdfium `FPDF_FILEWRITE` struct that uses the given writer as an
     /// output source for Pdfium's file writing callback function.
-    ///
-    /// **This function is _probably_ thread-safe.** However, Pdfium itself makes no
-    /// guarantees around being safe for multi-threading, and so it is not recommended
-    /// to run multiple write operations on separate threads simultaneously.
     pub(crate) fn get_pdfium_file_writer_from_writer<W: Write + 'static>(
         writer: &mut W,
     ) -> FpdfFileWriteExt {

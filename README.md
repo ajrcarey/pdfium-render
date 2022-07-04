@@ -1,7 +1,9 @@
 # Idiomatic Rust bindings for Pdfium
 
 `pdfium-render` provides an idiomatic high-level Rust interface to Pdfium, the C++ PDF library
-used by the Google Chromium project.
+used by the Google Chromium project. With this library, you can render pages in PDF files to
+bitmaps, load, edit, and extract text and images from existing PDF files, and create new PDF files
+from scratch.
 
 ```
     use pdfium_render::prelude::*;
@@ -52,15 +54,13 @@ situations where a Pdfium library is not available. A key advantage of binding t
 rather than compile-time is that a Rust application using `pdfium-render` can be compiled to WASM
 for running in a browser alongside a WASM-packaged build of Pdfium.
 
-Pdfium itself is architected as a set of separate modules, each covering a different aspect of
-PDF document creation, rendering, and editing. `pdfium-render` aims to ultimately provide bindings
-to all non-interactive functions exposed by all Pdfium modules, including document creation and
-editing functions. This is a work in progress. 
+`pdfium-render` aims to eventually provide bindings to all non-interactive functionality provided
+by Pdfium. This is a work in progress that will be completed by version 1.0 of this crate.
 
 ## Examples
 
 Short, commented examples that demonstrate all the major Pdfium document handling features are
-available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. These examples cover:
+available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. These examples demonstrate:
 
 * Rendering pages to bitmaps.
 * Text extraction.
@@ -69,38 +69,12 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Document concatenation.
 * Multi-page tiled output.
 * Watermarking.
+* Thread safety.
 * Compiling to WASM.
 
 ## What's new
 
-Version 0.7.0 is a substantial release that introduces the first set of document editing functions
-into `pdfium-render`. This release includes the following improvements to the high-level interface:
-
-* Adds loading and saving of PDF documents from standard Rust readers and writers.
-* Adds creation of new documents.
-* Adds adding and deleting of pages to documents, and importing of pages from one document into another.
-* Adds adding and deleting of page objects to pages, and importing of page objects from one page into another.
-* Adds additional properties and functions to all page objects, including setting and reading of
-colors, strokes, fills, and blend modes, and object positioning, rotation, scaling, and skewing.
-* Adds the `PdfPermissions` collection, allowing reading of security handlers and permissions for a document.
-* Adds additional convenience functions for loading and saving documents when compiling to WASM.
-
-With this release, it is now possible to create a new PDF document from scratch, add pages to it
-(either by creating them from scratch, or by importing them from other documents), add new text objects
-to those pages, and output the newly created document to a file.
-
-The initial editing focus has been on providing creation and editing support for text objects.
-Later 0.7.x releases will add similar support for creating and editing images, paths, and the other
-types of page objects supported by Pdfium.
-
-Version 0.7.1 adds path support, construction of both straight and curved path segments, and
-convenience functions to easily create filled and stroked rectangles, ellipses, and circles.
-
-Version 0.7.2 adds object groups for manipulating and transforming groups of page objects as if they
-were a single object, and the `PdfPages::watermark()` function for applying individualized
-watermarks to any or all pages in a document.
-
-Version 0.7.6 adds additional properties to the `PdfPageText` and `PdfPageObject` objects.
+Version 0.7.7 adds the `thread_safe` crate feature. See the "Multithreading" section below.
  
 ## Binding to Pdfium
 
@@ -194,6 +168,21 @@ The following additional function is provided during rendering:
 * The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
 ready to display in an HTML `<canvas>` element.
 
+# Multithreading
+
+Pdfium makes no guarantees about thread safety and should be assumed _not_ to be thread safe.
+The Pdfium authors specifically recommend that parallel processing, not multi-threading,
+be used to process multiple documents simultaneously.
+
+`pdfium-render` achieves thread safety by locking access to Pdfium behind a mutex;
+each thread must acquire exclusive access to this mutex in order to make any call to Pdfium.
+This has the effect of sequencing all calls to Pdfium as if they were single-threaded,
+even when using `pdfium-render` from multiple threads. This approach offers no performance benefit,
+but it ensures that Pdfium will not crash when running as part of a multi-threaded application.
+
+An example of safely using `pdfium-render` as part of a multithreaded parallel iterator is
+available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
+
 ## Optional features
 
 This crate provides the following optional features:
@@ -202,17 +191,18 @@ This crate provides the following optional features:
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
+* `thread-safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
+  See the "Multithreading" section above. 
 
-Neither feature is enabled by default.
+The `thread-safe` feature is enabled by default. All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 
-The high-level idiomatic Rust interface provided by `pdfium-render` is entirely optional;
-the idiomatic interface is built on top of raw FFI bindings defined in the `PdfiumLibraryBindings`
-trait, and it is completely feasible to simply use these raw FFI bindings directly if you prefer.
-This makes porting existing code that calls `FPDF_*` functions trivial, while still gaining the
-benefits of late binding and WASM compatibility. For instance, the following code snippet
-(taken from a C++ sample):
+The high-level idiomatic Rust interface provided by `pdfium-render` is built on top of 
+raw FFI bindings defined in the `PdfiumLibraryBindings` trait. It is completely feasible to use
+these raw FFI bindings directly if you wish, making porting existing code that calls `FPDF_*` functions
+trivial while still gaining the benefits of late binding and WASM compatibility.
+For instance, the following code snippet (taken from a C++ sample):
 
 ```
     string test_doc = "test.pdf";
@@ -267,7 +257,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.6, 238 (65%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.7, 238 (65%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -275,6 +265,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.7: adds the `thread_safe` crate feature and the accompanying example in `examples/thread_safe.rs`.
 * 0.7.6: adds retrieval of text settings on a character-by-character basis to the `PdfPageText` and
   `PdfPageTextObject` objects; adds `PdfPageTextSegment` and `PdfPageTextChar` structs to the 
   high-level interface; adds retrieval of current transformation settings to all page objects;

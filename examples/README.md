@@ -14,6 +14,7 @@ Simple examples demonstrating how to use `pdfium-render` on both native and WASM
 * `watermark.rs`: adds a watermark to each page in a previously-generated document, saving the watermarked document to `test/watermark-test.pdf`. Run this example via `cargo run --example watermark`.
 * `chars.rs`: iterates over the individual characters in a text object to determine the bounding boxes of each word in the text object. Run this example via `cargo run --example chars`.
 * `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline. Run this example via `cargo run --example descenders`.
+* `thread_safe.rs`: explains in comments `pdfium-render`'s approach to ensuring thread-safe access to Pdfium, and demonstrates using a parallel iterator to process multiple rendering tasks on separate threads. Run this example via `cargo run --example thread_safe`.  
 * `wasm.rs`: demonstrates `pdfium-render` running in a browser. This requires some manual bundling of the correct resources; read on.
 
 ## Bundling for WASM

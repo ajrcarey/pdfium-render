@@ -56,7 +56,7 @@ pub mod page_text_chars;
 pub mod page_text_segment;
 pub mod page_text_segments;
 pub mod pages;
-pub mod paragraph;
+mod paragraph; // Keep private while PdfParagraph is still in development.
 pub mod pdfium;
 pub mod permissions;
 mod utils;
@@ -84,9 +84,12 @@ pub mod prelude {
     };
 }
 
+// Include the appropriate implementation of the PdfiumLibraryBindings trait for the
+// target architecture and threading model.
+
 // Conditional compilation is used to compile different implementations of
-// the PdfiumLibraryBindings trait depending on whether we are compiling to a
-// WASM module, a native shared library, or a statically linked library.
+// the PdfiumLibraryBindings trait depending on whether we are compiling to a WASM module,
+// a native shared library, or a statically linked library.
 
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(not(feature = "static"))]
@@ -98,6 +101,13 @@ mod linked;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;
+
+// These implementations are all single-threaded (because Pdfium itself is single-threaded).
+// Any of them can be wrapped by thread_safe::ThreadSafePdfiumBindings to
+// create a thread-safe architecture-specific implementation of the PdfiumLibraryBindings trait.
+
+#[cfg(feature = "thread_safe")]
+mod thread_safe;
 
 #[cfg(test)]
 pub mod tests {

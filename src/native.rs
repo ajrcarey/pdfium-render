@@ -12,13 +12,13 @@ use libloading::{Library, Symbol};
 use std::ffi::{c_void, CString};
 use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort};
 
-pub(crate) struct NativePdfiumBindings {
+pub(crate) struct DynamicPdfiumBindings {
     library: Library,
 }
 
-impl NativePdfiumBindings {
+impl DynamicPdfiumBindings {
     pub fn new(library: Library) -> Result<Self, libloading::Error> {
-        let result = NativePdfiumBindings { library };
+        let result = DynamicPdfiumBindings { library };
 
         // Make sure the library correctly exports all the functions we expect.
 
@@ -3496,7 +3496,7 @@ impl NativePdfiumBindings {
     }
 }
 
-impl PdfiumLibraryBindings for NativePdfiumBindings {
+impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_InitLibrary(&self) {

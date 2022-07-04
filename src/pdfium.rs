@@ -11,7 +11,7 @@ use std::ffi::OsString;
 use libloading::Library;
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
-use crate::native::NativePdfiumBindings;
+use crate::native::DynamicPdfiumBindings;
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "static"))]
 use crate::linked::StaticPdfiumBindings;
@@ -43,6 +43,9 @@ use js_sys::{ArrayBuffer, Uint8Array};
 #[cfg(target_arch = "wasm32")]
 use web_sys::{window, Blob, Response};
 
+#[cfg(feature = "thread_safe")]
+use crate::thread_safe::ThreadSafePdfiumBindings;
+
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
 pub struct Pdfium {
@@ -61,7 +64,12 @@ impl Pdfium {
     #[inline]
     pub fn bind_to_statically_linked_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError>
     {
-        Ok(Box::new(StaticPdfiumBindings {}))
+        let bindings = StaticPdfiumBindings::new();
+
+        #[cfg(feature = "thread_safe")]
+        let bindings = ThreadSafePdfiumBindings::new(bindings);
+
+        Ok(Box::new(bindings))
     }
 
     /// Initializes the external Pdfium library, loading it from the system libraries.
@@ -71,11 +79,14 @@ impl Pdfium {
     #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
-        let bindings = NativePdfiumBindings::new(
+        let bindings = DynamicPdfiumBindings::new(
             unsafe { Library::new(Self::pdfium_platform_library_name()) }
                 .map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
+
+        #[cfg(feature = "thread_safe")]
+        let bindings = ThreadSafePdfiumBindings::new(bindings);
 
         Ok(Box::new(bindings))
     }
@@ -91,7 +102,12 @@ impl Pdfium {
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         if PdfiumRenderWasmState::lock().is_ready() {
-            Ok(Box::new(WasmPdfiumBindings::new()))
+            let bindings = WasmPdfiumBindings::new();
+
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
+
+            Ok(Box::new(bindings))
         } else {
             Err(PdfiumError::PdfiumWASMModuleNotConfigured)
         }
@@ -106,11 +122,14 @@ impl Pdfium {
     pub fn bind_to_library(
         path: impl ToString,
     ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
-        let bindings = NativePdfiumBindings::new(
+        let bindings = DynamicPdfiumBindings::new(
             unsafe { Library::new(OsString::from(path.to_string())) }
                 .map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
+
+        #[cfg(feature = "thread_safe")]
+        let bindings = ThreadSafePdfiumBindings::new(bindings);
 
         Ok(Box::new(bindings))
     }

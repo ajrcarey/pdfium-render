@@ -45,7 +45,7 @@ enum JsFunctionArgumentType {
 /// function is called _before_ initializing `pdfium-render` from within Rust code. For an example, see:
 /// <https://github.com/ajrcarey/pdfium-render/blob/master/examples/index.html>
 #[derive(Debug)]
-pub struct PdfiumRenderWasmState {
+pub(crate) struct PdfiumRenderWasmState {
     pdfium_wasm_module: Option<Object>,
     local_wasm_module: Option<Object>,
     malloc_js_fn: Option<Function>,
