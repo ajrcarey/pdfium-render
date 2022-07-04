@@ -48,10 +48,6 @@ bindgen = { version = "^0" }
 rand = "^0" # Used by examples/create.rs
 rayon = "^1" # Used by examples/thread_safe
 
-[[example]]
-name = "thread_safe"
-required-features = ["thread_safe"] # Needed by examples/thread_safe
-
 [features]
 default = ["thread_safe"]
 bindings = []
