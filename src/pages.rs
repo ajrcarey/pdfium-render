@@ -274,10 +274,10 @@ impl<'a> PdfPages<'a> {
     }
 
     /// Creates a new [PdfDocument] by copying the pages in this [PdfPages] collection
-    /// into tiled grids, the size of tile each shrinking or expanding as necessary to fit
+    /// into tiled grids, the size of each tile shrinking or expanding as necessary to fit
     /// the given [PdfPagePaperSize].
     ///
-    /// For example, to output all pages in this [PdfPages] collection into a new
+    /// For example, to output all pages in a [PdfPages] collection into a new
     /// A3 landscape document with six source pages tiled on each destination page arranged
     /// into a 2 row x 3 column grid, you would call:
     ///

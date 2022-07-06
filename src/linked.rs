@@ -1,10 +1,11 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
-    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::{c_void, CString};
@@ -2303,5 +2304,59 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         index: c_int,
     ) -> FPDF_PATHSEGMENT {
         unsafe { crate::bindgen::FPDFGlyphPath_GetGlyphPathSegment(glyphpath, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetPrintScaling(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetNumCopies(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE {
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetPrintPageRange(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetPrintPageRangeCount(pagerange) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+        &self,
+        pagerange: FPDF_PAGERANGE,
+        index: size_t,
+    ) -> c_int {
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetPrintPageRangeElement(pagerange, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE {
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetDuplex(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetName(
+        &self,
+        document: FPDF_DOCUMENT,
+        key: &str,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { crate::bindgen::FPDF_VIEWERREF_GetName(document, c_key.as_ptr(), buffer, length) }
     }
 }

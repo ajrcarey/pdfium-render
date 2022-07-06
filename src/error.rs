@@ -54,6 +54,9 @@ pub enum PdfiumError {
     CharIndexOutOfBounds,
     NoCharsInPageObject,
 
+    /// Two data buffers are expected to have the same size, but they do not.
+    DataBufferLengthMismatch,
+
     /// The setting cannot be returned because this `PdfPageGroupObject` is empty.
     EmptyPageObjectGroup,
 

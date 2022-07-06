@@ -1,11 +1,11 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
-    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
-    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_STRING, FPDF_TEXTPAGE,
-    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
-    FS_RECTF,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
+    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
+    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
+    FPDF_PATHSEGMENT, FPDF_STRING, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
@@ -253,6 +253,13 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFFont_GetGlyphPath()?;
         result.extern_FPDFGlyphPath_CountGlyphSegments()?;
         result.extern_FPDFGlyphPath_GetGlyphPathSegment()?;
+        result.extern_FPDF_VIEWERREF_GetPrintScaling()?;
+        result.extern_FPDF_VIEWERREF_GetNumCopies()?;
+        result.extern_FPDF_VIEWERREF_GetPrintPageRange()?;
+        result.extern_FPDF_VIEWERREF_GetPrintPageRangeCount()?;
+        result.extern_FPDF_VIEWERREF_GetPrintPageRangeElement()?;
+        result.extern_FPDF_VIEWERREF_GetDuplex()?;
+        result.extern_FPDF_VIEWERREF_GetName()?;
 
         Ok(result)
     }
@@ -3494,6 +3501,87 @@ impl DynamicPdfiumBindings {
     > {
         unsafe { self.library.get(b"FPDFGlyphPath_GetGlyphPathSegment\0") }
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetPrintScaling(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_VIEWERREF_GetPrintScaling\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetNumCopies(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_VIEWERREF_GetNumCopies\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetPrintPageRange(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_PAGERANGE>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_VIEWERREF_GetPrintPageRange\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetPrintPageRangeCount(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(pagerange: FPDF_PAGERANGE) -> size_t>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_VIEWERREF_GetPrintPageRangeCount\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetPrintPageRangeElement(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(pagerange: FPDF_PAGERANGE, index: size_t) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe {
+            self.library
+                .get(b"FPDF_VIEWERREF_GetPrintPageRangeElement\0")
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetDuplex(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_VIEWERREF_GetDuplex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_VIEWERREF_GetName(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                key: FPDF_BYTESTRING,
+                buffer: *mut c_char,
+                length: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_VIEWERREF_GetName\0") }
+    }
 }
 
 impl PdfiumLibraryBindings for DynamicPdfiumBindings {
@@ -5816,5 +5904,64 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         index: c_int,
     ) -> FPDF_PATHSEGMENT {
         unsafe { self.extern_FPDFGlyphPath_GetGlyphPathSegment().unwrap()(glyphpath, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        unsafe { self.extern_FPDF_VIEWERREF_GetPrintScaling().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { self.extern_FPDF_VIEWERREF_GetNumCopies().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE {
+        unsafe { self.extern_FPDF_VIEWERREF_GetPrintPageRange().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
+        unsafe { self.extern_FPDF_VIEWERREF_GetPrintPageRangeCount().unwrap()(pagerange) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+        &self,
+        pagerange: FPDF_PAGERANGE,
+        index: size_t,
+    ) -> c_int {
+        unsafe {
+            self.extern_FPDF_VIEWERREF_GetPrintPageRangeElement()
+                .unwrap()(pagerange, index)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE {
+        unsafe { self.extern_FPDF_VIEWERREF_GetDuplex().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetName(
+        &self,
+        document: FPDF_DOCUMENT,
+        key: &str,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe {
+            self.extern_FPDF_VIEWERREF_GetName().unwrap()(document, c_key.as_ptr(), buffer, length)
+        }
     }
 }

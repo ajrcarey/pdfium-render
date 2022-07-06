@@ -348,7 +348,7 @@ impl Pdfium {
 }
 
 impl Drop for Pdfium {
-    /// Closes the external pdfium library, releasing held memory.
+    /// Closes the external Pdfium library, releasing held memory.
     #[inline]
     fn drop(&mut self) {
         self.bindings.FPDF_DestroyLibrary();

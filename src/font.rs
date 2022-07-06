@@ -8,7 +8,26 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::PdfPoints;
 use crate::utils::mem::create_byte_buffer;
 use bitflags::bitflags;
+use std::io::Read;
 use std::os::raw::{c_char, c_int, c_uint};
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::fs::File;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::Path;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::JsCast;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_futures::JsFuture;
+
+#[cfg(target_arch = "wasm32")]
+use js_sys::{ArrayBuffer, Uint8Array};
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::{window, Blob, Response};
 
 bitflags! {
     pub(crate) struct FpdfFontDescriptorFlags: u32 {
@@ -224,6 +243,131 @@ impl<'a> PdfFont<'a> {
         Self::new_built_in(document, PdfFontBuiltin::ZapfDingbats)
     }
 
+    /// Attempts to load a Type 1 font file from the given file path.
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    ///
+    /// This function is not available when compiling to WASM. You have several options for
+    /// loading font data in WASM:
+    /// * Use the `PdfFont::load_type1_from_fetch()` function to download font data from a
+    /// URL using the browser's built-in `fetch()` API. This function is only available when
+    /// compiling to WASM.
+    /// * Use the `PdfFont::load_type1_from_blob()` function to load font data from a
+    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// `<input type="file">` element). This function is only available when compiling to WASM.
+    /// * Use the [PdfFont::load_type1_from_reader()] function to load font data from any
+    /// valid Rust reader.
+    /// * Use another method to retrieve the bytes of the target font over the network,
+    /// then load those bytes into Pdfium using the [PdfFont::new_type1_from_bytes()] function.
+    /// * Embed the bytes of the desired font directly into the compiled WASM module
+    /// using the `include_bytes!()` macro.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn load_type1_from_file(
+        document: &'a PdfDocument<'a>,
+        path: &(impl AsRef<Path> + ?Sized),
+        is_cid_font: bool,
+    ) -> Result<Self, PdfiumError> {
+        Self::load_type1_from_reader(
+            document,
+            File::open(path).map_err(PdfiumError::IoError)?,
+            is_cid_font,
+        )
+    }
+
+    /// Attempts to load a Type 1 font file from the given reader.
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    pub fn load_type1_from_reader(
+        document: &'a PdfDocument<'a>,
+        mut reader: impl Read,
+        is_cid_font: bool,
+    ) -> Result<Self, PdfiumError> {
+        let mut bytes = Vec::new();
+
+        reader
+            .read_to_end(&mut bytes)
+            .map_err(PdfiumError::IoError)?;
+
+        Self::new_type1_from_bytes(document, bytes.as_slice(), is_cid_font)
+    }
+
+    /// Attempts to load a Type 1 font file from the given URL.
+    /// The Javascript `fetch()` API is used to download data over the network.
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub async fn load_type1_from_fetch(
+        document: &'a PdfDocument<'a>,
+        url: impl ToString,
+        is_cid_font: bool,
+    ) -> Result<PdfFont<'a>, PdfiumError> {
+        if let Some(window) = window() {
+            let fetch_result = JsFuture::from(window.fetch_with_str(url.to_string().as_str()))
+                .await
+                .map_err(PdfiumError::WebSysFetchError)?;
+
+            debug_assert!(fetch_result.is_instance_of::<Response>());
+
+            let response: Response = fetch_result
+                .dyn_into()
+                .map_err(|_| PdfiumError::WebSysInvalidResponseError)?;
+
+            let blob: Blob =
+                JsFuture::from(response.blob().map_err(PdfiumError::WebSysFetchError)?)
+                    .await
+                    .map_err(PdfiumError::WebSysFetchError)?
+                    .into();
+
+            Self::load_type1_from_blob(document, blob, is_cid_font).await
+        } else {
+            Err(PdfiumError::WebSysWindowObjectNotAvailable)
+        }
+    }
+
+    /// Attempts to load a Type 1 font from the given Blob.
+    /// A File object returned from a FileList is a suitable Blob:
+    ///
+    /// ```
+    /// <input id="filePicker" type="file">
+    ///
+    /// const file = document.getElementById('filePicker').files[0];
+    /// ```
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub async fn load_type1_from_blob(
+        document: &'a PdfDocument<'a>,
+        blob: Blob,
+        is_cid_font: bool,
+    ) -> Result<PdfFont<'a>, PdfiumError> {
+        let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
+            .await
+            .map_err(PdfiumError::WebSysFetchError)?
+            .into();
+
+        let u8_array: Uint8Array = Uint8Array::new(&array_buffer);
+
+        let bytes: Vec<u8> = u8_array.to_vec();
+
+        Self::new_type1_from_bytes(document, bytes.as_slice(), is_cid_font)
+    }
+
     /// Attempts to load the given byte data as a Type 1 font file.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
@@ -236,6 +380,131 @@ impl<'a> PdfFont<'a> {
         is_cid_font: bool,
     ) -> Result<Self, PdfiumError> {
         Self::new_font_from_bytes(document, font_data, FPDF_FONT_TYPE1, is_cid_font)
+    }
+
+    /// Attempts to load a TrueType font file from the given file path.
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    ///
+    /// This function is not available when compiling to WASM. You have several options for
+    /// loading font data in WASM:
+    /// * Use the `PdfFont::load_true_type_from_fetch()` function to download font data from a
+    /// URL using the browser's built-in `fetch()` API. This function is only available when
+    /// compiling to WASM.
+    /// * Use the `PdfFont::load_true_type_from_blob()` function to load font data from a
+    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// `<input type="file">` element). This function is only available when compiling to WASM.
+    /// * Use the [PdfFont::load_true_type_from_reader()] function to load font data from any
+    /// valid Rust reader.
+    /// * Use another method to retrieve the bytes of the target font over the network,
+    /// then load those bytes into Pdfium using the [PdfFont::new_true_type_from_bytes()] function.
+    /// * Embed the bytes of the desired font directly into the compiled WASM module
+    /// using the `include_bytes!()` macro.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn load_true_type_from_file(
+        document: &'a PdfDocument<'a>,
+        path: &(impl AsRef<Path> + ?Sized),
+        is_cid_font: bool,
+    ) -> Result<Self, PdfiumError> {
+        Self::load_true_type_from_reader(
+            document,
+            File::open(path).map_err(PdfiumError::IoError)?,
+            is_cid_font,
+        )
+    }
+
+    /// Attempts to load a TrueType font file from the given reader.
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    pub fn load_true_type_from_reader(
+        document: &'a PdfDocument<'a>,
+        mut reader: impl Read,
+        is_cid_font: bool,
+    ) -> Result<Self, PdfiumError> {
+        let mut bytes = Vec::new();
+
+        reader
+            .read_to_end(&mut bytes)
+            .map_err(PdfiumError::IoError)?;
+
+        Self::new_true_type_from_bytes(document, bytes.as_slice(), is_cid_font)
+    }
+
+    /// Attempts to load a TrueType font file from the given URL.
+    /// The Javascript `fetch()` API is used to download data over the network.
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub async fn load_true_type_from_fetch(
+        document: &'a PdfDocument<'a>,
+        url: impl ToString,
+        is_cid_font: bool,
+    ) -> Result<PdfFont<'a>, PdfiumError> {
+        if let Some(window) = window() {
+            let fetch_result = JsFuture::from(window.fetch_with_str(url.to_string().as_str()))
+                .await
+                .map_err(PdfiumError::WebSysFetchError)?;
+
+            debug_assert!(fetch_result.is_instance_of::<Response>());
+
+            let response: Response = fetch_result
+                .dyn_into()
+                .map_err(|_| PdfiumError::WebSysInvalidResponseError)?;
+
+            let blob: Blob =
+                JsFuture::from(response.blob().map_err(PdfiumError::WebSysFetchError)?)
+                    .await
+                    .map_err(PdfiumError::WebSysFetchError)?
+                    .into();
+
+            Self::load_true_type_from_blob(document, blob, is_cid_font).await
+        } else {
+            Err(PdfiumError::WebSysWindowObjectNotAvailable)
+        }
+    }
+
+    /// Attempts to load a TrueType font from the given Blob.
+    /// A File object returned from a FileList is a suitable Blob:
+    ///
+    /// ```
+    /// <input id="filePicker" type="file">
+    ///
+    /// const file = document.getElementById('filePicker').files[0];
+    /// ```
+    ///
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
+    /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
+    /// or right-to-left languages.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub async fn load_true_type_from_blob(
+        document: &'a PdfDocument<'a>,
+        blob: Blob,
+        is_cid_font: bool,
+    ) -> Result<PdfFont<'a>, PdfiumError> {
+        let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
+            .await
+            .map_err(PdfiumError::WebSysFetchError)?
+            .into();
+
+        let u8_array: Uint8Array = Uint8Array::new(&array_buffer);
+
+        let bytes: Vec<u8> = u8_array.to_vec();
+
+        Self::new_true_type_from_bytes(document, bytes.as_slice(), is_cid_font)
     }
 
     /// Attempts to load the given byte data as a TrueType font file.
@@ -274,7 +543,7 @@ impl<'a> PdfFont<'a> {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
+                // yet Pdfium's error code indicates success.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -289,7 +558,7 @@ impl<'a> PdfFont<'a> {
         }
     }
 
-    /// Returns the internal FPDF_FONT handle for this [PdfFont].
+    /// Returns the internal `FPDF_FONT` handle for this [PdfFont].
     #[inline]
     pub(crate) fn get_handle(&self) -> &FPDF_FONT {
         &self.handle
@@ -347,7 +616,7 @@ impl<'a> PdfFont<'a> {
     }
 
     /// Returns the italic angle of this [PdfFont]. The italic angle is the angle,
-    /// expressed in degrees counter-clock-wise from the vertical, of the dominant vertical
+    /// expressed in degrees counter-clockwise from the vertical, of the dominant vertical
     /// strokes of the font. The value is zero for non-italic fonts, and negative for fonts
     /// that slope to the right (as almost all italic fonts do).
     ///

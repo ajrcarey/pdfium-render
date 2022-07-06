@@ -1,0 +1,103 @@
+use pdfium_render::prelude::*;
+
+fn main() -> Result<(), PdfiumError> {
+    // For general comments about pdfium-render and binding to Pdfium, see export.rs.
+
+    let pdfium = Pdfium::new(
+        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+            .or_else(|_| Pdfium::bind_to_system_library())?,
+    );
+
+    // We'll use rendered pages from existing test PDFs for our images. We'll generate
+    // bitmaps from the PDFs in the following list.
+
+    let test_documents = vec![
+        "test/path-test.pdf",
+        "test/form-test.pdf",
+        "test/create-test.pdf",
+        "test/text-test.pdf",
+    ];
+
+    // Create a new blank document...
+
+    let document = pdfium.create_new_pdf()?;
+
+    // ... add a new page...
+
+    let mut pages = document.pages();
+
+    let mut page = pages.create_page_at_start(PdfPagePaperSize::a4())?;
+
+    // ... add some image objects to the page...
+
+    let origin_x = page.width() / 2.0;
+
+    let origin_y = page.height() / 2.0;
+
+    for (index, degrees) in (0..360).step_by(40).enumerate() {
+        // Create the image to use for this object.
+
+        let path = test_documents.get(index % test_documents.len()).unwrap();
+
+        let horizontal_scale = 40.0 + (degrees as f64) * 1.5;
+
+        let target_width = (250.0 * (horizontal_scale / 100.0)) as u16;
+
+        let image = pdfium
+            .load_pdf_from_file(path, None)
+            .unwrap()
+            .pages()
+            .get(0)
+            .unwrap()
+            .get_bitmap_with_config(&PdfBitmapConfig::new().set_target_width(target_width))
+            .unwrap()
+            .as_image();
+
+        let aspect_ratio = image.height() as f64 / image.width() as f64;
+
+        let vertical_scale = horizontal_scale * aspect_ratio;
+
+        let mut object =
+            PdfPageImageObject::new_with_scale(&document, image, horizontal_scale, vertical_scale)?;
+
+        // The order of transformations is important here. In particular, the positioning
+        // of the object on the page - the call to object.translate() - must take
+        // place _after_ the call to object.rotate...(), otherwise the translated
+        // co-ordinates will be rotated as well.
+
+        // Progressively rotate the image as we loop.
+        object.rotate_clockwise_degrees(degrees as f32)?;
+
+        // Move the object into position in the center of the page.
+        object.translate(origin_x, origin_y)?;
+
+        // Add the object to the page, triggering content regeneration.
+        page.objects_mut().add_image_object(object)?;
+    }
+
+    // ... log details of the objects we just created to the console...
+
+    page.objects()
+        .iter()
+        .enumerate()
+        .for_each(|(index, object)| {
+            println!(
+                "Page object {} is of type {:?}",
+                index,
+                object.object_type()
+            );
+
+            println!(
+                "Bounds: {:?}, width: {:?}, height: {:?}",
+                object.bounds(),
+                object.width(),
+                object.height()
+            );
+        });
+
+    // ... and save the result to a file.
+
+    document.save_to_file("test/image-test.pdf")?;
+
+    Ok(())
+}

@@ -10,9 +10,11 @@ use crate::font::PdfFont;
 use crate::page::{PdfPage, PdfPoints, PdfRect};
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_group::PdfPageGroupObject;
+use crate::page_object_image::PdfPageImageObject;
 use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
+use image::DynamicImage;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
@@ -395,6 +397,47 @@ impl<'a> PdfPageObjects<'a> {
         )?;
 
         self.add_path_object(object)
+    }
+
+    /// Adds the given [PdfPageImageObject] to this [PdfPageObjects] collection,
+    /// returning the image object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn add_image_object(
+        &mut self,
+        object: PdfPageImageObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.add_object(PdfPageObject::Image(object))
+    }
+
+    /// Creates a new [PdfPageImageObject] at the given x and y page co-ordinates
+    /// from the given arguments and adds it to this [PdfPageObjects] collection,
+    /// returning the image object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// By default, new image objects have their width and height both set to 1.0 points.
+    /// The given scale factors will be applied to the newly created object to scale its size.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    pub fn create_image_object(
+        &mut self,
+        x: PdfPoints,
+        y: PdfPoints,
+        image: DynamicImage,
+        horizontal_scale_factor: f64,
+        vertical_scale_factor: f64,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let mut object =
+            PdfPageImageObject::new_from_handle(self.document_handle, image, self.bindings)?;
+
+        object.scale(horizontal_scale_factor, vertical_scale_factor)?;
+        object.translate(x, y)?;
+
+        self.add_image_object(object)
     }
 
     /// Creates a new [PdfPageGroupObject] object group that includes any page objects in this

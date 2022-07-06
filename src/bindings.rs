@@ -4,12 +4,17 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
-    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF,
 };
+use crate::document::PdfDocument;
 use crate::error::PdfiumInternalError;
+use crate::page::PdfPage;
+use crate::page_object::PdfPageObject;
+use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
@@ -84,6 +89,24 @@ pub trait PdfiumLibraryBindings {
         get_string_from_pdfium_utf16le_bytes(buffer)
     }
 
+    /// Returns Pdfium's internal `FPDF_DOCUMENT` handle for the given [PdfDocument].
+    #[inline]
+    fn get_handle_from_document(&self, document: &PdfDocument) -> FPDF_DOCUMENT {
+        *document.get_handle()
+    }
+
+    /// Returns Pdfium's internal `FPDF_PAGE` handle for the given [PdfPage].
+    #[inline]
+    fn get_handle_from_page(&self, page: &PdfPage) -> FPDF_PAGE {
+        *page.get_handle()
+    }
+
+    /// Returns Pdfium's internal `FPDF_PAGEOBJECT` handle for the given [PdfPageObject].
+    #[inline]
+    fn get_handle_from_object(&self, object: &PdfPageObject) -> FPDF_PAGEOBJECT {
+        *object.get_object_handle()
+    }
+
     #[allow(non_snake_case)]
     fn FPDF_InitLibrary(&self);
 
@@ -104,7 +127,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
 
     /// Note that all calls to [PdfiumLibraryBindings::FPDF_LoadMemDocument()] are
-    /// internally upgraded to [[PdfiumLibraryBindings::FPDF_LoadMemDocument64()].
+    /// internally upgraded to [PdfiumLibraryBindings::FPDF_LoadMemDocument64()].
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
@@ -384,8 +407,80 @@ pub trait PdfiumLibraryBindings {
         color: FPDF_DWORD,
     );
 
+    /// Note that the return type of this function is modified when compiling to WASM. Instead
+    /// of returning `*mut c_void`, it returns `*const c_void`.
+    ///
+    /// When compiling to WASM, Pdfium's internal pixel data buffer for the given bitmap resides
+    /// in a separate WASM memory module, so any buffer returned by this function is necessarily
+    /// a copy; mutating that copy does not alter the buffer in Pdfium's WASM module and, since
+    /// there is no way for `pdfium-render` to know when the caller has finished mutating the
+    /// copied buffer, there is no reliable way for `pdfium-render` to transfer any changes made
+    /// to the copy across to Pdfium's WASM module.
+    ///
+    /// To avoid having to maintain different code for different platform targets, it is
+    /// recommended that all callers use the provided [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()]
+    /// convenience function to apply modified pixel data to a bitmap instead of mutating the
+    /// buffer returned by this function.
     #[allow(non_snake_case)]
+    #[cfg(not(target_arch = "wasm32"))]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void;
+
+    /// Note that the return type of this function is modified when compiling to WASM. Instead
+    /// of returning `*mut c_void`, it returns `*const c_void`.
+    ///
+    /// When compiling to WASM, Pdfium's internal pixel data buffer for the given bitmap resides
+    /// in a separate WASM memory module, so any buffer returned by this function is necessarily
+    /// a copy; mutating that copy does not alter the buffer in Pdfium's WASM module and, since
+    /// there is no way for `pdfium-render` to know when the caller has finished mutating the
+    /// copied buffer, there is no reliable way for `pdfium-render` to transfer any changes made
+    /// to the copy across to Pdfium's WASM module.
+    ///
+    /// **Do not mutate the pixel data in the buffer returned by this function.** Instead, use the
+    /// [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()] function to apply a new pixel data
+    /// buffer to the bitmap.
+    #[allow(non_snake_case)]
+    #[cfg(target_arch = "wasm32")]
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
+
+    /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
+    /// alternative to directly mutating the data returned by
+    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    ///
+    /// Replaces all pixel data for the given bitmap with the pixel data in the given buffer,
+    /// returning `true` once the new pixel data has been applied. If the given buffer
+    /// does not have the same length as the bitmap's current buffer then the current buffer
+    /// will be unchanged and a value of `false` will be returned.
+    #[allow(non_snake_case)]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+        let buffer_length =
+            (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as usize;
+
+        if buffer.len() != buffer_length {
+            return false;
+        }
+
+        let buffer_start = self.FPDFBitmap_GetBuffer(bitmap);
+
+        let destination =
+            unsafe { std::slice::from_raw_parts_mut(buffer_start as *mut u8, buffer_length) };
+
+        destination.copy_from_slice(buffer);
+
+        true
+    }
+
+    /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
+    /// alternative to directly mutating the data returned by
+    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    ///
+    /// This function replaces all pixel data of the given bitmap with the pixel data in the
+    /// given buffer, returning `true` once the new pixel data has been applied. If the given buffer
+    /// does not have the same length as the bitmap's current buffer then the current buffer
+    /// will be unchanged and a value of `false` will be returned.
+    #[allow(non_snake_case)]
+    #[cfg(target_arch = "wasm32")]
+    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool;
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int;
@@ -1581,6 +1676,37 @@ pub trait PdfiumLibraryBindings {
         glyphpath: FPDF_GLYPHPATH,
         index: c_int,
     ) -> FPDF_PATHSEGMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+        &self,
+        pagerange: FPDF_PAGERANGE,
+        index: size_t,
+    ) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE;
+
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetName(
+        &self,
+        document: FPDF_DOCUMENT,
+        key: &str,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong;
 
     /// Retrieves the error code of the last error, if any, recorded by the external
     /// Pdfium library and maps it to a [PdfiumInternalError] enum value.

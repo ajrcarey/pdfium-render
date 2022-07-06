@@ -8,7 +8,7 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap_config::PdfBitmapRenderSettings;
 use crate::color::PdfColor;
-use crate::error::PdfiumError;
+use crate::error::{PdfiumError, PdfiumInternalError};
 use image::{DynamicImage, ImageBuffer};
 
 #[cfg(target_arch = "wasm32")]
@@ -112,6 +112,37 @@ impl<'a> PdfBitmap<'a> {
             is_rendered: false,
             page,
             bindings,
+        }
+    }
+
+    /// Returns a `FPDF_BITMAP` handle to an empty bitmap with the given width and height.
+    pub(crate) fn create_empty_bitmap_handle(
+        width: i32,
+        height: i32,
+        format: i32,
+        bindings: &dyn PdfiumLibraryBindings,
+    ) -> Result<FPDF_BITMAP, PdfiumError> {
+        let handle = bindings.FPDFBitmap_CreateEx(
+            width,
+            height,
+            format,
+            std::ptr::null_mut(),
+            0, // Not relevant because Pdfium will create the buffer itself.
+        );
+
+        if handle.is_null() {
+            if let Some(error) = bindings.get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet Pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        } else {
+            Ok(handle)
         }
     }
 

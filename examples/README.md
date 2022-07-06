@@ -2,20 +2,21 @@
 
 Simple examples demonstrating how to use `pdfium-render` on both native and WASM compilation targets.
 
-* `export.rs`: exports the individual pages in `test/export-test.pdf` to JPGs in the working directory. Run this example via `cargo run --example export`. The example will attempt to bind to a copy of Pdfium in the working directory, falling back to the system-bundled library if local loading fails. See comments in the source file for more details.
-* `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered. Run this example via `cargo run --example form`.
-* `text.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console. Run this example via `cargo run --example text`.
-* `objects.rs`: outputs information about each page object on each page in `test/export-test.pdf` to the console. Run this example via `cargo run --example objects`.
-* `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`. Run this example via `cargo run --example concat`.
-* `create.rs`: generates a new document by placing text objects onto a blank page, saving the new document to `test/create-test.pdf`. Run this example via `cargo run --example create`.
-* `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`. Run this example via `cargo run --example path`.
-* `tile.rs`: generates a new document by tiling pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf`, saving the new document to `test/tile-test.pdf`. Run this example via `cargo run --example tile`.
-* `fonts.rs`: outputs to the console information about the 14 built-in PDF fonts retrieved from Pdfium. Run this example via `cargo run --example fonts`.
-* `watermark.rs`: adds a watermark to each page in a previously-generated document, saving the watermarked document to `test/watermark-test.pdf`. Run this example via `cargo run --example watermark`.
 * `chars.rs`: iterates over the individual characters in a text object to determine the bounding boxes of each word in the text object. Run this example via `cargo run --example chars`.
 * `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline. Run this example via `cargo run --example descenders`.
-* `thread_safe.rs`: explains in comments `pdfium-render`'s approach to ensuring thread-safe access to Pdfium, and demonstrates using a parallel iterator to process multiple rendering tasks on separate threads. Run this example via `cargo run --example thread_safe`.  
+* `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`. Run this example via `cargo run --example concat`.
+* `create.rs`: generates a new document by placing text objects onto a blank page, saving the new document to `test/create-test.pdf`. Run this example via `cargo run --example create`.
+* `export.rs`: exports the individual pages in `test/export-test.pdf` to JPGs in the working directory. Run this example via `cargo run --example export`. The example will attempt to bind to a copy of Pdfium in the working directory, falling back to the system-bundled library if local loading fails. See comments in the source file for more details.
+* `fonts.rs`: outputs to the console information about the 14 built-in PDF fonts retrieved from Pdfium. Run this example via `cargo run --example fonts`.
+* `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered. Run this example via `cargo run --example form`.
+* `image.rs`: generates a new document by placing image objects onto a blank page, saving the new document to `test/image-test.pdf`. Run this example via `cargo run --example image`.
+* `objects.rs`: outputs information about each page object on each page in `test/export-test.pdf` to the console. Run this example via `cargo run --example objects`.
+* `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`. Run this example via `cargo run --example path`.
+* `text.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console. Run this example via `cargo run --example text`.
+* `thread_safe.rs`: explains in comments `pdfium-render`'s approach to ensuring thread-safe access to Pdfium, and demonstrates using a parallel iterator to process multiple rendering tasks on separate threads. Run this example via `cargo run --example thread_safe`.
+* `tile.rs`: generates a new document by tiling pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf`, saving the new document to `test/tile-test.pdf`. Run this example via `cargo run --example tile`.
 * `wasm.rs`: demonstrates `pdfium-render` running in a browser. This requires some manual bundling of the correct resources; read on.
+* `watermark.rs`: adds a watermark to each page in a previously-generated document, saving the watermarked document to `test/watermark-test.pdf`. Run this example via `cargo run --example watermark`.
 
 ## Bundling for WASM
 

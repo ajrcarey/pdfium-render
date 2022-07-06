@@ -132,7 +132,7 @@ impl Default for PdfPathFillMode {
 /// centered at a particular origin point with given horizontal and vertical radii.
 ///
 /// The detached path object can later be attached to a page by using the
-/// `PdfPageObjects::add_object()` function.
+/// `PdfPageObjects::add_path_object()` function.
 pub struct PdfPagePathObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     page_handle: Option<FPDF_PAGE>,
@@ -157,6 +157,41 @@ impl<'a> PdfPagePathObject<'a> {
         }
     }
 
+    /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
+    /// will not be rendered until it is added to a `PdfPage` using the
+    /// `PdfPageObjects::add_path_object()` function.
+    ///
+    /// The new path will be created with the given initial position and with the given fill and stroke
+    /// settings applied. Both the stroke color and the stroke width must be provided for the
+    /// path to be stroked.
+    ///
+    /// Other than setting the initial position, this path will be empty. Add additional segments
+    /// to this path by calling one or more of the [PdfPagePathObject::move_to()],
+    /// [PdfPagePathObject::line_to()], or [PdfPagePathObject::bezier_to()]
+    /// functions. A closed sub-path can be created by calling the [PdfPagePathObject::close_path()]
+    /// function. Convenience functions for adding rectangles, circles, and ellipses are also
+    /// available with the [PdfPagePathObject::rect_to()], [PdfPagePathObject::circle_to()],
+    /// and [PdfPagePathObject::ellipse_to()] functions, which create the desired shapes by
+    /// constructing closed sub-paths from other path segments.
+    #[inline]
+    pub fn new(
+        document: &'a PdfDocument<'a>,
+        x: PdfPoints,
+        y: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<Self, PdfiumError> {
+        Self::new_from_bindings(
+            document.get_bindings(),
+            x,
+            y,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )
+    }
+
     pub(crate) fn new_from_bindings(
         bindings: &'a dyn PdfiumLibraryBindings,
         x: PdfPoints,
@@ -172,7 +207,7 @@ impl<'a> PdfPagePathObject<'a> {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
+                // yet Pdfium's error code indicates success.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -214,41 +249,6 @@ impl<'a> PdfPagePathObject<'a> {
 
             Ok(result)
         }
-    }
-
-    /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
-    ///
-    /// The new path will be created with the given initial position and with the given fill and stroke
-    /// settings applied. Both the stroke color and the stroke width must be provided for the
-    /// path to be stroked.
-    ///
-    /// Other than setting the initial position, this path will be empty. Add additional segments
-    /// to this path by calling one or more of the [PdfPagePathObject::move_to()],
-    /// [PdfPagePathObject::line_to()], or [PdfPagePathObject::bezier_to()]
-    /// functions. A closed sub-path can be created by calling the [PdfPagePathObject::close_path()]
-    /// function. Convenience functions for adding rectangles, circles, and ellipses are also
-    /// available with the [PdfPagePathObject::rect_to()], [PdfPagePathObject::circle_to()],
-    /// and [PdfPagePathObject::ellipse_to()] functions, which create the desired shapes by
-    /// constructing closed sub-paths from other path segments.
-    #[inline]
-    pub fn new(
-        document: &'a PdfDocument<'a>,
-        x: PdfPoints,
-        y: PdfPoints,
-        stroke_color: Option<PdfColor>,
-        stroke_width: Option<PdfPoints>,
-        fill_color: Option<PdfColor>,
-    ) -> Result<Self, PdfiumError> {
-        Self::new_from_bindings(
-            document.get_bindings(),
-            x,
-            y,
-            stroke_color,
-            stroke_width,
-            fill_color,
-        )
     }
 
     #[inline]

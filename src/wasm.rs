@@ -2304,7 +2304,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void {
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetBuffer()");
 
         let width = self.FPDFBitmap_GetWidth(bitmap);
@@ -2330,7 +2330,35 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             (width * height * PdfiumRenderWasmState::BYTES_PER_PIXEL) as usize,
         );
 
-        buffer.as_ptr() as *mut c_void
+        buffer.as_ptr() as *const c_void
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+        let buffer_length =
+            (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as usize;
+
+        if buffer.len() != buffer_length {
+            return false;
+        }
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_ptr = state
+            .call(
+                "FPDFBitmap_GetBuffer",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_bitmap(
+                    bitmap,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        state.copy_bytes_to_pdfium_address(buffer, buffer_ptr);
+
+        true
     }
 
     #[allow(non_snake_case)]

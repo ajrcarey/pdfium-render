@@ -3,7 +3,7 @@
 
 use crate::bindgen::{
     FPDFBitmap_BGRA, FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_ANNOT,
-    FPDF_BITMAP, FPDF_BOOL, FPDF_PAGE, FS_RECTF,
+    FPDF_BOOL, FPDF_PAGE, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapRotation};
@@ -17,7 +17,6 @@ use crate::page_text::PdfPageText;
 use crate::prelude::PdfPageAnnotations;
 use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use std::os::raw::c_int;
-use std::ptr::null_mut;
 
 /// The internal coordinate system inside a [PdfDocument] is measured in Points, a
 /// device-independent unit equal to 1/72 inches, roughly 0.358 mm. Points are converted to pixels
@@ -168,7 +167,7 @@ impl PdfRect {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
+                // yet Pdfium's error code indicates success.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -445,7 +444,7 @@ impl<'a> PdfPage<'a> {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
+                // yet Pdfium's error code indicates success.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -515,7 +514,12 @@ impl<'a> PdfPage<'a> {
     ) -> Result<PdfBitmap, PdfiumError> {
         let config = config.apply_to_page(self);
 
-        let handle = self.create_empty_bitmap_handle(config.width, config.height, config.format)?;
+        let handle = PdfBitmap::create_empty_bitmap_handle(
+            config.width,
+            config.height,
+            config.format,
+            self.bindings,
+        )?;
 
         Ok(PdfBitmap::from_pdfium(handle, config, &self, self.bindings))
     }
@@ -534,8 +538,12 @@ impl<'a> PdfPage<'a> {
         height: u16,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
-        let handle =
-            self.create_empty_bitmap_handle(width as i32, height as i32, FPDFBitmap_BGRA as i32)?;
+        let handle = PdfBitmap::create_empty_bitmap_handle(
+            width as i32,
+            height as i32,
+            FPDFBitmap_BGRA as i32,
+            self.bindings,
+        )?;
 
         Ok(PdfBitmap::from_pdfium(
             handle,
@@ -551,37 +559,6 @@ impl<'a> PdfPage<'a> {
             &self,
             self.bindings,
         ))
-    }
-
-    /// Returns a `FPDF_BITMAP` handle to an empty bitmap with the given width and height.
-    fn create_empty_bitmap_handle(
-        &self,
-        width: i32,
-        height: i32,
-        format: i32,
-    ) -> Result<FPDF_BITMAP, PdfiumError> {
-        let handle = self.bindings.FPDFBitmap_CreateEx(
-            width,
-            height,
-            format,
-            null_mut(),
-            0, // Not relevant because Pdfium will create the buffer itself.
-        );
-
-        if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
-        } else {
-            Ok(handle)
-        }
     }
 
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.

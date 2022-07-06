@@ -48,7 +48,7 @@ from scratch.
     }
 ```
 
-`pdfium-render` binds to a Pdfium library at run-time, allowing for run-time selection of
+`pdfium-render` binds to a Pdfium library at run-time, allowing for flexible selection of
 system-provided or bundled Pdfium libraries and providing idiomatic Rust error handling in
 situations where a Pdfium library is not available. A key advantage of binding to Pdfium at run-time
 rather than compile-time is that a Rust application using `pdfium-render` can be compiled to WASM
@@ -74,6 +74,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.8 adds image support to the `PdfPageImageObject` object and additional convenience
+functions to `PdfFont` for loading fonts from files and readers.
+
 Version 0.7.7 adds the `thread_safe` crate feature. See the "Multithreading" section below.
  
 ## Binding to Pdfium
@@ -93,8 +96,34 @@ Binding to a dynamically-built Pdfium library is the simplest option. On Android
 longer permit user applications to access it); alternatively, you can package a pre-built
 dynamic library appropriate for your operating system alongside your Rust executable.
 
-* Native builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
+* Native (i.e. non-WASM) builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
 * WASM builds of Pdfium: <https://github.com/paulocoutinhox/pdfium-lib/releases>
+
+If you are compiling a native (i.e. non-WASM) build, and you place an appropriate Pdfium library
+in the same folder as your compiled application, then binding to it dynamically at runtime is
+as simple as:
+
+```
+    use pdfium_render::prelude::*;
+
+    let pdfium = Pdfium::new(
+        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")).unwrap()
+    );
+```
+
+A common pattern used in the examples at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>
+is to first attempt to bind to a Pdfium library in the same folder as the compiled example, and
+attempt to fall back to a system-provided library if that fails:
+
+```
+    use pdfium_render::prelude::*;
+
+    let pdfium = Pdfium::new(
+        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+            .or_else(|_| Pdfium::bind_to_system_library())
+            .unwrap() // Or use the ? unwrapping operator to pass any error up to the caller
+    );
+```
 
 At the time of writing, the WASM builds at <https://github.com/bblanchon/pdfium-binaries/releases>
 are compiled with a non-growable WASM heap memory allocator. This means that attempting to open
@@ -104,7 +133,7 @@ do not have this problem.
 
 ## Static linking
 
-If you prefer link Pdfium directly into your executable at compile time, use the optional `static`
+If you prefer to link Pdfium directly into your executable at compile time, use the optional `static`
 crate feature. This enables the `Pdfium::bind_to_statically_linked_library()` function which binds
 directly to the Pdfium functions included in your executable:
 
@@ -152,23 +181,37 @@ when running in the browser. The `Pdfium::load_pdf_from_bytes()` function is ava
 the following additional functions are provided:
 
 * The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API
-to download a URL over the network and open it as a PDF document.
+  to download a URL over the network and open it as a PDF document.
 * The `Pdfium::load_pdf_from_blob()` function opens a PDF document from the byte data in a Javascript
-`Blob` or `File` object, including `File` objects returned from an `<input type="file">` element. 
+  `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element. 
 
 The `PdfDocument::save_to_file()` function is not available when running in the browser.
 The `PdfDocument::save_to_bytes()` and `PdfDocument::save_to_writer()` functions are
 available, and the following additional function is provided:
 
 * The `PdfDocument::save_to_blob()` function returns the byte data for the document as a
-Javascript `Blob` object.
+  Javascript `Blob` object.
 
 The following additional function is provided during rendering:
 
 * The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
-ready to display in an HTML `<canvas>` element.
+  ready to display in an HTML `<canvas>` element.
 
-# Multithreading
+The `PdfFont::load_type1_from_file()` and `PdfFont::load_true_type_from_file()` functions are
+not available when running in the browser. The following additional functions are provided:
+
+* The `PdfFont::load_type1_from_fetch()` function uses the browser's built-in `fetch()` API
+  to download a URL over the network and load it as a Type 1 font.
+* The `PdfFont::load_true_type_from_fetch()` function uses the browser's built-in `fetch()` API
+  to download a URL over the network and load it as a TrueType font.
+* The `PdfFont::load_type1_from_blob()` function loads a Type 1 font from the byte data in a
+  Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
+  element.
+* The `PdfFont::load_true_type_from_blob()` function loads a TrueType font from the byte data in a
+  Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
+  element.
+
+## Multithreading
 
 Pdfium makes no guarantees about thread safety and should be assumed _not_ to be thread safe.
 The Pdfium authors specifically recommend that parallel processing, not multi-threading,
@@ -191,10 +234,10 @@ This crate provides the following optional features:
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
-* `thread-safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
+* `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above. 
 
-The `thread-safe` feature is enabled by default. All other features are disabled by default.
+The `thread_safe` feature is enabled by default. All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 
@@ -252,12 +295,12 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.5.x-0.6.x added support for most read-only Pdfium functions to `pdfium-render`.
 * Releases numbered 0.7.x aim to progressively add support for all Pdfium page object creation and editing functions to `pdfium-render`. 
 * Releases numbered 0.8.x aim to progressively add support for all other Pdfium editing functions to `pdfium-render`.
-* Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.0.
+* Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.7, 238 (65%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.8, 245 (67%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -265,6 +308,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.8: adds image support to the `PdfPageImageObject` object, the `PdfPageObjects::add_image_object()`
+  and `PdfPageObjects::create_image_object()` functions, additional convenience functions for
+  loading fonts from files and readers to `PdfFont`, and bindings for `FPDF_VIEWERREF_Get*()` functions.
 * 0.7.7: adds the `thread_safe` crate feature and the accompanying example in `examples/thread_safe.rs`.
 * 0.7.6: adds retrieval of text settings on a character-by-character basis to the `PdfPageText` and
   `PdfPageTextObject` objects; adds `PdfPageTextSegment` and `PdfPageTextChar` structs to the 

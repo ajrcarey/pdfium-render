@@ -2,17 +2,17 @@
 // behind a mutex marshaller to create a thread-safe trait implementation.
 
 // Pdfium itself is not thread-safe, so acquiring an exclusive lock on access to Pdfium is the
-// only way to guarantee thread safety. Even then, access to the FPDF_LoadCustomDocument()
-// function must be disabled, because that involves asynchronous callbacks that could escape
-// the thread blocking guarantee provided by the mutex.
+// only way to guarantee thread safety. We acquire the lock on the first call to FPDF_InitLibrary(),
+// and release the lock on the last call to FPDF_DestroyLibrary().
 
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
-    FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
-    FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PATHSEGMENT, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use lazy_static::lazy_static;
@@ -517,8 +517,22 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
+    #[cfg(not(target_arch = "wasm32"))]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void {
         self.bindings.FPDFBitmap_GetBuffer(bitmap)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[cfg(target_arch = "wasm32")]
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void {
+        self.bindings.FPDFBitmap_GetBuffer(bitmap)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+        self.bindings.FPDFBitmap_SetBuffer(bitmap, buffer)
     }
 
     #[inline]
@@ -2309,5 +2323,60 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     ) -> FPDF_PATHSEGMENT {
         self.bindings
             .FPDFGlyphPath_GetGlyphPathSegment(glyphpath, index)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        self.bindings.FPDF_VIEWERREF_GetPrintScaling(document)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int {
+        self.bindings.FPDF_VIEWERREF_GetNumCopies(document)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE {
+        self.bindings.FPDF_VIEWERREF_GetPrintPageRange(document)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
+        self.bindings
+            .FPDF_VIEWERREF_GetPrintPageRangeCount(pagerange)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+        &self,
+        pagerange: FPDF_PAGERANGE,
+        index: size_t,
+    ) -> c_int {
+        self.bindings
+            .FPDF_VIEWERREF_GetPrintPageRangeElement(pagerange, index)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE {
+        self.bindings.FPDF_VIEWERREF_GetDuplex(document)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_VIEWERREF_GetName(
+        &self,
+        document: FPDF_DOCUMENT,
+        key: &str,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong {
+        self.bindings
+            .FPDF_VIEWERREF_GetName(document, key, buffer, length)
     }
 }

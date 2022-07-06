@@ -133,7 +133,7 @@ impl PdfPageTextRenderMode {
 /// Creating a detached page text object offers more scope for customization, but you must
 /// add the object to a containing `PdfPage` manually. To create a detached page text object,
 /// use the [PdfPageTextObject::new()] function. The detached page text object can later
-/// be attached to a page by using the `PdfPageObjects::add_object()` function.
+/// be attached to a page by using the `PdfPageObjects::add_text_object()` function.
 pub struct PdfPageTextObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     page_handle: Option<FPDF_PAGE>,
@@ -151,41 +151,6 @@ impl<'a> PdfPageTextObject<'a> {
             object_handle,
             page_handle: Some(page_handle),
             bindings,
-        }
-    }
-
-    // Take raw FPDF_DOCUMENT and FPDF_FONT handles to avoid cascading lifetime problems
-    // associated with borrowing PdfDocument<'a> and/or PdfFont<'a>.
-    pub(crate) fn new_from_handles(
-        document: FPDF_DOCUMENT,
-        text: impl ToString,
-        font: FPDF_FONT,
-        font_size: PdfPoints,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Result<Self, PdfiumError> {
-        let handle = bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value);
-
-        if handle.is_null() {
-            if let Some(error) = bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
-        } else {
-            let mut result = PdfPageTextObject {
-                object_handle: handle,
-                page_handle: None,
-                bindings,
-            };
-
-            result.set_text(text)?;
-
-            Ok(result)
         }
     }
 
@@ -213,6 +178,41 @@ impl<'a> PdfPageTextObject<'a> {
             font_size,
             document.get_bindings(),
         )
+    }
+
+    // Take raw FPDF_DOCUMENT and FPDF_FONT handles to avoid cascading lifetime problems
+    // associated with borrowing PdfDocument<'a> and/or PdfFont<'a>.
+    pub(crate) fn new_from_handles(
+        document: FPDF_DOCUMENT,
+        text: impl ToString,
+        font: FPDF_FONT,
+        font_size: PdfPoints,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Result<Self, PdfiumError> {
+        let handle = bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value);
+
+        if handle.is_null() {
+            if let Some(error) = bindings.get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet Pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        } else {
+            let mut result = PdfPageTextObject {
+                object_handle: handle,
+                page_handle: None,
+                bindings,
+            };
+
+            result.set_text(text)?;
+
+            Ok(result)
+        }
     }
 
     /// Returns the text rendering mode for the text contained within this [PdfPageTextObject].
