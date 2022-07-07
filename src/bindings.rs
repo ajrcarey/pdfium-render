@@ -397,6 +397,9 @@ pub trait PdfiumLibraryBindings {
     fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP);
 
     #[allow(non_snake_case)]
+    fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int;
+
+    #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,

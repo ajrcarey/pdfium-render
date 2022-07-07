@@ -65,6 +65,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPage_GenerateContent()?;
         result.extern_FPDFBitmap_CreateEx()?;
         result.extern_FPDFBitmap_Destroy()?;
+        result.extern_FPDFBitmap_GetFormat()?;
         result.extern_FPDFBitmap_FillRect()?;
         result.extern_FPDFBitmap_GetBuffer()?;
         result.extern_FPDFBitmap_GetWidth()?;
@@ -839,6 +840,14 @@ impl DynamicPdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP)>, libloading::Error> {
         unsafe { self.library.get(b"FPDFBitmap_Destroy\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFBitmap_GetFormat(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFBitmap_GetFormat\0") }
     }
 
     #[inline]
@@ -4018,6 +4027,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP) {
         unsafe { self.extern_FPDFBitmap_Destroy().unwrap()(bitmap) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
+        unsafe { self.extern_FPDFBitmap_GetFormat().unwrap()(bitmap) }
     }
 
     #[inline]

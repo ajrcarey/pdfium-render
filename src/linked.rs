@@ -453,6 +453,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
+        unsafe { crate::bindgen::FPDFBitmap_GetFormat(bitmap) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,

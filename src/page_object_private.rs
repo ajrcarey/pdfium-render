@@ -239,16 +239,14 @@ pub(crate) mod internal {
 #[cfg(test)]
 pub mod tests {
     use crate::prelude::*;
+    use crate::utils::tests::tests_bind_to_pdfium;
 
     #[test]
     fn test_object_get_translation() -> Result<(), PdfiumError> {
         // Tests to make sure we can retrieve the correct horizontal and vertical translation deltas
         // from an object after applying a translation transformation.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
@@ -282,10 +280,7 @@ pub mod tests {
         // Tests to make sure we can retrieve the correct horizontal and vertical scale factors
         // from an object after applying a scale transformation.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
@@ -319,10 +314,7 @@ pub mod tests {
         // Tests to make sure we can retrieve the correct clockwise rotation angle from an object
         // after applying a rotation transformation.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
@@ -356,10 +348,7 @@ pub mod tests {
         // Tests to make sure we can retrieve the correct skew axes values from an object
         // after applying a skew transformation.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 

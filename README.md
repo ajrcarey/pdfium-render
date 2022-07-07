@@ -300,7 +300,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.8, 245 (67%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.8, 246 (67%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 

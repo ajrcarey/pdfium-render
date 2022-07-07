@@ -274,3 +274,26 @@ pub(crate) mod files {
         result
     }
 }
+
+pub(crate) mod tests {
+    // Provides a function that binds to the correct Pdfium configuration during unit tests,
+    // depending on selected crate features.
+
+    use crate::pdfium::Pdfium;
+
+    #[inline]
+    #[cfg(feature = "static")]
+    pub(crate) fn tests_bind_to_pdfium() -> Pdfium {
+        Pdfium::default()
+    }
+
+    #[inline]
+    #[cfg(not(feature = "static"))]
+    pub(crate) fn tests_bind_to_pdfium() -> Pdfium {
+        Pdfium::new(
+            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+                .or_else(|_| Pdfium::bind_to_system_library())
+                .unwrap(),
+        )
+    }
+}

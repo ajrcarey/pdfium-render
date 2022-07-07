@@ -502,6 +502,12 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
+        self.bindings.FPDFBitmap_GetFormat(bitmap)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,

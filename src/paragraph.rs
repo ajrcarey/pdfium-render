@@ -693,14 +693,12 @@ impl<'a> PdfParagraph<'a> {
 #[cfg(test)]
 pub mod tests {
     use crate::paragraph::PdfParagraph;
-    use crate::prelude::*; // Temporary until PdfParagraph is included in the prelude.
+    use crate::prelude::*;
+    use crate::utils::tests::tests_bind_to_pdfium; // Temporary until PdfParagraph is included in the prelude.
 
     #[test]
     fn test_paragraph_construction() -> Result<(), PdfiumError> {
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.load_pdf_from_file("./test/text-test.pdf", None)?;
 

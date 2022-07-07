@@ -533,13 +533,11 @@ impl<'a> Iterator for PdfPageGroupObjectIterator<'a> {
 mod test {
     use crate::page_object_group::PdfPageGroupObject;
     use crate::prelude::*;
+    use crate::utils::tests::tests_bind_to_pdfium;
 
     #[test]
     fn test_group_bounds() -> Result<(), PdfiumError> {
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
 
@@ -574,10 +572,7 @@ mod test {
 
     #[test]
     fn test_group_text() -> Result<(), PdfiumError> {
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
 
@@ -610,10 +605,7 @@ mod test {
         // Measure the bounds of a group of objects, translate the group, and confirm the
         // bounds have changed.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = tests_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 

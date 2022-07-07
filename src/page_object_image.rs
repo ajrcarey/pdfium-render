@@ -5,12 +5,15 @@ use crate::bindgen::{
     fpdf_page_t__, FPDFBitmap_BGRA, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap::PdfBitmap;
+use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use image::{DynamicImage, EncodableLayout, ImageBuffer};
+use image::{DynamicImage, EncodableLayout, RgbImage, RgbaImage};
+
+// TODO: AJRC - 7/7/22 - add support for retrieving the list of filters applied to an image object.
+// Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/31
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`.
 ///
@@ -52,7 +55,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// `PdfPageObjects::add_image_object()` function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
-    /// Use the [PdfPageImageObject::scale()] function to apply a horizontal and vertical scale
+    /// Use the [PdfPageObjectCommon::scale()] function to apply a horizontal and vertical scale
     /// to the object after it is created, or use the [PdfPageImageObject::new_with_scale()]
     /// function to apply scaling at the time the object is created.
     #[inline]
@@ -120,7 +123,7 @@ impl<'a> PdfPageImageObject<'a> {
     }
 
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
-    /// this [PdfPageImageObject], taking into account all image filters, image mask, and
+    /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
     pub fn get_processed_image(&self, document: &PdfDocument) -> Result<DynamicImage, PdfiumError> {
         self.get_image_from_bitmap_handle(match self.page_handle {
@@ -161,13 +164,25 @@ impl<'a> PdfPageImageObject<'a> {
 
             let buffer_start = self.bindings.FPDFBitmap_GetBuffer(bitmap);
 
+            let format =
+                PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(bitmap) as u32)?;
+
             let buffer = unsafe {
                 std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
             };
 
-            let result = ImageBuffer::from_raw(width as u32, height as u32, buffer.to_owned())
-                .map(DynamicImage::ImageRgba8)
-                .ok_or(PdfiumError::ImageError);
+            let result = match format {
+                PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx => {
+                    RgbaImage::from_raw(width as u32, height as u32, buffer.to_owned())
+                        .map(DynamicImage::ImageRgba8)
+                }
+                PdfBitmapFormat::BGR => {
+                    RgbImage::from_raw(width as u32, height as u32, buffer.to_owned())
+                        .map(DynamicImage::ImageRgb8)
+                }
+                _ => None,
+            }
+            .ok_or(PdfiumError::ImageError);
 
             self.bindings.FPDFBitmap_Destroy(bitmap);
 
@@ -233,5 +248,88 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     #[inline]
     fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use crate::prelude::*;
+    use crate::utils::tests::tests_bind_to_pdfium;
+
+    #[test]
+    fn test_page_image_object_retains_format() -> Result<(), PdfiumError> {
+        // Make sure the format of the image we pass into a new PdfPageImageObject is the
+        // same when we later retrieve it.
+
+        let pdfium = tests_bind_to_pdfium();
+
+        let image = pdfium
+            .load_pdf_from_file("./test/path-test.pdf", None)?
+            .pages()
+            .get(0)?
+            .get_bitmap_with_config(&PdfBitmapConfig::new().set_target_width(1000))?
+            .as_image();
+
+        let document = pdfium.create_new_pdf()?;
+
+        let mut page = document
+            .pages()
+            .create_page_at_end(PdfPagePaperSize::a4())?;
+
+        let object = page.objects_mut().create_image_object(
+            PdfPoints::new(100.0),
+            PdfPoints::new(100.0),
+            image.clone(),
+            image.width() as f64,
+            image.height() as f64,
+        )?;
+
+        // Since the object has no image filters applied, both the raw and processed images should
+        // be identical to the source image we assigned to the object. The processed image will
+        // take the object's scale factors into account, but we made sure to set those to the actual
+        // pixel dimensions of the source image.
+
+        // A visual inspection can be carried out by uncommenting the PNG save commands below.
+
+        let raw_image = object.as_image_object().unwrap().get_raw_image()?;
+
+        // raw_image
+        //     .save_with_format("./test/1.png", ImageFormat::Png)
+        //     .unwrap();
+
+        let processed_image = object
+            .as_image_object()
+            .unwrap()
+            .get_processed_image(&document)?;
+
+        // processed_image
+        //     .save_with_format("./test/2.png", ImageFormat::Png)
+        //     .unwrap();
+
+        assert!(compare_equality_of_byte_arrays(
+            image.as_bytes(),
+            raw_image.into_rgba8().as_raw().as_slice()
+        ));
+
+        assert!(compare_equality_of_byte_arrays(
+            image.as_bytes(),
+            processed_image.into_rgba8().as_raw().as_slice()
+        ));
+
+        Ok(())
+    }
+
+    fn compare_equality_of_byte_arrays(a: &[u8], b: &[u8]) -> bool {
+        if a.len() != b.len() {
+            return false;
+        }
+
+        for index in 0..a.len() {
+            if a[index] != b[index] {
+                return false;
+            }
+        }
+
+        true
     }
 }
