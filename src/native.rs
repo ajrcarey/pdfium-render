@@ -4,8 +4,9 @@ use crate::bindgen::{
     FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
     FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
     FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
-    FPDF_PATHSEGMENT, FPDF_STRING, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE,
+    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
@@ -47,6 +48,29 @@ impl DynamicPdfiumBindings {
         result.extern_FPDF_GetPageBoundingBox()?;
         result.extern_FPDF_GetPageWidthF()?;
         result.extern_FPDF_GetPageHeightF()?;
+        result.extern_FPDFText_GetCharIndexFromTextIndex()?;
+        result.extern_FPDFText_GetTextIndexFromCharIndex()?;
+        result.extern_FPDF_GetSignatureCount()?;
+        result.extern_FPDF_GetSignatureObject()?;
+        result.extern_FPDFSignatureObj_GetContents()?;
+        result.extern_FPDFSignatureObj_GetByteRange()?;
+        result.extern_FPDFSignatureObj_GetSubFilter()?;
+        result.extern_FPDFSignatureObj_GetReason()?;
+        result.extern_FPDFSignatureObj_GetTime()?;
+        result.extern_FPDFSignatureObj_GetDocMDPPermission()?;
+        result.extern_FPDF_StructTree_GetForPage()?;
+        result.extern_FPDF_StructTree_Close()?;
+        result.extern_FPDF_StructTree_CountChildren()?;
+        result.extern_FPDF_StructTree_GetChildAtIndex()?;
+        result.extern_FPDF_StructElement_GetAltText()?;
+        result.extern_FPDF_StructElement_GetID()?;
+        result.extern_FPDF_StructElement_GetLang()?;
+        result.extern_FPDF_StructElement_GetStringAttribute()?;
+        result.extern_FPDF_StructElement_GetMarkedContentID()?;
+        result.extern_FPDF_StructElement_GetType()?;
+        result.extern_FPDF_StructElement_GetTitle()?;
+        result.extern_FPDF_StructElement_CountChildren()?;
+        result.extern_FPDF_StructElement_GetChildAtIndex()?;
         result.extern_FPDFPage_New()?;
         result.extern_FPDFPage_Delete()?;
         result.extern_FPDFPage_GetRotation()?;
@@ -561,6 +585,324 @@ impl DynamicPdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> c_float>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_GetPageHeightF\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetCharIndexFromTextIndex(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, nTextIndex: c_int) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetCharIndexFromTextIndex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetTextIndexFromCharIndex(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, nCharIndex: c_int) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_GetTextIndexFromCharIndex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetSignatureCount(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_GetSignatureCount\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetSignatureObject(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_GetSignatureObject\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFSignatureObj_GetContents(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                signature: FPDF_SIGNATURE,
+                buffer: *mut c_void,
+                length: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFSignatureObj_GetContents\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFSignatureObj_GetByteRange(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                signature: FPDF_SIGNATURE,
+                buffer: *mut c_int,
+                length: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFSignatureObj_GetByteRange\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFSignatureObj_GetSubFilter(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                signature: FPDF_SIGNATURE,
+                buffer: *mut c_char,
+                length: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFSignatureObj_GetSubFilter\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFSignatureObj_GetReason(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                signature: FPDF_SIGNATURE,
+                buffer: *mut c_void,
+                length: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFSignatureObj_GetReason\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFSignatureObj_GetTime(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                signature: FPDF_SIGNATURE,
+                buffer: *mut c_char,
+                length: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFSignatureObj_GetTime\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFSignatureObj_GetDocMDPPermission(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(signature: FPDF_SIGNATURE) -> c_uint>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFSignatureObj_GetDocMDPPermission\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructTree_GetForPage(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> FPDF_STRUCTTREE>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDF_StructTree_GetForPage\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructTree_Close(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(struct_tree: FPDF_STRUCTTREE)>, libloading::Error> {
+        unsafe { self.library.get(b"FPDF_StructTree_Close\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructTree_CountChildren(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(struct_tree: FPDF_STRUCTTREE) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructTree_CountChildren\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructTree_GetChildAtIndex(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(struct_tree: FPDF_STRUCTTREE, index: c_int) -> FPDF_STRUCTELEMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructTree_GetChildAtIndex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetAltText(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetAltText\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetID(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetID\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetLang(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetLang\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetStringAttribute(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                attr_name: FPDF_BYTESTRING,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetStringAttribute\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetMarkedContentID(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetMarkedContentID\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetType(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetType\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetTitle(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetTitle\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_CountChildren(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_CountChildren\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_StructElement_GetChildAtIndex(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                struct_element: FPDF_STRUCTELEMENT,
+                index: c_int,
+            ) -> FPDF_STRUCTELEMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_StructElement_GetChildAtIndex\0") }
     }
 
     #[inline]
@@ -3830,6 +4172,227 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { self.extern_FPDF_GetPageLabel().unwrap()(document, page_index, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharIndexFromTextIndex(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        nTextIndex: c_int,
+    ) -> c_int {
+        unsafe { self.extern_FPDFText_GetCharIndexFromTextIndex().unwrap()(text_page, nTextIndex) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetTextIndexFromCharIndex(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        nCharIndex: c_int,
+    ) -> c_int {
+        unsafe { self.extern_FPDFText_GetTextIndexFromCharIndex().unwrap()(text_page, nCharIndex) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { self.extern_FPDF_GetSignatureCount().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetSignatureObject(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE {
+        unsafe { self.extern_FPDF_GetSignatureObject().unwrap()(document, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetContents(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_void,
+        length: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFSignatureObj_GetContents().unwrap()(signature, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetByteRange(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_int,
+        length: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFSignatureObj_GetByteRange().unwrap()(signature, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetSubFilter(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFSignatureObj_GetSubFilter().unwrap()(signature, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetReason(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_void,
+        length: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFSignatureObj_GetReason().unwrap()(signature, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetTime(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFSignatureObj_GetTime().unwrap()(signature, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint {
+        unsafe { self.extern_FPDFSignatureObj_GetDocMDPPermission().unwrap()(signature) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE {
+        unsafe { self.extern_FPDF_StructTree_GetForPage().unwrap()(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE) {
+        unsafe { self.extern_FPDF_StructTree_Close().unwrap()(struct_tree) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int {
+        unsafe { self.extern_FPDF_StructTree_CountChildren().unwrap()(struct_tree) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_GetChildAtIndex(
+        &self,
+        struct_tree: FPDF_STRUCTTREE,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT {
+        unsafe { self.extern_FPDF_StructTree_GetChildAtIndex().unwrap()(struct_tree, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAltText(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe {
+            self.extern_FPDF_StructElement_GetAltText().unwrap()(struct_element, buffer, buflen)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDF_StructElement_GetID().unwrap()(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetLang(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDF_StructElement_GetLang().unwrap()(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetStringAttribute(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        attr_name: FPDF_BYTESTRING,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe {
+            self.extern_FPDF_StructElement_GetStringAttribute().unwrap()(
+                struct_element,
+                attr_name,
+                buffer,
+                buflen,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+        unsafe { self.extern_FPDF_StructElement_GetMarkedContentID().unwrap()(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDF_StructElement_GetType().unwrap()(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetTitle(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe {
+            self.extern_FPDF_StructElement_GetTitle().unwrap()(struct_element, buffer, buflen)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+        unsafe { self.extern_FPDF_StructElement_CountChildren().unwrap()(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetChildAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT {
+        unsafe { self.extern_FPDF_StructElement_GetChildAtIndex().unwrap()(struct_element, index) }
     }
 
     #[allow(non_snake_case)]

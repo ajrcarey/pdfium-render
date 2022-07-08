@@ -3,12 +3,13 @@
 
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
-    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
-    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
-    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF,
-    FS_QUADPOINTSF, FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
+    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
+    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
+    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
+    FS_RECTF,
 };
 use crate::document::PdfDocument;
 use crate::error::PdfiumInternalError;
@@ -255,6 +256,147 @@ pub trait PdfiumLibraryBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetCharIndexFromTextIndex(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        nTextIndex: c_int,
+    ) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFText_GetTextIndexFromCharIndex(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        nCharIndex: c_int,
+    ) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetSignatureObject(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE;
+
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetContents(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_void,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetByteRange(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_int,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetSubFilter(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetReason(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_void,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetTime(
+        &self,
+        signature: FPDF_SIGNATURE,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE);
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructTree_GetChildAtIndex(
+        &self,
+        struct_tree: FPDF_STRUCTTREE,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAltText(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetLang(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetStringAttribute(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        attr_name: FPDF_BYTESTRING,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetTitle(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetChildAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT;
 
     #[allow(non_snake_case)]
     fn FPDFPage_New(

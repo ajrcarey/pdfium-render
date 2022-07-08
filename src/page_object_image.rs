@@ -2,18 +2,21 @@
 //! page object of type `PdfPageObjectType::Image`.
 
 use crate::bindgen::{
-    fpdf_page_t__, FPDFBitmap_BGRA, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT,
+    fpdf_page_t__, FPDFBitmap_BGRA, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE,
+    FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
+use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::utils::mem::create_byte_buffer;
 use image::{DynamicImage, EncodableLayout, RgbImage, RgbaImage};
-
-// TODO: AJRC - 7/7/22 - add support for retrieving the list of filters applied to an image object.
-// Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/31
+use std::ffi::c_void;
+use std::ops::{Range, RangeInclusive};
+use std::os::raw::c_int;
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`.
 ///
@@ -222,6 +225,77 @@ impl<'a> PdfPageImageObject<'a> {
             ))
         }
     }
+
+    pub(crate) fn get_raw_metadata(&self) -> Result<FPDF_IMAGEOBJ_METADATA, PdfiumError> {
+        let mut metadata = FPDF_IMAGEOBJ_METADATA {
+            width: 0,
+            height: 0,
+            horizontal_dpi: 0.0,
+            vertical_dpi: 0.0,
+            bits_per_pixel: 0,
+            colorspace: 0,
+            marked_content_id: 0,
+        };
+
+        let result = self.bindings.FPDFImageObj_GetImageMetadata(
+            self.object_handle,
+            match self.page_handle {
+                Some(page_handle) => page_handle,
+                None => std::ptr::null_mut::<fpdf_page_t__>(),
+            },
+            &mut metadata,
+        );
+
+        if self.bindings.is_true(result) {
+            Ok(metadata)
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
+    }
+
+    /// Returns the horizontal dots per inch for this [PdfPageImageObject], based on this object's
+    /// assigned image and the dimensions of this object.
+    #[inline]
+    pub fn horizontal_dpi(&self) -> Result<f32, PdfiumError> {
+        self.get_raw_metadata()
+            .map(|metadata| metadata.horizontal_dpi)
+    }
+
+    /// Returns the vertical dots per inch for this [PdfPageImageObject], based on this object's
+    /// assigned image and the dimensions of this object.
+    #[inline]
+    pub fn vertical_dpi(&self) -> Result<f32, PdfiumError> {
+        self.get_raw_metadata()
+            .map(|metadata| metadata.vertical_dpi)
+    }
+
+    /// Returns the bits per pixel for the image assigned to this [PdfPageImageObject].
+    ///
+    /// This value is not available if this object has not been attached to a [PdfPage].
+    #[inline]
+    pub fn bits_per_pixel(&self) -> Result<u8, PdfiumError> {
+        self.get_raw_metadata()
+            .map(|metadata| metadata.bits_per_pixel as u8)
+    }
+
+    /// Returns the color space for the image assigned to this [PdfPageImageObject].
+    ///
+    /// This value is not available if this object has not been attached to a [PdfPage].
+    #[inline]
+    pub fn color_space(&self) -> Result<PdfColorSpace, PdfiumError> {
+        self.get_raw_metadata()
+            .and_then(|metadata| PdfColorSpace::from_pdfium(metadata.colorspace as u32))
+    }
+
+    /// Returns the collection of image filters currently applied to this [PdfPageImageObject].
+    #[inline]
+    pub fn filters(&self) -> PdfPageImageObjectFilters {
+        PdfPageImageObjectFilters::new(self)
+    }
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
@@ -248,6 +322,151 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     #[inline]
     fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
+    }
+}
+
+pub type PdfPageImageObjectFilterIndex = usize;
+
+pub struct PdfPageImageObjectFilters<'a> {
+    object: &'a PdfPageImageObject<'a>,
+}
+
+impl<'a> PdfPageImageObjectFilters<'a> {
+    #[inline]
+    pub(crate) fn new(object: &'a PdfPageImageObject<'a>) -> Self {
+        PdfPageImageObjectFilters { object }
+    }
+
+    /// Returns the number of image filters applied to the parent [PdfPageImageObject].
+    pub fn len(&self) -> usize {
+        self.object
+            .get_bindings()
+            .FPDFImageObj_GetImageFilterCount(*self.object.get_object_handle()) as usize
+    }
+
+    /// Returns true if this [PdfPageImageObjectFilters] collection is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns a Range from `0..(number of filters)` for this [PdfPageImageObjectFilters] collection.
+    #[inline]
+    pub fn as_range(&self) -> Range<PdfPageImageObjectFilterIndex> {
+        0..self.len()
+    }
+
+    /// Returns an inclusive Range from `0..=(number of filters - 1)` for this [PdfPageImageObjectFilters] collection.
+    #[inline]
+    pub fn as_range_inclusive(&self) -> RangeInclusive<PdfPageImageObjectFilterIndex> {
+        if self.is_empty() {
+            0..=0
+        } else {
+            0..=(self.len() - 1)
+        }
+    }
+
+    /// Returns a single [PdfPageImageObjectFilter] from this [PdfPageImageObjectFilters] collection.
+    pub fn get(
+        &self,
+        index: PdfPageImageObjectFilterIndex,
+    ) -> Result<PdfPageImageObjectFilter, PdfiumError> {
+        if index >= self.len() {
+            return Err(PdfiumError::ImageObjectFilterIndexOutOfBounds);
+        }
+
+        // Retrieving the image filter name from Pdfium is a two-step operation. First, we call
+        // FPDFImageObj_GetImageFilter() with a null buffer; this will retrieve the length of
+        // the image filter name in bytes. If the length is zero, then there is no image filter name.
+
+        // If the length is non-zero, then we reserve a byte buffer of the given
+        // length and call FPDFImageObj_GetImageFilter() again with a pointer to the buffer;
+        // this will write the font name into the buffer. Unlike most text handling in
+        // Pdfium, image filter names are returned in UTF-8 format.
+
+        let buffer_length = self.object.get_bindings().FPDFImageObj_GetImageFilter(
+            *self.object.get_object_handle(),
+            index as c_int,
+            std::ptr::null_mut(),
+            0,
+        );
+
+        if buffer_length == 0 {
+            // The image filter name is not present.
+
+            return Err(PdfiumError::ImageObjectFilterIndexInBoundsButFilterUndefined);
+        }
+
+        let mut buffer = create_byte_buffer(buffer_length as usize);
+
+        let result = self.object.get_bindings().FPDFImageObj_GetImageFilter(
+            *self.object.get_object_handle(),
+            index as c_int,
+            buffer.as_mut_ptr() as *mut c_void,
+            buffer_length,
+        );
+
+        assert_eq!(result, buffer_length);
+
+        Ok(PdfPageImageObjectFilter::new(
+            String::from_utf8(buffer)
+                // Trim any trailing nulls. All strings returned from Pdfium are generally terminated
+                // by one null byte.
+                .map(|str| str.trim_end_matches(char::from(0)).to_owned())
+                .unwrap_or_default(),
+        ))
+    }
+
+    /// Returns an iterator over all the [PdfPageImageObjectFilter] objects in this
+    /// [PdfPageImageObjectFilters] collection.
+    #[inline]
+    pub fn iter(&self) -> PdfPageImageObjectFiltersIterator {
+        PdfPageImageObjectFiltersIterator::new(self)
+    }
+}
+
+pub struct PdfPageImageObjectFilter {
+    name: String,
+}
+
+impl PdfPageImageObjectFilter {
+    #[inline]
+    pub(crate) fn new(name: String) -> Self {
+        PdfPageImageObjectFilter { name }
+    }
+
+    /// Returns the name of this [PdfPageObjectImageFilter].
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
+}
+
+/// An iterator over all the [PdfPageImageObjectFilter] objects in a
+/// [PdfPageImageObjectFilters] collection.
+pub struct PdfPageImageObjectFiltersIterator<'a> {
+    filters: &'a PdfPageImageObjectFilters<'a>,
+    next_index: PdfPageImageObjectFilterIndex,
+}
+
+impl<'a> PdfPageImageObjectFiltersIterator<'a> {
+    #[inline]
+    pub(crate) fn new(filters: &'a PdfPageImageObjectFilters<'a>) -> Self {
+        PdfPageImageObjectFiltersIterator {
+            filters,
+            next_index: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for PdfPageImageObjectFiltersIterator<'a> {
+    type Item = PdfPageImageObjectFilter;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.filters.get(self.next_index);
+
+        self.next_index += 1;
+
+        next.ok()
     }
 }
 
