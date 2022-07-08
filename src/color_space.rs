@@ -25,8 +25,9 @@ use crate::error::PdfiumError;
 /// colors created by the Commission Internationale de l'Éclairage (International Commission on
 /// Illumination) and the International Color Consortium. The precise displayed color is
 /// device-independent; it does not rely on the characteristics of any particular output device.
-/// Color space families in this category include [PdfColorSpace::CalGray], [PdfColorSpace::CalRGB],
-/// [PdfColorSpace::Lab], and [PdfColorSpace::ICCBased].
+/// Color space families in this category include [PdfColorSpace::CalibratedCIEGray],
+/// [PdfColorSpace::CalibratedCIERGB], [PdfColorSpace::CalibratedCIELab], and
+/// [PdfColorSpace::CalibratedICCProfile].
 /// * **Special color spaces** add features or properties to another color space, such as
 /// patterns, color mapping, separations, and high-fidelity and/or multi-tone color.
 /// Color space families in this category include [PdfColorSpace::Pattern],

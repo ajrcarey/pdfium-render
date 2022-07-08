@@ -275,7 +275,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Returns the bits per pixel for the image assigned to this [PdfPageImageObject].
     ///
-    /// This value is not available if this object has not been attached to a [PdfPage].
+    /// This value is not available if this object has not been attached to a `PdfPage`.
     #[inline]
     pub fn bits_per_pixel(&self) -> Result<u8, PdfiumError> {
         self.get_raw_metadata()
@@ -284,7 +284,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Returns the color space for the image assigned to this [PdfPageImageObject].
     ///
-    /// This value is not available if this object has not been attached to a [PdfPage].
+    /// This value is not available if this object has not been attached to a `PdfPage`.
     #[inline]
     pub fn color_space(&self) -> Result<PdfColorSpace, PdfiumError> {
         self.get_raw_metadata()
@@ -435,7 +435,7 @@ impl PdfPageImageObjectFilter {
         PdfPageImageObjectFilter { name }
     }
 
-    /// Returns the name of this [PdfPageObjectImageFilter].
+    /// Returns the name of this [PdfPageImageObjectFilter].
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
