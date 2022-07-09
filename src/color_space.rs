@@ -8,7 +8,7 @@ use crate::bindgen::{
 };
 use crate::error::PdfiumError;
 
-/// The color space of any visual object on a `PdfPage`.
+/// The color space of any displayable object on a `PdfPage`.
 ///
 /// Colors can be described in any of a variety of color systems called _color spaces_.
 /// Some color spaces are related to device color representation (e.g. grayscale, RGB, CMYK);
@@ -37,7 +37,7 @@ use crate::error::PdfiumError;
 /// space to be converted to an RGB approximation for on-screen display.
 ///
 /// For more information on color spaces and their utilisation in PDF files, see Section 4.5
-/// of the PDF Reference Manual, Sixth Edition, Version 1.7, starting on page 235.
+/// of the PDF Reference Manual version 1.7, starting on page 235.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfColorSpace {
     /// An unknown or unset color space. Color spaces were added to the PDF file format
@@ -45,7 +45,7 @@ pub enum PdfColorSpace {
     Unknown = FPDF_COLORSPACE_UNKNOWN as isize,
 
     /// Black, white, and intermediate shades of gray are special cases of full color.
-    /// A grayscale value is represented by a single number in the range 0.0..=1.0, where
+    /// A grayscale value is represented by a single number in the range `0.0..=1.0`, where
     /// 0.0 corresponds to black, 1.0 to white, and intermediate values to different gray levels.
     ///
     /// This is a non-calibrated color space; the exact color produced for a particular set of
@@ -55,7 +55,7 @@ pub enum PdfColorSpace {
     /// Colors in this color space are specified according to the additive Red-Green-Blue color
     /// model used by light-emitting displays and projectors. Color values are defined by three
     /// components representing the intensities of the additive primary colorants red, green,
-    /// and blue. Each component is specified by a number in the range 0.0..=1.0, where
+    /// and blue. Each component is specified by a number in the range `0.0..=1.0`, where
     /// 0.0 corresponds to a complete absence of the component and 1.0 corresponds to maximum
     /// intensity of the component. If all three components have equal intensity, the perceived
     /// result theoretically is a pure gray on the scale from black to white. If the intensities
@@ -71,7 +71,7 @@ pub enum PdfColorSpace {
     /// additive primary colors (red, green, and blue, respectively). Black, a fourth standard process
     /// colorant, absorbs all of the additive primaries in equal amounts. Color values are defined
     /// by four components representing the concentrations of these process colorants. Each component
-    /// is specified by a number in the range 0.0 to 1.0, where 0.0 denotes the complete absence of
+    /// is specified by a number in the range `0.0..=1.0`, where 0.0 denotes the complete absence of
     /// a process colorant (that is, absorbs none of the corresponding additive primary) and 1.0
     /// denotes maximum concentration (absorbs as much as possible of the additive primary). Note
     /// that the sense of these numbers is opposite to that of RGB color components.
@@ -90,15 +90,15 @@ pub enum PdfColorSpace {
 
     /// Colors in this color space are specified by three components, arbitrarily named A, B, and C,
     /// representing calibrated red, green, and blue color values. These three color components must
-    /// be in the range 0.0..=1.0.
+    /// be in the range `0.0..=1.0`.
     ///
     /// This is a calibrated color space, based on the tristimulus components of the CIE 1931 XYZ
     /// color space. The three components of the color space are defined in terms of human
     /// color vision and are independent of any particular output device.
     CalibratedCIERGB = FPDF_COLORSPACE_CALRGB as isize,
 
-    /// Colors in this color space are specified by three components, named, L*, a*, and b*,
-    /// of a CIE 1976 L*a*b color space. The range of the first (L*) component is always 0 to 100;
+    /// Colors in this color space are specified by three components, named L*, a*, and b*,
+    /// of a CIE 1976 L\*a\*b color space. The range of the first (L*) component is always 0 to 100;
     /// the ranges of the second (a*) and third (b*) components are defined by the color space.
     ///
     /// This is a calibrated color space; the three components of the color space are defined in
@@ -112,8 +112,8 @@ pub enum PdfColorSpace {
     /// and are independent of any particular output device.
     CalibratedICCProfile = FPDF_COLORSPACE_ICCBASED as isize,
 
-    /// Some output devices, such as imagesetters, produce a separate, monochromatic rendition of
-    /// a page - a _separation_ - for each colorant. The separations are later combined - on a
+    /// Some output devices, such as image-setters, produce a separate, monochromatic rendition of
+    /// a page - a _separation_ - for each colorant. When the separations are later combined - on a
     /// printing press, for example - with proper inks or other colorants added to them, the result
     /// is a full-color page.
     ///

@@ -1,5 +1,5 @@
 //! Defines the [PdfPageTextObject] struct, exposing functionality related to a single
-//! page object of type `PdfPageObjectType::Text`.
+//! page object defining a piece of formatted text.
 
 use crate::bindgen::{
     FPDF_DOCUMENT, FPDF_FONT, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_TEXT_RENDERMODE,
@@ -119,7 +119,8 @@ impl PdfPageTextRenderMode {
     }
 }
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::Text`.
+/// A single `PdfPageObject` of type `PdfPageObjectType::Text`. The page object defines a single
+/// piece of formatted text.
 ///
 /// Page objects can be created either attached to a `PdfPage` (in which case the page object's
 /// memory is owned by the containing page) or detached from any page (in which case the page

@@ -37,28 +37,26 @@ fn main() -> Result<(), PdfiumError> {
     for (index, degrees) in (0..360).step_by(40).enumerate() {
         // Create the image to use for this object.
 
-        let path = test_documents.get(index % test_documents.len()).unwrap();
+        let path = test_documents[index % test_documents.len()];
 
-        let horizontal_scale = 40.0 + (degrees as f64) * 1.5;
+        let target_object_width_on_page = 40.0 + (degrees as f32) * 1.5;
 
-        let target_width = (250.0 * (horizontal_scale / 100.0)) as u16;
+        let target_pixel_width_of_bitmap = (250.0 * (target_object_width_on_page / 100.0)) as u16;
 
         let image = pdfium
-            .load_pdf_from_file(path, None)
-            .unwrap()
+            .load_pdf_from_file(path, None)?
             .pages()
-            .get(0)
-            .unwrap()
-            .get_bitmap_with_config(&PdfBitmapConfig::new().set_target_width(target_width))
-            .unwrap()
+            .get(0)?
+            .get_bitmap_with_config(
+                &PdfBitmapConfig::new().set_target_width(target_pixel_width_of_bitmap),
+            )?
             .as_image();
 
-        let aspect_ratio = image.height() as f64 / image.width() as f64;
-
-        let vertical_scale = horizontal_scale * aspect_ratio;
-
-        let mut object =
-            PdfPageImageObject::new_with_scale(&document, image, horizontal_scale, vertical_scale)?;
+        let mut object = PdfPageImageObject::new_with_width(
+            &document,
+            image,
+            PdfPoints::new(target_object_width_on_page),
+        )?;
 
         // The order of transformations is important here. In particular, the positioning
         // of the object on the page - the call to object.translate() - must take

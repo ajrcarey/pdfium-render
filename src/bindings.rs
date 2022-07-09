@@ -40,10 +40,15 @@ use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c
 /// [PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()] functions are provided
 /// for converting to and from UTF-16LE in your own code.
 ///
-/// Note that the [PdfiumLibraryBindings::FPDF_LoadDocument()] function is not available when
-/// compiling to WASM. Either embed the target PDF document directly using the [include_bytes!()]
-/// macro, or use Javascript's `fetch()` API to retrieve the bytes of the target document over
-/// the network, then load those bytes into Pdfium using the [PdfiumLibraryBindings::FPDF_LoadMemDocument()] function.
+/// The following Pdfium functions have different signatures in this trait compared to their
+/// native function signatures in Pdfium:
+/// * [PdfiumLibraryBindings::FPDF_LoadDocument()]: this function is not available when compiling to WASM.
+/// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()]: the return type of this function is modified
+/// when compiling to WASM. Instead of returning `*mut c_void`, it returns `*const c_void`.
+/// This is to encourage callers to avoid directly mutating the returned buffer, as this is not
+/// supported when compiling to WASM. Instead, callers should use the provided
+/// [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()] convenience function to apply modified pixel data
+/// to a bitmap.
 pub trait PdfiumLibraryBindings {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
     #[inline]

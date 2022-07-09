@@ -18,7 +18,7 @@ pub mod bitmap_config;
 pub mod bookmark;
 pub mod bookmarks;
 pub mod color;
-mod color_space;
+pub mod color_space;
 pub mod document;
 pub mod error;
 pub mod font;

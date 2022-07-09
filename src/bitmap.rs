@@ -164,7 +164,7 @@ impl<'a> PdfBitmap<'a> {
         PdfBitmapFormat::from_pdfium(self.config.format as u32).unwrap()
     }
 
-    /// Returns the rotation setting that will be applied to this page during rendering.
+    /// Returns the rotation setting that will be applied to this [PdfBitmap] during rendering.
     #[inline]
     pub fn rotation(&self) -> PdfBitmapRotation {
         PdfBitmapRotation::from_pdfium(self.config.rotate).unwrap()
@@ -214,7 +214,7 @@ impl<'a> PdfBitmap<'a> {
     /// Renders this page into a bitmap buffer. Once rendered, the page will not be
     /// re-rendered.
     ///
-    /// It is generally unnecessary to call this function directly, since PdfBitmap
+    /// It is generally unnecessary to call this function directly, since [PdfBitmap]
     /// will automatically initiate rendering itself on the first call to either
     /// the [PdfBitmap::as_bytes()] function or the [PdfBitmap::as_image()] function.
     pub fn render(&mut self) {

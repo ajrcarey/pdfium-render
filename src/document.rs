@@ -265,7 +265,12 @@ impl<'a> PdfDocument<'a> {
 
     /// Writes this [PdfDocument] to the file at the given path.
     ///
-    /// This function is not available when compiling to WASM.
+    /// This function is not available when compiling to WASM. You have several options for
+    /// saving your PDF document data in WASM:
+    /// * Use either the [PdfDocument::save_to_writer()] or the [PdfDocument::save_to_bytes()] functions,
+    /// both of which are available when compiling to WASM.
+    /// * Use the `PdfDocument::save_to_blob()` function to save document data directly into a new
+    /// Javascript Blob object. This function is only available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
     #[inline]
     pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {

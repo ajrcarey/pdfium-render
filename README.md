@@ -66,7 +66,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Text extraction.
 * Page object introspection.
 * Creation of new documents and new pages.
-* Creation of page objects for text, stroked paths, and bitmap images. 
+* Creation of page objects for text, paths, and bitmaps.
 * Document concatenation.
 * Multi-page tiled output.
 * Watermarking.
@@ -74,6 +74,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Compiling to WASM.
 
 ## What's new
+
+Version 0.7.10 adds additional constructors to `PdfPageImageObject` that apply a specified
+width and/or height at object creation time.
 
 Version 0.7.9 adds retrieval of the list of image filters and the color space applied to a `PdfPageImageObject`.
 
@@ -303,7 +306,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.9, 269 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.10, 269 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -311,6 +314,8 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.10: corrects some typos in documentation; adds additional constructors to `PdfPageImageObject`
+  that apply a specified width and/or height at object creation time.
 * 0.7.9: adds retrieval of the list of image filters applied to a `PdfPageImageObject`;
   adds the `PdfColorSpace` enum; adds bindings for the `FPDF_*Signature*()`, `FPDFSignatureObj_*()`,
   and `FPDF_StructTree_*()` functions.

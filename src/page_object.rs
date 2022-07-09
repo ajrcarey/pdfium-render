@@ -514,9 +514,9 @@ pub trait PdfPageObjectCommon<'a> {
     /// For example, the result of rotating _then_ translating a page object may be vastly different
     /// from translating _then_ rotating the same page object. In general, to obtain the expected
     /// results, transformations should be done in the following order:
-    /// * Translate
-    /// * Rotate
     /// * Scale and/or skew
+    /// * Rotate
+    /// * Translate
     ///
     /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
     /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.

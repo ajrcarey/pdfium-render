@@ -1,5 +1,5 @@
-//! Defines the [PdfPageImageObject] struct, exposing functionality related to a single
-//! page object of type `PdfPageObjectType::Image`.
+//! Defines the [PdfPageImageObject] struct, exposing functionality related to a single page
+//! object defining a bitmapped image.
 
 use crate::bindgen::{
     fpdf_page_t__, FPDFBitmap_BGRA, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE,
@@ -10,6 +10,7 @@ use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
 use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::page::PdfPoints;
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::utils::mem::create_byte_buffer;
@@ -18,7 +19,8 @@ use std::ffi::c_void;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::Image`.
+/// A single `PdfPageObject` of type `PdfPageObjectType::Image`. The page object defines a single
+/// bitmapped image.
 ///
 /// Page objects can be created either attached to a `PdfPage` (in which case the page object's
 /// memory is owned by the containing page) or detached from any page (in which case the page
@@ -59,8 +61,9 @@ impl<'a> PdfPageImageObject<'a> {
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
     /// Use the [PdfPageObjectCommon::scale()] function to apply a horizontal and vertical scale
-    /// to the object after it is created, or use the [PdfPageImageObject::new_with_scale()]
-    /// function to apply scaling at the time the object is created.
+    /// to the object after it is created, or use one of the [PdfPageImageObject::new_with_width()],
+    /// [PdfPageImageObject::new_with_height()], or [PdfPageImageObject::new_with_size()] functions
+    /// to scale the page object to a specific width and/or height at the time the object is created.
     #[inline]
     pub fn new(document: &PdfDocument<'a>, image: DynamicImage) -> Result<Self, PdfiumError> {
         Self::new_from_handle(*document.get_handle(), image, document.get_bindings())
@@ -99,21 +102,52 @@ impl<'a> PdfPageImageObject<'a> {
         }
     }
 
-    /// Creates a new [PdfPageImageObject] from the given arguments. The given horizontal and
-    /// vertical scale factors will be applied to the created page object. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_image_object()` function.
-    #[inline]
-    pub fn new_with_scale(
+    /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled
+    /// horizontally to match the given width; its height will be adjusted to maintain the aspect
+    /// ratio of the given image. The returned page object will not be rendered until it is
+    /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
+    pub fn new_with_width(
         document: &PdfDocument<'a>,
         image: DynamicImage,
-        horizontal_scale_factor: f64,
-        vertical_scale_factor: f64,
+        width: PdfPoints,
+    ) -> Result<Self, PdfiumError> {
+        let aspect_ratio = image.height() as f32 / image.width() as f32;
+
+        let height = width * aspect_ratio;
+
+        Self::new_with_size(document, image, width, height)
+    }
+
+    /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled
+    /// vertically to match the given height; its width will be adjusted to maintain the aspect
+    /// ratio of the given image. The returned page object will not be rendered until it is
+    /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
+    pub fn new_with_height(
+        document: &PdfDocument<'a>,
+        image: DynamicImage,
+        height: PdfPoints,
+    ) -> Result<Self, PdfiumError> {
+        let aspect_ratio = image.height() as f32 / image.width() as f32;
+
+        let width = height / aspect_ratio;
+
+        Self::new_with_size(document, image, width, height)
+    }
+
+    /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled to
+    /// match the given width and height. The returned page object will not be rendered until it is
+    /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
+    #[inline]
+    pub fn new_with_size(
+        document: &PdfDocument<'a>,
+        image: DynamicImage,
+        width: PdfPoints,
+        height: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         let mut result =
             Self::new_from_handle(*document.get_handle(), image, document.get_bindings())?;
 
-        result.scale(horizontal_scale_factor, vertical_scale_factor)?;
+        result.scale(width.value as f64, height.value as f64)?;
 
         Ok(result)
     }
@@ -257,16 +291,18 @@ impl<'a> PdfPageImageObject<'a> {
         }
     }
 
-    /// Returns the horizontal dots per inch for this [PdfPageImageObject], based on this object's
-    /// assigned image and the dimensions of this object.
+    /// Returns the horizontal dots per inch resolution of the image assigned to this
+    /// [PdfPageImageObject], based on the intrinsic resolution of the assigned image
+    /// and the dimensions of this object.
     #[inline]
     pub fn horizontal_dpi(&self) -> Result<f32, PdfiumError> {
         self.get_raw_metadata()
             .map(|metadata| metadata.horizontal_dpi)
     }
 
-    /// Returns the vertical dots per inch for this [PdfPageImageObject], based on this object's
-    /// assigned image and the dimensions of this object.
+    /// Returns the vertical dots per inch resolution of the image assigned to this
+    /// [PdfPageImageObject], based on the intrinsic resolution of the assigned image
+    /// and the dimensions of this object.
     #[inline]
     pub fn vertical_dpi(&self) -> Result<f32, PdfiumError> {
         self.get_raw_metadata()
@@ -327,6 +363,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
 
 pub type PdfPageImageObjectFilterIndex = usize;
 
+/// A collection of all the image filters applied to a [PdfPageImageObject].
 pub struct PdfPageImageObjectFilters<'a> {
     object: &'a PdfPageImageObject<'a>,
 }
@@ -425,6 +462,7 @@ impl<'a> PdfPageImageObjectFilters<'a> {
     }
 }
 
+/// A single image filter applied to a [PdfPageImageObject].
 pub struct PdfPageImageObjectFilter {
     name: String,
 }

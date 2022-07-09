@@ -418,7 +418,8 @@ impl<'a> PdfPageObjects<'a> {
     /// returning the image object wrapped inside a generic [PdfPageObject] wrapper.
     ///
     /// By default, new image objects have their width and height both set to 1.0 points.
-    /// The given scale factors will be applied to the newly created object to scale its size.
+    /// If provided, the given width and/or height will be applied to the newly created object to
+    /// scale its size.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
@@ -428,13 +429,39 @@ impl<'a> PdfPageObjects<'a> {
         x: PdfPoints,
         y: PdfPoints,
         image: DynamicImage,
-        horizontal_scale_factor: f64,
-        vertical_scale_factor: f64,
+        width: Option<PdfPoints>,
+        height: Option<PdfPoints>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let image_width = image.width();
+
+        let image_height = image.height();
+
         let mut object =
             PdfPageImageObject::new_from_handle(self.document_handle, image, self.bindings)?;
 
-        object.scale(horizontal_scale_factor, vertical_scale_factor)?;
+        // Apply specified dimensions, if provided.
+
+        match (width, height) {
+            (Some(width), Some(height)) => {
+                object.scale(width.value as f64, height.value as f64)?;
+            }
+            (Some(width), None) => {
+                let aspect_ratio = image_height as f32 / image_width as f32;
+
+                let height = width * aspect_ratio;
+
+                object.scale(width.value as f64, height.value as f64)?;
+            }
+            (None, Some(height)) => {
+                let aspect_ratio = image_height as f32 / image_width as f32;
+
+                let width = height / aspect_ratio;
+
+                object.scale(width.value as f64, height.value as f64)?;
+            }
+            (None, None) => {}
+        }
+
         object.translate(x, y)?;
 
         self.add_image_object(object)

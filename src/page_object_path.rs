@@ -1,5 +1,5 @@
 //! Defines the [PdfPagePathObject] struct, exposing functionality related to a single
-//! page object of type `PdfPageObjectType::Path`.
+//! page object defining a path.
 
 use crate::bindgen::{
     FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING, FPDF_PAGE,
@@ -88,7 +88,7 @@ impl Default for PdfPathFillMode {
     }
 }
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::Path`.
+/// A single `PdfPageObject` of type `PdfPageObjectType::Path`. The page object defines a path.
 ///
 /// Paths define shapes, trajectories, and regions of all sorts. They are used to draw
 /// lines, define the shapes of filled areas, and specify boundaries for clipping other
