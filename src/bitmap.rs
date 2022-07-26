@@ -195,6 +195,17 @@ impl<'a> PdfBitmap<'a> {
         unsafe { std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize) }
     }
 
+    #[cfg(target_arch = "wasm32")]
+    pub fn as_uint8array(&mut self) -> js_sys::Uint8Array {
+        self.render();
+
+        let buffer_length = self.bindings.FPDFBitmap_GetStride(self.bitmap_handle)
+            * self.bindings.FPDFBitmap_GetHeight(self.bitmap_handle);
+
+        self.bindings
+            .FPDFBitmap_GetBuffer_Uint8Array(self.bitmap_handle)
+    }
+
     /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
     /// this [PdfBitmap], rendering the referenced page if necessary. The resulting ImageData
     /// can be easily displayed in an HTML <canvas> element like so:
