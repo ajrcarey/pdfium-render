@@ -199,9 +199,6 @@ impl<'a> PdfBitmap<'a> {
     pub fn as_uint8array(&mut self) -> js_sys::Uint8Array {
         self.render();
 
-        let buffer_length = self.bindings.FPDFBitmap_GetStride(self.bitmap_handle)
-            * self.bindings.FPDFBitmap_GetHeight(self.bitmap_handle);
-
         self.bindings
             .FPDFBitmap_GetBuffer_Uint8Array(self.bitmap_handle)
     }
