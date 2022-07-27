@@ -5,7 +5,7 @@ used by the Google Chromium project. With this library, you can render pages in 
 bitmaps, load, edit, and extract text and images from existing PDF files, and create new PDF files
 from scratch.
 
-```
+```rust
     use pdfium_render::prelude::*;
 
     fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
@@ -109,7 +109,7 @@ If you are compiling a native (i.e. non-WASM) build, and you place an appropriat
 in the same folder as your compiled application, then binding to it dynamically at runtime is
 as simple as:
 
-```
+```rust
     use pdfium_render::prelude::*;
 
     let pdfium = Pdfium::new(
@@ -121,7 +121,7 @@ A common pattern used in the examples at <https://github.com/ajrcarey/pdfium-ren
 is to first attempt to bind to a Pdfium library in the same folder as the compiled example, and
 attempt to fall back to a system-provided library if that fails:
 
-```
+```rust
     use pdfium_render::prelude::*;
 
     let pdfium = Pdfium::new(
@@ -143,7 +143,7 @@ If you prefer to link Pdfium directly into your executable at compile time, use 
 crate feature. This enables the `Pdfium::bind_to_statically_linked_library()` function which binds
 directly to the Pdfium functions included in your executable:
 
-```
+```rust
     use pdfium_render::prelude::*;
 
     let pdfium = Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap());
@@ -153,13 +153,13 @@ As a convenience, `pdfium-render` can instruct `cargo` to link a statically-buil
 library for you. Set the path to the directory containing your pre-built library using
 the `PDFIUM_STATIC_LIB_PATH` environment variable when you run `cargo build`, like so:
 
-```
+```rust
     PDFIUM_STATIC_LIB_PATH="/path/containing/your/static/pdfium/library" cargo build
 ```
 
 `pdfium-render` will pass the following flags to `cargo`:
 
-```
+```rust
     cargo:rustc-link-lib=static=pdfium
     cargo:rustc-link-search=native=$PDFIUM_STATIC_LIB_PATH
 ```
@@ -253,7 +253,7 @@ these raw FFI bindings directly if you wish, making porting existing code that c
 trivial while still gaining the benefits of late binding and WASM compatibility.
 For instance, the following code snippet (taken from a C++ sample):
 
-```
+```cpp
     string test_doc = "test.pdf";
 
     FPDF_InitLibrary();
@@ -265,7 +265,7 @@ For instance, the following code snippet (taken from a C++ sample):
 
 would translate to the following Rust code:
 
-```
+```rust
     let bindings = Pdfium::bind_to_system_library().unwrap();
     
     let test_doc = "test.pdf";
