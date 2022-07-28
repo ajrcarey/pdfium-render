@@ -592,6 +592,10 @@ pub trait PdfiumLibraryBindings {
     #[cfg(target_arch = "wasm32")]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
 
+    #[allow(non_snake_case)]
+    #[cfg(target_arch = "wasm32")]
+    fn FPDFBitmap_GetBuffer_Uint8Array(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
+
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
     /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
