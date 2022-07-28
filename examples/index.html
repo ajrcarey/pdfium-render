@@ -13,15 +13,15 @@
             // The Rust sample code that accompanies this file can be found in wasm.rs.
 
             // We export two functions from our Rust code via #[wasm_bindgen] declarations.
-            // We'll call these two functions below from Javascript - but first, we need to
+            // We'll call these two functions below from Javascript - but first, we need to get
             // the WASM modules for Pdfium and pdfium-render talking to each other.
 
             // First, we initialize Pdfium's Emscripten-wrapped WASM module.
 
             Module.onRuntimeInitialized = async _ => {
                 // Pdfium's WASM module has now been loaded and initialized. We need to tell
-                // pdfium-render about this WASM module, so it can bind to the Pdfium functions
-                // exported by the module.
+                // pdfium-render about Pdfium's WASM module, so it can bind to the Pdfium API
+                // functions exported by the module.
 
                 // In addition to any functions exported by our Rust application, pdfium-render will
                 // always export an initialization function, initialize_pdfium_render(),
@@ -37,7 +37,7 @@
                 // application and pdfium-render.
 
                 wasm_bindgen('pdfium_render_wasm_example_bg.wasm').then(async function (rustModule) {
-                    // The functions exported by our Rust application are now available.
+                    // The functions exported by our Rust application are now loaded and available.
 
                     // First, we call pdfium-render's exported initialize_pdfium_render() function,
                     // passing in the WASM modules for both Pdfium and our Rust application, along
@@ -48,7 +48,7 @@
                         initialize_pdfium_render(
                             Module, // Emscripten-wrapped Pdfium WASM module
                             rustModule, // wasm_bindgen-wrapped WASM module built from our Rust application
-                            false, // Debugging flag - set this to true to get tracing information logged to the Javascript console
+                            false, // Debugging flag; set this to true to get tracing information logged to the Javascript console
                         ),
                         "Initialization of pdfium-render failed!"
                     );

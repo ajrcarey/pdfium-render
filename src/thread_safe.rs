@@ -770,15 +770,15 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
-    #[cfg(target_arch = "wasm32")]
-    fn FPDFBitmap_GetBuffer_Uint8Array(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array {
-        self.bindings.FPDFBitmap_GetBuffer_Uint8Array(bitmap)
+    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+        self.bindings.FPDFBitmap_SetBuffer(bitmap, buffer)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
-        self.bindings.FPDFBitmap_SetBuffer(bitmap, buffer)
+    #[cfg(target_arch = "wasm32")]
+    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array {
+        self.bindings.FPDFBitmap_GetArray(bitmap)
     }
 
     #[inline]

@@ -537,8 +537,8 @@ pub mod tests {
             PdfPoints::new(100.0),
             PdfPoints::new(100.0),
             image.clone(),
-            image.width() as f64,
-            image.height() as f64,
+            Some(PdfPoints::new(image.width() as f32)),
+            Some(PdfPoints::new(image.height() as f32)),
         )?;
 
         // Since the object has no image filters applied, both the raw and processed images should

@@ -3228,6 +3228,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let height = self.FPDFBitmap_GetHeight(bitmap);
 
+        let buffer_len = (width * height * PdfiumRenderWasmState::BYTES_PER_PIXEL) as usize;
+
         let state = PdfiumRenderWasmState::lock();
 
         let buffer_ptr = state
@@ -3242,21 +3244,20 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .as_f64()
             .unwrap() as usize;
 
-        let buffer = state.copy_bytes_from_pdfium(
-            buffer_ptr,
-            (width * height * PdfiumRenderWasmState::BYTES_PER_PIXEL) as usize,
-        );
+        let buffer = state.copy_bytes_from_pdfium(buffer_ptr, buffer_len);
 
         buffer.as_ptr() as *const c_void
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer_Uint8Array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetBuffer_Uint8Array()");
+    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> Uint8Array {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetArray()");
 
         let width = self.FPDFBitmap_GetWidth(bitmap);
 
         let height = self.FPDFBitmap_GetHeight(bitmap);
+
+        let buffer_len = (width * height * PdfiumRenderWasmState::BYTES_PER_PIXEL) as u32;
 
         let state = PdfiumRenderWasmState::lock();
 
@@ -3272,7 +3273,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .as_f64()
             .unwrap() as u32;
 
-        let buffer_len = (width * height * PdfiumRenderWasmState::BYTES_PER_PIXEL) as u32;
         state
             .heap_u8()
             .subarray(buffer_ptr, buffer_ptr + buffer_len)

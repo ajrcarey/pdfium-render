@@ -11,7 +11,7 @@ from scratch.
     fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
         // Renders each page in the given test PDF file to a separate JPEG file.
 
-        // Bind to a Pdfium library in the same directory as our application;
+        // Bind to a Pdfium library in the same directory as our Rust executable;
         // failing that, fall back to using a Pdfium library provided by the operating system.
 
         let pdfium = Pdfium::new(
@@ -74,6 +74,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Compiling to WASM.
 
 ## What's new
+
+Version 0.7.11 adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
+alternative to the cross-platform `PdfBitmap::as_bytes()` function.
 
 Version 0.7.10 adds additional constructors to `PdfPageImageObject` that apply a specified
 width and/or height at object creation time.
@@ -198,10 +201,13 @@ available, and the following additional function is provided:
 * The `PdfDocument::save_to_blob()` function returns the byte data for the document as a
   Javascript `Blob` object.
 
-The following additional function is provided during rendering:
+The following additional functions are provided during rendering:
 
 * The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
   ready to display in an HTML `<canvas>` element.
+* The `PdfBitmap::as_array()` function renders directly to a Javascript `Uint8Array` object.
+  This function avoids a memory allocation and copy required by both `PdfBitmap::as_bytes()`
+  and `PdfBitmap::as_image_data()`, making it preferable for applications where performance is paramount.
 
 The `PdfFont::load_type1_from_file()` and `PdfFont::load_true_type_from_file()` functions are
 not available when running in the browser. The following additional functions are provided:
@@ -314,6 +320,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.11: adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
+  alternative to the cross-platform `PdfBitmap::as_bytes()` function, thanks to an excellent
+  contribution from <https://github.com/NyxCode>.
 * 0.7.10: corrects some typos in documentation; adds additional constructors to `PdfPageImageObject`
   that apply a specified width and/or height at object creation time.
 * 0.7.9: adds retrieval of the list of image filters applied to a `PdfPageImageObject`;

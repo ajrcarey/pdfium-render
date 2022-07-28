@@ -521,7 +521,7 @@ impl<'a> PdfPage<'a> {
             self.bindings,
         )?;
 
-        Ok(PdfBitmap::from_pdfium(handle, config, &self, self.bindings))
+        Ok(PdfBitmap::from_pdfium(handle, config, self, self.bindings))
     }
 
     /// Returns a [PdfBitmap] with the given pixel dimensions and render-time rotation
@@ -553,10 +553,10 @@ impl<'a> PdfPage<'a> {
                 format: FPDFBitmap_BGRA as i32,
                 rotate: rotation.unwrap_or(PdfBitmapRotation::None).as_pdfium(),
                 do_render_form_data: true,
-                form_field_highlight: vec![],
+                form_field_highlight: None,
                 render_flags: FPDF_ANNOT as i32,
             },
-            &self,
+            self,
             self.bindings,
         ))
     }

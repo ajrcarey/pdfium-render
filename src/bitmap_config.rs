@@ -642,16 +642,21 @@ impl PdfBitmapConfig {
             format: self.format.as_pdfium() as i32,
             rotate: target_rotation.as_pdfium(),
             do_render_form_data: self.do_render_form_data,
-            form_field_highlight: self
-                .form_field_highlight
-                .iter()
-                .map(|(form_field_type, color)| {
-                    (
-                        form_field_type.as_pdfium() as i32,
-                        color.as_pdfium_color_with_alpha(),
-                    )
-                })
-                .collect::<Vec<_>>(),
+            form_field_highlight: if self.form_field_highlight.is_empty() {
+                None
+            } else {
+                Some(
+                    self.form_field_highlight
+                        .iter()
+                        .map(|(form_field_type, color)| {
+                            (
+                                form_field_type.as_pdfium() as i32,
+                                color.as_pdfium_color_with_alpha(),
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            },
             render_flags: render_flags as i32,
         }
     }
@@ -671,6 +676,6 @@ pub(crate) struct PdfBitmapRenderSettings {
     pub(crate) format: i32,
     pub(crate) rotate: i32,
     pub(crate) do_render_form_data: bool,
-    pub(crate) form_field_highlight: Vec<(i32, (FPDF_DWORD, u8))>,
+    pub(crate) form_field_highlight: Option<Vec<(i32, (FPDF_DWORD, u8))>>,
     pub(crate) render_flags: i32,
 }

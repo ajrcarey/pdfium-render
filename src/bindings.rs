@@ -592,10 +592,6 @@ pub trait PdfiumLibraryBindings {
     #[cfg(target_arch = "wasm32")]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
 
-    #[allow(non_snake_case)]
-    #[cfg(target_arch = "wasm32")]
-    fn FPDFBitmap_GetBuffer_Uint8Array(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
-
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
     /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
@@ -628,13 +624,23 @@ pub trait PdfiumLibraryBindings {
     /// alternative to directly mutating the data returned by
     /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
     ///
-    /// This function replaces all pixel data of the given bitmap with the pixel data in the
-    /// given buffer, returning `true` once the new pixel data has been applied. If the given buffer
+    /// Replaces all pixel data of the given bitmap with the pixel data in the given buffer,
+    /// returning `true` once the new pixel data has been applied. If the given buffer
     /// does not have the same length as the bitmap's current buffer then the current buffer
     /// will be unchanged and a value of `false` will be returned.
     #[allow(non_snake_case)]
     #[cfg(target_arch = "wasm32")]
     fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool;
+
+    /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as a
+    /// more performant WASM-specific variant of [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    /// Since it avoids a (potentially large) bitmap allocation and copy, it is both faster and
+    /// more memory efficient than [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    ///
+    /// This function is only available when compiling to WASM.
+    #[allow(non_snake_case)]
+    #[cfg(target_arch = "wasm32")]
+    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int;

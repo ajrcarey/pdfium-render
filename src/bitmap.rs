@@ -9,14 +9,17 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap_config::PdfBitmapRenderSettings;
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::page::PdfPage;
 use image::{DynamicImage, ImageBuffer};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::{Clamped, JsValue};
 
-use crate::page::PdfPage;
 #[cfg(target_arch = "wasm32")]
 use web_sys::ImageData;
+
+#[cfg(target_arch = "wasm32")]
+use js_sys::Uint8Array;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -195,12 +198,15 @@ impl<'a> PdfBitmap<'a> {
         unsafe { std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize) }
     }
 
+    /// Returns a Javascript `Uint8Array` object representing the bitmap buffer backing
+    /// this [PdfBitmap], rendering the referenced page if necessary.
+    ///
+    /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
-    pub fn as_uint8array(&mut self) -> js_sys::Uint8Array {
+    pub fn as_array(&mut self) -> Uint8Array {
         self.render();
 
-        self.bindings
-            .FPDFBitmap_GetBuffer_Uint8Array(self.bitmap_handle)
+        self.bindings.FPDFBitmap_GetArray(self.bitmap_handle)
     }
 
     /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
@@ -208,6 +214,10 @@ impl<'a> PdfBitmap<'a> {
     /// can be easily displayed in an HTML <canvas> element like so:
     ///
     /// `canvas.getContext('2d').putImageData(image_data);`
+    ///
+    /// This function is slower than calling [PdfBitmap::as_array()] because it must perform
+    /// an additional memory allocation in order to create the `ImageData` object. Consider calling
+    /// the [PdfBitmap::as_array()] function directly if performance is paramount.
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
@@ -260,15 +270,17 @@ impl<'a> PdfBitmap<'a> {
             if self.config.do_render_form_data {
                 // Render user-supplied form data, if any, as an overlay on top of the page.
 
-                for (form_field_type, (color, alpha)) in self.config.form_field_highlight.iter() {
-                    self.bindings.FPDF_SetFormFieldHighlightColor(
-                        *form.get_handle(),
-                        *form_field_type,
-                        *color,
-                    );
+                if let Some(form_field_highlight) = self.config.form_field_highlight.as_ref() {
+                    for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
+                        self.bindings.FPDF_SetFormFieldHighlightColor(
+                            *form.get_handle(),
+                            *form_field_type,
+                            *color,
+                        );
 
-                    self.bindings
-                        .FPDF_SetFormFieldHighlightAlpha(*form.get_handle(), *alpha);
+                        self.bindings
+                            .FPDF_SetFormFieldHighlightAlpha(*form.get_handle(), *alpha);
+                    }
                 }
 
                 self.bindings.FPDF_FFLDraw(

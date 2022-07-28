@@ -47,9 +47,9 @@ impl PdfSecurityHandlerRevision {
 
 /// The collection of document permissions and security handler settings for a single [PdfDocument].
 ///
-/// Please note that Pdfium currently only offers support for reading the existing of a
-/// document. It does not support changing existing permissions or setting new permissions on
-/// a newly created document.
+/// Note that Pdfium currently only offers support for reading the existing permissions of a
+/// document. It does not support changing existing permissions or adding new permissions to
+/// a document.
 pub struct PdfPermissions<'a> {
     document: &'a PdfDocument<'a>,
 }
@@ -130,7 +130,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing [PdfDocument] can be "assembled"; that is, the
+    /// Returns `true` if the containing [PdfDocument] can be _assembled_; that is, the
     /// document can have pages inserted, rotated, or deleted, can have bookmarks created,
     /// or can have thumbnail page images created.
     pub fn can_assemble_document(&self) -> Result<bool, PdfiumError> {
@@ -153,7 +153,7 @@ impl<'a> PdfPermissions<'a> {
     /// the document contents.
     ///
     /// For security handler revisions 3 and later, general document modification can be disabled
-    /// while still permitting selected modification of annotations and interactive form fields.
+    /// while still allowing modification of annotations and interactive form fields.
     pub fn can_modify_document_content(&self) -> Result<bool, PdfiumError> {
         let permissions = self.get_permissions_bits();
 
