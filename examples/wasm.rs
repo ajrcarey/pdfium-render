@@ -95,8 +95,8 @@ pub async fn get_image_data_for_page(
         .pages()
         .get(index)
         .unwrap()
-        .get_bitmap_with_config(
-            &PdfBitmapConfig::new()
+        .render_with_config(
+            &PdfRenderConfig::new()
                 .set_target_size(width, height)
                 .render_form_data(true)
                 .highlight_text_form_fields(PdfColor::SOLID_YELLOW.with_alpha(128))

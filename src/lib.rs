@@ -14,7 +14,6 @@ pub mod action;
 pub mod action_destination;
 pub mod bindings;
 pub mod bitmap;
-pub mod bitmap_config;
 pub mod bookmark;
 pub mod bookmarks;
 pub mod color;
@@ -62,6 +61,7 @@ pub mod pages;
 mod paragraph; // Keep private while PdfParagraph is still in development.
 pub mod pdfium;
 pub mod permissions;
+pub mod render_config;
 mod utils;
 
 /// A prelude for conveniently importing all public `pdfium-render` definitions at once.
@@ -72,18 +72,18 @@ mod utils;
 /// ```
 pub mod prelude {
     pub use super::{
-        action::*, action_destination::*, bindings::*, bitmap::*, bitmap_config::*, bookmark::*,
-        bookmarks::*, color::*, color_space::*, document::*, error::*, font::*, form::*,
-        metadata::*, page::*, page_annotation::*, page_annotation_circle::*,
-        page_annotation_free_text::*, page_annotation_highlight::*, page_annotation_ink::*,
-        page_annotation_link::*, page_annotation_popup::*, page_annotation_square::*,
-        page_annotation_squiggly::*, page_annotation_stamp::*, page_annotation_strikeout::*,
-        page_annotation_text::*, page_annotation_underline::*, page_annotation_unsupported::*,
-        page_annotations::*, page_boundaries::*, page_object::*, page_object_form_fragment::*,
-        page_object_group::*, page_object_image::*, page_object_path::*, page_object_shading::*,
-        page_object_text::*, page_object_unsupported::*, page_objects::*, page_size::*,
-        page_text::*, page_text_char::*, page_text_chars::*, page_text_segment::*,
-        page_text_segments::*, pages::*, pdfium::*, permissions::*,
+        action::*, action_destination::*, bindings::*, bitmap::*, bookmark::*, bookmarks::*,
+        color::*, color_space::*, document::*, error::*, font::*, form::*, metadata::*, page::*,
+        page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
+        page_annotation_highlight::*, page_annotation_ink::*, page_annotation_link::*,
+        page_annotation_popup::*, page_annotation_square::*, page_annotation_squiggly::*,
+        page_annotation_stamp::*, page_annotation_strikeout::*, page_annotation_text::*,
+        page_annotation_underline::*, page_annotation_unsupported::*, page_annotations::*,
+        page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_group::*,
+        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
+        page_object_unsupported::*, page_objects::*, page_size::*, page_text::*, page_text_char::*,
+        page_text_chars::*, page_text_segment::*, page_text_segments::*, pages::*, pdfium::*,
+        permissions::*, render_config::*,
     };
 }
 
@@ -139,7 +139,7 @@ pub mod tests {
 
             // ... set rendering options that will apply to all pages...
 
-            let bitmap_render_config = PdfBitmapConfig::new()
+            let render_config = PdfRenderConfig::new()
                 .set_target_width(2000)
                 .set_maximum_height(2000)
                 .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
@@ -147,11 +147,11 @@ pub mod tests {
             // ... then render each page to a bitmap image, saving each image to a JPEG file.
 
             for (index, page) in document.pages().iter().enumerate() {
-                page.get_bitmap_with_config(&bitmap_render_config)?
+                page.render_with_config(&render_config)?
                     .as_image() // Renders this page to an Image::DynamicImage...
-                    .as_rgba8() // ... then converts it to an Image::Image
+                    .as_rgba8() // ... then converts it to an Image::Image ...
                     .ok_or(PdfiumError::ImageError)?
-                    .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg)
+                    .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg) // ... and saves it to a file.
                     .map_err(|_| PdfiumError::ImageError)?;
             }
 
@@ -171,7 +171,7 @@ pub mod tests {
 
         let document = pdfium.load_pdf_from_file("./test/form-test.pdf", None)?;
 
-        let render_config = PdfBitmapConfig::new()
+        let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
             .rotate_if_landscape(PdfBitmapRotation::Degrees90, true)
@@ -180,7 +180,7 @@ pub mod tests {
 
         for (index, page) in document.pages().iter().enumerate() {
             let result = page
-                .get_bitmap_with_config(&render_config)?
+                .render_with_config(&render_config)?
                 .as_image()
                 .as_rgba8()
                 .ok_or(PdfiumError::ImageError)?

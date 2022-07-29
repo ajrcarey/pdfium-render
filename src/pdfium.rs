@@ -325,7 +325,7 @@ impl Pdfium {
             })
     }
 
-    /// Returns a PdfDocument from the given FPDF_DOCUMENT handle, if possible.
+    /// Returns a [PdfDocument] from the given `FPDF_DOCUMENT` handle, if possible.
     fn pdfium_document_handle_to_result(
         &self,
         handle: crate::bindgen::FPDF_DOCUMENT,
@@ -344,6 +344,11 @@ impl Pdfium {
         } else {
             Ok(PdfDocument::from_pdfium(handle, self.bindings.as_ref()))
         }
+    }
+
+    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
+    pub fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.bindings.as_ref()
     }
 }
 

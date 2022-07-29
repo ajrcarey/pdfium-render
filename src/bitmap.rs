@@ -6,11 +6,9 @@ use crate::bindgen::{
     FPDF_BITMAP,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap_config::PdfBitmapRenderSettings;
-use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::PdfPage;
 use image::{DynamicImage, ImageBuffer};
+use std::os::raw::c_int;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::{Clamped, JsValue};
@@ -55,7 +53,14 @@ impl PdfBitmapFormat {
     }
 }
 
-/// A rotation transformation that should be applied to a [PdfPage] when it is rendered
+impl Default for PdfBitmapFormat {
+    #[inline]
+    fn default() -> Self {
+        PdfBitmapFormat::BGRA
+    }
+}
+
+/// A rotation transformation that should be applied to a `PdfPage` when it is rendered
 /// into a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfBitmapRotation {
@@ -88,47 +93,33 @@ impl PdfBitmapRotation {
     }
 }
 
-/// A rendered image of a single [PdfPage] at a specific width and height.
-///
-/// By default, [PdfBitmap] is lazy; it will not render its page into a bitmap until
-/// it is required to do so in order to return a byte buffer or an `Image::DynamicImage`.
-/// If preferred, rendering can be initiated manually by calling the [PdfBitmap::render()] function.
-/// Once rendered, the page will not be re-rendered.
+/// A bitmap image with a specific width and height.
 pub struct PdfBitmap<'a> {
-    bitmap_handle: FPDF_BITMAP,
-    config: PdfBitmapRenderSettings,
-    is_rendered: bool,
-    page: &'a PdfPage<'a>,
+    handle: FPDF_BITMAP,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfBitmap<'a> {
+    /// Wraps an existing `FPDF_BITMAP` handle inside a new [PdfBitmap].
     pub(crate) fn from_pdfium(
-        bitmap_handle: FPDF_BITMAP,
-        config: PdfBitmapRenderSettings,
-        page: &'a PdfPage<'a>,
+        handle: FPDF_BITMAP,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        PdfBitmap {
-            config,
-            bitmap_handle,
-            is_rendered: false,
-            page,
-            bindings,
-        }
+        PdfBitmap { handle, bindings }
     }
 
-    /// Returns a `FPDF_BITMAP` handle to an empty bitmap with the given width and height.
-    pub(crate) fn create_empty_bitmap_handle(
-        width: i32,
-        height: i32,
-        format: i32,
-        bindings: &dyn PdfiumLibraryBindings,
-    ) -> Result<FPDF_BITMAP, PdfiumError> {
+    /// Creates an empty [PdfBitmap] with a buffer capable of storing an image of the given
+    /// pixel width and height in the given pixel format.
+    pub fn empty(
+        width: u16,
+        height: u16,
+        format: PdfBitmapFormat,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Result<PdfBitmap, PdfiumError> {
         let handle = bindings.FPDFBitmap_CreateEx(
-            width,
-            height,
-            format,
+            width as c_int,
+            height as c_int,
+            format.as_pdfium() as c_int,
             std::ptr::null_mut(),
             0, // Not relevant because Pdfium will create the buffer itself.
         );
@@ -145,73 +136,79 @@ impl<'a> PdfBitmap<'a> {
                 ))
             }
         } else {
-            Ok(handle)
+            Ok(Self::from_pdfium(handle, bindings))
         }
     }
 
-    /// Returns the width of the image in this [PdfBitmap], in pixels.
+    /// Returns the internal `FPDF_BITMAP` handle for this [PdfBitmap].
+    #[inline]
+    pub(crate) fn get_handle(&self) -> &FPDF_BITMAP {
+        &self.handle
+    }
+
+    /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap], in pixels.
     #[inline]
     pub fn width(&self) -> u32 {
-        self.config.width as u32
+        self.bindings.FPDFBitmap_GetWidth(self.handle) as u32
     }
 
-    /// Returns the height of the image in this [PdfBitmap], in pixels.
+    /// Returns the height of the image in the bitmap buffer backing this [PdfBitmap], in pixels.
     #[inline]
     pub fn height(&self) -> u32 {
-        self.config.height as u32
+        self.bindings.FPDFBitmap_GetHeight(self.handle) as u32
     }
 
-    /// Returns the pixel format of the image in this [PdfBitmap].
+    /// Returns the pixel format of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
-    pub fn format(&self) -> PdfBitmapFormat {
-        PdfBitmapFormat::from_pdfium(self.config.format as u32).unwrap()
+    pub fn format(&self) -> Result<PdfBitmapFormat, PdfiumError> {
+        PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(self.handle) as u32)
     }
 
-    /// Returns the rotation setting that will be applied to this [PdfBitmap] during rendering.
-    #[inline]
-    pub fn rotation(&self) -> PdfBitmapRotation {
-        PdfBitmapRotation::from_pdfium(self.config.rotate).unwrap()
-    }
-
-    /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
-    /// this [PdfBitmap], rendering the referenced page if necessary.
-    pub fn as_image(&mut self) -> DynamicImage {
-        ImageBuffer::from_raw(
-            self.config.width as u32,
-            self.config.height as u32,
-            self.as_bytes().to_owned(),
-        )
-        .map(DynamicImage::ImageRgba8)
-        .unwrap()
-    }
-
-    /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap],
-    /// rendering the referenced page if necessary.
+    /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap].
     pub fn as_bytes(&mut self) -> &'a [u8] {
-        self.render();
+        let buffer_length = self.bindings.FPDFBitmap_GetStride(self.handle)
+            * self.bindings.FPDFBitmap_GetHeight(self.handle);
 
-        let buffer_length = self.bindings.FPDFBitmap_GetStride(self.bitmap_handle)
-            * self.bindings.FPDFBitmap_GetHeight(self.bitmap_handle);
-
-        let buffer_start = self.bindings.FPDFBitmap_GetBuffer(self.bitmap_handle);
+        let buffer_start = self.bindings.FPDFBitmap_GetBuffer(self.handle);
 
         unsafe { std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize) }
     }
 
+    /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing this [PdfBitmap].
+    pub fn as_image(&mut self) -> DynamicImage {
+        ImageBuffer::from_raw(self.width(), self.height(), self.as_bytes().to_owned())
+            .map(DynamicImage::ImageRgba8)
+            .unwrap()
+    }
+
+    // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmap::render() function in 0.9.0
+    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    /// Prior to 0.7.12, this function rendered the referenced page into a bitmap buffer.
+    ///
+    /// This is no longer necessary since all page rendering operations are now processed eagerly
+    /// rather than lazily.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    #[deprecated(
+        since = "0.7.12",
+        note = "This function is no longer necessary since all page rendering operations are now processed eagerly rather than lazily. Calls to this function can be removed."
+    )]
+    #[doc(hidden)]
+    #[inline]
+    pub fn render(&mut self) {}
+
     /// Returns a Javascript `Uint8Array` object representing the bitmap buffer backing
-    /// this [PdfBitmap], rendering the referenced page if necessary.
+    /// this [PdfBitmap].
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
     pub fn as_array(&mut self) -> Uint8Array {
-        self.render();
-
-        self.bindings.FPDFBitmap_GetArray(self.bitmap_handle)
+        self.bindings.FPDFBitmap_GetArray(self.handle)
     }
 
     /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
-    /// this [PdfBitmap], rendering the referenced page if necessary. The resulting ImageData
-    /// can be easily displayed in an HTML <canvas> element like so:
+    /// this [PdfBitmap]. The resulting `ImageData` can be easily displayed in an
+    /// HTML <canvas> element like so:
     ///
     /// `canvas.getContext('2d').putImageData(image_data);`
     ///
@@ -228,83 +225,12 @@ impl<'a> PdfBitmap<'a> {
             self.height(),
         )
     }
-
-    /// Renders this page into a bitmap buffer. Once rendered, the page will not be
-    /// re-rendered.
-    ///
-    /// It is generally unnecessary to call this function directly, since [PdfBitmap]
-    /// will automatically initiate rendering itself on the first call to either
-    /// the [PdfBitmap::as_bytes()] function or the [PdfBitmap::as_image()] function.
-    pub fn render(&mut self) {
-        if self.is_rendered {
-            // The page has already been rendered.
-
-            return;
-        }
-
-        // Clear the bitmap buffer by setting every pixel to white.
-
-        self.bindings.FPDFBitmap_FillRect(
-            self.bitmap_handle,
-            0,
-            0,
-            self.config.width,
-            self.config.height,
-            PdfColor::SOLID_WHITE.as_pdfium_color(),
-        );
-
-        // Render the PDF page into the bitmap buffer.
-
-        self.bindings.FPDF_RenderPageBitmap(
-            self.bitmap_handle,
-            *self.page.get_handle(),
-            0,
-            0,
-            self.config.width,
-            self.config.height,
-            self.config.rotate,
-            self.config.render_flags,
-        );
-
-        if let Some(form) = self.page.get_document().form() {
-            if self.config.do_render_form_data {
-                // Render user-supplied form data, if any, as an overlay on top of the page.
-
-                if let Some(form_field_highlight) = self.config.form_field_highlight.as_ref() {
-                    for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
-                        self.bindings.FPDF_SetFormFieldHighlightColor(
-                            *form.get_handle(),
-                            *form_field_type,
-                            *color,
-                        );
-
-                        self.bindings
-                            .FPDF_SetFormFieldHighlightAlpha(*form.get_handle(), *alpha);
-                    }
-                }
-
-                self.bindings.FPDF_FFLDraw(
-                    *form.get_handle(),
-                    self.bitmap_handle,
-                    *self.page.get_handle(),
-                    0,
-                    0,
-                    self.config.width,
-                    self.config.height,
-                    self.config.rotate,
-                    self.config.render_flags,
-                );
-            }
-        }
-
-        self.is_rendered = true;
-    }
 }
 
 impl<'a> Drop for PdfBitmap<'a> {
     /// Closes this [PdfBitmap], releasing the memory held by the bitmap buffer.
     #[inline]
     fn drop(&mut self) {
-        self.bindings.FPDFBitmap_Destroy(self.bitmap_handle);
+        self.bindings.FPDFBitmap_Destroy(self.handle);
     }
 }

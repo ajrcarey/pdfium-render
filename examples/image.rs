@@ -47,8 +47,8 @@ fn main() -> Result<(), PdfiumError> {
             .load_pdf_from_file(path, None)?
             .pages()
             .get(0)?
-            .get_bitmap_with_config(
-                &PdfBitmapConfig::new().set_target_width(target_pixel_width_of_bitmap),
+            .render_with_config(
+                &PdfRenderConfig::new().set_target_width(target_pixel_width_of_bitmap),
             )?
             .as_image();
 

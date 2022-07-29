@@ -33,7 +33,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     let dpi = 200.0;
 
-    let render_config = PdfBitmapConfig::new()
+    let render_config = PdfRenderConfig::new()
         .scale_page_by_factor(dpi as f32 / 72.0)
         .render_form_data(true) // Rendering of form data and annotations is the default...
         .render_annotations(true) // ... but for the sake of demonstration we are explicit here.
@@ -66,7 +66,7 @@ pub fn main() -> Result<(), PdfiumError> {
             );
         }
 
-        page.get_bitmap_with_config(&render_config)?
+        page.render_with_config(&render_config)?
             .as_image()
             .as_rgba8()
             .ok_or(PdfiumError::ImageError)?

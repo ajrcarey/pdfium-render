@@ -25,7 +25,7 @@ from scratch.
 
         // ... set rendering options that will apply to all pages...
 
-        let bitmap_render_config = PdfBitmapConfig::new()
+        let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
             .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
@@ -33,14 +33,14 @@ from scratch.
         // ... then render each page to a bitmap image, saving each image to a JPEG file.
 
         for (index, page) in document.pages().iter().enumerate() {
-            page.get_bitmap_with_config(&bitmap_render_config)?
+            page.render_with_config(&render_config)?
                 .as_image() // Renders this page to an Image::DynamicImage...
-                .as_rgba8() // ... then converts it to an Image::Image
+                .as_rgba8() // ... then converts it to an Image::Image ...
                 .ok_or(PdfiumError::ImageError)?
                 .save_with_format(
                     format!("test-page-{}.jpg", index), 
                     image::ImageFormat::Jpeg
-                )
+                ) // ... and saves it to a file.
                 .map_err(|_| PdfiumError::ImageError)?;
         }
 
@@ -74,6 +74,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Compiling to WASM.
 
 ## What's new
+
+Version 0.7.12 adds additional page rendering functions `PdfPage::render_into_bitmap()` and
+`PdfPage::render_into_bitmap_with_config()`. These functions offer higher performance as they
+allow re-using an existing `PdfBitmap` object rather than creating (and allocating memory for)
+a new `PdfBitmap` on every page render.
 
 Version 0.7.11 adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
 alternative to the cross-platform `PdfBitmap::as_bytes()` function.
@@ -312,14 +317,24 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.10, 269 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.12, 269 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
+
+Some functions and type definitions in the high-level interface have been renamed or revised since
+their initial implementation. The initial implementations are still available but are marked as
+deprecated. These deprecated items will be removed in release 0.9.0.
 
 If you need a binding to a Pdfium function that is not currently available, just raise an issue.
 
 ## Version history
 
+* 0.7.12: adds `PdfPage::render_into_bitmap()` and `PdfPage::render_into_bitmap_with_config()`
+  functions for higher performance; deprecates `PdfPage::get_bitmap()` in favour of `PdfPage::render()`;
+  deprecates `PdfPage::get_bitmap_with_config()` in favour of `PdfPage::render_with_config()`;
+  deprecates `PdfBitmapConfig` in favour of `PdfRenderConfig`; deprecates `PdfBitmap::render()`
+  since page rendering operations are now processed eagerly rather than lazily.
+  Deprecated items will be removed in release 0.9.0.
 * 0.7.11: adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
   alternative to the cross-platform `PdfBitmap::as_bytes()` function, thanks to an excellent
   contribution from <https://github.com/NyxCode>.

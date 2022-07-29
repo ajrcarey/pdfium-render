@@ -46,7 +46,7 @@ fn main() -> Result<(), PdfiumError> {
     .par_iter() // rayon will spawn a separate thread for each task
     .for_each(|path| {
         assert!(render(
-            &PdfBitmapConfig::new()
+            &PdfRenderConfig::new()
                 .set_target_width(2000)
                 .set_maximum_height(2000)
                 .rotate_if_landscape(PdfBitmapRotation::Degrees90, true),
@@ -60,7 +60,7 @@ fn main() -> Result<(), PdfiumError> {
     Ok(())
 }
 
-fn render(render_config: &PdfBitmapConfig, path: &str) -> Result<(), PdfiumError> {
+fn render(render_config: &PdfRenderConfig, path: &str) -> Result<(), PdfiumError> {
     // Render each page in the document at the given path out to a JPG file, using the
     // given bindings and rendering configuration.
 
@@ -92,7 +92,7 @@ fn render(render_config: &PdfBitmapConfig, path: &str) -> Result<(), PdfiumError
             path
         );
 
-        page.get_bitmap_with_config(render_config)?
+        page.render_with_config(render_config)?
             .as_image()
             .as_rgba8()
             .ok_or(PdfiumError::ImageError)?

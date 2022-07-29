@@ -246,8 +246,7 @@ impl<'a> PdfDocument<'a> {
 
         match self.bindings.is_true(result) {
             true => {
-                // Pdfium's return value indicated success. Flush the buffer and return the writer
-                // back to the caller.
+                // Pdfium's return value indicated success. Flush the buffer.
 
                 pdfium_file_writer.flush().map_err(PdfiumError::IoError)
             }

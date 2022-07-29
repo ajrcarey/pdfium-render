@@ -2,8 +2,7 @@
 //! object defining a bitmapped image.
 
 use crate::bindgen::{
-    fpdf_page_t__, FPDFBitmap_BGRA, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE,
-    FPDF_PAGEOBJECT,
+    fpdf_page_t__, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE, FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
@@ -15,6 +14,7 @@ use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::utils::mem::create_byte_buffer;
 use image::{DynamicImage, EncodableLayout, RgbImage, RgbaImage};
+use std::convert::TryInto;
 use std::ffi::c_void;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
@@ -231,14 +231,22 @@ impl<'a> PdfPageImageObject<'a> {
     pub fn set_image(&mut self, image: DynamicImage) -> Result<(), PdfiumError> {
         let image = image.to_rgba8();
 
-        let bitmap = PdfBitmap::create_empty_bitmap_handle(
-            image.width() as i32,
-            image.height() as i32,
-            FPDFBitmap_BGRA as i32,
-            self.bindings,
-        )?;
+        let width: u16 = image
+            .width()
+            .try_into()
+            .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
 
-        if !self.bindings.FPDFBitmap_SetBuffer(bitmap, image.as_bytes()) {
+        let height: u16 = image
+            .height()
+            .try_into()
+            .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
+
+        let bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
+
+        if !self
+            .bindings
+            .FPDFBitmap_SetBuffer(*bitmap.get_handle(), image.as_bytes())
+        {
             return Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
             ));
@@ -248,7 +256,7 @@ impl<'a> PdfPageImageObject<'a> {
             std::ptr::null_mut::<FPDF_PAGE>(),
             0,
             self.object_handle,
-            bitmap,
+            *bitmap.get_handle(),
         )) {
             Ok(())
         } else {
@@ -524,7 +532,7 @@ pub mod tests {
             .load_pdf_from_file("./test/path-test.pdf", None)?
             .pages()
             .get(0)?
-            .get_bitmap_with_config(&PdfBitmapConfig::new().set_target_width(1000))?
+            .render_with_config(&PdfRenderConfig::new().set_target_width(1000))?
             .as_image();
 
         let document = pdfium.create_new_pdf()?;

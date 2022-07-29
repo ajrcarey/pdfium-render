@@ -27,7 +27,7 @@ pub fn main() -> Result<(), PdfiumError> {
     // sample file when rendering. Sharing the same rendering configuration is a good way
     // to ensure homogenous output across all pages in the document.
 
-    let render_config = PdfBitmapConfig::new()
+    let render_config = PdfRenderConfig::new()
         .set_target_width(2000)
         .set_maximum_height(2000)
         .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
@@ -42,7 +42,7 @@ pub fn main() -> Result<(), PdfiumError> {
         // using the rendering configuration we created earlier.
 
         let result = page
-            .get_bitmap_with_config(&render_config)? // Initializes a bitmap with the given configuration for this page ...
+            .render_with_config(&render_config)? // Initializes a bitmap with the given configuration for this page ...
             .as_image() // ... renders it to an Image::DynamicImage ...
             .as_rgba8()
             .ok_or(PdfiumError::ImageError)? // ... sets the correct color space ...

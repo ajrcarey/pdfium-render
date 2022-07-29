@@ -2,12 +2,12 @@
 //! `PdfPages` collection.
 
 use crate::bindgen::{
-    FPDFBitmap_BGRA, FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_ANNOT,
-    FPDF_BOOL, FPDF_PAGE, FS_RECTF,
+    FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_ANNOT, FPDF_BOOL,
+    FPDF_PAGE, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap::{PdfBitmap, PdfBitmapRotation};
-use crate::bitmap_config::{PdfBitmapConfig, PdfBitmapRenderSettings};
+use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
+use crate::color::PdfColor;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_boundaries::PdfPageBoundaries;
@@ -15,6 +15,7 @@ use crate::page_objects::PdfPageObjects;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::prelude::PdfPageAnnotations;
+use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
 use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use std::os::raw::c_int;
 
@@ -502,63 +503,221 @@ impl<'a> PdfPage<'a> {
         &self.annotations
     }
 
-    /// Returns a [PdfBitmap] using pixel dimensions, rotation settings, and rendering options
-    /// configured in the given [PdfBitmapConfig].
-    ///
-    /// See also [PdfPage::get_bitmap()], which directly creates a [PdfBitmap] object from this page
-    /// using caller-specified pixel dimensions and page rotation settings.
-    #[inline]
-    pub fn get_bitmap_with_config(
-        &self,
-        config: &PdfBitmapConfig,
-    ) -> Result<PdfBitmap, PdfiumError> {
-        let config = config.apply_to_page(self);
-
-        let handle = PdfBitmap::create_empty_bitmap_handle(
-            config.width,
-            config.height,
-            config.format,
-            self.bindings,
-        )?;
-
-        Ok(PdfBitmap::from_pdfium(handle, config, self, self.bindings))
-    }
-
-    /// Returns a [PdfBitmap] with the given pixel dimensions and render-time rotation
-    /// for this PdfPage containing the rendered content of this [PdfPage].
+    /// Renders this [PdfPage] into a [PdfBitmap] with the given pixel dimensions and page rotation.
     ///
     /// It is the responsibility of the caller to ensure the given pixel width and height
     /// correctly maintain the page's aspect ratio.
     ///
-    /// See also [PdfPage::get_bitmap_with_config()], which calculates the correct pixel dimensions,
-    /// rotation settings, and rendering options to apply from a [PdfBitmapConfig] object.
+    /// See also [PdfPage::render_with_config()], which calculates the correct pixel dimensions,
+    /// rotation settings, and rendering options to apply from a [PdfRenderConfig] object.
+    ///
+    /// Each call to `PdfPage::render()` creates a new [PdfBitmap] object and allocates memory
+    /// for it. To avoid repeated allocations, create a single [PdfBitmap] object
+    /// using [PdfBitmap::empty()] and reuse it across multiple calls to [PdfPage::render_into_bitmap()].
+    pub fn render(
+        &self,
+        width: u16,
+        height: u16,
+        rotation: Option<PdfBitmapRotation>,
+    ) -> Result<PdfBitmap, PdfiumError> {
+        let settings = PdfRenderSettings {
+            width: width as i32,
+            height: height as i32,
+            format: PdfBitmapFormat::default().as_pdfium() as i32,
+            rotate: rotation.unwrap_or(PdfBitmapRotation::None).as_pdfium(),
+            do_render_form_data: true,
+            form_field_highlight: None,
+            render_flags: FPDF_ANNOT as i32,
+        };
+
+        let mut bitmap =
+            PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
+
+        self.render_into_bitmap_with_settings(&mut bitmap, settings)?;
+
+        Ok(bitmap)
+    }
+
+    /// Renders this [PdfPage] into a new [PdfBitmap] using pixel dimensions, page rotation settings,
+    /// and rendering options configured in the given [PdfRenderConfig].
+    ///
+    /// Each call to `PdfPage::render_with_config()` creates a new [PdfBitmap] object and
+    /// allocates memory for it. To avoid repeated allocations, create a single [PdfBitmap] object
+    /// using [PdfBitmap::empty()] and reuse it across multiple calls to
+    /// [PdfPage::render_into_bitmap_with_config()].
+    pub fn render_with_config(&self, config: &PdfRenderConfig) -> Result<PdfBitmap, PdfiumError> {
+        let settings = config.apply_to_page(self);
+
+        let mut bitmap = PdfBitmap::empty(
+            settings.width as u16,
+            settings.height as u16,
+            PdfBitmapFormat::from_pdfium(settings.format as u32)
+                .unwrap_or_else(|_| PdfBitmapFormat::default()),
+            self.bindings,
+        )?;
+
+        self.render_into_bitmap_with_settings(&mut bitmap, settings)?;
+
+        Ok(bitmap)
+    }
+
+    /// Renders this [PdfPage] into the given [PdfBitmap] using the given the given pixel dimensions
+    /// and page rotation.
+    ///
+    /// It is the responsibility of the caller to ensure the given pixel width and height
+    /// correctly maintain the page's aspect ratio.
+    ///
+    /// See also [PdfPage::render_into_bitmap_with_config()], which calculates the correct pixel dimensions,
+    /// rotation settings, and rendering options to apply from a [PdfRenderConfig] object.
+    pub fn render_into_bitmap(
+        &self,
+        bitmap: &mut PdfBitmap,
+        width: u16,
+        height: u16,
+        rotation: Option<PdfBitmapRotation>,
+    ) -> Result<(), PdfiumError> {
+        self.render_into_bitmap_with_settings(
+            bitmap,
+            PdfRenderSettings {
+                width: width as c_int,
+                height: height as c_int,
+                format: PdfBitmapFormat::default().as_pdfium() as c_int,
+                rotate: rotation.unwrap_or(PdfBitmapRotation::None).as_pdfium() as c_int,
+                do_render_form_data: false,
+                form_field_highlight: None,
+                render_flags: 0,
+            },
+        )
+    }
+
+    /// Renders this [PdfPage] into the given [PdfBitmap] using pixel dimensions, page rotation settings,
+    /// and rendering options configured in the given [PdfRenderConfig].
+    #[inline]
+    pub fn render_into_bitmap_with_config(
+        &self,
+        bitmap: &mut PdfBitmap,
+        config: &PdfRenderConfig,
+    ) -> Result<(), PdfiumError> {
+        self.render_into_bitmap_with_settings(bitmap, config.apply_to_page(self))
+    }
+
+    /// Renders this [PdfPage] into the given [PdfBitmap] using the given [PdfRenderSettings].
+    /// The size of the buffer backing the bitmap must be sufficiently large to hold the rendered image
+    /// or an error will be returned.
+    pub(crate) fn render_into_bitmap_with_settings(
+        &self,
+        bitmap: &mut PdfBitmap,
+        settings: PdfRenderSettings,
+    ) -> Result<(), PdfiumError> {
+        let bitmap_handle = *bitmap.get_handle();
+
+        // Clear the bitmap buffer by setting every pixel to white.
+
+        self.bindings.FPDFBitmap_FillRect(
+            bitmap_handle,
+            0,
+            0,
+            settings.width,
+            settings.height,
+            PdfColor::SOLID_WHITE.as_pdfium_color(),
+        );
+
+        if let Some(error) = self.bindings.get_pdfium_last_error() {
+            return Err(PdfiumError::PdfiumLibraryInternalError(error));
+        }
+
+        // Render the PDF page into the bitmap buffer.
+
+        self.bindings.FPDF_RenderPageBitmap(
+            bitmap_handle,
+            self.handle,
+            0,
+            0,
+            settings.width,
+            settings.height,
+            settings.rotate,
+            settings.render_flags,
+        );
+
+        if let Some(error) = self.bindings.get_pdfium_last_error() {
+            return Err(PdfiumError::PdfiumLibraryInternalError(error));
+        }
+
+        if let Some(form) = self.get_document().form() {
+            if settings.do_render_form_data {
+                // Render user-supplied form data, if any, as an overlay on top of the page.
+
+                if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
+                    for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
+                        self.bindings.FPDF_SetFormFieldHighlightColor(
+                            *form.get_handle(),
+                            *form_field_type,
+                            *color,
+                        );
+
+                        self.bindings
+                            .FPDF_SetFormFieldHighlightAlpha(*form.get_handle(), *alpha);
+                    }
+                }
+
+                self.bindings.FPDF_FFLDraw(
+                    *form.get_handle(),
+                    bitmap_handle,
+                    self.handle,
+                    0,
+                    0,
+                    settings.width,
+                    settings.height,
+                    settings.rotate,
+                    settings.render_flags,
+                );
+
+                if let Some(error) = self.bindings.get_pdfium_last_error() {
+                    return Err(PdfiumError::PdfiumLibraryInternalError(error));
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    // TODO: AJRC - 29/7/22 - remove deprecated PdfPage::get_bitmap_*() functions in 0.9.0
+    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    /// Renders this [PdfPage] into a new [PdfBitmap] using pixel dimensions, rotation settings,
+    /// and rendering options configured in the given [PdfRenderConfig].
+    #[deprecated(
+        since = "0.7.12",
+        note = "This function has been renamed to better reflect its purpose. Use the PdfPage::render_with_config() function instead."
+    )]
+    #[doc(hidden)]
+    #[inline]
+    pub fn get_bitmap_with_config(
+        &self,
+        config: &PdfRenderConfig,
+    ) -> Result<PdfBitmap, PdfiumError> {
+        self.render_with_config(config)
+    }
+
+    /// Renders this [PdfPage] into a new [PdfBitmap] with the given pixel dimensions and
+    /// rotation setting.
+    ///
+    /// It is the responsibility of the caller to ensure the given pixel width and height
+    /// correctly maintain the page's aspect ratio.
+    ///
+    /// See also [PdfPage::render_with_config()], which calculates the correct pixel dimensions,
+    /// rotation settings, and rendering options to apply from a [PdfRenderConfig] object.
+    #[deprecated(
+        since = "0.7.12",
+        note = "This function has been renamed to better reflect its purpose. Use the PdfPage::render() function instead."
+    )]
+    #[doc(hidden)]
     pub fn get_bitmap(
         &self,
         width: u16,
         height: u16,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
-        let handle = PdfBitmap::create_empty_bitmap_handle(
-            width as i32,
-            height as i32,
-            FPDFBitmap_BGRA as i32,
-            self.bindings,
-        )?;
-
-        Ok(PdfBitmap::from_pdfium(
-            handle,
-            PdfBitmapRenderSettings {
-                width: width as i32,
-                height: height as i32,
-                format: FPDFBitmap_BGRA as i32,
-                rotate: rotation.unwrap_or(PdfBitmapRotation::None).as_pdfium(),
-                do_render_form_data: true,
-                form_field_highlight: None,
-                render_flags: FPDF_ANNOT as i32,
-            },
-            self,
-            self.bindings,
-        ))
+        self.render(width, height, rotation)
     }
 
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.
@@ -684,7 +843,7 @@ impl<'a> Drop for PdfPage<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::page::PdfRect;
+    use crate::prelude::*;
 
     #[test]
     fn test_pdf_rect_is_inside() {
@@ -714,5 +873,43 @@ mod test {
 
         assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
             .does_overlap(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
+    }
+
+    #[test]
+    fn test_page_rendering_reusing_bitmap() -> Result<(), PdfiumError> {
+        // Renders each page in the given test PDF file to a separate JPEG file
+        // by re-using the same bitmap buffer for each render.
+
+        let pdfium = Pdfium::new(
+            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+                .or_else(|_| Pdfium::bind_to_system_library())?,
+        );
+
+        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+
+        let render_config = PdfRenderConfig::new()
+            .set_target_width(2000)
+            .set_maximum_height(2000)
+            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+
+        let mut bitmap = PdfBitmap::empty(
+            2500,
+            2500,
+            PdfBitmapFormat::default(),
+            pdfium.get_bindings(),
+        )?;
+
+        for (index, page) in document.pages().iter().enumerate() {
+            page.render_into_bitmap_with_config(&mut bitmap, &render_config)?;
+
+            bitmap
+                .as_image() // Converts the bitmap to an Image::DynamicImage...
+                .as_rgba8() // ... then converts it to an Image::Image ...
+                .ok_or(PdfiumError::ImageError)?
+                .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg) // ... and saves it to a file.
+                .map_err(|_| PdfiumError::ImageError)?;
+        }
+
+        Ok(())
     }
 }

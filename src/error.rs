@@ -117,6 +117,15 @@ pub enum PdfiumError {
     /// An error occurred during an image processing operation.
     ImageError,
 
+    /// Dimensions of `Image::Image` are specified in `u32`, but bitmaps in Pdfium are sized in
+    /// `c_int` (`i32`), meaning that an `Image::Image` can have dimensions that overflow
+    /// the maximum size of a Pdfium bitmap. As a compromise, Image dimensions in `pdfium-render`
+    /// are limited to `u16`.
+    ///
+    /// This error indicates that an `Image::Image` had a width or height larger than the maximum
+    /// `u16` size allowed by `pdfium-render`.
+    ImageSizeOutOfBounds,
+
     /// An I/O error occurred during a Pdfium file operation.
     IoError(std::io::Error),
 

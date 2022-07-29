@@ -1,5 +1,5 @@
-//! Defines the [PdfBitmapConfig] struct, a builder-based approach to configuring
-//! the rendering of `PdfBitmap` objects from one or more `PdfPage` objects.
+//! Defines the [PdfRenderConfig] struct, a builder-based approach to configuring
+//! the rendering of `PdfBitmap` objects from one or more [PdfPage] objects.
 
 use crate::bindgen::{
     FPDF_ANNOT, FPDF_CONVERT_FILL_TO_STROKE, FPDF_DWORD, FPDF_GRAYSCALE, FPDF_LCD_TEXT,
@@ -12,13 +12,47 @@ use crate::color::PdfColor;
 use crate::form::PdfFormFieldType;
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation};
+use std::os::raw::c_int;
+
+// TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
+// https://github.com/ajrcarey/pdfium-render/issues/36
+#[deprecated(
+    since = "0.7.12",
+    note = "This struct has been renamed to better reflect its purpose. Use the PdfRenderConfig struct instead."
+)]
+#[doc(hidden)]
+pub struct PdfBitmapConfig {}
+
+#[allow(deprecated)]
+impl PdfBitmapConfig {
+    /// Creates a new [PdfRenderConfig] object with all settings initialized with their default values.
+    #[deprecated(
+        since = "0.7.12",
+        note = "This struct has been renamed to better reflect its purpose. Use the PdfRenderConfig::new() function instead."
+    )]
+    #[inline]
+    #[doc(hidden)]
+    pub fn new() -> PdfRenderConfig {
+        PdfRenderConfig::new()
+    }
+
+    #[deprecated(
+        since = "0.7.12",
+        note = "This struct has been renamed to better reflect its purpose. Use the PdfRenderConfig::default() function instead."
+    )]
+    #[inline]
+    #[doc(hidden)]
+    fn default() -> PdfRenderConfig {
+        PdfRenderConfig::default()
+    }
+}
 
 /// Configures the scaling, rotation, and rendering settings that should be applied to
-/// a PdfPage to create a `PdfBitmap` for that page. [PdfBitmapConfig] can accommodate pages of
+/// a `PdfPage` to create a `PdfBitmap` for that page. [PdfRenderConfig] can accommodate pages of
 /// different sizes while correctly maintaining each page's aspect ratio, automatically
 /// rotate portrait or landscape pages, generate page thumbnails, and apply maximum and
 /// minimum pixel sizes to the scaled width and height of the final bitmap.
-pub struct PdfBitmapConfig {
+pub struct PdfRenderConfig {
     target_width: Option<u16>,
     target_height: Option<u16>,
     scale_width_factor: Option<f32>,
@@ -49,10 +83,10 @@ pub struct PdfBitmapConfig {
     do_set_flag_convert_fill_to_stroke: bool, // Sets FPDF_CONVERT_FILL_TO_STROKE
 }
 
-impl PdfBitmapConfig {
-    /// Creates a new [PdfBitmapConfig] object with all settings initialized with their default values.
+impl PdfRenderConfig {
+    /// Creates a new [PdfRenderConfig] object with all settings initialized with their default values.
     pub fn new() -> Self {
-        PdfBitmapConfig {
+        PdfRenderConfig {
             target_width: None,
             target_height: None,
             scale_width_factor: None,
@@ -63,7 +97,7 @@ impl PdfBitmapConfig {
             portrait_rotation_do_rotate_constraints: false,
             landscape_rotation: PdfBitmapRotation::None,
             landscape_rotation_do_rotate_constraints: false,
-            format: PdfBitmapFormat::BGRA,
+            format: PdfBitmapFormat::default(),
             do_render_form_data: true,
             form_field_highlight: vec![],
             do_set_flag_render_annotations: true,
@@ -93,9 +127,9 @@ impl PdfBitmapConfig {
     /// * Image quality settings will be reduced to improve performance
     /// * Annotations and user-filled form field data will not be rendered.
     ///
-    /// These settings are applied to this [PdfBitmapConfig] object immediately and can be
+    /// These settings are applied to this [PdfRenderConfig] object immediately and can be
     /// selectively overridden by later function calls. For instance, a later call to
-    /// [PdfBitmapConfig::rotate()] can specify a custom rotation setting that will apply
+    /// [PdfRenderConfig::rotate()] can specify a custom rotation setting that will apply
     /// to the thumbnail.
     #[inline]
     pub fn thumbnail(self, size: u8) -> Self {
@@ -119,8 +153,8 @@ impl PdfBitmapConfig {
 
     /// Converts the width of a [PdfPage] from points to pixels, scaling the source page
     /// width to the given target pixel width. The aspect ratio of the source page
-    /// will be maintained so long as there is no call to [PdfBitmapConfig::set_target_size()]
-    /// or [PdfBitmapConfig::set_target_height()] that overrides it.
+    /// will be maintained so long as there is no call to [PdfRenderConfig::set_target_size()]
+    /// or [PdfRenderConfig::set_target_height()] that overrides it.
     #[inline]
     pub fn set_target_width(mut self, width: u16) -> Self {
         self.target_width = Some(width);
@@ -130,8 +164,8 @@ impl PdfBitmapConfig {
 
     /// Converts the height of a [PdfPage] from points to pixels, scaling the source page
     /// height to the given target pixel height. The aspect ratio of the source page
-    /// will be maintained so long as there is no call to [PdfBitmapConfig::set_target_size()]
-    /// or [PdfBitmapConfig::set_target_width()] that overrides it.
+    /// will be maintained so long as there is no call to [PdfRenderConfig::set_target_size()]
+    /// or [PdfRenderConfig::set_target_width()] that overrides it.
     #[inline]
     pub fn set_target_height(mut self, height: u16) -> Self {
         self.target_height = Some(height);
@@ -139,7 +173,7 @@ impl PdfBitmapConfig {
         self
     }
 
-    /// Applies settings to this [PdfBitmapConfig] suitable for filling the given
+    /// Applies settings to this [PdfRenderConfig] suitable for filling the given
     /// screen display size.
     ///
     /// The source page's dimensions will be scaled so that both width and height attempt
@@ -159,8 +193,8 @@ impl PdfBitmapConfig {
 
     /// Converts the width and height of a [PdfPage] from points to pixels by applying
     /// the given scale factor to both dimensions. The aspect ratio of the source page
-    /// will be maintained. Overrides any previous call to [PdfBitmapConfig::scale_page_by_factor()],
-    /// [PdfBitmapConfig::scale_page_width_by_factor()], or [PdfBitmapConfig::scale_page_height_by_factor()].
+    /// will be maintained. Overrides any previous call to [PdfRenderConfig::scale_page_by_factor()],
+    /// [PdfRenderConfig::scale_page_width_by_factor()], or [PdfRenderConfig::scale_page_height_by_factor()].
     #[inline]
     pub fn scale_page_by_factor(self, scale: f32) -> Self {
         let result = self.scale_page_width_by_factor(scale);
@@ -171,8 +205,8 @@ impl PdfBitmapConfig {
     /// Converts the width of the [PdfPage] from points to pixels by applying the given
     /// scale factor. The aspect ratio of the source page will not be maintained if a
     /// different scale factor is applied to the height. Overrides any previous call to
-    /// [PdfBitmapConfig::scale_page_by_factor()], [PdfBitmapConfig::scale_page_width_by_factor()],
-    /// or [PdfBitmapConfig::scale_page_height_by_factor()].
+    /// [PdfRenderConfig::scale_page_by_factor()], [PdfRenderConfig::scale_page_width_by_factor()],
+    /// or [PdfRenderConfig::scale_page_height_by_factor()].
     #[inline]
     pub fn scale_page_width_by_factor(mut self, scale: f32) -> Self {
         self.scale_width_factor = Some(scale);
@@ -183,8 +217,8 @@ impl PdfBitmapConfig {
     /// Converts the height of the [PdfPage] from points to pixels by applying the given
     /// scale factor. The aspect ratio of the source page will not be maintained if a
     /// different scale factor is applied to the width. Overrides any previous call to
-    /// [PdfBitmapConfig::scale_page_by_factor()], [PdfBitmapConfig::scale_page_width_by_factor()],
-    /// or [PdfBitmapConfig::scale_page_height_by_factor()].
+    /// [PdfRenderConfig::scale_page_by_factor()], [PdfRenderConfig::scale_page_width_by_factor()],
+    /// or [PdfRenderConfig::scale_page_height_by_factor()].
     #[inline]
     pub fn scale_page_height_by_factor(mut self, scale: f32) -> Self {
         self.scale_height_factor = Some(scale);
@@ -210,9 +244,9 @@ impl PdfBitmapConfig {
 
     /// Applies the given rotation setting to the [PdfPage] during rendering, irrespective
     /// of its orientation. If the given flag is set to `true` then any maximum
-    /// constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
+    /// constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height, and any
-    /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
+    /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate(self, rotation: PdfBitmapRotation, do_rotate_constraints: bool) -> Self {
@@ -223,9 +257,9 @@ impl PdfBitmapConfig {
     /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
     /// is in portrait orientation. If the given flag is set to `true` and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
-    /// then any maximum constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
+    /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
-    /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
+    /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate_if_portait(
@@ -245,9 +279,9 @@ impl PdfBitmapConfig {
     /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
     /// is in landscape orientation. If the given flag is set to `true` and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
-    /// then any maximum constraint on the final pixel width set by a call to [PdfBitmapConfig::set_maximum_width()]
+    /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
-    /// maximum constraint on the final pixel height set by a call to [PdfBitmapConfig::set_maximum_height()]
+    /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate_if_landscape(
@@ -390,7 +424,7 @@ impl PdfBitmapConfig {
     /// during rendering. The default is `true`, so that Pdfium returns pixel data as RGB8
     /// rather than its default BGR8. There should generally be no need to change this flag,
     /// unless you want to do raw image processing and specifically need the pixel data returned
-    /// by [crate::bitmap::PdfBitmap::as_bytes()] to be in BGR8 format.
+    /// by the `PdfBitmap::as_bytes()` function to be in BGR8 format.
     #[inline]
     pub fn set_reverse_byte_order(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_reverse_byte_order = do_set_flag;
@@ -477,9 +511,9 @@ impl PdfBitmapConfig {
     }
 
     /// Computes the pixel dimensions and rotation settings for the given [PdfPage]
-    /// based on the configuration of this [PdfBitmapConfig].
+    /// based on the configuration of this [PdfRenderConfig].
     #[inline]
-    pub(crate) fn apply_to_page(&self, page: &PdfPage) -> PdfBitmapRenderSettings {
+    pub(crate) fn apply_to_page(&self, page: &PdfPage) -> PdfRenderSettings {
         let source_width = page.width();
 
         let source_height = page.height();
@@ -636,13 +670,15 @@ impl PdfBitmapConfig {
             render_flags |= FPDF_CONVERT_FILL_TO_STROKE;
         }
 
-        PdfBitmapRenderSettings {
+        PdfRenderSettings {
             width: (source_width.value * width_scale) as i32,
             height: (source_height.value * height_scale) as i32,
             format: self.format.as_pdfium() as i32,
             rotate: target_rotation.as_pdfium(),
             do_render_form_data: self.do_render_form_data,
-            form_field_highlight: if self.form_field_highlight.is_empty() {
+            form_field_highlight: if !self.do_render_form_data
+                || self.form_field_highlight.is_empty()
+            {
                 None
             } else {
                 Some(
@@ -662,20 +698,20 @@ impl PdfBitmapConfig {
     }
 }
 
-impl Default for PdfBitmapConfig {
+impl Default for PdfRenderConfig {
     #[inline]
     fn default() -> Self {
-        PdfBitmapConfig::new()
+        PdfRenderConfig::new()
     }
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct PdfBitmapRenderSettings {
-    pub(crate) width: i32,
-    pub(crate) height: i32,
-    pub(crate) format: i32,
-    pub(crate) rotate: i32,
+pub(crate) struct PdfRenderSettings {
+    pub(crate) width: c_int,
+    pub(crate) height: c_int,
+    pub(crate) format: c_int,
+    pub(crate) rotate: c_int,
     pub(crate) do_render_form_data: bool,
-    pub(crate) form_field_highlight: Option<Vec<(i32, (FPDF_DWORD, u8))>>,
-    pub(crate) render_flags: i32,
+    pub(crate) form_field_highlight: Option<Vec<(c_int, (FPDF_DWORD, u8))>>,
+    pub(crate) render_flags: c_int,
 }
