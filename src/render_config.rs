@@ -56,11 +56,13 @@ impl PdfBitmapConfig {
 /// rotate portrait or landscape pages, generate page thumbnails, apply maximum and
 /// minimum pixel sizes to the scaled width and height of the final bitmap, highlight form fields
 /// with different colors, apply custom transforms to the page during rendering, and set
-/// internal PDF rendering flags.
+/// internal Pdfium rendering flags.
 ///
 /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-/// a custom transformation matrix, but not both. Applying any transformation automatically
-/// disables rendering of form data.
+/// a custom transformation matrix, but not both at the same time. Applying any transformation
+/// automatically disables rendering of form data. If you must render form data while simultaneously
+/// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+/// form elements and form data into the containing page.
 pub struct PdfRenderConfig {
     target_width: Option<Pixels>,
     target_height: Option<Pixels>,
@@ -371,8 +373,8 @@ impl PdfRenderConfig {
     /// during rendering of the [PdfPage]. The default is `true`.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically sets this value to `false`, disabling rendering of form data.
     #[inline]
     pub fn render_form_data(mut self, do_render: bool) -> Self {
         self.do_render_form_data = do_render;
@@ -392,7 +394,7 @@ impl PdfRenderConfig {
     /// Controls whether text rendering should be optimized for LCD display.
     /// The default is `false`.
     /// Has no effect if anti-aliasing of text has been disabled by a call to
-    /// `PdfBitmapConfig::set_text_smoothing(false)`.
+    /// `PdfRenderConfig::set_text_smoothing(false)`.
     #[inline]
     pub fn use_lcd_text_rendering(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_use_lcd_text_rendering = do_set_flag;
@@ -585,8 +587,10 @@ impl PdfRenderConfig {
     /// is undefined if the transformation matrix has a determinant of zero.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     ///
     /// To move, scale, rotate, or skew a [PdfPage] during rendering, consider using one or more of the
     /// following functions. Internally they all use [PdfRenderConfig::transform()], but are
@@ -638,8 +642,10 @@ impl PdfRenderConfig {
     /// horizontal and vertical distances during rendering.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn translate(self, delta_x: PdfPoints, delta_y: PdfPoints) -> Result<Self, PdfiumError> {
         self.transform(
@@ -656,8 +662,10 @@ impl PdfRenderConfig {
     /// vertical scale factors.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn scale(
         self,
@@ -678,8 +686,10 @@ impl PdfRenderConfig {
     /// a horizontal scale factor of -1.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn flip_horizontally(self) -> Result<Self, PdfiumError> {
         self.scale(-1.0, 1.0)
@@ -689,8 +699,10 @@ impl PdfRenderConfig {
     /// a vertical scale factor of -1.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn flip_vertically(self) -> Result<Self, PdfiumError> {
         self.scale(1.0, -1.0)
@@ -700,8 +712,10 @@ impl PdfRenderConfig {
     /// during rendering.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn reflect(self) -> Result<Self, PdfiumError> {
         self.scale(-1.0, -1.0)
@@ -717,8 +731,10 @@ impl PdfRenderConfig {
     /// [PdfRenderConfig::rotate_if_landscape()] functions.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn rotate_counter_clockwise_degrees(self, degrees: f32) -> Result<Self, PdfiumError> {
         self.rotate_clockwise_degrees(-degrees)
@@ -734,8 +750,10 @@ impl PdfRenderConfig {
     /// [PdfRenderConfig::rotate_if_landscape()] functions.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn rotate_clockwise_degrees(self, degrees: f32) -> Result<Self, PdfiumError> {
         self.rotate_clockwise_radians(degrees.to_radians())
@@ -751,8 +769,10 @@ impl PdfRenderConfig {
     /// [PdfRenderConfig::rotate_if_landscape()] functions.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn rotate_counter_clockwise_radians(self, radians: f32) -> Result<Self, PdfiumError> {
         self.rotate_clockwise_radians(-radians)
@@ -768,8 +788,10 @@ impl PdfRenderConfig {
     /// [PdfRenderConfig::rotate_if_landscape()] functions.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn rotate_clockwise_radians(self, radians: f32) -> Result<Self, PdfiumError> {
         let cos_theta = radians.cos();
@@ -782,8 +804,10 @@ impl PdfRenderConfig {
     /// Skews the axes of a [PdfPage] during rendering by the given angles in degrees.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn skew_degrees(self, x_axis_skew: f32, y_axis_skew: f32) -> Result<Self, PdfiumError> {
         self.skew_radians(x_axis_skew.to_radians(), y_axis_skew.to_radians())
@@ -792,8 +816,10 @@ impl PdfRenderConfig {
     /// Skews the axes of a [PdfPage] during rendering by the given angles in radians.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-    /// a custom transformation matrix, but not both. Applying any transformation automatically
-    /// disables rendering of form data.
+    /// a custom transformation matrix, but not both at the same time. Applying any transformation
+    /// automatically disables rendering of form data. If you must render form data while simultaneously
+    /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn skew_radians(self, x_axis_skew: f32, y_axis_skew: f32) -> Result<Self, PdfiumError> {
         let tan_alpha = x_axis_skew.tan();
