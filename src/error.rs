@@ -56,6 +56,7 @@ pub enum PdfiumError {
     ImageObjectFilterIndexOutOfBounds,
     ImageObjectFilterIndexInBoundsButFilterUndefined,
     UnknownPdfColorSpace,
+    InvalidTransformationMatrix,
 
     /// Two data buffers are expected to have the same size, but they do not.
     DataBufferLengthMismatch,

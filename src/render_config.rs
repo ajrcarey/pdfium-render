@@ -5,14 +5,16 @@ use crate::bindgen::{
     FPDF_ANNOT, FPDF_CONVERT_FILL_TO_STROKE, FPDF_DWORD, FPDF_GRAYSCALE, FPDF_LCD_TEXT,
     FPDF_NO_NATIVETEXT, FPDF_PRINTING, FPDF_RENDER_FORCEHALFTONE, FPDF_RENDER_LIMITEDIMAGECACHE,
     FPDF_RENDER_NO_SMOOTHIMAGE, FPDF_RENDER_NO_SMOOTHPATH, FPDF_RENDER_NO_SMOOTHTEXT,
-    FPDF_REVERSE_BYTE_ORDER,
+    FPDF_REVERSE_BYTE_ORDER, FS_MATRIX, FS_RECTF,
 };
-use crate::bitmap::{PdfBitmapFormat, PdfBitmapRotation};
+use crate::bitmap::{PdfBitmapFormat, PdfBitmapRotation, Pixels};
 use crate::color::PdfColor;
+use crate::error::PdfiumError;
 use crate::form::PdfFormFieldType;
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
-use crate::page::{PdfPage, PdfPageOrientation};
+use crate::page::{PdfPage, PdfPageOrientation, PdfPoints};
 use std::os::raw::c_int;
+use vecmath::{mat3_det, row_mat3_mul, Matrix3};
 
 // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
 // https://github.com/ajrcarey/pdfium-render/issues/36
@@ -32,6 +34,7 @@ impl PdfBitmapConfig {
     )]
     #[inline]
     #[doc(hidden)]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new() -> PdfRenderConfig {
         PdfRenderConfig::new()
     }
@@ -42,30 +45,40 @@ impl PdfBitmapConfig {
     )]
     #[inline]
     #[doc(hidden)]
-    fn default() -> PdfRenderConfig {
+    pub fn default() -> PdfRenderConfig {
         PdfRenderConfig::default()
     }
 }
 
 /// Configures the scaling, rotation, and rendering settings that should be applied to
-/// a `PdfPage` to create a `PdfBitmap` for that page. [PdfRenderConfig] can accommodate pages of
+/// a [PdfPage] to create a `PdfBitmap` for that page. [PdfRenderConfig] can accommodate pages of
 /// different sizes while correctly maintaining each page's aspect ratio, automatically
-/// rotate portrait or landscape pages, generate page thumbnails, and apply maximum and
-/// minimum pixel sizes to the scaled width and height of the final bitmap.
+/// rotate portrait or landscape pages, generate page thumbnails, apply maximum and
+/// minimum pixel sizes to the scaled width and height of the final bitmap, highlight form fields
+/// with different colors, apply custom transforms to the page during rendering, and set
+/// internal PDF rendering flags.
+///
+/// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+/// a custom transformation matrix, but not both. Applying any transformation automatically
+/// disables rendering of form data.
 pub struct PdfRenderConfig {
-    target_width: Option<u16>,
-    target_height: Option<u16>,
+    target_width: Option<Pixels>,
+    target_height: Option<Pixels>,
     scale_width_factor: Option<f32>,
     scale_height_factor: Option<f32>,
-    maximum_width: Option<u16>,
-    maximum_height: Option<u16>,
+    maximum_width: Option<Pixels>,
+    maximum_height: Option<Pixels>,
     portrait_rotation: PdfBitmapRotation,
     portrait_rotation_do_rotate_constraints: bool,
     landscape_rotation: PdfBitmapRotation,
     landscape_rotation_do_rotate_constraints: bool,
     format: PdfBitmapFormat,
+    do_clear_bitmap_before_rendering: bool,
+    clear_color: PdfColor,
     do_render_form_data: bool,
-    form_field_highlight: Vec<(PdfFormFieldType, PdfColor)>,
+    form_field_highlight: Option<Vec<(PdfFormFieldType, PdfColor)>>,
+    transformation_matrix: Matrix3<f32>,
+    clip_rect: Option<(Pixels, Pixels, Pixels, Pixels)>,
 
     // The fields below set Pdfium's page rendering flags. Coverage for the
     // FPDF_DEBUG_INFO and FPDF_NO_CATCH flags is omitted since they are obsolete.
@@ -98,8 +111,12 @@ impl PdfRenderConfig {
             landscape_rotation: PdfBitmapRotation::None,
             landscape_rotation_do_rotate_constraints: false,
             format: PdfBitmapFormat::default(),
+            do_clear_bitmap_before_rendering: true,
+            clear_color: PdfColor::SOLID_WHITE,
             do_render_form_data: true,
-            form_field_highlight: vec![],
+            form_field_highlight: None,
+            transformation_matrix: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            clip_rect: None,
             do_set_flag_render_annotations: true,
             do_set_flag_use_lcd_text_rendering: false,
             do_set_flag_no_native_text: false,
@@ -122,9 +139,9 @@ impl PdfRenderConfig {
     /// Applies settings suitable for generating a thumbnail.
     ///
     /// * The source [PdfPage] will be rendered with a maximum width and height of the given
-    /// pixel size
-    /// * The page will not be rotated, irrespective of its orientation
-    /// * Image quality settings will be reduced to improve performance
+    /// pixel size.
+    /// * The page will not be rotated, irrespective of its orientation.
+    /// * Image quality settings will be reduced to improve performance.
     /// * Annotations and user-filled form field data will not be rendered.
     ///
     /// These settings are applied to this [PdfRenderConfig] object immediately and can be
@@ -132,10 +149,10 @@ impl PdfRenderConfig {
     /// [PdfRenderConfig::rotate()] can specify a custom rotation setting that will apply
     /// to the thumbnail.
     #[inline]
-    pub fn thumbnail(self, size: u8) -> Self {
-        self.set_target_size(size as u16, size as u16)
-            .set_maximum_width(size as u16)
-            .set_maximum_height(size as u16)
+    pub fn thumbnail(self, size: Pixels) -> Self {
+        self.set_target_size(size, size)
+            .set_maximum_width(size)
+            .set_maximum_height(size)
             .rotate(PdfBitmapRotation::None, false)
             .use_print_quality(false)
             .set_image_smoothing(false)
@@ -147,7 +164,7 @@ impl PdfRenderConfig {
     /// dimension to the given target pixel sizes. The aspect ratio of the source page
     /// will not be maintained.
     #[inline]
-    pub fn set_target_size(self, width: u16, height: u16) -> Self {
+    pub fn set_target_size(self, width: Pixels, height: Pixels) -> Self {
         self.set_target_width(width).set_target_height(height)
     }
 
@@ -156,7 +173,7 @@ impl PdfRenderConfig {
     /// will be maintained so long as there is no call to [PdfRenderConfig::set_target_size()]
     /// or [PdfRenderConfig::set_target_height()] that overrides it.
     #[inline]
-    pub fn set_target_width(mut self, width: u16) -> Self {
+    pub fn set_target_width(mut self, width: Pixels) -> Self {
         self.target_width = Some(width);
 
         self
@@ -167,7 +184,7 @@ impl PdfRenderConfig {
     /// will be maintained so long as there is no call to [PdfRenderConfig::set_target_size()]
     /// or [PdfRenderConfig::set_target_width()] that overrides it.
     #[inline]
-    pub fn set_target_height(mut self, height: u16) -> Self {
+    pub fn set_target_height(mut self, height: Pixels) -> Self {
         self.target_height = Some(height);
 
         self
@@ -181,7 +198,7 @@ impl PdfRenderConfig {
     /// source page will be maintained. Landscape pages will be automatically rotated
     /// by 90 degrees and will be scaled down if necessary to fit the display width.
     #[inline]
-    pub fn scale_page_to_display_size(mut self, width: u16, height: u16) -> Self {
+    pub fn scale_page_to_display_size(mut self, width: Pixels, height: Pixels) -> Self {
         self.scale_width_factor = None;
         self.scale_height_factor = None;
 
@@ -228,7 +245,7 @@ impl PdfRenderConfig {
 
     /// Specifies that the final pixel width of the [PdfPage] will not exceed the given maximum.
     #[inline]
-    pub fn set_maximum_width(mut self, width: u16) -> Self {
+    pub fn set_maximum_width(mut self, width: Pixels) -> Self {
         self.maximum_width = Some(width);
 
         self
@@ -236,13 +253,13 @@ impl PdfRenderConfig {
 
     /// Specifies that the final pixel height of the [PdfPage] will not exceed the given maximum.
     #[inline]
-    pub fn set_maximum_height(mut self, height: u16) -> Self {
+    pub fn set_maximum_height(mut self, height: Pixels) -> Self {
         self.maximum_height = Some(height);
 
         self
     }
 
-    /// Applies the given rotation setting to the [PdfPage] during rendering, irrespective
+    /// Applies the given clockwise rotation setting to the [PdfPage] during rendering, irrespective
     /// of its orientation. If the given flag is set to `true` then any maximum
     /// constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height, and any
@@ -250,11 +267,34 @@ impl PdfRenderConfig {
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
     pub fn rotate(self, rotation: PdfBitmapRotation, do_rotate_constraints: bool) -> Self {
-        self.rotate_if_portait(rotation, do_rotate_constraints)
+        self.rotate_if_portrait(rotation, do_rotate_constraints)
             .rotate_if_landscape(rotation, do_rotate_constraints)
     }
 
-    /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
+    // TODO: AJRC - 30/7/22 - remove deprecated rotate_if_portait() function in 0.9.0 as part
+    // of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    /// Applies the given clockwise rotation settings to the [PdfPage] during rendering, if the page
+    /// is in portrait orientation. If the given flag is set to `true` and the given
+    /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
+    /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
+    /// will be rotated so it becomes a constraint on the final pixel height and any
+    /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
+    /// will be rotated so it becomes a constraint on the final pixel width.
+    #[deprecated(
+        since = "0.7.12",
+        note = "This function has been renamed to correct a typo. Use the PdfRenderConfig::rotate_if_portrait() function instead."
+    )]
+    #[doc(hidden)]
+    #[inline]
+    pub fn rotate_if_portait(
+        self,
+        rotation: PdfBitmapRotation,
+        do_rotate_constraints: bool,
+    ) -> Self {
+        self.rotate_if_portrait(rotation, do_rotate_constraints)
+    }
+
+    /// Applies the given clockwise rotation settings to the [PdfPage] during rendering, if the page
     /// is in portrait orientation. If the given flag is set to `true` and the given
     /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
     /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
@@ -262,7 +302,7 @@ impl PdfRenderConfig {
     /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
-    pub fn rotate_if_portait(
+    pub fn rotate_if_portrait(
         mut self,
         rotation: PdfBitmapRotation,
         do_rotate_constraints: bool,
@@ -307,9 +347,32 @@ impl PdfRenderConfig {
         self
     }
 
+    /// Controls whether the destination bitmap should be cleared by setting every pixel to a
+    /// known color value before rendering the [PdfPage]. The default is `true`.
+    /// The color used during clearing can be customised by calling [PdfRenderConfig::set_clear_color()].
+    #[inline]
+    pub fn clear_before_rendering(mut self, do_clear: bool) -> Self {
+        self.do_clear_bitmap_before_rendering = do_clear;
+
+        self
+    }
+
+    /// Sets the color applied to every pixel in the destination bitmap when clearing the bitmap
+    /// before rendering the [PdfPage]. The default is [PdfColor::SOLID_WHITE]. This setting
+    /// has no effect if [PdfRenderConfig::clear_before_rendering()] is set to `false`.
+    #[inline]
+    pub fn set_clear_color(mut self, color: PdfColor) -> Self {
+        self.clear_color = color;
+
+        self
+    }
+
     /// Controls whether form data widgets and user-supplied form data should be included
-    /// during rendering of the [PdfPage]. The default is `true`. The setting has no effect
-    /// if the `PdfDocument` containing the `PdfPage` does not include an embedded `PdfForm`.
+    /// during rendering of the [PdfPage]. The default is `true`.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
     #[inline]
     pub fn render_form_data(mut self, do_render: bool) -> Self {
         self.do_render_form_data = do_render;
@@ -505,7 +568,245 @@ impl PdfRenderConfig {
         form_field_type: PdfFormFieldType,
         color: PdfColor,
     ) -> Self {
-        self.form_field_highlight.push((form_field_type, color));
+        if let Some(form_field_highlight) = self.form_field_highlight.as_mut() {
+            form_field_highlight.push((form_field_type, color));
+        } else {
+            self.form_field_highlight = Some(vec![(form_field_type, color)]);
+        }
+
+        self
+    }
+
+    /// Applies the given transformation, expressed as six values representing the six configurable
+    /// elements of a nine-element 3x3 PDF transformation matrix, to a [PdfPage] during rendering.
+    ///
+    /// The transformation will be rejected with an error if applying it would result in
+    /// a transformation matrix with a determinant of zero. Pdfium's page rendering behaviour
+    /// is undefined if the transformation matrix has a determinant of zero.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    ///
+    /// To move, scale, rotate, or skew a [PdfPage] during rendering, consider using one or more of the
+    /// following functions. Internally they all use [PdfRenderConfig::transform()], but are
+    /// probably easier to use (and certainly clearer in their intent) in most situations.
+    ///
+    /// * [PdfRenderConfig::translate()]: changes the origin of the rendered [PdfPage].
+    /// * [PdfRenderConfig::scale()]: changes the size of the rendered [PdfPage].
+    /// * [PdfRenderConfig::rotate_clockwise_degrees()], [PdfRenderConfig::rotate_counter_clockwise_degrees()],
+    /// [PdfRenderConfig::rotate_clockwise_radians()], [PdfRenderConfig::rotate_counter_clockwise_radians()]:
+    /// rotates the rendered [PdfPage] around the origin.
+    /// * [PdfRenderConfig::skew_degrees()], [PdfRenderConfig::skew_radians()]: skews the rendered [PdfPage]
+    /// relative to its axes.
+    ///
+    /// **The order in which transformations are applied is significant.**
+    /// For example, the result of rotating _then_ translating a page during rendering may be
+    /// vastly different from translating _then_ rotating the same page. In general, to obtain the
+    /// expected results, transformations should be performed in the following order:
+    /// * Scale and/or skew
+    /// * Rotate
+    /// * Translate
+    ///
+    /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
+    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
+    pub fn transform(
+        mut self,
+        a: f32,
+        b: f32,
+        c: f32,
+        d: f32,
+        e: f32,
+        f: f32,
+    ) -> Result<Self, PdfiumError> {
+        let result = row_mat3_mul(
+            self.transformation_matrix,
+            [[a, b, 0.0], [c, d, 0.0], [e, f, 1.0]],
+        );
+
+        if mat3_det(result) == 0.0 {
+            Err(PdfiumError::InvalidTransformationMatrix)
+        } else {
+            self.transformation_matrix = result;
+            self.do_render_form_data = false;
+
+            Ok(self)
+        }
+    }
+
+    /// Moves the origin - the top left position - of a [PdfPage] by the given
+    /// horizontal and vertical distances during rendering.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn translate(self, delta_x: PdfPoints, delta_y: PdfPoints) -> Result<Self, PdfiumError> {
+        self.transform(
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            delta_x.value as f32,
+            delta_y.value as f32,
+        )
+    }
+
+    /// Changes the size of a [PdfPage] during rendering, scaling it by the given horizontal and
+    /// vertical scale factors.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn scale(
+        self,
+        horizontal_scale_factor: f32,
+        vertical_scale_factor: f32,
+    ) -> Result<Self, PdfiumError> {
+        self.transform(
+            horizontal_scale_factor,
+            0.0,
+            0.0,
+            vertical_scale_factor,
+            0.0,
+            0.0,
+        )
+    }
+
+    /// Flips a [PdfPage] horizontally around the origin during rendering by applying
+    /// a horizontal scale factor of -1.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn flip_horizontally(self) -> Result<Self, PdfiumError> {
+        self.scale(-1.0, 1.0)
+    }
+
+    /// Flips a [PdfPage] vertically around the origin during rendering by applying
+    /// a vertical scale factor of -1.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn flip_vertically(self) -> Result<Self, PdfiumError> {
+        self.scale(1.0, -1.0)
+    }
+
+    /// Reflects a [PdfPage] by flipping it both horizontally and vertically around the origin
+    /// during rendering.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn reflect(self) -> Result<Self, PdfiumError> {
+        self.scale(-1.0, -1.0)
+    }
+
+    /// Rotates a [PdfPage] counter-clockwise during rendering by the given number of degrees.
+    ///
+    /// Any constraints on the final pixel width or height of the rendered image, set by
+    /// a call to [PdfRenderConfig::set_maximum_width()] or [PdfRenderConfig::set_maximum_height()],
+    /// are not rotated. To rotate a page by a 90-degree increment while also rotating any constraints
+    /// on the final pixel width and height of the rendered image, use one of the
+    /// [PdfRenderConfig::rotate()], [PdfRenderConfig::rotate_if_portrait()], or
+    /// [PdfRenderConfig::rotate_if_landscape()] functions.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn rotate_counter_clockwise_degrees(self, degrees: f32) -> Result<Self, PdfiumError> {
+        self.rotate_clockwise_degrees(-degrees)
+    }
+
+    /// Rotates a [PdfPage] clockwise during rendering by the given number of degrees.
+    ///
+    /// Any constraints on the final pixel width or height of the rendered image, set by
+    /// a call to [PdfRenderConfig::set_maximum_width()] or [PdfRenderConfig::set_maximum_height()],
+    /// are not rotated. To rotate a page by a 90-degree increment while also rotating any constraints
+    /// on the final pixel width and height of the rendered image, use one of the
+    /// [PdfRenderConfig::rotate()], [PdfRenderConfig::rotate_if_portrait()], or
+    /// [PdfRenderConfig::rotate_if_landscape()] functions.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn rotate_clockwise_degrees(self, degrees: f32) -> Result<Self, PdfiumError> {
+        self.rotate_clockwise_radians(degrees.to_radians())
+    }
+
+    /// Rotates a [PdfPage] counter-clockwise during rendering by the given number of radians.
+    ///
+    /// Any constraints on the final pixel width or height of the rendered image, set by
+    /// a call to [PdfRenderConfig::set_maximum_width()] or [PdfRenderConfig::set_maximum_height()],
+    /// are not rotated. To rotate a page by a 90-degree increment while also rotating any constraints
+    /// on the final pixel width and height of the rendered image, use one of the
+    /// [PdfRenderConfig::rotate()], [PdfRenderConfig::rotate_if_portrait()], or
+    /// [PdfRenderConfig::rotate_if_landscape()] functions.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn rotate_counter_clockwise_radians(self, radians: f32) -> Result<Self, PdfiumError> {
+        self.rotate_clockwise_radians(-radians)
+    }
+
+    /// Rotates a [PdfPage] clockwise during rendering by the given number of radians.
+    ///
+    /// Any constraints on the final pixel width or height of the rendered image, set by
+    /// a call to [PdfRenderConfig::set_maximum_width()] or [PdfRenderConfig::set_maximum_height()],
+    /// are not rotated. To rotate a page by a 90-degree increment while also rotating any constraints
+    /// on the final pixel width and height of the rendered image, use one of the
+    /// [PdfRenderConfig::rotate()], [PdfRenderConfig::rotate_if_portrait()], or
+    /// [PdfRenderConfig::rotate_if_landscape()] functions.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn rotate_clockwise_radians(self, radians: f32) -> Result<Self, PdfiumError> {
+        let cos_theta = radians.cos();
+
+        let sin_theta = radians.sin();
+
+        self.transform(cos_theta, sin_theta, -sin_theta, cos_theta, 0.0, 0.0)
+    }
+
+    /// Skews the axes of a [PdfPage] during rendering by the given angles in degrees.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn skew_degrees(self, x_axis_skew: f32, y_axis_skew: f32) -> Result<Self, PdfiumError> {
+        self.skew_radians(x_axis_skew.to_radians(), y_axis_skew.to_radians())
+    }
+
+    /// Skews the axes of a [PdfPage] during rendering by the given angles in radians.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
+    /// a custom transformation matrix, but not both. Applying any transformation automatically
+    /// disables rendering of form data.
+    #[inline]
+    pub fn skew_radians(self, x_axis_skew: f32, y_axis_skew: f32) -> Result<Self, PdfiumError> {
+        let tan_alpha = x_axis_skew.tan();
+
+        let tan_beta = y_axis_skew.tan();
+
+        self.transform(1.0, tan_alpha, tan_beta, 1.0, 0.0, 0.0)
+    }
+
+    /// Clips rendering output to the given pixel coordinates.
+    #[inline]
+    pub fn clip(mut self, left: Pixels, top: Pixels, right: Pixels, bottom: Pixels) -> Self {
+        self.clip_rect = Some((left, top, right, bottom));
 
         self
     }
@@ -670,19 +971,77 @@ impl PdfRenderConfig {
             render_flags |= FPDF_CONVERT_FILL_TO_STROKE;
         }
 
+        let output_width = (source_width.value * width_scale) as i32;
+
+        let output_height = (source_height.value * height_scale) as i32;
+
+        // Pages can be rendered either _with_ transformation matrices but _without_ form data,
+        // or _with_ form data but _without_ transformation matrices. We need to be prepared
+        // for either option. If rendering of form data is disabled then the scaled output
+        // width and height and any user-specified 90-degree rotation need to be applied to the
+        // transformation matrix now.
+
+        let transformation_matrix = if !self.do_render_form_data {
+            let result = if target_rotation != PdfBitmapRotation::None {
+                // Translate the origin to the center of the page before rotating.
+
+                let (delta_x, delta_y) = match target_rotation {
+                    PdfBitmapRotation::None => unreachable!(),
+                    PdfBitmapRotation::Degrees90 => (0.0, -source_width.value),
+                    PdfBitmapRotation::Degrees180 => (-source_width.value, -source_height.value),
+                    PdfBitmapRotation::Degrees270 => (-source_height.value, 0.0),
+                };
+
+                let result = row_mat3_mul(
+                    self.transformation_matrix,
+                    [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [delta_x, delta_y, 1.0]],
+                );
+
+                let cos_theta = target_rotation.as_radians_cos();
+
+                let sin_theta = target_rotation.as_radians_sin();
+
+                row_mat3_mul(
+                    result,
+                    [
+                        [cos_theta, sin_theta, 0.0],
+                        [-sin_theta, cos_theta, 0.0],
+                        [0.0, 0.0, 1.0],
+                    ],
+                )
+            } else {
+                self.transformation_matrix
+            };
+
+            row_mat3_mul(
+                result,
+                [
+                    [width_scale, 0.0, 0.0],
+                    [0.0, height_scale, 0.0],
+                    [0.0, 0.0, 1.0],
+                ],
+            )
+        } else {
+            self.transformation_matrix
+        };
+
         PdfRenderSettings {
-            width: (source_width.value * width_scale) as i32,
-            height: (source_height.value * height_scale) as i32,
+            width: output_width,
+            height: output_height,
             format: self.format.as_pdfium() as i32,
             rotate: target_rotation.as_pdfium(),
+            do_clear_bitmap_before_rendering: self.do_clear_bitmap_before_rendering,
+            clear_color: self.clear_color.as_pdfium_color(),
             do_render_form_data: self.do_render_form_data,
             form_field_highlight: if !self.do_render_form_data
-                || self.form_field_highlight.is_empty()
+                || self.form_field_highlight.is_none()
             {
                 None
             } else {
                 Some(
                     self.form_field_highlight
+                        .as_ref()
+                        .unwrap()
                         .iter()
                         .map(|(form_field_type, color)| {
                             (
@@ -692,6 +1051,30 @@ impl PdfRenderConfig {
                         })
                         .collect::<Vec<_>>(),
                 )
+            },
+            matrix: FS_MATRIX {
+                a: transformation_matrix[0][0],
+                b: transformation_matrix[0][1],
+                c: transformation_matrix[1][0],
+                d: transformation_matrix[1][1],
+                e: transformation_matrix[2][0],
+                f: transformation_matrix[2][1],
+            },
+
+            clipping: if let Some((left, top, right, bottom)) = self.clip_rect {
+                FS_RECTF {
+                    left: left as f32,
+                    top: top as f32,
+                    right: right as f32,
+                    bottom: bottom as f32,
+                }
+            } else {
+                FS_RECTF {
+                    left: 0.0,
+                    top: 0.0,
+                    right: output_width as f32,
+                    bottom: output_height as f32,
+                }
             },
             render_flags: render_flags as i32,
         }
@@ -705,13 +1088,19 @@ impl Default for PdfRenderConfig {
     }
 }
 
+/// Finalized rendering settings, ready to be passed to a Pdfium rendering function.
+/// Generated by calling [PdfRenderConfig::apply_to_page()].
 #[derive(Debug, Clone)]
 pub(crate) struct PdfRenderSettings {
     pub(crate) width: c_int,
     pub(crate) height: c_int,
     pub(crate) format: c_int,
     pub(crate) rotate: c_int,
+    pub(crate) do_clear_bitmap_before_rendering: bool,
+    pub(crate) clear_color: FPDF_DWORD,
     pub(crate) do_render_form_data: bool,
     pub(crate) form_field_highlight: Option<Vec<(c_int, (FPDF_DWORD, u8))>>,
+    pub(crate) matrix: FS_MATRIX,
+    pub(crate) clipping: FS_RECTF,
     pub(crate) render_flags: c_int,
 }

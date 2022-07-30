@@ -666,6 +666,16 @@ pub trait PdfiumLibraryBindings {
     );
 
     #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmapWithMatrix(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipping: *const FS_RECTF,
+        flags: c_int,
+    );
+
+    #[allow(non_snake_case)]
     fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]

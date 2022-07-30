@@ -75,6 +75,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.13 adds transformation functions to `PdfRenderConfig`, allowing a page to be optionally
+moved, scaled, rotated, and skewed during rendering; adds clipping support to `PdfRenderConfig`,
+allowing for rendering of only a portion of a page.
+
 Version 0.7.12 adds additional page rendering functions `PdfPage::render_into_bitmap()` and
 `PdfPage::render_into_bitmap_with_config()`. These functions offer higher performance as they
 allow re-using an existing `PdfBitmap` object rather than creating (and allocating memory for)
@@ -82,16 +86,6 @@ a new `PdfBitmap` on every page render.
 
 Version 0.7.11 adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
 alternative to the cross-platform `PdfBitmap::as_bytes()` function.
-
-Version 0.7.10 adds additional constructors to `PdfPageImageObject` that apply a specified
-width and/or height at object creation time.
-
-Version 0.7.9 adds retrieval of the list of image filters and the color space applied to a `PdfPageImageObject`.
-
-Version 0.7.8 adds image support to the `PdfPageImageObject` struct and additional convenience
-functions to `PdfFont` for loading fonts from files and readers.
-
-Version 0.7.7 adds the `thread_safe` crate feature. See the "Multithreading" section below.
  
 ## Binding to Pdfium
 
@@ -317,7 +311,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.12, 269 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.13, 270 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -329,12 +323,16 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.13: adds transformation and clipping functions to `PdfRenderConfig`; adds bindings for
+  `FPDF_RenderPageBitmapWithMatrix()`; deprecates `PdfRenderConfig::rotate_if_portait()`
+  in favour of the correctly-spelled `PdfRenderConfig::rotate_if_portrait()`. 
+  Deprecated items will be removed in release 0.9.0.
 * 0.7.12: adds `PdfPage::render_into_bitmap()` and `PdfPage::render_into_bitmap_with_config()`
   functions for higher performance; deprecates `PdfPage::get_bitmap()` in favour of `PdfPage::render()`;
   deprecates `PdfPage::get_bitmap_with_config()` in favour of `PdfPage::render_with_config()`;
   deprecates `PdfBitmapConfig` in favour of `PdfRenderConfig`; deprecates `PdfBitmap::render()`
-  since page rendering operations are now processed eagerly rather than lazily.
-  Deprecated items will be removed in release 0.9.0.
+  as the function is no longer necessary; deprecates `PdfRenderConfig::rotate_if_portait()`
+  to correct a typo in the function name. Deprecated items will be removed in release 0.9.0.
 * 0.7.11: adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
   alternative to the cross-platform `PdfBitmap::as_bytes()` function, thanks to an excellent
   contribution from <https://github.com/NyxCode>.

@@ -96,6 +96,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFBitmap_GetHeight()?;
         result.extern_FPDFBitmap_GetStride()?;
         result.extern_FPDF_RenderPageBitmap()?;
+        result.extern_FPDF_RenderPageBitmapWithMatrix()?;
         result.extern_FPDFAnnot_IsSupportedSubtype()?;
         result.extern_FPDFPage_CreateAnnot()?;
         result.extern_FPDFPage_GetAnnotCount()?;
@@ -1266,6 +1267,26 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_RenderPageBitmap\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::type_complexity)]
+    fn extern_FPDF_RenderPageBitmapWithMatrix(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                bitmap: FPDF_BITMAP,
+                page: FPDF_PAGE,
+                matrix: *const FS_MATRIX,
+                clipping: *const FS_RECTF,
+                flags: c_int,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_RenderPageBitmapWithMatrix\0") }
     }
 
     #[inline]
@@ -4654,6 +4675,23 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe {
             self.extern_FPDF_RenderPageBitmap().unwrap()(
                 bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
+            );
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmapWithMatrix(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipping: *const FS_RECTF,
+        flags: c_int,
+    ) {
+        unsafe {
+            self.extern_FPDF_RenderPageBitmapWithMatrix().unwrap()(
+                bitmap, page, matrix, clipping, flags,
             );
         }
     }

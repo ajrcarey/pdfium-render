@@ -8,6 +8,7 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use image::{DynamicImage, ImageBuffer};
+use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::c_int;
 
 #[cfg(target_arch = "wasm32")]
@@ -18,6 +19,9 @@ use web_sys::ImageData;
 
 #[cfg(target_arch = "wasm32")]
 use js_sys::Uint8Array;
+
+/// The device coordinate system when rendering or displaying an image.
+pub type Pixels = u16;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -91,6 +95,52 @@ impl PdfBitmapRotation {
             PdfBitmapRotation::Degrees270 => 3,
         }
     }
+
+    #[inline]
+    pub const fn as_degrees(&self) -> f32 {
+        match self {
+            PdfBitmapRotation::None => 0.0,
+            PdfBitmapRotation::Degrees90 => 90.0,
+            PdfBitmapRotation::Degrees180 => 180.0,
+            PdfBitmapRotation::Degrees270 => 270.0,
+        }
+    }
+
+    pub const DEGREES_90_AS_RADIANS: f32 = FRAC_PI_2;
+
+    pub const DEGREES_180_AS_RADIANS: f32 = PI;
+
+    pub const DEGREES_270_AS_RADIANS: f32 = FRAC_PI_2 + PI;
+
+    #[inline]
+    pub const fn as_radians(&self) -> f32 {
+        match self {
+            PdfBitmapRotation::None => 0.0,
+            PdfBitmapRotation::Degrees90 => Self::DEGREES_90_AS_RADIANS,
+            PdfBitmapRotation::Degrees180 => Self::DEGREES_180_AS_RADIANS,
+            PdfBitmapRotation::Degrees270 => Self::DEGREES_270_AS_RADIANS,
+        }
+    }
+
+    #[inline]
+    pub const fn as_radians_cos(&self) -> f32 {
+        match self {
+            PdfBitmapRotation::None => 1.0,
+            PdfBitmapRotation::Degrees90 => 0.0,
+            PdfBitmapRotation::Degrees180 => -1.0,
+            PdfBitmapRotation::Degrees270 => 0.0,
+        }
+    }
+
+    #[inline]
+    pub const fn as_radians_sin(&self) -> f32 {
+        match self {
+            PdfBitmapRotation::None => 0.0,
+            PdfBitmapRotation::Degrees90 => 1.0,
+            PdfBitmapRotation::Degrees180 => 0.0,
+            PdfBitmapRotation::Degrees270 => -1.0,
+        }
+    }
 }
 
 /// A bitmap image with a specific width and height.
@@ -111,8 +161,8 @@ impl<'a> PdfBitmap<'a> {
     /// Creates an empty [PdfBitmap] with a buffer capable of storing an image of the given
     /// pixel width and height in the given pixel format.
     pub fn empty(
-        width: u16,
-        height: u16,
+        width: Pixels,
+        height: Pixels,
         format: PdfBitmapFormat,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<PdfBitmap, PdfiumError> {
@@ -146,16 +196,16 @@ impl<'a> PdfBitmap<'a> {
         &self.handle
     }
 
-    /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap], in pixels.
+    /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
-    pub fn width(&self) -> u32 {
-        self.bindings.FPDFBitmap_GetWidth(self.handle) as u32
+    pub fn width(&self) -> Pixels {
+        self.bindings.FPDFBitmap_GetWidth(self.handle) as Pixels
     }
 
-    /// Returns the height of the image in the bitmap buffer backing this [PdfBitmap], in pixels.
+    /// Returns the height of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
-    pub fn height(&self) -> u32 {
-        self.bindings.FPDFBitmap_GetHeight(self.handle) as u32
+    pub fn height(&self) -> Pixels {
+        self.bindings.FPDFBitmap_GetHeight(self.handle) as Pixels
     }
 
     /// Returns the pixel format of the image in the bitmap buffer backing this [PdfBitmap].
@@ -176,9 +226,13 @@ impl<'a> PdfBitmap<'a> {
 
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing this [PdfBitmap].
     pub fn as_image(&mut self) -> DynamicImage {
-        ImageBuffer::from_raw(self.width(), self.height(), self.as_bytes().to_owned())
-            .map(DynamicImage::ImageRgba8)
-            .unwrap()
+        ImageBuffer::from_raw(
+            self.width() as u32,
+            self.height() as u32,
+            self.as_bytes().to_owned(),
+        )
+        .map(DynamicImage::ImageRgba8)
+        .unwrap()
     }
 
     // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmap::render() function in 0.9.0
@@ -221,8 +275,8 @@ impl<'a> PdfBitmap<'a> {
     pub fn as_image_data(&mut self) -> Result<ImageData, JsValue> {
         ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(self.as_bytes()),
-            self.width(),
-            self.height(),
+            self.width() as u32,
+            self.height() as u32,
         )
     }
 }

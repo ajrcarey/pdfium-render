@@ -2,12 +2,10 @@
 //! `PdfPages` collection.
 
 use crate::bindgen::{
-    FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_ANNOT, FPDF_BOOL,
-    FPDF_PAGE, FS_RECTF,
+    FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_BOOL, FPDF_PAGE, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
-use crate::color::PdfColor;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_boundaries::PdfPageBoundaries;
@@ -16,7 +14,7 @@ use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::prelude::PdfPageAnnotations;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 use std::os::raw::c_int;
 
 /// The internal coordinate system inside a [PdfDocument] is measured in Points, a
@@ -130,6 +128,15 @@ impl Div<f32> for PdfPoints {
     #[inline]
     fn div(self, rhs: f32) -> Self::Output {
         PdfPoints::new(self.value / rhs)
+    }
+}
+
+impl Neg for PdfPoints {
+    type Output = PdfPoints;
+
+    #[inline]
+    fn neg(self) -> Self::Output {
+        PdfPoints::new(-self.value)
     }
 }
 
@@ -520,20 +527,18 @@ impl<'a> PdfPage<'a> {
         height: u16,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
-        let settings = PdfRenderSettings {
-            width: width as i32,
-            height: height as i32,
-            format: PdfBitmapFormat::default().as_pdfium() as i32,
-            rotate: rotation.unwrap_or(PdfBitmapRotation::None).as_pdfium(),
-            do_render_form_data: true,
-            form_field_highlight: None,
-            render_flags: FPDF_ANNOT as i32,
-        };
-
         let mut bitmap =
             PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
 
-        self.render_into_bitmap_with_settings(&mut bitmap, settings)?;
+        let mut config = PdfRenderConfig::new()
+            .set_target_width(width)
+            .set_target_height(height);
+
+        if let Some(rotation) = rotation {
+            config = config.rotate(rotation, true);
+        }
+
+        self.render_into_bitmap_with_config(&mut bitmap, &config)?;
 
         Ok(bitmap)
     }
@@ -576,18 +581,15 @@ impl<'a> PdfPage<'a> {
         height: u16,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<(), PdfiumError> {
-        self.render_into_bitmap_with_settings(
-            bitmap,
-            PdfRenderSettings {
-                width: width as c_int,
-                height: height as c_int,
-                format: PdfBitmapFormat::default().as_pdfium() as c_int,
-                rotate: rotation.unwrap_or(PdfBitmapRotation::None).as_pdfium() as c_int,
-                do_render_form_data: false,
-                form_field_highlight: None,
-                render_flags: 0,
-            },
-        )
+        let mut config = PdfRenderConfig::new()
+            .set_target_width(width)
+            .set_target_height(height);
+
+        if let Some(rotation) = rotation {
+            config = config.rotate(rotation, true);
+        }
+
+        self.render_into_bitmap_with_config(bitmap, &config)
     }
 
     /// Renders this [PdfPage] into the given [PdfBitmap] using pixel dimensions, page rotation settings,
@@ -611,40 +613,43 @@ impl<'a> PdfPage<'a> {
     ) -> Result<(), PdfiumError> {
         let bitmap_handle = *bitmap.get_handle();
 
-        // Clear the bitmap buffer by setting every pixel to white.
+        if settings.do_clear_bitmap_before_rendering {
+            // Clear the bitmap buffer by setting every pixel to a known color.
 
-        self.bindings.FPDFBitmap_FillRect(
-            bitmap_handle,
-            0,
-            0,
-            settings.width,
-            settings.height,
-            PdfColor::SOLID_WHITE.as_pdfium_color(),
-        );
+            self.bindings.FPDFBitmap_FillRect(
+                bitmap_handle,
+                0,
+                0,
+                settings.width,
+                settings.height,
+                settings.clear_color,
+            );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            return Err(PdfiumError::PdfiumLibraryInternalError(error));
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
+                return Err(PdfiumError::PdfiumLibraryInternalError(error));
+            }
         }
 
-        // Render the PDF page into the bitmap buffer.
+        if settings.do_render_form_data {
+            // Render the PDF page into the bitmap buffer, ignoring any custom transformation matrix.
+            // (Custom transforms cannot be applied to the rendering of form fields.)
 
-        self.bindings.FPDF_RenderPageBitmap(
-            bitmap_handle,
-            self.handle,
-            0,
-            0,
-            settings.width,
-            settings.height,
-            settings.rotate,
-            settings.render_flags,
-        );
+            self.bindings.FPDF_RenderPageBitmap(
+                bitmap_handle,
+                self.handle,
+                0,
+                0,
+                settings.width,
+                settings.height,
+                settings.rotate,
+                settings.render_flags,
+            );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            return Err(PdfiumError::PdfiumLibraryInternalError(error));
-        }
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
+                return Err(PdfiumError::PdfiumLibraryInternalError(error));
+            }
 
-        if let Some(form) = self.get_document().form() {
-            if settings.do_render_form_data {
+            if let Some(form) = self.get_document().form() {
                 // Render user-supplied form data, if any, as an overlay on top of the page.
 
                 if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
@@ -675,6 +680,20 @@ impl<'a> PdfPage<'a> {
                 if let Some(error) = self.bindings.get_pdfium_last_error() {
                     return Err(PdfiumError::PdfiumLibraryInternalError(error));
                 }
+            }
+        } else {
+            // Render the PDF page into the bitmap buffer, applying any custom transformation matrix.
+
+            self.bindings.FPDF_RenderPageBitmapWithMatrix(
+                bitmap_handle,
+                self.handle,
+                &settings.matrix,
+                &settings.clipping,
+                settings.render_flags,
+            );
+
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
+                return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
         }
 
@@ -900,13 +919,13 @@ mod test {
         )?;
 
         for (index, page) in document.pages().iter().enumerate() {
-            page.render_into_bitmap_with_config(&mut bitmap, &render_config)?;
+            page.render_into_bitmap_with_config(&mut bitmap, &render_config)?; // Re-uses the same bitmap for rendering each page.
 
             bitmap
-                .as_image() // Converts the bitmap to an Image::DynamicImage...
-                .as_rgba8() // ... then converts it to an Image::Image ...
+                .as_image()
+                .as_rgba8()
                 .ok_or(PdfiumError::ImageError)?
-                .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg) // ... and saves it to a file.
+                .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg)
                 .map_err(|_| PdfiumError::ImageError)?;
         }
 

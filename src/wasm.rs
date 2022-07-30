@@ -3398,6 +3398,47 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmapWithMatrix(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipping: *const FS_RECTF,
+        flags: c_int,
+    ) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_RenderPageBitmapWithMatrix()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let ptr_matrix = state.copy_struct_to_pdfium(matrix);
+
+        let ptr_clipping = state.copy_struct_to_pdfium(clipping);
+
+        state.call(
+            "FPDF_RenderPageBitmapWithMatrix",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Array::of5(
+                &Self::js_value_from_bitmap(bitmap),
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_offset(ptr_matrix),
+                &Self::js_value_from_offset(ptr_clipping),
+                &JsValue::from(flags),
+            ))),
+        );
+
+        state.free(ptr_matrix);
+
+        state.free(ptr_clipping);
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_IsSupportedSubtype()");
 

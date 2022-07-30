@@ -510,10 +510,10 @@ pub trait PdfPageObjectCommon<'a> {
     /// * [PdfPageObjectCommon::skew_degrees()], [PdfPageObjectCommon::skew_radians()]: skews a [PdfPageObject]
     /// relative to its axes.
     ///
-    /// **The order in which transformations are applied to a page object is significant.**
+    /// **The order in which transformations are applied is significant.**
     /// For example, the result of rotating _then_ translating a page object may be vastly different
     /// from translating _then_ rotating the same page object. In general, to obtain the expected
-    /// results, transformations should be done in the following order:
+    /// results, transformations should be performed in the following order:
     /// * Scale and/or skew
     /// * Rotate
     /// * Translate
