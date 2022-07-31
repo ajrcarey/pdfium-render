@@ -570,7 +570,8 @@ impl<'a> PdfPage<'a> {
     /// and page rotation.
     ///
     /// It is the responsibility of the caller to ensure the given pixel width and height
-    /// correctly maintain the page's aspect ratio.
+    /// correctly maintain the page's aspect ratio. The size of the buffer backing the given bitmap
+    /// must be sufficiently large to hold the rendered image or an error will be returned.
     ///
     /// See also [PdfPage::render_into_bitmap_with_config()], which calculates the correct pixel dimensions,
     /// rotation settings, and rendering options to apply from a [PdfRenderConfig] object.
@@ -594,6 +595,9 @@ impl<'a> PdfPage<'a> {
 
     /// Renders this [PdfPage] into the given [PdfBitmap] using pixel dimensions, page rotation settings,
     /// and rendering options configured in the given [PdfRenderConfig].
+    ///
+    /// The size of the buffer backing the given bitmap must be sufficiently large to hold the
+    /// rendered image or an error will be returned.
     #[inline]
     pub fn render_into_bitmap_with_config(
         &self,
@@ -604,8 +608,8 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Renders this [PdfPage] into the given [PdfBitmap] using the given [PdfRenderSettings].
-    /// The size of the buffer backing the bitmap must be sufficiently large to hold the rendered image
-    /// or an error will be returned.
+    /// The size of the buffer backing the given bitmap must be sufficiently large to hold
+    /// the rendered image or an error will be returned.
     pub(crate) fn render_into_bitmap_with_settings(
         &self,
         bitmap: &mut PdfBitmap,

@@ -76,7 +76,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 ## What's new
 
 Version 0.7.13 adds transformation functions to `PdfRenderConfig`, allowing a page to be optionally
-moved, scaled, rotated, and skewed during rendering; adds clipping support to `PdfRenderConfig`,
+moved, scaled, rotated, and skewed during rendering, and adds clipping support to `PdfRenderConfig`,
 allowing for rendering of only a portion of a page.
 
 Version 0.7.12 adds additional page rendering functions `PdfPage::render_into_bitmap()` and
