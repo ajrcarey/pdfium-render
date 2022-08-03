@@ -1086,7 +1086,6 @@ impl PdfRenderConfig {
                 e: transformation_matrix[2][0],
                 f: transformation_matrix[2][1],
             },
-
             clipping: if let Some((left, top, right, bottom)) = self.clip_rect {
                 FS_RECTF {
                     left: left as f32,
