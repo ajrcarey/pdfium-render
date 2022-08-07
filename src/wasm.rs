@@ -141,7 +141,7 @@ impl PdfiumRenderWasmState {
         // window.wasmTable global variable. Scan this for function signatures that take 4 arguments.
 
         let table: WebAssembly::Table =
-            Reflect::get(&window().unwrap(), &JsValue::from("wasmTable"))
+            Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
                 .map_err(|_| "Window.wasmTable not defined")?
                 .into();
 
@@ -691,7 +691,7 @@ impl PdfiumRenderWasmState {
         );
 
         let table: WebAssembly::Table =
-            Reflect::get(&window().unwrap(), &JsValue::from("wasmTable"))
+            Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
                 .map_err(PdfiumError::JsSysErrorRetrievingFunctionTable)?
                 .into();
 
@@ -735,7 +735,7 @@ impl PdfiumRenderWasmState {
 
         if let Some(value) = self.take(format!("function_{}", pdfium_function_index).as_str()) {
             let table: WebAssembly::Table =
-                Reflect::get(&window().unwrap(), &JsValue::from("wasmTable"))
+                Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
                     .map_err(PdfiumError::JsSysErrorRetrievingFunctionTable)?
                     .into();
 
