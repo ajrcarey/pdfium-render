@@ -24,7 +24,6 @@ use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use wasm_bindgen::intern;
 use wasm_bindgen::prelude::*;
-use web_sys::window;
 
 lazy_static! {
     static ref PDFIUM_RENDER_WASM_STATE: RwLock<PdfiumRenderWasmState> =
@@ -138,11 +137,11 @@ impl PdfiumRenderWasmState {
         // https://github.com/ajrcarey/pdfium-render/issues/8.
 
         // Pdfium's function table is exported by Emscripten directly into the browser's
-        // window.wasmTable global variable. Scan this for function signatures that take 4 arguments.
+        // self.wasmTable global variable. Scan this for function signatures that take 4 arguments.
 
         let table: WebAssembly::Table =
-            Reflect::get(&window().unwrap(), &JsValue::from("wasmTable"))
-                .map_err(|_| "Window.wasmTable not defined")?
+            Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
+                .map_err(|_| "self.wasmTable not defined")?
                 .into();
 
         for index in 1..table.length() {
@@ -677,7 +676,7 @@ impl PdfiumRenderWasmState {
         local_function_name: &str,
     ) -> Result<(), PdfiumError> {
         // Pdfium's function table is exported by Emscripten directly into the browser's
-        // window.wasmTable global variable. Replace the function entry with the given index
+        // self.wasmTable global variable. Replace the function entry with the given index
         // with the function in this module with the given name.
 
         log::debug!(
@@ -691,7 +690,7 @@ impl PdfiumRenderWasmState {
         );
 
         let table: WebAssembly::Table =
-            Reflect::get(&window().unwrap(), &JsValue::from("wasmTable"))
+            Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
                 .map_err(PdfiumError::JsSysErrorRetrievingFunctionTable)?
                 .into();
 
@@ -735,7 +734,7 @@ impl PdfiumRenderWasmState {
 
         if let Some(value) = self.take(format!("function_{}", pdfium_function_index).as_str()) {
             let table: WebAssembly::Table =
-                Reflect::get(&window().unwrap(), &JsValue::from("wasmTable"))
+                Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
                     .map_err(PdfiumError::JsSysErrorRetrievingFunctionTable)?
                     .into();
 
