@@ -75,6 +75,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.14 adds compatibility with web workers to the WASM implementation of `pdfium-render`,
+thanks to an excellent contribution from <https://github.com/NyxCode>.
+
 Version 0.7.13 adds transformation functions to `PdfRenderConfig`, allowing a page to be optionally
 moved, scaled, rotated, and skewed during rendering, and adds clipping support to `PdfRenderConfig`,
 allowing for rendering of only a portion of a page.
@@ -84,9 +87,6 @@ Version 0.7.12 adds additional page rendering functions `PdfPage::render_into_bi
 allow re-using an existing `PdfBitmap` object rather than creating (and allocating memory for)
 a new `PdfBitmap` on every page render.
 
-Version 0.7.11 adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
-alternative to the cross-platform `PdfBitmap::as_bytes()` function.
- 
 ## Binding to Pdfium
 
 `pdfium-render` does not include Pdfium itself. You have several options:
@@ -311,7 +311,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.13, 270 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.14, 270 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -323,6 +323,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.14: fixes a bug in the WASM implementation of `FPDF_StructElement_GetStringAttribute()`
+  and adds compatibility with web workers to the WASM implementation,
+  thanks to an excellent contribution from <https://github.com/NyxCode>.
 * 0.7.13: adds transformation and clipping functions to `PdfRenderConfig`; adds bindings for
   `FPDF_RenderPageBitmapWithMatrix()`; deprecates `PdfRenderConfig::rotate_if_portait()`
   in favour of the correctly-spelled `PdfRenderConfig::rotate_if_portrait()`. 

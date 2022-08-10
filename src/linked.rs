@@ -1,12 +1,11 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
-    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
-    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
-    FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
+    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::{c_void, CString};
@@ -292,7 +291,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDFSignatureObj_GetContents(
         &self,
         signature: FPDF_SIGNATURE,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         length: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDFSignatureObj_GetContents(signature, buffer, length) }
@@ -325,7 +324,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDFSignatureObj_GetReason(
         &self,
         signature: FPDF_SIGNATURE,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         length: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDFSignatureObj_GetReason(signature, buffer, length) }
@@ -381,7 +380,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_StructElement_GetAltText(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDF_StructElement_GetAltText(struct_element, buffer, buflen) }
@@ -392,7 +391,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_StructElement_GetID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDF_StructElement_GetID(struct_element, buffer, buflen) }
@@ -403,7 +402,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_StructElement_GetLang(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDF_StructElement_GetLang(struct_element, buffer, buflen) }
@@ -414,14 +413,16 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_StructElement_GetStringAttribute(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        attr_name: FPDF_BYTESTRING,
-        buffer: *mut std::os::raw::c_void,
+        attr_name: &str,
+        buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let c_attr_name = CString::new(attr_name).unwrap();
+
         unsafe {
             crate::bindgen::FPDF_StructElement_GetStringAttribute(
                 struct_element,
-                attr_name,
+                c_attr_name.as_ptr(),
                 buffer,
                 buflen,
             )
@@ -439,7 +440,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_StructElement_GetType(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDF_StructElement_GetType(struct_element, buffer, buflen) }
@@ -450,7 +451,7 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     fn FPDF_StructElement_GetTitle(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        buffer: *mut std::os::raw::c_void,
+        buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { crate::bindgen::FPDF_StructElement_GetTitle(struct_element, buffer, buflen) }

@@ -1,12 +1,11 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
-    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
-    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
-    FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
+    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -136,12 +135,13 @@ impl PdfiumRenderWasmState {
         // function signatures. For more information, see:
         // https://github.com/ajrcarey/pdfium-render/issues/8.
 
-        // Pdfium's function table is exported by Emscripten directly into the browser's
-        // self.wasmTable global variable. Scan this for function signatures that take 4 arguments.
+        // Pdfium's function table is exported by Emscripten directly into the wasmTable
+        // global variable available to each web worker running in the browser.
+        // Scan the function table for function signatures that take 4 arguments.
 
         let table: WebAssembly::Table =
             Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
-                .map_err(|_| "self.wasmTable not defined")?
+                .map_err(|_| "wasmTable global variable not defined")?
                 .into();
 
         for index in 1..table.length() {
@@ -675,10 +675,6 @@ impl PdfiumRenderWasmState {
         pdfium_function_index: usize,
         local_function_name: &str,
     ) -> Result<(), PdfiumError> {
-        // Pdfium's function table is exported by Emscripten directly into the browser's
-        // self.wasmTable global variable. Replace the function entry with the given index
-        // with the function in this module with the given name.
-
         log::debug!(
             "pdfium-render::PdfiumRenderWasmState::patch_pdfium_function_table(): entering"
         );
@@ -688,6 +684,11 @@ impl PdfiumRenderWasmState {
             pdfium_function_index,
             local_function_name
         );
+
+        // Pdfium's function table is exported by Emscripten directly into the wasmTable
+        // global variable available to each web worker running in the browser.
+        // Replace the function entry with the given index with the function in this module
+        // with the given name.
 
         let table: WebAssembly::Table =
             Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
@@ -2605,13 +2606,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     fn FPDF_StructElement_GetStringAttribute(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        attr_name: FPDF_BYTESTRING,
+        attr_name: &str,
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetStringAttribute(): entering");
 
         let state = PdfiumRenderWasmState::lock();
+
+        let c_attr_name = CString::new(attr_name).unwrap();
+
+        let attr_name_ptr = state.copy_bytes_to_pdfium(&c_attr_name.into_bytes_with_nul());
 
         let buffer_length = buflen as usize;
 
@@ -2634,10 +2639,12 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 Some(vec![
                     JsFunctionArgumentType::Pointer,
                     JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
                     JsFunctionArgumentType::Number,
                 ]),
-                Some(&JsValue::from(Array::of3(
+                Some(&JsValue::from(Array::of4(
                     &Self::js_value_from_struct_element(struct_element),
+                    &Self::js_value_from_offset(attr_name_ptr),
                     &Self::js_value_from_offset(buffer_ptr),
                     &JsValue::from_f64(buffer_length as f64),
                 ))),
@@ -2650,6 +2657,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         }
 
         state.free(buffer_ptr);
+
+        state.free(attr_name_ptr);
 
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetStringAttribute(): leaving");
 

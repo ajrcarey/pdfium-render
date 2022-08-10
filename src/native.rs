@@ -4356,14 +4356,16 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     fn FPDF_StructElement_GetStringAttribute(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
-        attr_name: FPDF_BYTESTRING,
+        attr_name: &str,
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let c_attr_name = CString::new(attr_name).unwrap();
+
         unsafe {
             self.extern_FPDF_StructElement_GetStringAttribute().unwrap()(
                 struct_element,
-                attr_name,
+                c_attr_name.as_ptr(),
                 buffer,
                 buflen,
             )
