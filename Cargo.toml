@@ -20,7 +20,7 @@ doctest = false
 [dependencies]
 bitflags = "^1"
 bytes = "^1"
-image = ">= 0.24.0" # DynamicImage trait definitions changed between 0.23.14 and 0.24.0, require at least version 0.24.0
+image = ">= 0.24.0" # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we expect at least version 0.24.0
 iter_tools = "^0"
 lazy_static = "^1"
 log = "^0"
