@@ -65,10 +65,10 @@ pub trait PdfiumLibraryBindings {
 
     /// Converts from a C-style boolean integer to a Rust `bool`.
     ///
-    /// Assumes `PdfiumLibraryBindings::TRUE()` indicates `true` and any other value indicates `false`.
+    /// Assumes `PdfiumLibraryBindings::FALSE()` indicates `false` and any other value indicates `true`.
     #[inline]
     fn is_true(&self, bool: FPDF_BOOL) -> bool {
-        bool == self.TRUE()
+        bool != self.FALSE()
     }
 
     /// Converts the given Rust `bool` into a Pdfium `FPDF_BOOL`.
@@ -1899,5 +1899,24 @@ pub trait PdfiumLibraryBindings {
             // assume success.
             _ => None,
         }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use crate::prelude::*;
+
+    #[test]
+    fn test_is_true() -> Result<(), PdfiumError> {
+        let pdfium = Pdfium::new(
+            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+                .or_else(|_| Pdfium::bind_to_system_library())?,
+        );
+
+        assert!(!pdfium.get_bindings().is_true(0));
+        assert!(pdfium.get_bindings().is_true(1));
+        assert!(pdfium.get_bindings().is_true(-1));
+
+        Ok(())
     }
 }

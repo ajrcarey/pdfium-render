@@ -323,9 +323,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
-* 0.7.14: fixes a bug in the WASM implementation of `FPDF_StructElement_GetStringAttribute()`
-  and adds compatibility with web workers to the WASM implementation,
-  thanks to an excellent contribution from <https://github.com/NyxCode>.
+* 0.7.14: fixes a bug in the WASM implementation of `FPDF_StructElement_GetStringAttribute()`;
+  adds compatibility with web workers to the WASM implementation, thanks to an excellent contribution
+  from <https://github.com/NyxCode>.
 * 0.7.13: adds transformation and clipping functions to `PdfRenderConfig`; adds bindings for
   `FPDF_RenderPageBitmapWithMatrix()`; deprecates `PdfRenderConfig::rotate_if_portait()`
   in favour of the correctly-spelled `PdfRenderConfig::rotate_if_portrait()`. 
