@@ -23,7 +23,7 @@ pub fn main() -> Result<(), PdfiumError> {
     // In production code, you would actually want to check the results, rather
     // than just unwrapping them :)
 
-    // First, create a set of shared settings that we'll apply to each page in the
+    // First, we create a set of shared settings that we'll apply to each page in the
     // sample file when rendering. Sharing the same rendering configuration is a good way
     // to ensure homogenous output across all pages in the document.
 

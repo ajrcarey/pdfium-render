@@ -19,11 +19,11 @@ from scratch.
                 .or_else(|_| Pdfium::bind_to_system_library())?,
         );
 
-        // Open the PDF document...
+        // Load the document...
 
         let document = pdfium.load_pdf_from_file(path, password)?;
 
-        // ... set rendering options that will apply to all pages...
+        // ... set rendering options that will be applied to all pages...
 
         let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
@@ -34,8 +34,8 @@ from scratch.
 
         for (index, page) in document.pages().iter().enumerate() {
             page.render_with_config(&render_config)?
-                .as_image() // Renders this page to an Image::DynamicImage...
-                .as_rgba8() // ... then converts it to an Image::Image ...
+                .as_image() // Renders this page to an image::DynamicImage...
+                .as_rgba8() // ... then converts it to an image::Image...
                 .ok_or(PdfiumError::ImageError)?
                 .save_with_format(
                     format!("test-page-{}.jpg", index), 
@@ -325,7 +325,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 * 0.7.14: fixes a bug in the WASM implementation of `FPDF_StructElement_GetStringAttribute()`;
   pins required version of `image` crate to at least 0.24.0 or later to avoid incompatibility between
-  the `DynamicImage` trait definitions in 0.23.x and 0.24.x; adds compatibility with web workers
+  the `image::DynamicImage` trait definitions in 0.23.x and 0.24.x; adds compatibility with web workers
   to the WASM implementation, thanks to an excellent contribution from <https://github.com/NyxCode>.
 * 0.7.13: adds transformation and clipping functions to `PdfRenderConfig`; adds bindings for
   `FPDF_RenderPageBitmapWithMatrix()`; deprecates `PdfRenderConfig::rotate_if_portait()`
@@ -335,8 +335,7 @@ If you need a binding to a Pdfium function that is not currently available, just
   functions for higher performance; deprecates `PdfPage::get_bitmap()` in favour of `PdfPage::render()`;
   deprecates `PdfPage::get_bitmap_with_config()` in favour of `PdfPage::render_with_config()`;
   deprecates `PdfBitmapConfig` in favour of `PdfRenderConfig`; deprecates `PdfBitmap::render()`
-  as the function is no longer necessary; deprecates `PdfRenderConfig::rotate_if_portait()`
-  to correct a typo in the function name. Deprecated items will be removed in release 0.9.0.
+  as the function is no longer necessary. Deprecated items will be removed in release 0.9.0.
 * 0.7.11: adds the new WASM-specific `PdfBitmap::as_array()` function as a higher performance
   alternative to the cross-platform `PdfBitmap::as_bytes()` function, thanks to an excellent
   contribution from <https://github.com/NyxCode>.

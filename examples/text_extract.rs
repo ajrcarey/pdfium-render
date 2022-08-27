@@ -7,12 +7,12 @@ pub fn main() -> Result<(), PdfiumError> {
         Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
             .or_else(|_| Pdfium::bind_to_system_library())?,
     )
-    .load_pdf_from_file("test/text-test.pdf", None)?
+    .load_pdf_from_file("test/form-test.pdf", None)?
     .pages()
     .iter()
     .enumerate()
     .for_each(|(index, page)| {
-        // ... output the text on the page to the console.
+        // For each page in the document, output the images on the page to files.
 
         println!("=============== Page {} ===============", index);
 

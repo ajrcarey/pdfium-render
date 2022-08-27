@@ -10,9 +10,10 @@ Simple examples demonstrating how to use `pdfium-render` on both native and WASM
 * `fonts.rs`: outputs to the console information about the 14 built-in PDF fonts retrieved from Pdfium. Run this example via `cargo run --example fonts`.
 * `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered. Run this example via `cargo run --example form`.
 * `image.rs`: generates a new document by placing image objects onto a blank page, saving the new document to `test/image-test.pdf`. Run this example via `cargo run --example image`.
+* `image_extract.rs`: extracts and outputs the images on each page in `test/image-test.pdf` to files. Run this example via `cargo run --example image_extract`.
 * `objects.rs`: outputs information about each page object on each page in `test/export-test.pdf` to the console. Run this example via `cargo run --example objects`.
 * `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`. Run this example via `cargo run --example path`.
-* `text.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console. Run this example via `cargo run --example text`.
+* `text_extract.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console. Run this example via `cargo run --example text_extract`.
 * `thread_safe.rs`: explains in comments `pdfium-render`'s approach to ensuring thread-safe access to Pdfium, and demonstrates using a parallel iterator to process multiple rendering tasks on separate threads. Run this example via `cargo run --example thread_safe`.
 * `tile.rs`: generates a new document by tiling pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf`, saving the new document to `test/tile-test.pdf`. Run this example via `cargo run --example tile`.
 * `wasm.rs`: demonstrates `pdfium-render` running in a browser. This requires some manual bundling of the correct resources; read on.
