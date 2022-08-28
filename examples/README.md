@@ -2,6 +2,7 @@
 
 Simple examples demonstrating how to use `pdfium-render` on both native and WASM compilation targets.
 
+* `annotations.rs`: iterates over every annotation on every page in `test/annotation-test.pdf`, outputting information about each annotation. Run this example via `cargo run --example annotations`.
 * `chars.rs`: iterates over the individual characters in a text object to determine the bounding boxes of each word in the text object. Run this example via `cargo run --example chars`.
 * `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline. Run this example via `cargo run --example descenders`.
 * `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`. Run this example via `cargo run --example concat`.

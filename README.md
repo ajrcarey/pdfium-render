@@ -63,8 +63,9 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. These examples demonstrate:
 
 * Rendering pages to bitmaps.
-* Text extraction.
+* Text and image extraction.
 * Page object introspection.
+* Page annotation introspection.
 * Creation of new documents and new pages.
 * Creation of page objects for text, paths, and bitmaps.
 * Document concatenation.
@@ -74,6 +75,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Compiling to WASM.
 
 ## What's new
+
+Version 0.7.15 adds additional functions for working with page annotations, including retrieval
+of annotation names, comments, timestamps, and text and character ranges linked to annotations.
 
 Version 0.7.14 adds compatibility with web workers to the WASM implementation of `pdfium-render`,
 thanks to an excellent contribution from <https://github.com/NyxCode>.
@@ -323,6 +327,11 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.15: adds `PdfPageAnnotationCommon::name()`, `PdfPageAnnotationCommon::contents()`,
+  `PdfPageAnnotationCommon::timestamp()` functions for working with annotations;
+  adds `PdfPageText::for_annotation()` and `PdfPageText::chars_for_annotation()` for more easily
+  extracting text and characters associated with annotations; adds `examples/annotations.rs` and
+  `examples/image_extract.rs`; renames `examples/text.rs` to `examples/text_extract.rs`.
 * 0.7.14: fixes a bug in the WASM implementation of `FPDF_StructElement_GetStringAttribute()`;
   pins required version of `image` crate to at least 0.24.0 or later to avoid incompatibility between
   the `image::DynamicImage` trait definitions in 0.23.x and 0.24.x; adds compatibility with web workers

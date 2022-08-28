@@ -4,6 +4,8 @@
 use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::page::{PdfPage, PdfRect};
+use crate::page_annotation::PdfPageAnnotation;
+use crate::page_annotation::PdfPageAnnotationCommon;
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
@@ -87,17 +89,35 @@ impl<'a> PdfPageText<'a> {
         &self,
         object: &PdfPageTextObject,
     ) -> Result<PdfPageTextChars, PdfiumError> {
-        let bounds = object.bounds()?;
+        self.chars_inside_rect(object.bounds()?)
+            .map_err(|_| PdfiumError::NoCharsInPageObject)
+    }
 
-        let tolerance_x = bounds.width() / 2.0;
-        let tolerance_y = bounds.height() / 2.0;
-        let center_height = bounds.bottom + tolerance_y;
+    /// Returns a collection of all the `PdfPageTextChar` characters in the given [PdfPageAnnotation].
+    ///
+    /// The return result will be empty if the given [PdfPageAnnotation] is not attached to the
+    /// containing [PdfPage].
+    #[inline]
+    pub fn chars_for_annotation(
+        &self,
+        annotation: &PdfPageAnnotation,
+    ) -> Result<PdfPageTextChars, PdfiumError> {
+        self.chars_inside_rect(annotation.bounds()?)
+            .map_err(|_| PdfiumError::NoCharsInAnnotation)
+    }
+
+    /// Returns a collection of all the `PdfPageTextChar` characters that lie within the bounds of
+    /// the given [PdfRect] in the containing [PdfPage].
+    pub fn chars_inside_rect(&self, rect: PdfRect) -> Result<PdfPageTextChars, PdfiumError> {
+        let tolerance_x = rect.width() / 2.0;
+        let tolerance_y = rect.height() / 2.0;
+        let center_height = rect.bottom + tolerance_y;
 
         let chars = self.chars();
 
         match (
-            chars.get_char_near_point(bounds.left, tolerance_x, center_height, tolerance_y),
-            chars.get_char_near_point(bounds.right, tolerance_x, center_height, tolerance_y),
+            chars.get_char_near_point(rect.left, tolerance_x, center_height, tolerance_y),
+            chars.get_char_near_point(rect.right, tolerance_x, center_height, tolerance_y),
         ) {
             (Some(start), Some(end)) => Ok(PdfPageTextChars::new(
                 self,
@@ -105,7 +125,7 @@ impl<'a> PdfPageText<'a> {
                 (end.index() - start.index() + 1) as i32,
                 self.bindings,
             )),
-            _ => Err(PdfiumError::NoCharsInPageObject),
+            _ => Err(PdfiumError::NoCharsInRect),
         }
     }
 
@@ -121,7 +141,7 @@ impl<'a> PdfPageText<'a> {
 
     /// Returns all characters that lie within the bounds of the given [PdfRect] in the
     /// containing [PdfPage], in the order in which they are defined in the document,
-    /// concatenated into a single string
+    /// concatenated into a single string.
     ///
     /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in
@@ -180,6 +200,15 @@ impl<'a> PdfPageText<'a> {
     /// Returns all characters assigned to the given [PdfPageTextObject] in this [PdfPageText] object,
     /// concatenated into a single string.
     pub fn for_object(&self, object: &PdfPageTextObject) -> String {
+        // Retrieving the string value from Pdfium is a two-step operation. First, we call
+        // FPDFTextObj_GetText() with a null buffer; this will retrieve the length of
+        // the text in bytes, assuming the page object exists. If the length is zero,
+        // then there is no text.
+
+        // If the length is non-zero, then we reserve a byte buffer of the given
+        // length and call FPDFTextObj_GetText() again with a pointer to the buffer;
+        // this will write the text for the page object into the buffer.
+
         let buffer_length = self.bindings.FPDFTextObj_GetText(
             *object.get_object_handle(),
             self.handle,
@@ -205,6 +234,20 @@ impl<'a> PdfPageText<'a> {
         assert_eq!(result, buffer_length);
 
         get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
+    }
+
+    /// Returns all characters that lie within the bounds of the given [PdfPageAnnotation] in the
+    /// containing [PdfPage], in the order in which they are defined in the document,
+    /// concatenated into a single string.
+    ///
+    /// In complex custom layouts, the order in which characters are defined in the document
+    /// and the order in which they appear visually during rendering (and thus the order in
+    /// which they are read by a user) may not necessarily match.
+    #[inline]
+    pub fn for_annotation(&self, annotation: &PdfPageAnnotation) -> Result<String, PdfiumError> {
+        let bounds = annotation.bounds()?;
+
+        Ok(self.inside_rect(bounds))
     }
 }
 

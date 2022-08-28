@@ -1700,7 +1700,7 @@ impl DynamicPdfiumBindings {
     fn extern_FPDFAnnot_HasKey(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL>,
+        Symbol<unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: FPDF_BYTESTRING) -> FPDF_BOOL>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFAnnot_HasKey\0") }
@@ -1711,7 +1711,9 @@ impl DynamicPdfiumBindings {
     fn extern_FPDFAnnot_GetValueType(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE>,
+        Symbol<
+            unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: FPDF_BYTESTRING) -> FPDF_OBJECT_TYPE,
+        >,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFAnnot_GetValueType\0") }
@@ -1725,7 +1727,7 @@ impl DynamicPdfiumBindings {
         Symbol<
             unsafe extern "C" fn(
                 annot: FPDF_ANNOTATION,
-                key: &str,
+                key: FPDF_BYTESTRING,
                 value: FPDF_WIDESTRING,
             ) -> FPDF_BOOL,
         >,
@@ -1742,7 +1744,7 @@ impl DynamicPdfiumBindings {
         Symbol<
             unsafe extern "C" fn(
                 annot: FPDF_ANNOTATION,
-                key: &str,
+                key: FPDF_BYTESTRING,
                 buffer: *mut FPDF_WCHAR,
                 buflen: c_ulong,
             ) -> c_ulong,
@@ -1758,7 +1760,11 @@ impl DynamicPdfiumBindings {
         &self,
     ) -> Result<
         Symbol<
-            unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: &str, value: *mut f32) -> FPDF_BOOL,
+            unsafe extern "C" fn(
+                annot: FPDF_ANNOTATION,
+                key: FPDF_BYTESTRING,
+                value: *mut f32,
+            ) -> FPDF_BOOL,
         >,
         libloading::Error,
     > {
@@ -1805,7 +1811,9 @@ impl DynamicPdfiumBindings {
     fn extern_FPDFAnnot_GetLinkedAnnot(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: &str) -> FPDF_ANNOTATION>,
+        Symbol<
+            unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: FPDF_BYTESTRING) -> FPDF_ANNOTATION,
+        >,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFAnnot_GetLinkedAnnot\0") }
@@ -4974,13 +4982,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL {
-        unsafe { self.extern_FPDFAnnot_HasKey().unwrap()(annot, key) }
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAnnot_HasKey().unwrap()(annot, c_key.as_ptr()) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE {
-        unsafe { self.extern_FPDFAnnot_GetValueType().unwrap()(annot, key) }
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAnnot_GetValueType().unwrap()(annot, c_key.as_ptr()) }
     }
 
     #[inline]
@@ -4991,7 +5003,9 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         key: &str,
         value: FPDF_WIDESTRING,
     ) -> FPDF_BOOL {
-        unsafe { self.extern_FPDFAnnot_SetStringValue().unwrap()(annot, key, value) }
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAnnot_SetStringValue().unwrap()(annot, c_key.as_ptr(), value) }
     }
 
     #[inline]
@@ -5003,7 +5017,11 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { self.extern_FPDFAnnot_GetStringValue().unwrap()(annot, key, buffer, buflen) }
+        let c_key = CString::new(key).unwrap();
+
+        unsafe {
+            self.extern_FPDFAnnot_GetStringValue().unwrap()(annot, c_key.as_ptr(), buffer, buflen)
+        }
     }
 
     #[inline]
@@ -5014,7 +5032,9 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         key: &str,
         value: *mut f32,
     ) -> FPDF_BOOL {
-        unsafe { self.extern_FPDFAnnot_GetNumberValue().unwrap()(annot, key, value) }
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAnnot_GetNumberValue().unwrap()(annot, c_key.as_ptr(), value) }
     }
 
     #[inline]
@@ -5043,7 +5063,9 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetLinkedAnnot(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_ANNOTATION {
-        unsafe { self.extern_FPDFAnnot_GetLinkedAnnot().unwrap()(annot, key) }
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAnnot_GetLinkedAnnot().unwrap()(annot, c_key.as_ptr()) }
     }
 
     #[inline]

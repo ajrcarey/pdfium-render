@@ -465,8 +465,27 @@ impl<'a> PdfPageAnnotation<'a> {
 
 /// Functionality common to all [PdfPageAnnotation] objects, regardless of their [PdfPageAnnotationType].
 pub trait PdfPageAnnotationCommon {
+    /// Returns the name of this [PdfPageAnnotation], if any. This is a text string uniquely identifying
+    /// this annotation among all the annotations attached to the containing page.
+    fn name(&self) -> Option<String>;
+
     /// Returns the bounding box of this [PdfPageAnnotation].
     fn bounds(&self) -> Result<PdfRect, PdfiumError>;
+
+    /// Returns the text to be displayed for this [PdfPageAnnotation], or, if this type of annotation
+    /// does not display text, an alternate description of the annotation's contents in human-readable
+    /// form. In either case this text is useful when extracting the document's contents in support
+    /// of accessibility to users with disabilities or for other purposes.
+    fn contents(&self) -> Option<String>;
+
+    /// Returns the name of the creator of this [PdfPageAnnotation], if any.
+    fn creator(&self) -> Option<String>;
+
+    /// Returns the date and time when this [PdfPageAnnotation] was originally created, if any.
+    fn creation_date(&self) -> Option<String>;
+
+    /// Returns the date and time when this [PdfPageAnnotation] was last modified, if any.
+    fn modification_date(&self) -> Option<String>;
 }
 
 // Blanket implementation for all PdfPageAnnotation types.
@@ -476,8 +495,33 @@ where
     T: PdfPageAnnotationPrivate,
 {
     #[inline]
+    fn name(&self) -> Option<String> {
+        self.name_impl()
+    }
+
+    #[inline]
     fn bounds(&self) -> Result<PdfRect, PdfiumError> {
         self.bounds_impl()
+    }
+
+    #[inline]
+    fn contents(&self) -> Option<String> {
+        self.contents_impl()
+    }
+
+    #[inline]
+    fn creator(&self) -> Option<String> {
+        self.creator_impl()
+    }
+
+    #[inline]
+    fn creation_date(&self) -> Option<String> {
+        self.creation_date_impl()
+    }
+
+    #[inline]
+    fn modification_date(&self) -> Option<String> {
+        self.modification_date_impl()
     }
 }
 

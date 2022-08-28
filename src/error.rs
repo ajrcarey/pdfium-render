@@ -53,6 +53,8 @@ pub enum PdfiumError {
     TextSegmentIndexOutOfBounds,
     CharIndexOutOfBounds,
     NoCharsInPageObject,
+    NoCharsInAnnotation,
+    NoCharsInRect,
     ImageObjectFilterIndexOutOfBounds,
     ImageObjectFilterIndexInBoundsButFilterUndefined,
     UnknownPdfColorSpace,

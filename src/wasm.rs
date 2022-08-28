@@ -4503,7 +4503,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(buffer_ptr);
         state.free(key_ptr);
 
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetAP(): leaving");
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetStringValue(): leaving");
 
         result as c_ulong
     }
@@ -4755,9 +4755,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page: FPDF_PAGE,
         point: *const FS_POINTF,
     ) -> FPDF_ANNOTATION {
-        log::debug!(
-            "pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldAtPoint(): entering"
-        );
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldAtPoint()");
 
         let state = PdfiumRenderWasmState::lock();
 
