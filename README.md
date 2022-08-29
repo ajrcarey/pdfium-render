@@ -77,7 +77,8 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 ## What's new
 
 Version 0.7.15 adds additional functions for working with page annotations, including retrieval
-of annotation names, comments, timestamps, and text and character ranges linked to annotations.
+of annotation names, author names, comments, creation and modification timestamps,
+and text and character ranges linked to annotations.
 
 Version 0.7.14 adds compatibility with web workers to the WASM implementation of `pdfium-render`,
 thanks to an excellent contribution from <https://github.com/NyxCode>.
@@ -328,7 +329,8 @@ If you need a binding to a Pdfium function that is not currently available, just
 ## Version history
 
 * 0.7.15: adds `PdfPageAnnotationCommon::name()`, `PdfPageAnnotationCommon::contents()`,
-  `PdfPageAnnotationCommon::timestamp()` functions for working with annotations;
+  `PdfPageAnnotationCommon::author()`, `PdfPageAnnotationCommon::creation_date()`,
+  and `PdfPageAnnotationCommon::modification_date()` functions for working with annotations;
   adds `PdfPageText::for_annotation()` and `PdfPageText::chars_for_annotation()` for more easily
   extracting text and characters associated with annotations; adds `examples/annotations.rs` and
   `examples/image_extract.rs`; renames `examples/text.rs` to `examples/text_extract.rs`.

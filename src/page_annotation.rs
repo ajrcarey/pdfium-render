@@ -312,6 +312,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Strikeout]
     /// * [PdfPageAnnotationType::Text]
     /// * [PdfPageAnnotationType::Underline]
+    #[inline]
     pub fn is_supported(&self) -> bool {
         !self.is_unsupported()
     }
