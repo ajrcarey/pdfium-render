@@ -187,7 +187,7 @@ impl<'a> PdfPageObjects<'a> {
     /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     pub fn create_text_object(
         &mut self,
@@ -229,7 +229,7 @@ impl<'a> PdfPageObjects<'a> {
     /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     pub fn create_path_object_line(
         &mut self,
@@ -253,6 +253,44 @@ impl<'a> PdfPageObjects<'a> {
         self.add_path_object(object)
     }
 
+    /// Creates a new [PdfPagePathObject] for the given cubic Bézier curve, with the given
+    /// stroke settings applied. The new path object will be added to this [PdfPageObjects] collection
+    /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_path_object_bezier(
+        &mut self,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        control1_x: PdfPoints,
+        control1_y: PdfPoints,
+        control2_x: PdfPoints,
+        control2_y: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_bezier_from_bindings(
+            self.bindings,
+            x1,
+            y1,
+            x2,
+            y2,
+            control1_x,
+            control1_y,
+            control2_x,
+            control2_y,
+            stroke_color,
+            stroke_width,
+        )?;
+
+        self.add_path_object(object)
+    }
+
     /// Creates a new [PdfPagePathObject] for the given rectangle, with the given
     /// fill and stroke settings applied. Both the stroke color and the stroke width must be
     /// provided for the rectangle to be stroked. The new path object will be added to
@@ -260,7 +298,7 @@ impl<'a> PdfPageObjects<'a> {
     /// [PdfPageObject] wrapper.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     pub fn create_path_object_rect(
         &mut self,
@@ -287,7 +325,7 @@ impl<'a> PdfPageObjects<'a> {
     /// [PdfPageObject] wrapper.
     ///
     /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     pub fn create_path_object_circle(
         &mut self,

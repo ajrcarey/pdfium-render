@@ -76,6 +76,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.16 adds additional convenience functions for quickly creating stand-alone
+cubic Bézier path page objects and adding them to a mutable collection of page objects.
+
 Version 0.7.15 adds additional functions for working with page annotations, including retrieval
 of annotation names, author names, comments, creation and modification timestamps,
 and text and character ranges linked to annotations.
@@ -86,11 +89,6 @@ thanks to an excellent contribution from <https://github.com/NyxCode>.
 Version 0.7.13 adds transformation functions to `PdfRenderConfig`, allowing a page to be optionally
 moved, scaled, rotated, and skewed during rendering, and adds clipping support to `PdfRenderConfig`,
 allowing for rendering of only a portion of a page.
-
-Version 0.7.12 adds additional page rendering functions `PdfPage::render_into_bitmap()` and
-`PdfPage::render_into_bitmap_with_config()`. These functions offer higher performance as they
-allow re-using an existing `PdfBitmap` object rather than creating (and allocating memory for)
-a new `PdfBitmap` on every page render.
 
 ## Binding to Pdfium
 
@@ -316,7 +314,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.14, 270 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.16, 270 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -328,6 +326,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.16: adds `PdfPageObjects::create_path_object_bezier()` and `PdfPageObjectPath::new_bezier()`
+  convenience functions; corrects some typos in documentation; removes `WebSysWindowObjectNotAvailable`
+  variant from `PdfiumError` enum, as this variant is no longer referenced since 0.7.14.
 * 0.7.15: adds `PdfPageAnnotationCommon::name()`, `PdfPageAnnotationCommon::contents()`,
   `PdfPageAnnotationCommon::author()`, `PdfPageAnnotationCommon::creation_date()`,
   and `PdfPageAnnotationCommon::modification_date()` functions for working with annotations;

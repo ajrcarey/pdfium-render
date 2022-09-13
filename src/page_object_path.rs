@@ -108,9 +108,10 @@ impl Default for PdfPathFillMode {
 /// fall out of scope.
 ///
 /// The simplest way to create a path object that is immediately attached to a page is to call
-/// one of the `PdfPageObjects::create_path_object_*()` functions to create lines, rectangles,
-/// circles, and ellipses. Alternatively you can create a detached path object using one of the
-/// following functions, but you must add the object to a containing `PdfPageObjects` collection manually.
+/// one of the `PdfPageObjects::create_path_object_*()` functions to create lines, cubic Bézier curves,
+/// rectangles, circles, and ellipses. Alternatively you can create a detached path object using
+/// one of the following functions, but you must add the object to a containing `PdfPageObjects`
+/// collection manually.
 ///
 /// * [PdfPagePathObject::new()]: creates an empty detached path object. Segments can be added to the
 /// path by sequentially calling one or more of the [PdfPagePathObject::move_to()],
@@ -121,6 +122,7 @@ impl Default for PdfPathFillMode {
 /// and [PdfPagePathObject::ellipse_to()] functions, which create the desired shapes by
 /// constructing closed sub-paths from other path segments.
 /// * [PdfPagePathObject::new_line()]: creates a detached path object initialized with a single straight line.
+/// * [PdfPagePathObject::new_bezier()]: creates a detached path object initialized with a single cubic Bézier curve.
 /// * [PdfPagePathObject::new_rect()]: creates a detached path object initialized with a rectangular path.
 /// * [PdfPagePathObject::new_circle()]: creates a detached path object initialized with a circular path,
 /// filling the given rectangle.
@@ -131,7 +133,7 @@ impl Default for PdfPathFillMode {
 /// * [PdfPagePathObject::new_ellipse_at()]: creates a detached path object initialized with an elliptical path,
 /// centered at a particular origin point with given horizontal and vertical radii.
 ///
-/// The detached path object can later be attached to a page by using the
+/// The detached path object can later be attached to a page by calling the
 /// `PdfPageObjects::add_path_object()` function.
 pub struct PdfPagePathObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
@@ -280,7 +282,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// `PdfPageObjects::add_path_object()` function.
     ///
     /// The new path will be created with a line with the given start and end coordinates,
-    /// with the given stroke settings applied.
+    /// and with the given stroke settings applied.
     #[inline]
     pub fn new_line(
         document: &'a PdfDocument<'a>,
@@ -297,6 +299,71 @@ impl<'a> PdfPagePathObject<'a> {
             y1,
             x2,
             y2,
+            stroke_color,
+            stroke_width,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[inline]
+    pub(crate) fn new_bezier_from_bindings(
+        bindings: &'a dyn PdfiumLibraryBindings,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        control1_x: PdfPoints,
+        control1_y: PdfPoints,
+        control2_x: PdfPoints,
+        control2_y: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<Self, PdfiumError> {
+        let mut result = Self::new_from_bindings(
+            bindings,
+            x1,
+            y1,
+            Some(stroke_color),
+            Some(stroke_width),
+            None,
+        )?;
+
+        result.bezier_to(x2, y2, control1_x, control1_y, control2_x, control2_y)?;
+
+        Ok(result)
+    }
+
+    /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
+    /// will not be rendered until it is added to a `PdfPage` using the
+    /// `PdfPageObjects::add_path_object()` function.
+    ///
+    /// The new path will be created with a cubic Bézier curve with the given start, end,
+    /// and control point coordinates, and with the given stroke settings applied.
+    #[allow(clippy::too_many_arguments)]
+    #[inline]
+    pub fn new_bezier(
+        document: &'a PdfDocument<'a>,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        control1_x: PdfPoints,
+        control1_y: PdfPoints,
+        control2_x: PdfPoints,
+        control2_y: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<Self, PdfiumError> {
+        Self::new_bezier_from_bindings(
+            document.get_bindings(),
+            x1,
+            y1,
+            x2,
+            y2,
+            control1_x,
+            control1_y,
+            control2_x,
+            control2_y,
             stroke_color,
             stroke_width,
         )

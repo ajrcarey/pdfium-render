@@ -81,9 +81,6 @@ pub enum PdfiumError {
     /// to a standard Rust u8.
     UnableToConvertPdfiumColorValueToRustu8(std::num::TryFromIntError),
 
-    /// The browser's built-in `Window` object could not be retrieved.
-    WebSysWindowObjectNotAvailable,
-
     /// An error was returned when attempting to use the browser's built-in `fetch()` API.
     #[cfg(target_arch = "wasm32")]
     WebSysFetchError(JsValue),
