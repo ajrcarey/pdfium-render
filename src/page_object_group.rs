@@ -46,7 +46,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
     /// Creates a new, empty [PdfPageGroupObject] that can be used to hold any page objects
     /// on the given [PdfPage].
-    pub fn empty(page: &'a PdfPage<'a>) -> Self {
+    pub fn empty(page: &PdfPage<'a>) -> Self {
         Self::from_pdfium(
             *page.get_handle(),
             page.get_bindings(),
@@ -79,7 +79,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// given [PdfPage].
     #[inline]
     pub fn from_vec(
-        page: &'a PdfPage<'a>,
+        page: &PdfPage<'a>,
         mut objects: Vec<PdfPageObject<'a>>,
     ) -> Result<Self, PdfiumError> {
         Self::from_slice(page, objects.as_mut_slice())
@@ -88,7 +88,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Creates a new [PdfPageGroupObject] that includes the given page objects on the
     /// given [PdfPage].
     pub fn from_slice(
-        page: &'a PdfPage<'a>,
+        page: &PdfPage<'a>,
         objects: &mut [PdfPageObject<'a>],
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::from_pdfium(

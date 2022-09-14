@@ -76,6 +76,8 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.17 relaxes some unnecessarily restrictive lifetime bounds in `PdfPageObjectPath`.
+
 Version 0.7.16 adds additional convenience functions for quickly creating stand-alone
 cubic Bézier path page objects and adding them to a mutable collection of page objects.
 
@@ -314,7 +316,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.16, 270 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.17, 270 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -326,6 +328,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.17: relaxes some unnecessarily restrictive lifetime bounds in `PdfPageObjectPath`. 
 * 0.7.16: adds `PdfPageObjects::create_path_object_bezier()` and `PdfPageObjectPath::new_bezier()`
   convenience functions; corrects some typos in documentation; removes `WebSysWindowObjectNotAvailable`
   variant from `PdfiumError` enum, as this variant is no longer referenced since 0.7.14.

@@ -177,7 +177,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// constructing closed sub-paths from other path segments.
     #[inline]
     pub fn new(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         x: PdfPoints,
         y: PdfPoints,
         stroke_color: Option<PdfColor>,
@@ -285,7 +285,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// and with the given stroke settings applied.
     #[inline]
     pub fn new_line(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         x1: PdfPoints,
         y1: PdfPoints,
         x2: PdfPoints,
@@ -342,7 +342,7 @@ impl<'a> PdfPagePathObject<'a> {
     #[allow(clippy::too_many_arguments)]
     #[inline]
     pub fn new_bezier(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         x1: PdfPoints,
         y1: PdfPoints,
         x2: PdfPoints,
@@ -400,7 +400,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// provided for the rectangle to be stroked.
     #[inline]
     pub fn new_rect(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         rect: PdfRect,
         stroke_color: Option<PdfColor>,
         stroke_width: Option<PdfPoints>,
@@ -446,7 +446,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// provided for the circle to be stroked.
     #[inline]
     pub fn new_circle(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         rect: PdfRect,
         stroke_color: Option<PdfColor>,
         stroke_width: Option<PdfPoints>,
@@ -494,7 +494,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// and the stroke width must be provided for the circle to be stroked.
     #[inline]
     pub fn new_circle_at(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         center_x: PdfPoints,
         center_y: PdfPoints,
         radius: PdfPoints,
@@ -544,7 +544,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// provided for the ellipse to be stroked.
     #[inline]
     pub fn new_ellipse(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         rect: PdfRect,
         stroke_color: Option<PdfColor>,
         stroke_width: Option<PdfPoints>,
@@ -595,7 +595,7 @@ impl<'a> PdfPagePathObject<'a> {
     #[allow(clippy::too_many_arguments)]
     #[inline]
     pub fn new_ellipse_at(
-        document: &'a PdfDocument<'a>,
+        document: &PdfDocument<'a>,
         center_x: PdfPoints,
         center_y: PdfPoints,
         x_radius: PdfPoints,

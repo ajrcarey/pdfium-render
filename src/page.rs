@@ -465,7 +465,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns an immutable collection of all the page objects on this [PdfPage].
     #[inline]
-    pub fn objects(&self) -> &PdfPageObjects {
+    pub fn objects(&self) -> &PdfPageObjects<'a> {
         if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
             && self.is_content_regeneration_required
         {
