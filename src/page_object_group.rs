@@ -48,8 +48,8 @@ impl<'a> PdfPageGroupObject<'a> {
     /// on the given [PdfPage].
     pub fn empty(page: &PdfPage<'a>) -> Self {
         Self::from_pdfium(
-            *page.get_handle(),
-            page.get_bindings(),
+            *page.handle(),
+            page.bindings(),
             page.content_regeneration_strategy()
                 == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
         )
@@ -62,8 +62,8 @@ impl<'a> PdfPageGroupObject<'a> {
         F: FnMut(&PdfPageObject) -> bool,
     {
         let mut result = Self::from_pdfium(
-            *page.get_handle(),
-            page.get_bindings(),
+            *page.handle(),
+            page.bindings(),
             page.content_regeneration_strategy()
                 == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
         );
@@ -92,8 +92,8 @@ impl<'a> PdfPageGroupObject<'a> {
         objects: &mut [PdfPageObject<'a>],
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::from_pdfium(
-            *page.get_handle(),
-            page.get_bindings(),
+            *page.handle(),
+            page.bindings(),
             page.content_regeneration_strategy()
                 == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
         );

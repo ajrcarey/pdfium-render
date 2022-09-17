@@ -1,5 +1,4 @@
-//! Defines the [PdfBitmap] struct, a lazily-generated bitmap rendering of a single
-//! `PdfPage`.
+//! Defines the [PdfBitmap] struct, a bitmap image with a specific width and height.
 
 use crate::bindgen::{
     FPDFBitmap_BGR, FPDFBitmap_BGRA, FPDFBitmap_BGRx, FPDFBitmap_Gray, FPDFBitmap_Unknown,
@@ -192,8 +191,14 @@ impl<'a> PdfBitmap<'a> {
 
     /// Returns the internal `FPDF_BITMAP` handle for this [PdfBitmap].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_BITMAP {
+    pub(crate) fn handle(&self) -> &FPDF_BITMAP {
         &self.handle
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfBitmap].
+    #[inline]
+    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap].

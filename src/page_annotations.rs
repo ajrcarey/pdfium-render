@@ -28,6 +28,12 @@ impl<'a> PdfPageAnnotations<'a> {
         }
     }
 
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotations] collection.
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+
     /// Returns the total number of annotations that have been added to the containing `PdfPage`.
     #[inline]
     pub fn len(&self) -> PdfPageAnnotationIndex {

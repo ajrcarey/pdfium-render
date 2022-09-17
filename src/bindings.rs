@@ -97,13 +97,13 @@ pub trait PdfiumLibraryBindings {
     /// Returns Pdfium's internal `FPDF_DOCUMENT` handle for the given [PdfDocument].
     #[inline]
     fn get_handle_from_document(&self, document: &PdfDocument) -> FPDF_DOCUMENT {
-        *document.get_handle()
+        *document.handle()
     }
 
     /// Returns Pdfium's internal `FPDF_PAGE` handle for the given [PdfPage].
     #[inline]
     fn get_handle_from_page(&self, page: &PdfPage) -> FPDF_PAGE {
-        *page.get_handle()
+        *page.handle()
     }
 
     /// Returns Pdfium's internal `FPDF_PAGEOBJECT` handle for the given [PdfPageObject].

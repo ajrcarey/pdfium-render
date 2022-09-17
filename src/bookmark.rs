@@ -106,7 +106,7 @@ impl<'a> PdfBookmark<'a> {
     pub fn first_child(&self) -> Option<PdfBookmark<'a>> {
         let handle = self
             .bindings
-            .FPDFBookmark_GetFirstChild(*self.document.get_handle(), self.handle);
+            .FPDFBookmark_GetFirstChild(*self.document.handle(), self.handle);
 
         if handle.is_null() {
             None
@@ -125,7 +125,7 @@ impl<'a> PdfBookmark<'a> {
     pub fn next_sibling(&self) -> Option<PdfBookmark<'a>> {
         let handle = self
             .bindings
-            .FPDFBookmark_GetNextSibling(*self.document.get_handle(), self.handle);
+            .FPDFBookmark_GetNextSibling(*self.document.handle(), self.handle);
 
         if handle.is_null() {
             None

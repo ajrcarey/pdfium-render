@@ -7,7 +7,7 @@ use crate::page_text::PdfPageText;
 /// A single rectangular text segment in a `PdfPageTextSegments` collection.
 ///
 /// Pdfium automatically merges smaller text boxes into larger text segments if all
-/// enclosed characters are on the same line and share the same font settings. The number of
+/// enclosed characters share the same baseline and the same font settings. The number of
 /// individual `PdfPageTextObject` objects on the page may be much larger than the number of
 /// text segments.
 pub struct PdfPageTextSegment<'a> {

@@ -148,9 +148,9 @@ impl<'a> PdfFont<'a> {
     pub fn new_built_in(document: &'a PdfDocument<'a>, font: PdfFontBuiltin) -> Self {
         let mut result = Self::from_pdfium(
             document
-                .get_bindings()
-                .FPDFText_LoadStandardFont(*document.get_handle(), font.to_pdf_font_name()),
-            document.get_bindings(),
+                .bindings()
+                .FPDFText_LoadStandardFont(*document.handle(), font.to_pdf_font_name()),
+            document.bindings(),
         );
 
         result.built_in = Some(font);
@@ -528,10 +528,10 @@ impl<'a> PdfFont<'a> {
         font_type: c_uint,
         is_cid_font: bool,
     ) -> Result<Self, PdfiumError> {
-        let bindings = document.get_bindings();
+        let bindings = document.bindings();
 
         let handle = bindings.FPDFText_LoadFont(
-            *document.get_handle(),
+            *document.handle(),
             font_data.as_ptr(),
             font_data.len() as c_uint,
             font_type as c_int,
@@ -560,8 +560,14 @@ impl<'a> PdfFont<'a> {
 
     /// Returns the internal `FPDF_FONT` handle for this [PdfFont].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_FONT {
+    pub(crate) fn handle(&self) -> &FPDF_FONT {
         &self.handle
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfFont].
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the name of this [PdfFont].

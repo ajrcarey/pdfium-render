@@ -528,13 +528,13 @@ where
 
 impl<'a> PdfPageAnnotationPrivate for PdfPageAnnotation<'a> {
     #[inline]
-    fn get_handle(&self) -> &FPDF_ANNOTATION {
-        self.unwrap_as_trait().get_handle()
+    fn handle(&self) -> &FPDF_ANNOTATION {
+        self.unwrap_as_trait().handle()
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.unwrap_as_trait().get_bindings()
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.unwrap_as_trait().bindings()
     }
 }
 
@@ -542,6 +542,6 @@ impl<'a> Drop for PdfPageAnnotation<'a> {
     /// Closes this [PdfPageAnnotation], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.get_bindings().FPDFPage_CloseAnnot(*self.get_handle());
+        self.bindings().FPDFPage_CloseAnnot(*self.handle());
     }
 }

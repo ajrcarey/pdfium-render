@@ -76,6 +76,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.18 adds convenience functions for returning the bindings used by `PdfDocument`,
+`PdfPage`, `PdfBitmap`, `PdfFont`, and various other interfaces, thanks to an excellent
+contribution from <https://github.com/LU15W1R7H>.
+
 Version 0.7.17 relaxes some unnecessarily restrictive lifetime bounds in `PdfPageObjectPath`.
 
 Version 0.7.16 adds additional convenience functions for quickly creating stand-alone
@@ -84,13 +88,6 @@ cubic Bézier path page objects and adding them to a mutable collection of page 
 Version 0.7.15 adds additional functions for working with page annotations, including retrieval
 of annotation names, author names, comments, creation and modification timestamps,
 and text and character ranges linked to annotations.
-
-Version 0.7.14 adds compatibility with web workers to the WASM implementation of `pdfium-render`,
-thanks to an excellent contribution from <https://github.com/NyxCode>.
-
-Version 0.7.13 adds transformation functions to `PdfRenderConfig`, allowing a page to be optionally
-moved, scaled, rotated, and skewed during rendering, and adds clipping support to `PdfRenderConfig`,
-allowing for rendering of only a portion of a page.
 
 ## Binding to Pdfium
 
@@ -316,7 +313,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.17, 270 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.18, 270 (73%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -328,6 +325,10 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.18: adds convenience `bindings()` accessor functions to `PdfDocument`, `PdfPage`, `PdfBitmap`,
+`PdfFont`, and various other interfaces, thanks to an excellent contribution from
+<https://github.com/LU15W1R7H>; deprecates `Pdfium::get_bindings()` in favour of
+`Pdfium::bindings()` for consistency.
 * 0.7.17: relaxes some unnecessarily restrictive lifetime bounds in `PdfPageObjectPath`. 
 * 0.7.16: adds `PdfPageObjects::create_path_object_bezier()` and `PdfPageObjectPath::new_bezier()`
   convenience functions; corrects some typos in documentation; removes `WebSysWindowObjectNotAvailable`

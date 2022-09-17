@@ -41,7 +41,7 @@ impl<'a> PdfPageTextSegments<'a> {
     #[inline]
     pub fn len(&self) -> PdfPageTextSegmentIndex {
         self.bindings
-            .FPDFText_CountRects(*self.text.get_handle(), 0, self.characters) as usize
+            .FPDFText_CountRects(*self.text.handle(), 0, self.characters) as usize
     }
 
     /// Returns `true` if this [PdfPageTextSegments] collection is empty.
@@ -66,7 +66,7 @@ impl<'a> PdfPageTextSegments<'a> {
         let mut top = 0.0;
 
         let result = self.bindings.FPDFText_GetRect(
-            *self.text.get_handle(),
+            *self.text.handle(),
             index as c_int,
             &mut left,
             &mut top,

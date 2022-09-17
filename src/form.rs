@@ -197,10 +197,16 @@ impl<'a> PdfForm<'a> {
         }
     }
 
-    /// Returns the internal FPDF_FORMHANDLE handle for this [PdfForm].
+    /// Returns the internal `FPDF_FORMHANDLE` handle for this [PdfForm].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_FORMHANDLE {
+    pub(crate) fn handle(&self) -> &FPDF_FORMHANDLE {
         &self.form_handle
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfForm].
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the [PdfFormType] of this [PdfForm].

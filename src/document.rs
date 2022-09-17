@@ -149,15 +149,15 @@ impl<'a> PdfDocument<'a> {
         }
     }
 
-    /// Returns the internal FPDF_DOCUMENT handle for this [PdfDocument].
+    /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfDocument].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_DOCUMENT {
+    pub(crate) fn handle(&self) -> &FPDF_DOCUMENT {
         &self.handle
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfDocument].
     #[inline]
-    pub(crate) fn get_bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
     }
 

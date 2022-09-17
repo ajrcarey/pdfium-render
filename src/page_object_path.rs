@@ -185,7 +185,7 @@ impl<'a> PdfPagePathObject<'a> {
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
         Self::new_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             x,
             y,
             stroke_color,
@@ -294,7 +294,7 @@ impl<'a> PdfPagePathObject<'a> {
         stroke_width: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         Self::new_line_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             x1,
             y1,
             x2,
@@ -355,7 +355,7 @@ impl<'a> PdfPagePathObject<'a> {
         stroke_width: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         Self::new_bezier_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             x1,
             y1,
             x2,
@@ -407,7 +407,7 @@ impl<'a> PdfPagePathObject<'a> {
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
         Self::new_rect_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             rect,
             stroke_color,
             stroke_width,
@@ -453,7 +453,7 @@ impl<'a> PdfPagePathObject<'a> {
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
         Self::new_circle_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             rect,
             stroke_color,
             stroke_width,
@@ -503,7 +503,7 @@ impl<'a> PdfPagePathObject<'a> {
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
         Self::new_circle_at_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             center_x,
             center_y,
             radius,
@@ -551,7 +551,7 @@ impl<'a> PdfPagePathObject<'a> {
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
         Self::new_ellipse_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             rect,
             stroke_color,
             stroke_width,
@@ -605,7 +605,7 @@ impl<'a> PdfPagePathObject<'a> {
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
         Self::new_ellipse_at_from_bindings(
-            document.get_bindings(),
+            document.bindings(),
             center_x,
             center_y,
             x_radius,

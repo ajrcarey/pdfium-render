@@ -200,7 +200,7 @@ impl<'a> PdfPageObjects<'a> {
         let mut object = PdfPageTextObject::new_from_handles(
             self.document_handle,
             text,
-            *font.get_handle(),
+            *font.handle(),
             font_size,
             self.bindings,
         )?;
@@ -638,8 +638,8 @@ impl<'a> PdfPageObjects<'a> {
         source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
     ) -> Result<(), PdfiumError> {
         self.take_object_range_from_handles(
-            *source.get_handle(),
-            source.get_document(),
+            *source.handle(),
+            source.document(),
             source_page_object_range,
         )
     }

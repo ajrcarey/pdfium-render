@@ -49,8 +49,14 @@ impl<'a> PdfPageText<'a> {
 
     /// Returns the internal `FPDF_TEXTPAGE` handle for this [PdfPageText].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_TEXTPAGE {
+    pub(crate) fn handle(&self) -> &FPDF_TEXTPAGE {
         &self.handle
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageText].
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the total number of characters in all text segments in the containing [PdfPage].

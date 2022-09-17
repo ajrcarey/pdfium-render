@@ -157,12 +157,31 @@ impl Pdfium {
         path
     }
 
-    /// Creates a new Pdfium object from the given external pdfium library bindings.
+    /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
     #[inline]
     pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
         bindings.FPDF_InitLibrary();
 
         Self { bindings }
+    }
+
+    // TODO: AJRC - 17/9/22 - remove deprecated Pdfium::get_bindings() function in 0.9.0
+    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
+    #[deprecated(
+        since = "0.7.18",
+        note = "This function has been renamed. Use the Pdfium::bindings() function instead."
+    )]
+    #[doc(hidden)]
+    #[inline]
+    pub fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.bindings.as_ref()
+    }
+
+    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
+    #[inline]
+    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.bindings.as_ref()
     }
 
     /// Attempts to open a [PdfDocument] from the given byte buffer.
@@ -344,11 +363,6 @@ impl Pdfium {
         } else {
             Ok(PdfDocument::from_pdfium(handle, self.bindings.as_ref()))
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
-    pub fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings.as_ref()
     }
 }
 

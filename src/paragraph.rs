@@ -93,8 +93,8 @@ impl<'a> PdfStyledString<'a> {
             "does_match_object_styling()? {} ==? {}, {:?} ==? {:?}, {} ==? {}, {} ==? {}, {} ==? {}",
             self.font_size().value,
             other_font_size.value,
-            *self.font().get_handle(),
-            *other_font.get_handle(),
+            *self.font().handle(),
+            *other_font.handle(),
             self.font().is_all_caps(),
             other_font.is_all_caps(),
             self.font().is_small_caps(),
@@ -109,7 +109,7 @@ impl<'a> PdfStyledString<'a> {
 
         let this_font = self.font();
 
-        if *this_font.get_handle() != *other_font.get_handle() {
+        if *this_font.handle() != *other_font.handle() {
             return false;
         }
 

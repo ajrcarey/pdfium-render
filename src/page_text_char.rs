@@ -48,7 +48,7 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn unicode_value(&self) -> u32 {
         self.bindings
-            .FPDFText_GetUnicode(*self.text.get_handle(), self.index) as u32
+            .FPDFText_GetUnicode(*self.text.handle(), self.index) as u32
     }
 
     /// Returns Rust's Unicode `char` representation for this character, if available.
@@ -93,7 +93,7 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn unscaled_font_size(&self) -> PdfPoints {
         PdfPoints::new(
             self.bindings
-                .FPDFText_GetFontSize(*self.text.get_handle(), self.index) as f32,
+                .FPDFText_GetFontSize(*self.text.handle(), self.index) as f32,
         )
     }
 
@@ -111,7 +111,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut flags = 0;
 
         let buffer_length = self.bindings.FPDFText_GetFontInfo(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             std::ptr::null_mut(),
             0,
@@ -130,7 +130,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = self.bindings.FPDFText_GetFontInfo(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             buffer.as_mut_ptr() as *mut c_void,
             buffer_length,
@@ -162,7 +162,7 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn font_weight(&self) -> Option<PdfFontWeight> {
         PdfFontWeight::from_pdfium(
             self.bindings
-                .FPDFText_GetFontWeight(*self.text.get_handle(), self.index),
+                .FPDFText_GetFontWeight(*self.text.handle(), self.index),
         )
     }
 
@@ -293,7 +293,7 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
         PdfPageTextRenderMode::from_pdfium(
             self.bindings
-                .FPDFText_GetTextRenderMode(*self.text.get_handle(), self.index) as u32,
+                .FPDFText_GetTextRenderMode(*self.text.handle(), self.index) as u32,
         )
     }
 
@@ -308,7 +308,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut a = 0;
 
         if self.bindings.is_true(self.bindings.FPDFText_GetFillColor(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             &mut r,
             &mut g,
@@ -341,7 +341,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut a = 0;
 
         if self.bindings.is_true(self.bindings.FPDFText_GetStrokeColor(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             &mut r,
             &mut g,
@@ -374,7 +374,7 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn angle_radians(&self) -> Result<f32, PdfiumError> {
         let result = self
             .bindings
-            .FPDFText_GetCharAngle(*self.text.get_handle(), self.index);
+            .FPDFText_GetCharAngle(*self.text.handle(), self.index);
 
         if result == -1.0 {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -398,7 +398,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut top = 0.0;
 
         let result = self.bindings.FPDFText_GetCharBox(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             &mut left,
             &mut right,
@@ -430,11 +430,9 @@ impl<'a> PdfPageTextChar<'a> {
             bottom: 0.0,
         };
 
-        let result = self.bindings.FPDFText_GetLooseCharBox(
-            *self.text.get_handle(),
-            self.index,
-            &mut bounds,
-        );
+        let result =
+            self.bindings
+                .FPDFText_GetLooseCharBox(*self.text.handle(), self.index, &mut bounds);
 
         PdfRect::from_pdfium_as_result(result, bounds, self.bindings)
     }
@@ -451,7 +449,7 @@ impl<'a> PdfPageTextChar<'a> {
         };
 
         if self.bindings.is_true(self.bindings.FPDFText_GetMatrix(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             &mut matrix,
         )) {
@@ -613,7 +611,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut y = 0.0;
 
         if self.bindings.is_true(self.bindings.FPDFText_GetCharOrigin(
-            *self.text.get_handle(),
+            *self.text.handle(),
             self.index,
             &mut x,
             &mut y,

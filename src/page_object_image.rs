@@ -66,7 +66,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// to scale the page object to a specific width and/or height at the time the object is created.
     #[inline]
     pub fn new(document: &PdfDocument<'a>, image: DynamicImage) -> Result<Self, PdfiumError> {
-        Self::new_from_handle(*document.get_handle(), image, document.get_bindings())
+        Self::new_from_handle(*document.handle(), image, document.bindings())
     }
 
     // Takes a raw FPDF_DOCUMENT handle to avoid cascading lifetime problems
@@ -144,8 +144,7 @@ impl<'a> PdfPageImageObject<'a> {
         width: PdfPoints,
         height: PdfPoints,
     ) -> Result<Self, PdfiumError> {
-        let mut result =
-            Self::new_from_handle(*document.get_handle(), image, document.get_bindings())?;
+        let mut result = Self::new_from_handle(*document.handle(), image, document.bindings())?;
 
         result.scale(width.value as f64, height.value as f64)?;
 
@@ -165,12 +164,12 @@ impl<'a> PdfPageImageObject<'a> {
     pub fn get_processed_image(&self, document: &PdfDocument) -> Result<DynamicImage, PdfiumError> {
         self.get_image_from_bitmap_handle(match self.page_handle {
             Some(page_handle) => self.bindings.FPDFImageObj_GetRenderedBitmap(
-                *document.get_handle(),
+                *document.handle(),
                 page_handle,
                 self.object_handle,
             ),
             None => self.bindings.FPDFImageObj_GetRenderedBitmap(
-                *document.get_handle(),
+                *document.handle(),
                 std::ptr::null_mut::<fpdf_page_t__>(),
                 self.object_handle,
             ),
@@ -245,7 +244,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         if !self
             .bindings
-            .FPDFBitmap_SetBuffer(*bitmap.get_handle(), image.as_bytes())
+            .FPDFBitmap_SetBuffer(*bitmap.handle(), image.as_bytes())
         {
             return Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
@@ -256,7 +255,7 @@ impl<'a> PdfPageImageObject<'a> {
             std::ptr::null_mut::<FPDF_PAGE>(),
             0,
             self.object_handle,
-            *bitmap.get_handle(),
+            *bitmap.handle(),
         )) {
             Ok(())
         } else {

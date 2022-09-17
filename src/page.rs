@@ -279,8 +279,7 @@ impl PdfPageOrientation {
 /// then regenerating the content after every change is inefficient; it is faster to stage
 /// all changes first, then regenerate the page's content just once. In this case,
 /// changing the content regeneration strategy for a [PdfPage] can improve performance,
-/// but you must be careful not to forget to commit your changes before closing
-/// or reloading the page.
+/// but you must be careful not to forget to commit your changes before the [PdfPage] moves out of scope.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfPageContentRegenerationStrategy {
     /// `pdfium-render` will call the [PdfPage::regenerate_content()] function on any
@@ -302,9 +301,10 @@ pub enum PdfPageContentRegenerationStrategy {
 /// In addition to its own intrinsic properties, a [PdfPage] serves as the entry point
 /// to all object collections related to a single page in a document.
 /// These collections include:
-/// * [PdfPage::annotations()], all the user annotations attached to the [PdfPage].
-/// * [PdfPage::boundaries()], all the boundary boxes relating to the [PdfPage].
-/// * [PdfPage::objects()], all the displayable objects on the [PdfPage].
+/// * [PdfPage::annotations()], an immutable collection of all the user annotations attached to the [PdfPage].
+/// * [PdfPage::boundaries()], an immutable collection of the boundary boxes relating to the [PdfPage].
+/// * [PdfPage::objects()], an immutable collection of all the displayable objects on the [PdfPage].
+/// * [PdfPage::objects_mut()], a mutable collection of all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {
     handle: FPDF_PAGE,
     label: Option<String>,
@@ -330,7 +330,7 @@ impl<'a> PdfPage<'a> {
             document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             is_content_regeneration_required: false,
-            objects: PdfPageObjects::from_pdfium(*document.get_handle(), handle, bindings),
+            objects: PdfPageObjects::from_pdfium(*document.handle(), handle, bindings),
             annotations: PdfPageAnnotations::from_pdfium(handle, bindings),
             bindings,
         }
@@ -338,19 +338,19 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the internal `FPDF_PAGE` handle for this [PdfPage].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_PAGE {
+    pub(crate) fn handle(&self) -> &FPDF_PAGE {
         &self.handle
     }
 
     /// Returns the [PdfDocument] containing this [PdfPage].
     #[inline]
-    pub fn get_document(&self) -> &'a PdfDocument<'a> {
+    pub fn document(&self) -> &'a PdfDocument<'a> {
         self.document
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPage].
     #[inline]
-    pub fn get_bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
     }
 
@@ -615,7 +615,7 @@ impl<'a> PdfPage<'a> {
         bitmap: &mut PdfBitmap,
         settings: PdfRenderSettings,
     ) -> Result<(), PdfiumError> {
-        let bitmap_handle = *bitmap.get_handle();
+        let bitmap_handle = *bitmap.handle();
 
         if settings.do_clear_bitmap_before_rendering {
             // Clear the bitmap buffer by setting every pixel to a known color.
@@ -653,24 +653,24 @@ impl<'a> PdfPage<'a> {
                 return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
 
-            if let Some(form) = self.get_document().form() {
+            if let Some(form) = self.document().form() {
                 // Render user-supplied form data, if any, as an overlay on top of the page.
 
                 if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
                     for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
                         self.bindings.FPDF_SetFormFieldHighlightColor(
-                            *form.get_handle(),
+                            *form.handle(),
                             *form_field_type,
                             *color,
                         );
 
                         self.bindings
-                            .FPDF_SetFormFieldHighlightAlpha(*form.get_handle(), *alpha);
+                            .FPDF_SetFormFieldHighlightAlpha(*form.handle(), *alpha);
                     }
                 }
 
                 self.bindings.FPDF_FFLDraw(
-                    *form.get_handle(),
+                    *form.handle(),
                     bitmap_handle,
                     self.handle,
                     0,

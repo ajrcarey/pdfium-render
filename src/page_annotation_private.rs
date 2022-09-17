@@ -17,26 +17,25 @@ pub(crate) mod internal {
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
     pub trait PdfPageAnnotationPrivate: PdfPageAnnotationCommon {
-        /// Returns the internal FPDF_ANNOTATION handle for this [PdfPageAnnotation].
-        fn get_handle(&self) -> &FPDF_ANNOTATION;
+        /// Returns the internal `FPDF_ANNOTATION` handle for this [PdfPageAnnotation].
+        fn handle(&self) -> &FPDF_ANNOTATION;
 
-        fn get_bindings(&self) -> &dyn PdfiumLibraryBindings;
+        /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotation].
+        fn bindings(&self) -> &dyn PdfiumLibraryBindings;
 
         /// Returns the string value associated with the given key in the annotation dictionary
         /// of this [PdfPageAnnotation], if any.
         fn get_string_value(&self, key: &str) -> Option<String> {
-            if !self.get_bindings().is_true(
-                self.get_bindings()
-                    .FPDFAnnot_HasKey(*self.get_handle(), key),
-            ) {
+            if !self
+                .bindings()
+                .is_true(self.bindings().FPDFAnnot_HasKey(*self.handle(), key))
+            {
                 // The key does not exist.
 
                 return None;
             }
 
-            if self
-                .get_bindings()
-                .FPDFAnnot_GetValueType(*self.get_handle(), key) as u32
+            if self.bindings().FPDFAnnot_GetValueType(*self.handle(), key) as u32
                 != FPDF_OBJECT_STRING
             {
                 // The key exists, but the value associated with the key is not a string.
@@ -53,8 +52,8 @@ pub(crate) mod internal {
             // length and call FPDFAnot_GetStringValue() again with a pointer to the buffer;
             // this will write the string value into the buffer.
 
-            let buffer_length = self.get_bindings().FPDFAnnot_GetStringValue(
-                *self.get_handle(),
+            let buffer_length = self.bindings().FPDFAnnot_GetStringValue(
+                *self.handle(),
                 key,
                 std::ptr::null_mut(),
                 0,
@@ -69,8 +68,8 @@ pub(crate) mod internal {
 
             let mut buffer = create_byte_buffer(buffer_length as usize);
 
-            let result = self.get_bindings().FPDFAnnot_GetStringValue(
-                *self.get_handle(),
+            let result = self.bindings().FPDFAnnot_GetStringValue(
+                *self.handle(),
                 key,
                 buffer.as_mut_ptr() as *mut FPDF_WCHAR,
                 buffer_length,
@@ -97,11 +96,9 @@ pub(crate) mod internal {
                 top: 0_f32,
             };
 
-            let result = self
-                .get_bindings()
-                .FPDFAnnot_GetRect(*self.get_handle(), &mut rect);
+            let result = self.bindings().FPDFAnnot_GetRect(*self.handle(), &mut rect);
 
-            PdfRect::from_pdfium_as_result(result, rect, self.get_bindings())
+            PdfRect::from_pdfium_as_result(result, rect, self.bindings())
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::contents()].

@@ -99,7 +99,7 @@ impl<'a> PdfPageTextChars<'a> {
         tolerance_y: PdfPoints,
     ) -> Option<PdfPageTextChar> {
         match self.bindings.FPDFText_GetCharIndexAtPos(
-            *self.text.get_handle(),
+            *self.text.handle(),
             x.value as c_double,
             y.value as c_double,
             tolerance_x.value as c_double,

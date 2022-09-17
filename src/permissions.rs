@@ -70,7 +70,7 @@ impl<'a> PdfPermissions<'a> {
     /// Returns the [PdfiumLibraryBindings] used by the containing [PdfDocument].
     #[inline]
     pub(crate) fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.get_document().get_bindings()
+        self.get_document().bindings()
     }
 
     /// Returns the raw permissions bitflags for the containing [PdfDocument].
@@ -78,7 +78,7 @@ impl<'a> PdfPermissions<'a> {
     fn get_permissions_bits(&self) -> FpdfPermissions {
         FpdfPermissions::from_bits_truncate(
             self.get_bindings()
-                .FPDF_GetDocPermissions(*self.get_document().get_handle()) as u32,
+                .FPDF_GetDocPermissions(*self.get_document().handle()) as u32,
         )
     }
 
@@ -87,7 +87,7 @@ impl<'a> PdfPermissions<'a> {
     pub fn security_handler_revision(&self) -> Result<PdfSecurityHandlerRevision, PdfiumError> {
         PdfSecurityHandlerRevision::from_pdfium(
             self.get_bindings()
-                .FPDF_GetSecurityHandlerRevision(*self.document.get_handle()),
+                .FPDF_GetSecurityHandlerRevision(*self.document.handle()),
         )
         .ok_or(PdfiumError::UnknownPdfSecurityHandlerRevision)
     }

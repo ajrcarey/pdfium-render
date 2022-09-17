@@ -173,11 +173,11 @@ impl<'a> PdfPageTextObject<'a> {
         font_size: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         Self::new_from_handles(
-            *document.get_handle(),
+            *document.handle(),
             text,
-            *font.get_handle(),
+            *font.handle(),
             font_size,
-            document.get_bindings(),
+            document.bindings(),
         )
     }
 

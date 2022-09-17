@@ -69,6 +69,12 @@ impl<'a> PdfPageBoundaries<'a> {
         Self { page, bindings }
     }
 
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageBoundaries] collection.
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+
     /// Returns the boundary box defined for the containing [PdfPage] matching the
     /// given [PdfPageBoundaryBoxType], if any.
     #[inline]
@@ -116,7 +122,7 @@ impl<'a> PdfPageBoundaries<'a> {
     /// Sets the Media boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_media(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
         self.bindings.FPDFPage_SetMediaBox(
-            *self.page.get_handle(),
+            *self.page.handle(),
             rect.left.value,
             rect.bottom.value,
             rect.right.value,
@@ -145,7 +151,7 @@ impl<'a> PdfPageBoundaries<'a> {
     /// Sets the Art boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_art(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
         self.bindings.FPDFPage_SetArtBox(
-            *self.page.get_handle(),
+            *self.page.handle(),
             rect.left.value,
             rect.bottom.value,
             rect.right.value,
@@ -174,7 +180,7 @@ impl<'a> PdfPageBoundaries<'a> {
     /// Sets the Bleed boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_bleed(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
         self.bindings.FPDFPage_SetBleedBox(
-            *self.page.get_handle(),
+            *self.page.handle(),
             rect.left.value,
             rect.bottom.value,
             rect.right.value,
@@ -203,7 +209,7 @@ impl<'a> PdfPageBoundaries<'a> {
     /// Sets the Trim boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_trim(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
         self.bindings.FPDFPage_SetTrimBox(
-            *self.page.get_handle(),
+            *self.page.handle(),
             rect.left.value,
             rect.bottom.value,
             rect.right.value,
@@ -231,7 +237,7 @@ impl<'a> PdfPageBoundaries<'a> {
     /// Sets the Crop boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_crop(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
         self.bindings.FPDFPage_SetCropBox(
-            *self.page.get_handle(),
+            *self.page.handle(),
             rect.left.value,
             rect.bottom.value,
             rect.right.value,
@@ -260,7 +266,7 @@ impl<'a> PdfPageBoundaries<'a> {
 
         let result = self
             .bindings
-            .FPDF_GetPageBoundingBox(*self.page.get_handle(), &mut rect);
+            .FPDF_GetPageBoundingBox(*self.page.handle(), &mut rect);
 
         PdfRect::from_pdfium_as_result(result, rect, self.bindings)
             .map(|rect| PdfPageBoundaryBox::new(PdfPageBoundaryBoxType::Bounding, rect))
@@ -278,7 +284,7 @@ impl<'a> PdfPageBoundaries<'a> {
         let mut top = 0_f32;
 
         let result = f(
-            *self.page.get_handle(),
+            *self.page.handle(),
             &mut left,
             &mut bottom,
             &mut right,

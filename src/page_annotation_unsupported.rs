@@ -35,12 +35,12 @@ impl<'a> PdfPageUnsupportedAnnotation<'a> {
 
 impl<'a> PdfPageAnnotationPrivate for PdfPageUnsupportedAnnotation<'a> {
     #[inline]
-    fn get_handle(&self) -> &FPDF_ANNOTATION {
+    fn handle(&self) -> &FPDF_ANNOTATION {
         &self.handle
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
     }
 }

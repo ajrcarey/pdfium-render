@@ -35,7 +35,7 @@ impl<'a> PdfBookmarks<'a> {
     pub fn root(&self) -> Option<PdfBookmark> {
         let handle = self
             .bindings
-            .FPDFBookmark_GetFirstChild(*self.document.get_handle(), null_mut());
+            .FPDFBookmark_GetFirstChild(*self.document.handle(), null_mut());
 
         if handle.is_null() {
             None
@@ -58,7 +58,7 @@ impl<'a> PdfBookmarks<'a> {
     pub fn find_first_by_title(&self, title: &str) -> Result<PdfBookmark, PdfiumError> {
         let handle = self
             .bindings
-            .FPDFBookmark_Find_str(*self.document.get_handle(), title);
+            .FPDFBookmark_Find_str(*self.document.handle(), title);
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
