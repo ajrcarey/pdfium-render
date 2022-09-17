@@ -344,13 +344,13 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the [PdfDocument] containing this [PdfPage].
     #[inline]
-    pub(crate) fn get_document(&self) -> &'a PdfDocument<'a> {
+    pub fn get_document(&self) -> &'a PdfDocument<'a> {
         self.document
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPage].
     #[inline]
-    pub(crate) fn get_bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+    pub fn get_bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
     }
 
