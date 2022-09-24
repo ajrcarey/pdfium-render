@@ -228,6 +228,24 @@ impl PdfRect {
         self.top - self.bottom
     }
 
+    #[inline]
+    /// Returns `true` if the given point lies inside this [PdfRect].
+    pub fn contains(&self, x: PdfPoints, y: PdfPoints) -> bool {
+        self.contains_x(x) && self.contains_y(y)
+    }
+
+    #[inline]
+    /// Returns `true` if the given horizontal coordinate lies inside this [PdfRect].
+    pub fn contains_x(&self, x: PdfPoints) -> bool {
+        self.left <= x && self.right >= x
+    }
+
+    #[inline]
+    /// Returns `true` if the given vertical coordinate lies inside this [PdfRect].
+    pub fn contains_y(&self, y: PdfPoints) -> bool {
+        self.bottom <= y && self.top >= y
+    }
+
     /// Returns `true` if the bounds of this [PdfRect] lie entirely within the given rectangle.
     #[inline]
     pub fn is_inside(&self, rect: &PdfRect) -> bool {
@@ -302,6 +320,7 @@ pub enum PdfPageContentRegenerationStrategy {
 /// to all object collections related to a single page in a document.
 /// These collections include:
 /// * [PdfPage::annotations()], an immutable collection of all the user annotations attached to the [PdfPage].
+/// * [PdfPage::annotations_mut()], a mutable collection of all the user annotations attached to the [PdfPage].
 /// * [PdfPage::boundaries()], an immutable collection of the boundary boxes relating to the [PdfPage].
 /// * [PdfPage::objects()], an immutable collection of all the displayable objects on the [PdfPage].
 /// * [PdfPage::objects_mut()], a mutable collection of all the displayable objects on the [PdfPage].
@@ -313,7 +332,6 @@ pub struct PdfPage<'a> {
     is_content_regeneration_required: bool,
     objects: PdfPageObjects<'a>,
     annotations: PdfPageAnnotations<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPage<'a> {
@@ -322,7 +340,6 @@ impl<'a> PdfPage<'a> {
         handle: FPDF_PAGE,
         label: Option<String>,
         document: &'a PdfDocument<'a>,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPage {
             handle,
@@ -330,9 +347,8 @@ impl<'a> PdfPage<'a> {
             document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             is_content_regeneration_required: false,
-            objects: PdfPageObjects::from_pdfium(*document.handle(), handle, bindings),
-            annotations: PdfPageAnnotations::from_pdfium(handle, bindings),
-            bindings,
+            objects: PdfPageObjects::from_pdfium(*document.handle(), handle, document.bindings()),
+            annotations: PdfPageAnnotations::from_pdfium(handle, document.bindings()),
         }
     }
 
@@ -348,10 +364,10 @@ impl<'a> PdfPage<'a> {
         self.document
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPage].
+    /// Returns the [PdfiumLibraryBindings] used by the [PdfDocument] containing this [PdfPage].
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
+        self.document().bindings()
     }
 
     /// Returns the label assigned to this [PdfPage], if any.
@@ -364,14 +380,14 @@ impl<'a> PdfPage<'a> {
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn width(&self) -> PdfPoints {
-        PdfPoints::new(self.bindings.FPDF_GetPageWidthF(self.handle))
+        PdfPoints::new(self.bindings().FPDF_GetPageWidthF(self.handle))
     }
 
     /// Returns the height of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn height(&self) -> PdfPoints {
-        PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.handle))
+        PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.handle))
     }
 
     /// Returns the width and height of this [PdfPage] expressed as a [PdfRect].
@@ -408,27 +424,27 @@ impl<'a> PdfPage<'a> {
     /// should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn rotation(&self) -> Result<PdfBitmapRotation, PdfiumError> {
-        PdfBitmapRotation::from_pdfium(self.bindings.FPDFPage_GetRotation(self.handle))
+        PdfBitmapRotation::from_pdfium(self.bindings().FPDFPage_GetRotation(self.handle))
     }
 
     /// Sets the intrinsic rotation that should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn set_rotation(&mut self, rotation: PdfBitmapRotation) {
-        self.bindings
+        self.bindings()
             .FPDFPage_SetRotation(self.handle, rotation.as_pdfium());
     }
 
     /// Returns `true` if any object on the page contains transparency.
     #[inline]
     pub fn has_transparency(&self) -> bool {
-        self.bindings
-            .is_true(self.bindings.FPDFPage_HasTransparency(self.handle))
+        self.bindings()
+            .is_true(self.bindings().FPDFPage_HasTransparency(self.handle))
     }
 
     /// Returns the collection of bounding boxes defining the extents of this [PdfPage].
     #[inline]
     pub fn boundaries(&self) -> PdfPageBoundaries {
-        PdfPageBoundaries::from_pdfium(self, self.bindings)
+        PdfPageBoundaries::from_pdfium(self, self.bindings())
     }
 
     /// Returns the paper size of this [PdfPage].
@@ -445,10 +461,10 @@ impl<'a> PdfPage<'a> {
             self.regenerate_content_immut()?;
         }
 
-        let text_handle = self.bindings.FPDFText_LoadPage(self.handle);
+        let text_handle = self.bindings().FPDFText_LoadPage(self.handle);
 
         if text_handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
@@ -459,12 +475,11 @@ impl<'a> PdfPage<'a> {
                 ))
             }
         } else {
-            Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings))
+            Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings()))
         }
     }
 
     /// Returns an immutable collection of all the page objects on this [PdfPage].
-    #[inline]
     pub fn objects(&self) -> &PdfPageObjects<'a> {
         if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
             && self.is_content_regeneration_required
@@ -478,10 +493,9 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Returns a mutable collection of all the page objects on this [PdfPage].
-    #[inline]
     pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
         // We can't know for sure whether the user will update any page objects,
-        // and we can't track what happens in the PdfPageObjects after we return
+        // and we can't track what happens in the PdfPageObjects instance after we return
         // a mutable reference to it, but if the user is going to the trouble of retrieving
         // a mutable reference it seems best to assume they're intending to update something.
 
@@ -497,8 +511,7 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Returns an immutable collection of the annotations that have been added to this [PdfPage].
-    #[inline]
-    pub fn annotations(&self) -> &PdfPageAnnotations {
+    pub fn annotations(&self) -> &PdfPageAnnotations<'a> {
         if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
             && self.is_content_regeneration_required
         {
@@ -508,6 +521,25 @@ impl<'a> PdfPage<'a> {
         }
 
         &self.annotations
+    }
+
+    /// Returns a mutable collection of the annotations that have been added to this [PdfPage].
+    pub fn annotations_mut(&mut self) -> &mut PdfPageAnnotations<'a> {
+        // We can't know for sure whether the user will update any annotations,
+        // and we can't track what happens in the PdfPageAnnotations instance after we return
+        // a mutable reference to it, but if the user is going to the trouble of retrieving
+        // a mutable reference it seems best to assume they're intending to update something.
+
+        self.is_content_regeneration_required = self.regeneration_strategy
+            != PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
+
+        self.annotations
+            .do_regenerate_page_content_after_each_change(
+                self.regeneration_strategy
+                    == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+            );
+
+        &mut self.annotations
     }
 
     /// Renders this [PdfPage] into a [PdfBitmap] with the given pixel dimensions and page rotation.
@@ -528,7 +560,7 @@ impl<'a> PdfPage<'a> {
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
         let mut bitmap =
-            PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
+            PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings())?;
 
         let mut config = PdfRenderConfig::new()
             .set_target_width(width)
@@ -558,7 +590,7 @@ impl<'a> PdfPage<'a> {
             settings.height as u16,
             PdfBitmapFormat::from_pdfium(settings.format as u32)
                 .unwrap_or_else(|_| PdfBitmapFormat::default()),
-            self.bindings,
+            self.bindings(),
         )?;
 
         self.render_into_bitmap_with_settings(&mut bitmap, settings)?;
@@ -620,7 +652,7 @@ impl<'a> PdfPage<'a> {
         if settings.do_clear_bitmap_before_rendering {
             // Clear the bitmap buffer by setting every pixel to a known color.
 
-            self.bindings.FPDFBitmap_FillRect(
+            self.bindings().FPDFBitmap_FillRect(
                 bitmap_handle,
                 0,
                 0,
@@ -629,7 +661,7 @@ impl<'a> PdfPage<'a> {
                 settings.clear_color,
             );
 
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
         }
@@ -638,7 +670,7 @@ impl<'a> PdfPage<'a> {
             // Render the PDF page into the bitmap buffer, ignoring any custom transformation matrix.
             // (Custom transforms cannot be applied to the rendering of form fields.)
 
-            self.bindings.FPDF_RenderPageBitmap(
+            self.bindings().FPDF_RenderPageBitmap(
                 bitmap_handle,
                 self.handle,
                 0,
@@ -649,7 +681,7 @@ impl<'a> PdfPage<'a> {
                 settings.render_flags,
             );
 
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
 
@@ -658,18 +690,18 @@ impl<'a> PdfPage<'a> {
 
                 if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
                     for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
-                        self.bindings.FPDF_SetFormFieldHighlightColor(
+                        self.bindings().FPDF_SetFormFieldHighlightColor(
                             *form.handle(),
                             *form_field_type,
                             *color,
                         );
 
-                        self.bindings
+                        self.bindings()
                             .FPDF_SetFormFieldHighlightAlpha(*form.handle(), *alpha);
                     }
                 }
 
-                self.bindings.FPDF_FFLDraw(
+                self.bindings().FPDF_FFLDraw(
                     *form.handle(),
                     bitmap_handle,
                     self.handle,
@@ -681,14 +713,14 @@ impl<'a> PdfPage<'a> {
                     settings.render_flags,
                 );
 
-                if let Some(error) = self.bindings.get_pdfium_last_error() {
+                if let Some(error) = self.bindings().get_pdfium_last_error() {
                     return Err(PdfiumError::PdfiumLibraryInternalError(error));
                 }
             }
         } else {
             // Render the PDF page into the bitmap buffer, applying any custom transformation matrix.
 
-            self.bindings.FPDF_RenderPageBitmapWithMatrix(
+            self.bindings().FPDF_RenderPageBitmapWithMatrix(
                 bitmap_handle,
                 self.handle,
                 &settings.matrix,
@@ -696,7 +728,7 @@ impl<'a> PdfPage<'a> {
                 settings.render_flags,
             );
 
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
         }
@@ -748,7 +780,7 @@ impl<'a> PdfPage<'a> {
         // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
         let flag = FLAT_PRINT;
 
-        match self.bindings.FPDFPage_Flatten(self.handle, flag as c_int) as u32 {
+        match self.bindings().FPDFPage_Flatten(self.handle, flag as c_int) as u32 {
             FLATTEN_SUCCESS => {
                 self.is_content_regeneration_required = true;
 
@@ -825,7 +857,7 @@ impl<'a> PdfPage<'a> {
 
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
-        Self::regenerate_content_immut_for_handle(self.handle, self.bindings)
+        Self::regenerate_content_immut_for_handle(self.handle, self.bindings())
     }
 
     /// Commits any staged but unsaved changes to the page identified by the given internal
@@ -860,7 +892,7 @@ impl<'a> Drop for PdfPage<'a> {
             debug_assert!(result.is_ok());
         }
 
-        self.bindings.FPDF_ClosePage(self.handle);
+        self.bindings().FPDF_ClosePage(self.handle);
     }
 }
 

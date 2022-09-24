@@ -1,15 +1,16 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
-    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
-    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
-    FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
+    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
+    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
+    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
+    FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use std::ffi::{c_void, CString};
-use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort};
+use std::ffi::CString;
+use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 
 pub(crate) struct StaticPdfiumBindings;
 
@@ -2598,5 +2599,122 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         let c_key = CString::new(key).unwrap();
 
         unsafe { crate::bindgen::FPDF_VIEWERREF_GetName(document, c_key.as_ptr(), buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { crate::bindgen::FPDFDoc_GetAttachmentCount(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_AddAttachment(
+        &self,
+        document: FPDF_DOCUMENT,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT {
+        unsafe { crate::bindgen::FPDFDoc_AddAttachment(document, name) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT {
+        unsafe { crate::bindgen::FPDFDoc_GetAttachment(document, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFDoc_DeleteAttachment(document, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetName(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDFAttachment_GetName(attachment, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { crate::bindgen::FPDFAttachment_HasKey(attachment, c_key.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetValueType(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+    ) -> FPDF_OBJECT_TYPE {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { crate::bindgen::FPDFAttachment_GetValueType(attachment, c_key.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetStringValue(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { crate::bindgen::FPDFAttachment_SetStringValue(attachment, c_key.as_ptr(), value) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetStringValue(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDFAttachment_GetStringValue(
+                attachment,
+                c_key.as_ptr(),
+                buffer,
+                buflen,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetFile(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        document: FPDF_DOCUMENT,
+        contents: *const c_void,
+        len: c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFAttachment_SetFile(attachment, document, contents, len) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetFile(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFAttachment_GetFile(attachment, buffer, buflen, out_buflen) }
     }
 }

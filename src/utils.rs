@@ -80,10 +80,9 @@ pub(crate) mod utf16le {
 
 pub(crate) mod files {
     use crate::bindgen::{FPDF_FILEACCESS, FPDF_FILEWRITE};
-    use std::ffi::c_void;
     use std::io::{Read, Seek, SeekFrom, Write};
     use std::ops::Deref;
-    use std::os::raw::{c_int, c_uchar, c_ulong};
+    use std::os::raw::{c_int, c_uchar, c_ulong, c_void};
     use std::ptr::null_mut;
     use std::slice;
 

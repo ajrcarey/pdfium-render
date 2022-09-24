@@ -29,7 +29,7 @@ pub(crate) mod internal {
         /// This [PdfPageObject] is detached from any containing page.
         fn clear_page_handle(&mut self);
 
-        fn get_bindings(&self) -> &dyn PdfiumLibraryBindings;
+        fn bindings(&self) -> &dyn PdfiumLibraryBindings;
 
         /// Returns `true` if the memory allocated to this [PdfPageObject] is owned by a containing
         /// [PdfPage]. Page objects that are contained within a [PdfPage] do not require their
@@ -50,10 +50,10 @@ pub(crate) mod internal {
         }
 
         fn add_object_to_page_handle(&mut self, page_handle: FPDF_PAGE) -> Result<(), PdfiumError> {
-            self.get_bindings()
+            self.bindings()
                 .FPDFPage_InsertObject(page_handle, *self.get_object_handle());
 
-            if let Some(error) = self.get_bindings().get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 self.set_page_handle(page_handle);
@@ -67,8 +67,8 @@ pub(crate) mod internal {
         // the page object being removed is a single object or a group.
         fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
             if let Some(page_handle) = self.get_page_handle() {
-                if self.get_bindings().is_true(
-                    self.get_bindings()
+                if self.bindings().is_true(
+                    self.bindings()
                         .FPDFPage_RemoveObject(*page_handle, *self.get_object_handle()),
                 ) {
                     self.clear_page_handle();
@@ -76,7 +76,7 @@ pub(crate) mod internal {
                     Ok(())
                 } else {
                     Err(PdfiumError::PdfiumLibraryInternalError(
-                        self.get_bindings()
+                        self.bindings()
                             .get_pdfium_last_error()
                             .unwrap_or(PdfiumInternalError::Unknown),
                     ))
@@ -89,7 +89,7 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageObjectCommon::has_transparency()].
         #[inline]
         fn has_transparency_impl(&self) -> bool {
-            let bindings = self.get_bindings();
+            let bindings = self.bindings();
 
             bindings.is_true(bindings.FPDFPageObj_HasTransparency(*self.get_object_handle()))
         }
@@ -105,7 +105,7 @@ pub(crate) mod internal {
 
             let mut top = 0.0;
 
-            let result = self.get_bindings().FPDFPageObj_GetBounds(
+            let result = self.bindings().FPDFPageObj_GetBounds(
                 *self.get_object_handle(),
                 &mut left,
                 &mut bottom,
@@ -121,7 +121,7 @@ pub(crate) mod internal {
                     right,
                     bottom,
                 },
-                self.get_bindings(),
+                self.bindings(),
             )
         }
 
@@ -136,10 +136,10 @@ pub(crate) mod internal {
             e: f64,
             f: f64,
         ) -> Result<(), PdfiumError> {
-            self.get_bindings()
+            self.bindings()
                 .FPDFPageObj_Transform(*self.get_object_handle(), a, b, c, d, e, f);
 
-            match self.get_bindings().get_pdfium_last_error() {
+            match self.bindings().get_pdfium_last_error() {
                 Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
                 None => Ok(()),
             }
@@ -156,14 +156,14 @@ pub(crate) mod internal {
                 f: 0.0,
             };
 
-            if self.get_bindings().is_true(
-                self.get_bindings()
+            if self.bindings().is_true(
+                self.bindings()
                     .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
             ) {
                 Ok(matrix)
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.get_bindings()
+                    self.bindings()
                         .get_pdfium_last_error()
                         .unwrap_or(PdfiumInternalError::Unknown),
                 ))
@@ -172,14 +172,14 @@ pub(crate) mod internal {
 
         /// Sets the raw transformation matrix for this page object.
         fn set_matrix(&self, matrix: FS_MATRIX) -> Result<(), PdfiumError> {
-            if self.get_bindings().is_true(
-                self.get_bindings()
+            if self.bindings().is_true(
+                self.bindings()
                     .FPDFPageObj_SetMatrix(*self.get_object_handle(), &matrix),
             ) {
                 Ok(())
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.get_bindings()
+                    self.bindings()
                         .get_pdfium_last_error()
                         .unwrap_or(PdfiumInternalError::Unknown),
                 ))

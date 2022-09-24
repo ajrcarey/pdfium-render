@@ -64,11 +64,13 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 * Rendering pages to bitmaps.
 * Text and image extraction.
+* Document signature introspection.
+* Document attachment introspection.
+* Document concatenation.
 * Page object introspection.
 * Page annotation introspection.
 * Creation of new documents and new pages.
 * Creation of page objects for text, paths, and bitmaps.
-* Document concatenation.
 * Multi-page tiled output.
 * Watermarking.
 * Thread safety.
@@ -76,7 +78,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-Version 0.7.18 adds convenience functions for returning the bindings used by `PdfDocument`,
+Version 0.7.19 adds bindings to all Pdfium functions related to document attachments, and adds
+the `PdfAttachments` and `PdfSignatures` collections to the high-level interface. 
+
+Version 0.7.18 adds convenience functions for returning the Pdfium bindings used by `PdfDocument`,
 `PdfPage`, `PdfBitmap`, `PdfFont`, and various other interfaces, thanks to an excellent
 contribution from <https://github.com/LU15W1R7H>.
 
@@ -291,11 +296,17 @@ For functions that take an `FPDF_WIDESTRING`, `pdfium-render` exposes two functi
 `FPDF_*()` function that takes an `FPDF_WIDESTRING`, and an additional `FPDF_*_str()` helper function
 that takes a standard Rust `&str` and converts it internally to an `FPDF_WIDESTRING` before calling
 Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
-`FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
+`FPDFAnnot_SetStringValue()`, `FPDFText_SetText()`, `FPDFDoc_AddAttachment()`, and
+`FPDFAttachment_SetStringValue()`.
 
 The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
 `PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` utility functions are provided
 for converting to and from `FPDF_WIDESTRING` in your own code.
+
+Certain Pdfium functions take or return C-style integer boolean values, aliased as `FPDF_BOOL`.
+The `PdfiumLibraryBindings::TRUE()`, `PdfiumLibraryBindings::FALSE()`,
+`PdfiumLibraryBindings::is_true()`, and `PdfiumLibraryBindings::bool_to_pdfium()` utility functions
+are provided for converting to and from `FPDF_BOOL` in your own code.
 
 ## Development status
 
@@ -313,7 +324,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.18, 270 (73%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.19, 281 (76%) have
 bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
 available via the `pdfium-render` high-level interface.
 
@@ -325,14 +336,15 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.19: adds bindings for `FPDFDoc_*Attachment*()` functions; adds `PdfAttachments` and
+  `PdfSignatures` collections to the high-level interface.
 * 0.7.18: adds convenience `bindings()` accessor functions to `PdfDocument`, `PdfPage`, `PdfBitmap`,
-`PdfFont`, and various other interfaces, thanks to an excellent contribution from
-<https://github.com/LU15W1R7H>; deprecates `Pdfium::get_bindings()` in favour of
-`Pdfium::bindings()` for consistency.
+  `PdfFont`, and various other interfaces, thanks to an excellent contribution from
+  <https://github.com/LU15W1R7H>; deprecates `Pdfium::get_bindings()` in favour of
+  `Pdfium::bindings()` for consistency. Deprecated items will be removed in release 0.9.0.
 * 0.7.17: relaxes some unnecessarily restrictive lifetime bounds in `PdfPageObjectPath`. 
 * 0.7.16: adds `PdfPageObjects::create_path_object_bezier()` and `PdfPageObjectPath::new_bezier()`
-  convenience functions; corrects some typos in documentation; removes `WebSysWindowObjectNotAvailable`
-  variant from `PdfiumError` enum, as this variant is no longer referenced since 0.7.14.
+  convenience functions; corrects some typos in documentation.
 * 0.7.15: adds `PdfPageAnnotationCommon::name()`, `PdfPageAnnotationCommon::contents()`,
   `PdfPageAnnotationCommon::author()`, `PdfPageAnnotationCommon::creation_date()`,
   and `PdfPageAnnotationCommon::modification_date()` functions for working with annotations;

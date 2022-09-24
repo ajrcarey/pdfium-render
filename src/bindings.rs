@@ -3,12 +3,13 @@
 
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
-    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
-    FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
-    FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
+    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
+    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
+    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
+    FS_RECTF,
 };
 use crate::document::PdfDocument;
 use crate::error::PdfiumInternalError;
@@ -1877,6 +1878,98 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_AddAttachment(
+        &self,
+        document: FPDF_DOCUMENT,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_AddAttachment_str(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_ATTACHMENT {
+        self.FPDFDoc_AddAttachment(
+            document,
+            get_pdfium_utf16le_bytes_from_str(name).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetName(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetValueType(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+    ) -> FPDF_OBJECT_TYPE;
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetStringValue(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetStringValue_str(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        value: &str,
+    ) -> FPDF_BOOL {
+        self.FPDFAttachment_SetStringValue(
+            attachment,
+            key,
+            get_pdfium_utf16le_bytes_from_str(value).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetStringValue(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetFile(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        document: FPDF_DOCUMENT,
+        contents: *const c_void,
+        len: c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetFile(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
     /// Retrieves the error code of the last error, if any, recorded by the external
     /// Pdfium library and maps it to a [PdfiumInternalError] enum value.
     #[inline]
@@ -1913,9 +2006,9 @@ pub mod tests {
                 .or_else(|_| Pdfium::bind_to_system_library())?,
         );
 
-        assert!(!pdfium.get_bindings().is_true(0));
-        assert!(pdfium.get_bindings().is_true(1));
-        assert!(pdfium.get_bindings().is_true(-1));
+        assert!(!pdfium.bindings().is_true(0));
+        assert!(pdfium.bindings().is_true(1));
+        assert!(pdfium.bindings().is_true(-1));
 
         Ok(())
     }

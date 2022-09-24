@@ -14,6 +14,7 @@ pub type PdfPageAnnotationIndex = usize;
 pub struct PdfPageAnnotations<'a> {
     page_handle: FPDF_PAGE,
     bindings: &'a dyn PdfiumLibraryBindings,
+    do_regenerate_page_content_after_each_change: bool,
 }
 
 impl<'a> PdfPageAnnotations<'a> {
@@ -25,7 +26,19 @@ impl<'a> PdfPageAnnotations<'a> {
         Self {
             page_handle,
             bindings,
+            do_regenerate_page_content_after_each_change: false,
         }
+    }
+
+    /// Sets whether or not this [PdfPageAnnotations] collection should trigger content regeneration
+    /// on its containing [PdfPage] when the collection is mutated.
+    #[inline]
+    pub(crate) fn do_regenerate_page_content_after_each_change(
+        &mut self,
+        do_regenerate_page_content_after_each_change: bool,
+    ) {
+        self.do_regenerate_page_content_after_each_change =
+            do_regenerate_page_content_after_each_change;
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotations] collection.

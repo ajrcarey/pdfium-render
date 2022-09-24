@@ -4,7 +4,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-use std::ffi::c_void;
+use std::os::raw::c_void;
 use std::slice::Iter;
 
 /// Valid metadata tag types in a [PdfDocument].

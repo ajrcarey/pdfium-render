@@ -63,22 +63,22 @@ impl<'a> PdfPermissions<'a> {
 
     /// Returns a reference to the [PdfDocument] that contains this [PdfPermissions] collection.
     #[inline]
-    pub(crate) fn get_document(&self) -> &PdfDocument {
+    pub(crate) fn document(&self) -> &PdfDocument {
         self.document
     }
 
     /// Returns the [PdfiumLibraryBindings] used by the containing [PdfDocument].
     #[inline]
-    pub(crate) fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.get_document().bindings()
+    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.document().bindings()
     }
 
     /// Returns the raw permissions bitflags for the containing [PdfDocument].
     #[inline]
     fn get_permissions_bits(&self) -> FpdfPermissions {
         FpdfPermissions::from_bits_truncate(
-            self.get_bindings()
-                .FPDF_GetDocPermissions(*self.get_document().handle()) as u32,
+            self.bindings()
+                .FPDF_GetDocPermissions(*self.document().handle()) as u32,
         )
     }
 
@@ -86,7 +86,7 @@ impl<'a> PdfPermissions<'a> {
     /// As of PDF version 1.7, possible revision numbers are 2, 3, or 4.
     pub fn security_handler_revision(&self) -> Result<PdfSecurityHandlerRevision, PdfiumError> {
         PdfSecurityHandlerRevision::from_pdfium(
-            self.get_bindings()
+            self.bindings()
                 .FPDF_GetSecurityHandlerRevision(*self.document.handle()),
         )
         .ok_or(PdfiumError::UnknownPdfSecurityHandlerRevision)

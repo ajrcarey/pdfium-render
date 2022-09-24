@@ -28,6 +28,8 @@ use js_sys::{Array, Uint8Array};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
 
+use crate::attachments::PdfAttachments;
+use crate::signatures::PdfSignatures;
 #[cfg(target_arch = "wasm32")]
 use web_sys::Blob;
 
@@ -126,8 +128,9 @@ impl PdfDocumentVersion {
 pub struct PdfDocument<'a> {
     handle: FPDF_DOCUMENT,
     form: Option<PdfForm<'a>>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    attachments: PdfAttachments<'a>,
     output_version: Option<PdfDocumentVersion>,
+    bindings: &'a dyn PdfiumLibraryBindings,
 
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     // This field is never used when compiling to WASM.
@@ -143,6 +146,7 @@ impl<'a> PdfDocument<'a> {
         Self {
             handle,
             form: PdfForm::from_pdfium(handle, bindings),
+            attachments: PdfAttachments::from_pdfium(handle, bindings),
             bindings,
             output_version: None,
             file_access_reader: None,
@@ -190,7 +194,7 @@ impl<'a> PdfDocument<'a> {
     /// Returns a collection of all the [PdfPages] in this [PdfDocument].
     #[inline]
     pub fn pages(&'a self) -> PdfPages<'a> {
-        PdfPages::new(self, self.bindings)
+        PdfPages::new(self)
     }
 
     /// Returns a collection of all the [PdfMetadata] tags in this [PdfDocument].
@@ -215,6 +219,23 @@ impl<'a> PdfDocument<'a> {
     #[inline]
     pub fn permissions(&'a self) -> PdfPermissions<'a> {
         PdfPermissions::new(self)
+    }
+
+    /// Returns an immutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
+    pub fn attachments(&'a self) -> &PdfAttachments<'a> {
+        &self.attachments
+    }
+
+    /// Returns a mutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
+    pub fn attachments_mut(&'a mut self) -> &mut PdfAttachments<'a> {
+        // TODO: AJRC - 20/9/22 - content regeneration after attachments list changes
+        &mut self.attachments
+    }
+
+    /// Returns a collection of all the [PdfSignatures] attached to this [PdfDocument].
+    #[inline]
+    pub fn signatures(&'a self) -> PdfSignatures<'a> {
+        PdfSignatures::new(self)
     }
 
     /// Writes this [PdfDocument] to the given writer.

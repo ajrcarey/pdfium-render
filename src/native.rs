@@ -1,17 +1,17 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
-    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE,
-    FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF,
-    FS_QUADPOINTSF, FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_BYTESTRING, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
+    FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
+    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRING,
+    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
-use std::ffi::{c_void, CString};
-use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort};
+use std::ffi::CString;
+use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 
 pub(crate) struct DynamicPdfiumBindings {
     library: Library,
@@ -286,6 +286,17 @@ impl DynamicPdfiumBindings {
         result.extern_FPDF_VIEWERREF_GetPrintPageRangeElement()?;
         result.extern_FPDF_VIEWERREF_GetDuplex()?;
         result.extern_FPDF_VIEWERREF_GetName()?;
+        result.extern_FPDFDoc_GetAttachmentCount()?;
+        result.extern_FPDFDoc_AddAttachment()?;
+        result.extern_FPDFDoc_GetAttachment()?;
+        result.extern_FPDFDoc_DeleteAttachment()?;
+        result.extern_FPDFAttachment_GetName()?;
+        result.extern_FPDFAttachment_HasKey()?;
+        result.extern_FPDFAttachment_GetValueType()?;
+        result.extern_FPDFAttachment_SetStringValue()?;
+        result.extern_FPDFAttachment_GetStringValue()?;
+        result.extern_FPDFAttachment_SetFile()?;
+        result.extern_FPDFAttachment_GetFile()?;
 
         Ok(result)
     }
@@ -3962,6 +3973,167 @@ impl DynamicPdfiumBindings {
     > {
         unsafe { self.library.get(b"FPDF_VIEWERREF_GetName\0") }
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFDoc_GetAttachmentCount(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFDoc_GetAttachmentCount\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFDoc_AddAttachment(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(document: FPDF_DOCUMENT, name: FPDF_WIDESTRING) -> FPDF_ATTACHMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFDoc_AddAttachment\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFDoc_GetAttachment(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFDoc_GetAttachment\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFDoc_DeleteAttachment(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFDoc_DeleteAttachment\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_GetName(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                attachment: FPDF_ATTACHMENT,
+                buffer: *mut FPDF_WCHAR,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_GetName\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_HasKey(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(attachment: FPDF_ATTACHMENT, key: FPDF_BYTESTRING) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_HasKey\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_GetValueType(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                attachment: FPDF_ATTACHMENT,
+                key: FPDF_BYTESTRING,
+            ) -> FPDF_OBJECT_TYPE,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_GetValueType\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_SetStringValue(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                attachment: FPDF_ATTACHMENT,
+                key: FPDF_BYTESTRING,
+                value: FPDF_WIDESTRING,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_SetStringValue\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_GetStringValue(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                attachment: FPDF_ATTACHMENT,
+                key: FPDF_BYTESTRING,
+                buffer: *mut FPDF_WCHAR,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_GetStringValue\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_SetFile(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                attachment: FPDF_ATTACHMENT,
+                document: FPDF_DOCUMENT,
+                contents: *const c_void,
+                len: c_ulong,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_SetFile\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFAttachment_GetFile(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                attachment: FPDF_ATTACHMENT,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+                out_buflen: *mut c_ulong,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFAttachment_GetFile\0") }
+    }
 }
 
 impl PdfiumLibraryBindings for DynamicPdfiumBindings {
@@ -6602,6 +6774,129 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
         unsafe {
             self.extern_FPDF_VIEWERREF_GetName().unwrap()(document, c_key.as_ptr(), buffer, length)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { self.extern_FPDFDoc_GetAttachmentCount().unwrap()(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_AddAttachment(
+        &self,
+        document: FPDF_DOCUMENT,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT {
+        unsafe { self.extern_FPDFDoc_AddAttachment().unwrap()(document, name) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT {
+        unsafe { self.extern_FPDFDoc_GetAttachment().unwrap()(document, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFDoc_DeleteAttachment().unwrap()(document, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetName(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFAttachment_GetName().unwrap()(attachment, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAttachment_HasKey().unwrap()(attachment, c_key.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetValueType(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+    ) -> FPDF_OBJECT_TYPE {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe { self.extern_FPDFAttachment_GetValueType().unwrap()(attachment, c_key.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetStringValue(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe {
+            self.extern_FPDFAttachment_SetStringValue().unwrap()(attachment, c_key.as_ptr(), value)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetStringValue(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        key: &str,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        let c_key = CString::new(key).unwrap();
+
+        unsafe {
+            self.extern_FPDFAttachment_GetStringValue().unwrap()(
+                attachment,
+                c_key.as_ptr(),
+                buffer,
+                buflen,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_SetFile(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        document: FPDF_DOCUMENT,
+        contents: *const c_void,
+        len: c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFAttachment_SetFile().unwrap()(attachment, document, contents, len)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetFile(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFAttachment_GetFile().unwrap()(attachment, buffer, buflen, out_buflen)
         }
     }
 }

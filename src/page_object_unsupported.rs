@@ -47,7 +47,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageUnsupportedObject<'a> {
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
     }
 }

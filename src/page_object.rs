@@ -864,10 +864,10 @@ where
 
     #[inline]
     fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) -> Result<(), PdfiumError> {
-        self.get_bindings()
+        self.bindings()
             .FPDFPageObj_SetBlendMode(*self.get_object_handle(), blend_mode.as_pdfium());
 
-        match self.get_bindings().get_pdfium_last_error() {
+        match self.bindings().get_pdfium_last_error() {
             Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
             None => Ok(()),
         }
@@ -884,8 +884,8 @@ where
         let mut a = 0;
 
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPageObj_GetFillColor(
+            .bindings()
+            .is_true(self.bindings().FPDFPageObj_GetFillColor(
                 *self.get_object_handle(),
                 &mut r,
                 &mut g,
@@ -911,8 +911,8 @@ where
     #[inline]
     fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPageObj_SetFillColor(
+            .bindings()
+            .is_true(self.bindings().FPDFPageObj_SetFillColor(
                 *self.get_object_handle(),
                 fill_color.red() as c_uint,
                 fill_color.green() as c_uint,
@@ -937,8 +937,8 @@ where
         let mut a = 0;
 
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPageObj_GetStrokeColor(
+            .bindings()
+            .is_true(self.bindings().FPDFPageObj_GetStrokeColor(
                 *self.get_object_handle(),
                 &mut r,
                 &mut g,
@@ -964,8 +964,8 @@ where
     #[inline]
     fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPageObj_SetStrokeColor(
+            .bindings()
+            .is_true(self.bindings().FPDFPageObj_SetStrokeColor(
                 *self.get_object_handle(),
                 stroke_color.red() as c_uint,
                 stroke_color.green() as c_uint,
@@ -983,8 +983,8 @@ where
     fn stroke_width(&self) -> Result<PdfPoints, PdfiumError> {
         let mut width = 0.0;
 
-        if self.get_bindings().is_true(
-            self.get_bindings()
+        if self.bindings().is_true(
+            self.bindings()
                 .FPDFPageObj_GetStrokeWidth(*self.get_object_handle(), &mut width),
         ) {
             Ok(PdfPoints::new(width))
@@ -995,8 +995,8 @@ where
 
     #[inline]
     fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
-        if self.get_bindings().is_true(
-            self.get_bindings()
+        if self.bindings().is_true(
+            self.bindings()
                 .FPDFPageObj_SetStrokeWidth(*self.get_object_handle(), stroke_width.value),
         ) {
             Ok(())
@@ -1008,7 +1008,7 @@ where
     #[inline]
     fn line_join(&self) -> Result<PdfPageObjectLineJoin, PdfiumError> {
         PdfPageObjectLineJoin::from_pdfium(
-            self.get_bindings()
+            self.bindings()
                 .FPDFPageObj_GetLineJoin(*self.get_object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1016,8 +1016,8 @@ where
 
     #[inline]
     fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
-        if self.get_bindings().is_true(
-            self.get_bindings()
+        if self.bindings().is_true(
+            self.bindings()
                 .FPDFPageObj_SetLineJoin(*self.get_object_handle(), line_join.as_pdfium() as c_int),
         ) {
             Ok(())
@@ -1029,7 +1029,7 @@ where
     #[inline]
     fn line_cap(&self) -> Result<PdfPageObjectLineCap, PdfiumError> {
         PdfPageObjectLineCap::from_pdfium(
-            self.get_bindings()
+            self.bindings()
                 .FPDFPageObj_GetLineCap(*self.get_object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1037,8 +1037,8 @@ where
 
     #[inline]
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
-        if self.get_bindings().is_true(
-            self.get_bindings()
+        if self.bindings().is_true(
+            self.bindings()
                 .FPDFPageObj_SetLineCap(*self.get_object_handle(), line_cap.as_pdfium() as c_int),
         ) {
             Ok(())
@@ -1070,8 +1070,8 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.unwrap_as_trait().get_bindings()
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        self.unwrap_as_trait().bindings()
     }
 
     #[inline]
@@ -1145,7 +1145,7 @@ impl<'a> Drop for PdfPageObject<'a> {
         // (Indeed, if we try to, Pdfium segfaults.)
 
         if !self.is_object_memory_owned_by_page() {
-            self.get_bindings()
+            self.bindings()
                 .FPDFPageObj_Destroy(*self.get_object_handle());
         }
     }

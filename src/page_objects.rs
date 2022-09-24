@@ -652,7 +652,7 @@ impl<'a> PdfPageObjects<'a> {
         document: &PdfDocument,
         source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
     ) -> Result<(), PdfiumError> {
-        let source = PdfPage::from_pdfium(page, None, document, self.bindings);
+        let source = PdfPage::from_pdfium(page, None, document);
 
         // Make sure we iterate over the range backwards. The collection's length will reduce
         // each time we remove an object from it, and we must avoid overflow or Pdfium may segfault.

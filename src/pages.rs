@@ -7,16 +7,14 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
-use crate::error::PdfiumError::PdfiumLibraryInternalError;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints};
 use crate::page_object_group::PdfPageGroupObject;
 use crate::page_size::PdfPagePaperSize;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-use std::ffi::c_void;
 use std::ops::{Range, RangeInclusive};
-use std::os::raw::{c_double, c_int};
+use std::os::raw::{c_double, c_int, c_void};
 
 /// The zero-based index of a single [PdfPage] inside its containing [PdfPages] collection.
 pub type PdfPageIndex = u16;
@@ -72,22 +70,30 @@ impl PdfPageMode {
 /// The collection of [PdfPage] objects inside a [PdfDocument].
 pub struct PdfPages<'a> {
     document: &'a PdfDocument<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPages<'a> {
     /// Creates a new [PdfPages] collection from the given [PdfDocument].
     #[inline]
-    pub(crate) fn new(
-        document: &'a PdfDocument<'a>,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
-        PdfPages { document, bindings }
+    pub(crate) fn new(document: &'a PdfDocument<'a>) -> Self {
+        PdfPages { document }
+    }
+
+    /// Returns a reference to the [PdfDocument] that contains this [PdfPages] collection.
+    #[inline]
+    pub(crate) fn document(&self) -> &'a PdfDocument<'a> {
+        self.document
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by the containing [PdfDocument].
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.document().bindings()
     }
 
     /// Returns the number of pages in this [PdfPages] collection.
     pub fn len(&self) -> PdfPageIndex {
-        self.bindings.FPDF_GetPageCount(*self.document.handle()) as PdfPageIndex
+        self.bindings().FPDF_GetPageCount(*self.document().handle()) as PdfPageIndex
     }
 
     /// Returns `true` if this [PdfPages] collection is empty.
@@ -120,8 +126,8 @@ impl<'a> PdfPages<'a> {
 
         self.pdfium_page_handle_to_result(
             index,
-            self.bindings
-                .FPDF_LoadPage(*self.document.handle(), index as c_int),
+            self.bindings()
+                .FPDF_LoadPage(*self.document().handle(), index as c_int),
         )
     }
 
@@ -154,8 +160,8 @@ impl<'a> PdfPages<'a> {
     ) -> Result<PdfPage<'a>, PdfiumError> {
         self.pdfium_page_handle_to_result(
             index,
-            self.bindings.FPDFPage_New(
-                *self.document.handle(),
+            self.bindings().FPDFPage_New(
+                *self.document().handle(),
                 index as c_int,
                 size.width().value as c_double,
                 size.height().value as c_double,
@@ -169,11 +175,11 @@ impl<'a> PdfPages<'a> {
             return Err(PdfiumError::PageIndexOutOfBounds);
         }
 
-        self.bindings
-            .FPDFPage_Delete(*self.document.handle(), index as c_int);
+        self.bindings()
+            .FPDFPage_Delete(*self.document().handle(), index as c_int);
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumLibraryInternalError(error))
+        if let Some(error) = self.bindings().get_pdfium_last_error() {
+            Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
             Ok(())
         }
@@ -207,14 +213,14 @@ impl<'a> PdfPages<'a> {
         pages: &str,
         destination_page_index: PdfPageIndex,
     ) -> Result<(), PdfiumError> {
-        if self.bindings.is_true(self.bindings.FPDF_ImportPages(
-            *self.document.handle(),
+        if self.bindings().is_true(self.bindings().FPDF_ImportPages(
+            *self.document().handle(),
             *source.handle(),
             pages,
             destination_page_index as c_int,
         )) {
             Ok(())
-        } else if let Some(error) = self.bindings.get_pdfium_last_error() {
+        } else if let Some(error) = self.bindings().get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
             // This would be an unusual situation; a null handle indicating failure,
@@ -235,9 +241,9 @@ impl<'a> PdfPages<'a> {
         source_page_range: RangeInclusive<PdfPageIndex>,
         destination_page_index: PdfPageIndex,
     ) -> Result<(), PdfiumError> {
-        if self.bindings.is_true(
-            self.bindings.FPDF_ImportPagesByIndex_vec(
-                *self.document.handle(),
+        if self.bindings().is_true(
+            self.bindings().FPDF_ImportPagesByIndex_vec(
+                *self.document().handle(),
                 *source.handle(),
                 source_page_range
                     .map(|index| index as c_int)
@@ -246,7 +252,7 @@ impl<'a> PdfPages<'a> {
             ),
         ) {
             Ok(())
-        } else if let Some(error) = self.bindings.get_pdfium_last_error() {
+        } else if let Some(error) = self.bindings().get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
             // This would be an unusual situation; a null handle indicating failure,
@@ -290,8 +296,8 @@ impl<'a> PdfPages<'a> {
         columns_per_row: u8,
         size: PdfPagePaperSize,
     ) -> Result<PdfDocument, PdfiumError> {
-        let handle = self.bindings.FPDF_ImportNPagesToOne(
-            *self.document.handle(),
+        let handle = self.bindings().FPDF_ImportNPagesToOne(
+            *self.document().handle(),
             size.width().value,
             size.height().value,
             columns_per_row as size_t,
@@ -299,7 +305,7 @@ impl<'a> PdfPages<'a> {
         );
 
         if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
@@ -310,7 +316,7 @@ impl<'a> PdfPages<'a> {
                 ))
             }
         } else {
-            Ok(PdfDocument::from_pdfium(handle, self.bindings))
+            Ok(PdfDocument::from_pdfium(handle, self.bindings()))
         }
     }
 
@@ -321,7 +327,7 @@ impl<'a> PdfPages<'a> {
         handle: FPDF_PAGE,
     ) -> Result<PdfPage<'a>, PdfiumError> {
         if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
@@ -349,8 +355,8 @@ impl<'a> PdfPages<'a> {
                 // length and call FPDF_GetPageLabel() again with a pointer to the buffer;
                 // this will write the label text to the buffer in UTF16LE format.
 
-                let buffer_length = self.bindings.FPDF_GetPageLabel(
-                    *self.document.handle(),
+                let buffer_length = self.bindings().FPDF_GetPageLabel(
+                    *self.document().handle(),
                     index as c_int,
                     std::ptr::null_mut(),
                     0,
@@ -363,8 +369,8 @@ impl<'a> PdfPages<'a> {
                 } else {
                     let mut buffer = create_byte_buffer(buffer_length as usize);
 
-                    let result = self.bindings.FPDF_GetPageLabel(
-                        *self.document.handle(),
+                    let result = self.bindings().FPDF_GetPageLabel(
+                        *self.document().handle(),
                         index as c_int,
                         buffer.as_mut_ptr() as *mut c_void,
                         buffer_length,
@@ -376,19 +382,17 @@ impl<'a> PdfPages<'a> {
                 }
             };
 
-            Ok(PdfPage::from_pdfium(
-                handle,
-                label,
-                self.document,
-                self.bindings,
-            ))
+            Ok(PdfPage::from_pdfium(handle, label, self.document()))
         }
     }
 
     /// Returns the [PdfPageMode] setting embedded in the containing [PdfDocument].
     pub fn page_mode(&self) -> PdfPageMode {
-        PdfPageMode::from_pdfium(self.bindings.FPDFDoc_GetPageMode(*self.document.handle()))
-            .unwrap_or(PdfPageMode::UnsetOrUnknown)
+        PdfPageMode::from_pdfium(
+            self.bindings()
+                .FPDFDoc_GetPageMode(*self.document().handle()),
+        )
+        .unwrap_or(PdfPageMode::UnsetOrUnknown)
     }
 
     /// Applies the given watermarking closure to each [PdfPage] in this [PdfPages] collection.
@@ -442,7 +446,7 @@ impl<'a> PdfPages<'a> {
         for (index, page) in self.iter().enumerate() {
             let mut group = PdfPageGroupObject::from_pdfium(
                 *page.handle(),
-                self.bindings,
+                self.bindings(),
                 page.content_regeneration_strategy()
                     == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             );

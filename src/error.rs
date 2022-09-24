@@ -59,6 +59,8 @@ pub enum PdfiumError {
     ImageObjectFilterIndexInBoundsButFilterUndefined,
     UnknownPdfColorSpace,
     InvalidTransformationMatrix,
+    SignatureIndexOutOfBounds,
+    AttachmentIndexOutOfBounds,
 
     /// Two data buffers are expected to have the same size, but they do not.
     DataBufferLengthMismatch,
@@ -80,6 +82,9 @@ pub enum PdfiumError {
     /// successfully returned a value, but the value could not be converted from a c_int
     /// to a standard Rust u8.
     UnableToConvertPdfiumColorValueToRustu8(std::num::TryFromIntError),
+
+    /// The browser's built-in `Window` object could not be retrieved.
+    WebSysWindowObjectNotAvailable,
 
     /// An error was returned when attempting to use the browser's built-in `fetch()` API.
     #[cfg(target_arch = "wasm32")]

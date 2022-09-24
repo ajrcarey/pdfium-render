@@ -815,11 +815,11 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn fill_mode(&self) -> Result<PdfPathFillMode, PdfiumError> {
         let mut raw_fill_mode: c_int = 0;
 
-        let mut _raw_stroke: FPDF_BOOL = self.get_bindings().FALSE();
+        let mut _raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPath_GetDrawMode(
+            .bindings()
+            .is_true(self.bindings().FPDFPath_GetDrawMode(
                 *self.get_object_handle(),
                 &mut raw_fill_mode,
                 &mut _raw_stroke,
@@ -828,7 +828,7 @@ impl<'a> PdfPagePathObject<'a> {
             PdfPathFillMode::from_pdfium(raw_fill_mode)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.get_bindings()
+                self.bindings()
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
@@ -844,20 +844,20 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn is_stroked(&self) -> Result<bool, PdfiumError> {
         let mut _raw_fill_mode: c_int = 0;
 
-        let mut raw_stroke: FPDF_BOOL = self.get_bindings().FALSE();
+        let mut raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPath_GetDrawMode(
+            .bindings()
+            .is_true(self.bindings().FPDFPath_GetDrawMode(
                 *self.get_object_handle(),
                 &mut _raw_fill_mode,
                 &mut raw_stroke,
             ))
         {
-            Ok(self.get_bindings().is_true(raw_stroke))
+            Ok(self.bindings().is_true(raw_stroke))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.get_bindings()
+                self.bindings()
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
@@ -876,17 +876,17 @@ impl<'a> PdfPagePathObject<'a> {
         do_stroke: bool,
     ) -> Result<(), PdfiumError> {
         if self
-            .get_bindings()
-            .is_true(self.get_bindings().FPDFPath_SetDrawMode(
+            .bindings()
+            .is_true(self.bindings().FPDFPath_SetDrawMode(
                 *self.get_object_handle(),
                 fill_mode.as_pdfium() as c_int,
-                self.get_bindings().bool_to_pdfium(do_stroke),
+                self.bindings().bool_to_pdfium(do_stroke),
             ))
         {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.get_bindings()
+                self.bindings()
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
@@ -916,7 +916,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
     }
 }

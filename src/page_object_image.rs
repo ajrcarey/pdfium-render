@@ -363,7 +363,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     }
 
     #[inline]
-    fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
     }
 }
@@ -384,7 +384,7 @@ impl<'a> PdfPageImageObjectFilters<'a> {
     /// Returns the number of image filters applied to the parent [PdfPageImageObject].
     pub fn len(&self) -> usize {
         self.object
-            .get_bindings()
+            .bindings()
             .FPDFImageObj_GetImageFilterCount(*self.object.get_object_handle()) as usize
     }
 
@@ -428,7 +428,7 @@ impl<'a> PdfPageImageObjectFilters<'a> {
         // this will write the font name into the buffer. Unlike most text handling in
         // Pdfium, image filter names are returned in UTF-8 format.
 
-        let buffer_length = self.object.get_bindings().FPDFImageObj_GetImageFilter(
+        let buffer_length = self.object.bindings().FPDFImageObj_GetImageFilter(
             *self.object.get_object_handle(),
             index as c_int,
             std::ptr::null_mut(),
@@ -443,7 +443,7 @@ impl<'a> PdfPageImageObjectFilters<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.object.get_bindings().FPDFImageObj_GetImageFilter(
+        let result = self.object.bindings().FPDFImageObj_GetImageFilter(
             *self.object.get_object_handle(),
             index as c_int,
             buffer.as_mut_ptr() as *mut c_void,
