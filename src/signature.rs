@@ -3,34 +3,30 @@
 
 use crate::bindgen::FPDF_SIGNATURE;
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ffi::CString;
 use std::os::raw::{c_char, c_void};
 
-/// A single digital signature in a [PdfDocument].
+/// A single digital signature in a `PdfDocument`.
 pub struct PdfSignature<'a> {
     handle: FPDF_SIGNATURE,
-    document: &'a PdfDocument<'a>,
+    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfSignature<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(handle: FPDF_SIGNATURE, document: &'a PdfDocument<'a>) -> Self {
-        PdfSignature { handle, document }
+    pub(crate) fn from_pdfium(
+        handle: FPDF_SIGNATURE,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Self {
+        PdfSignature { handle, bindings }
     }
 
-    /// Returns the [PdfDocument] containing this [PdfSignature].
-    #[inline]
-    pub fn document(&self) -> &'a PdfDocument<'a> {
-        self.document
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by the [PdfDocument] containing this [PdfSignature].
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfSignature].
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.document().bindings()
+        self.bindings
     }
 
     /// Returns the raw byte data for this [PdfSignature].

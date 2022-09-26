@@ -10,10 +10,10 @@ use crate::bindgen::{
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
     FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
     FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
-    FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
-    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF,
-    FS_RECTF,
+    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
+    FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT,
+    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX,
+    FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use lazy_static::lazy_static;
@@ -1737,6 +1737,145 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     ) -> c_int {
         self.bindings
             .FPDFText_GetBoundedText(text_page, left, top, right, bottom, buffer, buflen)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindStart(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        findwhat: FPDF_WIDESTRING,
+        flags: c_ulong,
+        start_index: c_int,
+    ) -> FPDF_SCHHANDLE {
+        self.bindings
+            .FPDFText_FindStart(text_page, findwhat, flags, start_index)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindNext(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL {
+        self.bindings.FPDFText_FindNext(handle)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindPrev(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL {
+        self.bindings.FPDFText_FindPrev(handle)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetSchResultIndex(&self, handle: FPDF_SCHHANDLE) -> c_int {
+        self.bindings.FPDFText_GetSchResultIndex(handle)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetSchCount(&self, handle: FPDF_SCHHANDLE) -> c_int {
+        self.bindings.FPDFText_GetSchCount(handle)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindClose(&self, handle: FPDF_SCHHANDLE) {
+        self.bindings.FPDFText_FindClose(handle)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK {
+        self.bindings.FPDFLink_LoadWebLinks(text_page)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int {
+        self.bindings.FPDFLink_CountWebLinks(link_page)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetURL(
+        &self,
+        link_page: FPDF_PAGELINK,
+        link_index: c_int,
+        buffer: *mut c_ushort,
+        buflen: c_int,
+    ) -> c_int {
+        self.bindings
+            .FPDFLink_GetURL(link_page, link_index, buffer, buflen)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int {
+        self.bindings.FPDFLink_CountRects(link_page, link_index)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetRect(
+        &self,
+        link_page: FPDF_PAGELINK,
+        link_index: c_int,
+        rect_index: c_int,
+        left: *mut c_double,
+        top: *mut c_double,
+        right: *mut c_double,
+        bottom: *mut c_double,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFLink_GetRect(link_page, link_index, rect_index, left, top, right, bottom)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetTextRange(
+        &self,
+        link_page: FPDF_PAGELINK,
+        link_index: c_int,
+        start_char_index: *mut c_int,
+        char_count: *mut c_int,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFLink_GetTextRange(link_page, link_index, start_char_index, char_count)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK) {
+        self.bindings.FPDFLink_CloseWebLinks(link_page)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetDecodedThumbnailData(
+        &self,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        self.bindings
+            .FPDFPage_GetDecodedThumbnailData(page, buffer, buflen)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetRawThumbnailData(
+        &self,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        self.bindings
+            .FPDFPage_GetRawThumbnailData(page, buffer, buflen)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP {
+        self.bindings.FPDFPage_GetThumbnailAsBitmap(page)
     }
 
     #[inline]

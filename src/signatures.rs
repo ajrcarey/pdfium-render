@@ -1,8 +1,8 @@
 //! Defines the [PdfSignatures] struct, a collection of all the `PdfSignature` objects in a
 //! `PdfDocument`.
 
+use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::signature::PdfSignature;
 use std::ops::{Range, RangeInclusive};
@@ -10,34 +10,33 @@ use std::os::raw::c_int;
 
 pub type PdfSignatureIndex = u16;
 
-/// The collection of [PdfSignature] objects inside a [PdfDocument].
+/// The collection of [PdfSignature] objects inside a `PdfDocument`.
 pub struct PdfSignatures<'a> {
-    document: &'a PdfDocument<'a>,
+    document_handle: FPDF_DOCUMENT,
+    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfSignatures<'a> {
-    /// Creates a new [PdfSignatures] collection from the given [PdfDocument].
     #[inline]
-    pub(crate) fn new(document: &'a PdfDocument<'a>) -> Self {
-        PdfSignatures { document }
+    pub(crate) fn from_pdfium(
+        document_handle: FPDF_DOCUMENT,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Self {
+        PdfSignatures {
+            document_handle,
+            bindings,
+        }
     }
 
-    /// Returns a reference to the [PdfDocument] that contains this [PdfSignatures] collection.
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfSignatures] collection.
     #[inline]
-    pub(crate) fn document(&self) -> &PdfDocument {
-        self.document
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by the containing [PdfDocument].
-    #[inline]
-    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.document().bindings()
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the number of signatures in this [PdfSignatures] collection.
     pub fn len(&self) -> PdfSignatureIndex {
-        self.bindings()
-            .FPDF_GetSignatureCount(*self.document.handle()) as PdfSignatureIndex
+        self.bindings().FPDF_GetSignatureCount(self.document_handle) as PdfSignatureIndex
     }
 
     /// Returns `true` if this [PdfSignatures] collection is empty.
@@ -71,7 +70,7 @@ impl<'a> PdfSignatures<'a> {
 
         let handle = self
             .bindings()
-            .FPDF_GetSignatureObject(*self.document.handle(), index as c_int);
+            .FPDF_GetSignatureObject(self.document_handle, index as c_int);
 
         if handle.is_null() {
             if let Some(error) = self.bindings().get_pdfium_last_error() {
@@ -85,7 +84,7 @@ impl<'a> PdfSignatures<'a> {
                 ))
             }
         } else {
-            Ok(PdfSignature::from_pdfium(handle, self.document))
+            Ok(PdfSignature::from_pdfium(handle, self.bindings()))
         }
     }
 

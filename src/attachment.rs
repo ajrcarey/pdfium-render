@@ -1,16 +1,32 @@
 //! Defines the [PdfAttachment] struct, exposing functionality related to a single
 //! attachment in a `PdfAttachments` collection.
 
-use crate::bindgen::{FPDF_ATTACHMENT, FPDF_DOCUMENT, FPDF_WCHAR};
+use crate::bindgen::{FPDF_ATTACHMENT, FPDF_WCHAR};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::error::PdfiumError;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+use std::io::Write;
 use std::os::raw::{c_ulong, c_void};
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::fs::File;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::Path;
+
+#[cfg(target_arch = "wasm32")]
+use js_sys::{Array, Uint8Array};
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::JsValue;
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::Blob;
 
 /// A single attached data file embedded in a `PdfDocument`.
 pub struct PdfAttachment<'a> {
     handle: FPDF_ATTACHMENT,
-    document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -18,14 +34,9 @@ impl<'a> PdfAttachment<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         handle: FPDF_ATTACHMENT,
-        document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        PdfAttachment {
-            handle,
-            document_handle,
-            bindings,
-        }
+        PdfAttachment { handle, bindings }
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfAttachment].
@@ -68,8 +79,8 @@ impl<'a> PdfAttachment<'a> {
         get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
     }
 
-    /// Returns the byte data for this [PdfAttachment].
-    pub fn bytes(&self) -> Vec<u8> {
+    /// Writes this [PdfAttachment] to a new byte buffer, returning the byte buffer.
+    pub fn save_to_bytes(&self) -> Result<Vec<u8>, PdfiumError> {
         // Retrieving the attachment data from Pdfium is a two-step operation. First, we call
         // FPDFAttachment_GetFile() with a null buffer; this will retrieve the length of
         // the data in bytes. If the length is zero, then there is no data associated
@@ -107,11 +118,49 @@ impl<'a> PdfAttachment<'a> {
             assert!(self.bindings.is_true(result));
             assert_eq!(buffer_length, out_buflen);
 
-            buffer
+            Ok(buffer)
         } else {
-            // There is no file data for this attachment.
-
-            Vec::new()
+            Err(PdfiumError::NoDataInAttachment)
         }
+    }
+
+    /// Writes this [PdfAttachment] to the given writer.
+    pub fn save_to_writer<W: Write>(&self, writer: &mut W) -> Result<(), PdfiumError> {
+        self.save_to_bytes().and_then(|bytes| {
+            writer
+                .write_all(bytes.as_slice())
+                .map_err(PdfiumError::IoError)
+        })
+    }
+
+    /// Writes this [PdfAttachment] to the file at the given path.
+    ///
+    /// This function is not available when compiling to WASM. You have several options for
+    /// saving attachment data in WASM:
+    /// * Use either the [PdfAttachment::save_to_writer()] or the [PdfAttachment::save_to_bytes()] functions,
+    /// both of which are available when compiling to WASM.
+    /// * Use the `PdfAttachment::save_to_blob()` function to save attachment data directly into a new
+    /// Javascript Blob object. This function is only available when compiling to WASM.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
+        self.save_to_writer(&mut File::create(path).map_err(PdfiumError::IoError)?)
+    }
+
+    /// Writes this [PdfAttachment] to a new Blob, returning the Blob.
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(target_arch = "wasm32")]
+    pub fn save_to_blob(&self) -> Result<Blob, PdfiumError> {
+        let bytes = self.save_to_bytes()?;
+
+        let array = Uint8Array::new_with_length(bytes.len() as u32);
+
+        array.copy_from(bytes.as_slice());
+
+        let blob =
+            Blob::new_with_u8_array_sequence(&JsValue::from(Array::of1(&JsValue::from(array))))
+                .map_err(|_| PdfiumError::JsSysErrorConstructingBlobFromBytes)?;
+
+        Ok(blob)
     }
 }

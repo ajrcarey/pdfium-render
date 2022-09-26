@@ -3,10 +3,10 @@ use crate::bindgen::{
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
     FPDF_BYTESTRING, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
     FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SIGNATURE, FPDF_STRING,
-    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
+    FPDF_STRING, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
@@ -193,6 +193,22 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFText_CountRects()?;
         result.extern_FPDFText_GetRect()?;
         result.extern_FPDFText_GetBoundedText()?;
+        result.extern_FPDFText_FindStart()?;
+        result.extern_FPDFText_FindNext()?;
+        result.extern_FPDFText_FindPrev()?;
+        result.extern_FPDFText_GetSchResultIndex()?;
+        result.extern_FPDFText_GetSchCount()?;
+        result.extern_FPDFText_FindClose()?;
+        result.extern_FPDFLink_LoadWebLinks()?;
+        result.extern_FPDFLink_CountWebLinks()?;
+        result.extern_FPDFLink_GetURL()?;
+        result.extern_FPDFLink_CountRects()?;
+        result.extern_FPDFLink_GetRect()?;
+        result.extern_FPDFLink_GetTextRange()?;
+        result.extern_FPDFLink_CloseWebLinks()?;
+        result.extern_FPDFPage_GetDecodedThumbnailData()?;
+        result.extern_FPDFPage_GetRawThumbnailData()?;
+        result.extern_FPDFPage_GetThumbnailAsBitmap()?;
         result.extern_FPDFFormObj_CountObjects()?;
         result.extern_FPDFFormObj_GetObject()?;
         result.extern_FPDFPageObj_CreateTextObj()?;
@@ -2653,6 +2669,200 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFText_GetBoundedText\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_FindStart(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                text_page: FPDF_TEXTPAGE,
+                findwhat: FPDF_WIDESTRING,
+                flags: c_ulong,
+                start_index: c_int,
+            ) -> FPDF_SCHHANDLE,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFText_FindStart\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_FindNext(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_SCHHANDLE) -> FPDF_BOOL>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFText_FindNext\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_FindPrev(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_SCHHANDLE) -> FPDF_BOOL>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFText_FindPrev\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetSchResultIndex(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_SCHHANDLE) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFText_GetSchResultIndex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_GetSchCount(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_SCHHANDLE) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFText_GetSchCount\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFText_FindClose(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(handle: FPDF_SCHHANDLE)>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFText_FindClose\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_LoadWebLinks(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_LoadWebLinks\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_CountWebLinks(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(link_page: FPDF_PAGELINK) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFLink_CountWebLinks\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetURL(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                link_page: FPDF_PAGELINK,
+                link_index: c_int,
+                buffer: *mut c_ushort,
+                buflen: c_int,
+            ) -> c_int,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetURL\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_CountRects(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(link_page: FPDF_PAGELINK, link_index: c_int) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_CountRects\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn extern_FPDFLink_GetRect(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                link_page: FPDF_PAGELINK,
+                link_index: c_int,
+                rect_index: c_int,
+                left: *mut c_double,
+                top: *mut c_double,
+                right: *mut c_double,
+                bottom: *mut c_double,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetRect\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetTextRange(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                link_page: FPDF_PAGELINK,
+                link_index: c_int,
+                start_char_index: *mut c_int,
+                char_count: *mut c_int,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetTextRange\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_CloseWebLinks(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(link_page: FPDF_PAGELINK)>, libloading::Error> {
+        unsafe { self.library.get(b"FPDFLink_CloseWebLinks\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetDecodedThumbnailData(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(page: FPDF_PAGE, buffer: *mut c_void, buflen: c_ulong) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetDecodedThumbnailData\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetRawThumbnailData(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(page: FPDF_PAGE, buffer: *mut c_void, buflen: c_ulong) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_GetRawThumbnailData\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_GetThumbnailAsBitmap(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> FPDF_BITMAP>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFPage_GetThumbnailAsBitmap\0") }
     }
 
     #[inline]
@@ -5800,6 +6010,153 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
                 text_page, left, top, right, bottom, buffer, buflen,
             )
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindStart(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        findwhat: FPDF_WIDESTRING,
+        flags: c_ulong,
+        start_index: c_int,
+    ) -> FPDF_SCHHANDLE {
+        unsafe {
+            self.extern_FPDFText_FindStart().unwrap()(text_page, findwhat, flags, start_index)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindNext(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_FindNext().unwrap()(handle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindPrev(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFText_FindPrev().unwrap()(handle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetSchResultIndex(&self, handle: FPDF_SCHHANDLE) -> c_int {
+        unsafe { self.extern_FPDFText_GetSchResultIndex().unwrap()(handle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetSchCount(&self, handle: FPDF_SCHHANDLE) -> c_int {
+        unsafe { self.extern_FPDFText_GetSchCount().unwrap()(handle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_FindClose(&self, handle: FPDF_SCHHANDLE) {
+        unsafe { self.extern_FPDFText_FindClose().unwrap()(handle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK {
+        unsafe { self.extern_FPDFLink_LoadWebLinks().unwrap()(text_page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int {
+        unsafe { self.extern_FPDFLink_CountWebLinks().unwrap()(link_page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetURL(
+        &self,
+        link_page: FPDF_PAGELINK,
+        link_index: c_int,
+        buffer: *mut c_ushort,
+        buflen: c_int,
+    ) -> c_int {
+        unsafe { self.extern_FPDFLink_GetURL().unwrap()(link_page, link_index, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int {
+        unsafe { self.extern_FPDFLink_CountRects().unwrap()(link_page, link_index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn FPDFLink_GetRect(
+        &self,
+        link_page: FPDF_PAGELINK,
+        link_index: c_int,
+        rect_index: c_int,
+        left: *mut c_double,
+        top: *mut c_double,
+        right: *mut c_double,
+        bottom: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFLink_GetRect().unwrap()(
+                link_page, link_index, rect_index, left, top, right, bottom,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetTextRange(
+        &self,
+        link_page: FPDF_PAGELINK,
+        link_index: c_int,
+        start_char_index: *mut c_int,
+        char_count: *mut c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFLink_GetTextRange().unwrap()(
+                link_page,
+                link_index,
+                start_char_index,
+                char_count,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK) {
+        unsafe { self.extern_FPDFLink_CloseWebLinks().unwrap()(link_page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetDecodedThumbnailData(
+        &self,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFPage_GetDecodedThumbnailData().unwrap()(page, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetRawThumbnailData(
+        &self,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFPage_GetRawThumbnailData().unwrap()(page, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP {
+        unsafe { self.extern_FPDFPage_GetThumbnailAsBitmap().unwrap()(page) }
     }
 
     #[inline]

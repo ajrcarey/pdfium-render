@@ -638,8 +638,7 @@ impl PdfRenderConfig {
         }
     }
 
-    /// Moves the origin - the top left position - of a [PdfPage] by the given
-    /// horizontal and vertical distances during rendering.
+    /// Moves the origin of a [PdfPage] by the given horizontal and vertical distances during rendering.
     ///
     /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
     /// a custom transformation matrix, but not both at the same time. Applying any transformation

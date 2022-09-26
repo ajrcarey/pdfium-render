@@ -2,11 +2,10 @@
 //! associated with a clickable link or document bookmark.
 
 use crate::bindgen::{
-    FPDF_ACTION, PDFACTION_EMBEDDEDGOTO, PDFACTION_GOTO, PDFACTION_LAUNCH, PDFACTION_REMOTEGOTO,
-    PDFACTION_UNSUPPORTED, PDFACTION_URI,
+    FPDF_ACTION, FPDF_DOCUMENT, PDFACTION_EMBEDDEDGOTO, PDFACTION_GOTO, PDFACTION_LAUNCH,
+    PDFACTION_REMOTEGOTO, PDFACTION_UNSUPPORTED, PDFACTION_URI,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::error::PdfiumError;
 
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
@@ -38,7 +37,7 @@ pub struct PdfAction<'a> {
     handle: FPDF_ACTION,
     #[allow(dead_code)]
     // The document field is not currently used, but we expect it to be in future
-    document: &'a PdfDocument<'a>,
+    document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -46,12 +45,12 @@ impl<'a> PdfAction<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         handle: FPDF_ACTION,
-        document: &'a PdfDocument<'a>,
+        document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         Self {
             handle,
-            document,
+            document_handle,
             bindings,
         }
     }

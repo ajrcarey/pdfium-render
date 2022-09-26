@@ -2,10 +2,9 @@
 //! in a `PdfBookmarks` collection.
 
 use crate::action::PdfAction;
-use crate::bindgen::FPDF_BOOKMARK;
+use crate::bindgen::{FPDF_BOOKMARK, FPDF_DOCUMENT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmarks::PdfBookmarksIterator;
-use crate::document::PdfDocument;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::os::raw::c_void;
@@ -13,7 +12,7 @@ use std::os::raw::c_void;
 pub struct PdfBookmark<'a> {
     handle: FPDF_BOOKMARK,
     parent: Option<FPDF_BOOKMARK>,
-    document: &'a PdfDocument<'a>,
+    document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -21,27 +20,32 @@ impl<'a> PdfBookmark<'a> {
     pub(crate) fn from_pdfium(
         handle: FPDF_BOOKMARK,
         parent: Option<FPDF_BOOKMARK>,
-        document: &'a PdfDocument<'a>,
+        document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfBookmark {
             handle,
             parent,
-            document,
+            document_handle,
             bindings,
         }
     }
 
-    /// Returns the internal FPDF_BOOKMARK handle for this [PdfBookmark].
+    /// Returns the internal `FPDF_BOOKMARK` handle for this [PdfBookmark].
     #[inline]
-    pub(crate) fn get_handle(&self) -> &FPDF_BOOKMARK {
+    pub(crate) fn handle(&self) -> &FPDF_BOOKMARK {
         &self.handle
     }
 
-    /// Creates a clone of this [PdfBookmark] that points to the same internal FPDF_BOOKMARK handle.
+    /// Creates a clone of this [PdfBookmark] that points to the same internal `FPDF_BOOKMARK` handle.
     #[inline]
     pub(crate) fn clone(&self) -> PdfBookmark<'a> {
-        Self::from_pdfium(self.handle, self.parent, self.document, self.bindings)
+        Self::from_pdfium(
+            self.handle,
+            self.parent,
+            self.document_handle,
+            self.bindings,
+        )
     }
 
     /// Returns the title of this [PdfBookmark], if any.
@@ -89,7 +93,11 @@ impl<'a> PdfBookmark<'a> {
         if handle.is_null() {
             None
         } else {
-            Some(PdfAction::from_pdfium(handle, self.document, self.bindings))
+            Some(PdfAction::from_pdfium(
+                handle,
+                self.document_handle,
+                self.bindings,
+            ))
         }
     }
 
@@ -97,16 +105,16 @@ impl<'a> PdfBookmark<'a> {
     #[inline]
     pub fn parent(&self) -> Option<PdfBookmark<'a>> {
         self.parent.map(|parent_handle| {
-            PdfBookmark::from_pdfium(parent_handle, None, self.document, self.bindings)
+            PdfBookmark::from_pdfium(parent_handle, None, self.document_handle, self.bindings)
         })
     }
 
     /// Returns the first child [PdfBookmark] of this [PdfBookmark] in the containing
-    /// [PdfDocument], if any.
+    /// `PdfDocument`, if any.
     pub fn first_child(&self) -> Option<PdfBookmark<'a>> {
         let handle = self
             .bindings
-            .FPDFBookmark_GetFirstChild(*self.document.handle(), self.handle);
+            .FPDFBookmark_GetFirstChild(self.document_handle, self.handle);
 
         if handle.is_null() {
             None
@@ -114,18 +122,18 @@ impl<'a> PdfBookmark<'a> {
             Some(PdfBookmark::from_pdfium(
                 handle,
                 Some(self.handle),
-                self.document,
+                self.document_handle,
                 self.bindings,
             ))
         }
     }
 
     /// Returns the next [PdfBookmark] at the same tree level as this [PdfBookmark] in
-    /// the containing [PdfDocument], if any.
+    /// the containing `PdfDocument`, if any.
     pub fn next_sibling(&self) -> Option<PdfBookmark<'a>> {
         let handle = self
             .bindings
-            .FPDFBookmark_GetNextSibling(*self.document.handle(), self.handle);
+            .FPDFBookmark_GetNextSibling(self.document_handle, self.handle);
 
         if handle.is_null() {
             None
@@ -133,7 +141,7 @@ impl<'a> PdfBookmark<'a> {
             Some(PdfBookmark::from_pdfium(
                 handle,
                 self.parent,
-                self.document,
+                self.document_handle,
                 self.bindings,
             ))
         }
@@ -152,7 +160,7 @@ impl<'a> PdfBookmark<'a> {
                     Some(PdfBookmark::from_pdfium(
                         parent_handle,
                         None,
-                        self.document,
+                        self.document_handle,
                         self.bindings,
                     )),
                     false,

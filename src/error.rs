@@ -44,6 +44,7 @@ pub enum PdfiumError {
     PageObjectAlreadyAttachedToDifferentPage,
     PageAnnotationIndexOutOfBounds,
     PageFlattenFailure,
+    PageMissingEmbeddedThumbnail,
     UnknownPdfPageObjectType,
     UnknownPdfPageTextRenderMode,
     UnknownPdfPagePathFillMode,
@@ -61,6 +62,7 @@ pub enum PdfiumError {
     InvalidTransformationMatrix,
     SignatureIndexOutOfBounds,
     AttachmentIndexOutOfBounds,
+    NoDataInAttachment,
 
     /// Two data buffers are expected to have the same size, but they do not.
     DataBufferLengthMismatch,

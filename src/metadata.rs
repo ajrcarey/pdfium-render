@@ -1,13 +1,13 @@
 //! Defines the [PdfMetadata] struct, a collection of all the metadata tags in a `PdfDocument`.
 
+use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::os::raw::c_void;
 use std::slice::Iter;
 
-/// Valid metadata tag types in a [PdfDocument].
+/// Valid metadata tag types in a `PdfDocument`.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfDocumentMetadataTagType {
     Title,
@@ -20,7 +20,7 @@ pub enum PdfDocumentMetadataTagType {
     ModificationDate,
 }
 
-/// A single metadata tag in a [PdfDocument].
+/// A single metadata tag in a `PdfDocument`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PdfDocumentMetadataTag {
     tag: PdfDocumentMetadataTagType,
@@ -47,19 +47,18 @@ impl PdfDocumentMetadataTag {
 }
 
 pub struct PdfMetadata<'a> {
-    document: &'a PdfDocument<'a>,
+    document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
     tags: Vec<PdfDocumentMetadataTag>,
 }
 
 impl<'a> PdfMetadata<'a> {
-    /// Creates a new [PdfMetadata] collection from the given [PdfDocument] and library bindings.
-    pub(crate) fn new(
-        document: &'a PdfDocument<'a>,
+    pub(crate) fn from_pdfium(
+        document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         let mut result = PdfMetadata {
-            document,
+            document_handle,
             bindings,
             tags: vec![],
         };
@@ -141,7 +140,7 @@ impl<'a> PdfMetadata<'a> {
 
         let buffer_length =
             self.bindings
-                .FPDF_GetMetaText(*self.document.handle(), tag, std::ptr::null_mut(), 0);
+                .FPDF_GetMetaText(self.document_handle, tag, std::ptr::null_mut(), 0);
 
         if buffer_length == 0 {
             // The tag is not present.
@@ -152,7 +151,7 @@ impl<'a> PdfMetadata<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = self.bindings.FPDF_GetMetaText(
-            *self.document.handle(),
+            self.document_handle,
             tag,
             buffer.as_mut_ptr() as *mut c_void,
             buffer_length,

@@ -317,11 +317,11 @@ pub enum PdfPageContentRegenerationStrategy {
 /// A single page in a [PdfDocument].
 ///
 /// In addition to its own intrinsic properties, a [PdfPage] serves as the entry point
-/// to all object collections related to a single page in a document.
-/// These collections include:
+/// to all object collections related to a single page in a document. These collections include:
 /// * [PdfPage::annotations()], an immutable collection of all the user annotations attached to the [PdfPage].
 /// * [PdfPage::annotations_mut()], a mutable collection of all the user annotations attached to the [PdfPage].
 /// * [PdfPage::boundaries()], an immutable collection of the boundary boxes relating to the [PdfPage].
+/// * [PdfPage::boundaries_mut()], a mutable collection of the boundary boxes relating to the [PdfPage].
 /// * [PdfPage::objects()], an immutable collection of all the displayable objects on the [PdfPage].
 /// * [PdfPage::objects_mut()], a mutable collection of all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {
@@ -330,8 +330,9 @@ pub struct PdfPage<'a> {
     document: &'a PdfDocument<'a>,
     regeneration_strategy: PdfPageContentRegenerationStrategy,
     is_content_regeneration_required: bool,
-    objects: PdfPageObjects<'a>,
     annotations: PdfPageAnnotations<'a>,
+    boundaries: PdfPageBoundaries<'a>,
+    objects: PdfPageObjects<'a>,
 }
 
 impl<'a> PdfPage<'a> {
@@ -347,8 +348,9 @@ impl<'a> PdfPage<'a> {
             document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             is_content_regeneration_required: false,
-            objects: PdfPageObjects::from_pdfium(*document.handle(), handle, document.bindings()),
             annotations: PdfPageAnnotations::from_pdfium(handle, document.bindings()),
+            boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
+            objects: PdfPageObjects::from_pdfium(*document.handle(), handle, document.bindings()),
         }
     }
 
@@ -441,16 +443,60 @@ impl<'a> PdfPage<'a> {
             .is_true(self.bindings().FPDFPage_HasTransparency(self.handle))
     }
 
-    /// Returns the collection of bounding boxes defining the extents of this [PdfPage].
-    #[inline]
-    pub fn boundaries(&self) -> PdfPageBoundaries {
-        PdfPageBoundaries::from_pdfium(self, self.bindings())
-    }
-
     /// Returns the paper size of this [PdfPage].
     #[inline]
     pub fn paper_size(&self) -> PdfPagePaperSize {
         PdfPagePaperSize::from_points(self.width(), self.height())
+    }
+
+    /// Returns `true` if this [PdfPage] contains an embedded thumbnail.
+    ///
+    /// Embedded thumbnails can be generated as a courtesy by PDF generators to save PDF consumers
+    /// the burden of having to render their own thumbnails on the fly. If a thumbnail for this page
+    /// was not embedded at the time the document was created, one can easily be rendered using the
+    /// standard rendering functions:
+    ///
+    /// ```
+    ///     let thumbnail_desired_pixel_size = 128;
+    ///
+    ///     let thumbnail = page.render_with_config(
+    ///         &PdfRenderConfig::thumbnail(thumbnail_desired_pixel_size)
+    ///     )?; // Renders a 128 x 128 thumbnail of the page
+    /// ```
+    #[inline]
+    pub fn has_embedded_thumbnail(&self) -> bool {
+        // To determine whether the page includes a thumbnail, we ask Pdfium to return the
+        // size of the thumbnail data. A non-zero value indicates a thumbnail exists.
+
+        self.bindings()
+            .FPDFPage_GetRawThumbnailData(self.handle, std::ptr::null_mut(), 0)
+            > 0
+    }
+
+    /// Returns the embedded thumbnail for this [PdfPage], if any.
+    ///
+    /// Embedded thumbnails can be generated as a courtesy by PDF generators to save PDF consumers
+    /// the burden of having to render their own thumbnails on the fly. If a thumbnail for this page
+    /// was not embedded at the time the document was created, one can easily be rendered using the
+    /// standard rendering functions:
+    ///
+    /// ```
+    ///     let thumbnail_desired_pixel_size = 128;
+    ///
+    ///     let thumbnail = page.render_with_config(
+    ///         &PdfRenderConfig::thumbnail(thumbnail_desired_pixel_size)
+    ///     )?; // Renders a 128 x 128 thumbnail of the page
+    /// ```
+    pub fn embedded_thumbnail(&self) -> Result<PdfBitmap, PdfiumError> {
+        let thumbnail_handle = self.bindings().FPDFPage_GetThumbnailAsBitmap(self.handle);
+
+        if thumbnail_handle.is_null() {
+            // No thumbnail is available for this page.
+
+            Err(PdfiumError::PageMissingEmbeddedThumbnail)
+        } else {
+            Ok(PdfBitmap::from_pdfium(thumbnail_handle, self.bindings()))
+        }
     }
 
     /// Returns the collection of text boxes contained within this [PdfPage].
@@ -477,37 +523,6 @@ impl<'a> PdfPage<'a> {
         } else {
             Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings()))
         }
-    }
-
-    /// Returns an immutable collection of all the page objects on this [PdfPage].
-    pub fn objects(&self) -> &PdfPageObjects<'a> {
-        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
-            && self.is_content_regeneration_required
-        {
-            let result = self.regenerate_content_immut();
-
-            debug_assert!(result.is_ok());
-        }
-
-        &self.objects
-    }
-
-    /// Returns a mutable collection of all the page objects on this [PdfPage].
-    pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
-        // We can't know for sure whether the user will update any page objects,
-        // and we can't track what happens in the PdfPageObjects instance after we return
-        // a mutable reference to it, but if the user is going to the trouble of retrieving
-        // a mutable reference it seems best to assume they're intending to update something.
-
-        self.is_content_regeneration_required = self.regeneration_strategy
-            != PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
-
-        self.objects.do_regenerate_page_content_after_each_change(
-            self.regeneration_strategy
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
-
-        &mut self.objects
     }
 
     /// Returns an immutable collection of the annotations that have been added to this [PdfPage].
@@ -540,6 +555,49 @@ impl<'a> PdfPage<'a> {
             );
 
         &mut self.annotations
+    }
+
+    /// Returns an immutable collection of the bounding boxes defining the extents of this [PdfPage].
+    #[inline]
+    pub fn boundaries(&self) -> &PdfPageBoundaries<'a> {
+        &self.boundaries
+    }
+
+    /// Returns a mutable collection of the bounding boxes defining the extents of this [PdfPage].
+    #[inline]
+    pub fn boundaries_mut(&mut self) -> &mut PdfPageBoundaries<'a> {
+        &mut self.boundaries
+    }
+
+    /// Returns an immutable collection of all the page objects on this [PdfPage].
+    pub fn objects(&self) -> &PdfPageObjects<'a> {
+        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+            && self.is_content_regeneration_required
+        {
+            let result = self.regenerate_content_immut();
+
+            debug_assert!(result.is_ok());
+        }
+
+        &self.objects
+    }
+
+    /// Returns a mutable collection of all the page objects on this [PdfPage].
+    pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
+        // We can't know for sure whether the user will update any page objects,
+        // and we can't track what happens in the PdfPageObjects instance after we return
+        // a mutable reference to it, but if the user is going to the trouble of retrieving
+        // a mutable reference it seems best to assume they're intending to update something.
+
+        self.is_content_regeneration_required = self.regeneration_strategy
+            != PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
+
+        self.objects.do_regenerate_page_content_after_each_change(
+            self.regeneration_strategy
+                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        );
+
+        &mut self.objects
     }
 
     /// Renders this [PdfPage] into a [PdfBitmap] with the given pixel dimensions and page rotation.

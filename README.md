@@ -65,7 +65,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Rendering pages to bitmaps.
 * Text and image extraction.
 * Document signature introspection.
-* Document attachment introspection.
+* Document attachment creation and introspection.
 * Document concatenation.
 * Page object introspection.
 * Page annotation introspection.
@@ -78,21 +78,15 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.20 adds attachment creation and deletion to the `PdfAttachments` collection, and adds
+embedded page thumbnail support to `PdfPage`.
+
 Version 0.7.19 adds bindings to all Pdfium functions related to document attachments, and adds
 the `PdfAttachments` and `PdfSignatures` collections to the high-level interface. 
 
 Version 0.7.18 adds convenience functions for returning the Pdfium bindings used by `PdfDocument`,
 `PdfPage`, `PdfBitmap`, `PdfFont`, and various other interfaces, thanks to an excellent
 contribution from <https://github.com/LU15W1R7H>.
-
-Version 0.7.17 relaxes some unnecessarily restrictive lifetime bounds in `PdfPageObjectPath`.
-
-Version 0.7.16 adds additional convenience functions for quickly creating stand-alone
-cubic Bézier path page objects and adding them to a mutable collection of page objects.
-
-Version 0.7.15 adds additional functions for working with page annotations, including retrieval
-of annotation names, author names, comments, creation and modification timestamps,
-and text and character ranges linked to annotations.
 
 ## Binding to Pdfium
 
@@ -229,6 +223,24 @@ not available when running in the browser. The following additional functions ar
   Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
   element.
 
+The `PdfAttachments::create_attachment_from_file()` function is not available when running in
+the browser. The `PdfAttachments::create_attachment_from_bytes()` and
+`PdfAttachments::create_attachment_from_reader()` functions are available, and
+the following additional functions are provided:
+
+* The `PdfAttachments::create_attachment_from_fetch()` function uses the brower's built-in `fetch()` API
+  to download a URL over the network and use it as an embedded attachment.
+* The `PdfAttachments::create_attachment_from_blob()` function creates an embedded attachment
+  from the byte data in a Javascript `Blob` or `File` object, including `File` objects returned from
+  an `<input type="file">` element.
+
+The `PdfAttachment::save_to_file()` function is not available when running in the browser.
+The `PdfAttachment::save_to_bytes()` and `PdfAttachment::save_to_writer()` functions are
+available, and the following additional function is provided:
+
+* The `PdfAttachment::save_to_blob()` function returns the byte data for the attachment as a
+  Javascript `Blob` object.
+
 ## Multithreading
 
 Pdfium makes no guarantees about thread safety and should be assumed _not_ to be thread safe.
@@ -296,14 +308,14 @@ For functions that take an `FPDF_WIDESTRING`, `pdfium-render` exposes two functi
 `FPDF_*()` function that takes an `FPDF_WIDESTRING`, and an additional `FPDF_*_str()` helper function
 that takes a standard Rust `&str` and converts it internally to an `FPDF_WIDESTRING` before calling
 Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
-`FPDFAnnot_SetStringValue()`, `FPDFText_SetText()`, `FPDFDoc_AddAttachment()`, and
-`FPDFAttachment_SetStringValue()`.
+`FPDFText_SetText()`, `FPDFText_FindStart()`, `FPDFDoc_AddAttachment()`, `FPDFAnnot_SetStringValue()`,
+and `FPDFAttachment_SetStringValue()`.
 
 The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and
 `PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()` utility functions are provided
 for converting to and from `FPDF_WIDESTRING` in your own code.
 
-Certain Pdfium functions take or return C-style integer boolean values, aliased as `FPDF_BOOL`.
+Some Pdfium functions return classic C-style integer boolean values, aliased as `FPDF_BOOL`.
 The `PdfiumLibraryBindings::TRUE()`, `PdfiumLibraryBindings::FALSE()`,
 `PdfiumLibraryBindings::is_true()`, and `PdfiumLibraryBindings::bool_to_pdfium()` utility functions
 are provided for converting to and from `FPDF_BOOL` in your own code.
@@ -324,9 +336,9 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.19, 281 (76%) have
-bindings available in `pdfium-render`, with the functionality of roughly three-quarters of these
-available via the `pdfium-render` high-level interface.
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.20, 297 (81%) have
+bindings available in `PdfiumLibraryBindings`, with the functionality of roughly three-quarters of
+these available via the `pdfium-render` high-level interface.
 
 Some functions and type definitions in the high-level interface have been renamed or revised since
 their initial implementation. The initial implementations are still available but are marked as
@@ -336,6 +348,14 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.20: adds bindings for `FPDFPage_*Thumbnail*()`, `FPDFLink_*()`, and `FPDFText_Find*()` functions;
+  adds `PdfAttachments::create_attachment_from_bytes()`, `PdfAttachments::create_attachment_from_file()`,
+  `PdfAttachments::create_attachment_from_reader()`, `PdfAttachments::create_attachment_from_fetch()`,  
+  `PdfAttachments::create_attachment_from_blob()`, `PdfAttachments::delete_at_index()`,
+  `PdfAttachment::save_to_writer()`, `PdfAttachment::save_to_file()`, `PdfAttachment::save_to_blob()`,
+  `PdfPage::has_embedded_thumbnail()`, `PdfPage::embedded_thumbnail()`, and `PdfPage::boundaries_mut()`
+  functions to the high-level interface; renames `PdfAttachment::bytes()` function introduced in 0.7.19
+  to `PdfAttachment::save_to_bytes()`.
 * 0.7.19: adds bindings for `FPDFDoc_*Attachment*()` functions; adds `PdfAttachments` and
   `PdfSignatures` collections to the high-level interface.
 * 0.7.18: adds convenience `bindings()` accessor functions to `PdfDocument`, `PdfPage`, `PdfBitmap`,

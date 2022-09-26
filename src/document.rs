@@ -1,6 +1,7 @@
 //! Defines the [PdfDocument] struct, the entry point to all Pdfium functionality
 //! related to a single PDF file.
 
+use crate::attachments::PdfAttachments;
 use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmarks::PdfBookmarks;
@@ -10,6 +11,7 @@ use crate::form::PdfForm;
 use crate::metadata::PdfMetadata;
 use crate::pages::PdfPages;
 use crate::permissions::PdfPermissions;
+use crate::signatures::PdfSignatures;
 use crate::utils::files::get_pdfium_file_writer_from_writer;
 use crate::utils::files::FpdfFileAccessExt;
 use std::io::Cursor;
@@ -28,8 +30,6 @@ use js_sys::{Array, Uint8Array};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
 
-use crate::attachments::PdfAttachments;
-use crate::signatures::PdfSignatures;
 #[cfg(target_arch = "wasm32")]
 use web_sys::Blob;
 
@@ -127,9 +127,13 @@ impl PdfDocumentVersion {
 /// for the document.
 pub struct PdfDocument<'a> {
     handle: FPDF_DOCUMENT,
-    form: Option<PdfForm<'a>>,
-    attachments: PdfAttachments<'a>,
     output_version: Option<PdfDocumentVersion>,
+    attachments: PdfAttachments<'a>,
+    bookmarks: PdfBookmarks<'a>,
+    form: Option<PdfForm<'a>>,
+    metadata: PdfMetadata<'a>,
+    permissions: PdfPermissions<'a>,
+    signatures: PdfSignatures<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
 
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
@@ -145,10 +149,14 @@ impl<'a> PdfDocument<'a> {
     ) -> Self {
         Self {
             handle,
-            form: PdfForm::from_pdfium(handle, bindings),
-            attachments: PdfAttachments::from_pdfium(handle, bindings),
-            bindings,
             output_version: None,
+            attachments: PdfAttachments::from_pdfium(handle, bindings),
+            bookmarks: PdfBookmarks::from_pdfium(handle, bindings),
+            form: PdfForm::from_pdfium(handle, bindings),
+            metadata: PdfMetadata::from_pdfium(handle, bindings),
+            permissions: PdfPermissions::from_pdfium(handle, bindings),
+            signatures: PdfSignatures::from_pdfium(handle, bindings),
+            bindings,
             file_access_reader: None,
         }
     }
@@ -191,51 +199,52 @@ impl<'a> PdfDocument<'a> {
         self.output_version = Some(version);
     }
 
+    /// Returns an immutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
+    pub fn attachments(&self) -> &PdfAttachments {
+        &self.attachments
+    }
+
+    /// Returns a mutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
+    pub fn attachments_mut(&mut self) -> &mut PdfAttachments<'a> {
+        &mut self.attachments
+    }
+
+    /// Returns an immutable collection of all the [PdfBookmarks] in this [PdfDocument].
+    #[inline]
+    pub fn bookmarks(&self) -> &PdfBookmarks {
+        &self.bookmarks
+    }
+
+    /// Returns an immutable reference to the [PdfForm] embedded in this [PdfDocument], if any.
+    #[inline]
+    pub fn form(&self) -> Option<&PdfForm<'a>> {
+        self.form.as_ref()
+    }
+
+    /// Returns an immutable collection of all the [PdfMetadata] tags in this [PdfDocument].
+    #[inline]
+    pub fn metadata(&self) -> &PdfMetadata {
+        &self.metadata
+    }
+
     /// Returns a collection of all the [PdfPages] in this [PdfDocument].
+    // TODO: AJRC - 26/9/22 - distinguish between immutable and mutable access to PdfPages
+    // as per https://github.com/ajrcarey/pdfium-render/issues/47.
     #[inline]
     pub fn pages(&'a self) -> PdfPages<'a> {
         PdfPages::new(self)
     }
 
-    /// Returns a collection of all the [PdfMetadata] tags in this [PdfDocument].
+    /// Returns an immutable collection of all the [PdfPermissions] applied to this [PdfDocument].
     #[inline]
-    pub fn metadata(&'a self) -> PdfMetadata<'a> {
-        PdfMetadata::new(self, self.bindings)
-    }
-
-    /// Returns a reference to the [PdfForm] embedded in this [PdfDocument], if any.
-    #[inline]
-    pub fn form(&'a self) -> Option<&PdfForm<'a>> {
-        self.form.as_ref()
-    }
-
-    /// Returns a collection of all the [PdfBookmarks] in this [PdfDocument].
-    #[inline]
-    pub fn bookmarks(&'a self) -> PdfBookmarks<'a> {
-        PdfBookmarks::new(self, self.bindings)
-    }
-
-    /// Returns a collection of all the [PdfPermissions] applied to this [PdfDocument].
-    #[inline]
-    pub fn permissions(&'a self) -> PdfPermissions<'a> {
-        PdfPermissions::new(self)
-    }
-
-    /// Returns an immutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
-    pub fn attachments(&'a self) -> &PdfAttachments<'a> {
-        &self.attachments
-    }
-
-    /// Returns a mutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
-    pub fn attachments_mut(&'a mut self) -> &mut PdfAttachments<'a> {
-        // TODO: AJRC - 20/9/22 - content regeneration after attachments list changes
-        &mut self.attachments
+    pub fn permissions(&self) -> &PdfPermissions {
+        &self.permissions
     }
 
     /// Returns a collection of all the [PdfSignatures] attached to this [PdfDocument].
     #[inline]
-    pub fn signatures(&'a self) -> PdfSignatures<'a> {
-        PdfSignatures::new(self)
+    pub fn signatures(&self) -> &PdfSignatures {
+        &self.signatures
     }
 
     /// Writes this [PdfDocument] to the given writer.
@@ -292,13 +301,11 @@ impl<'a> PdfDocument<'a> {
     /// * Use the `PdfDocument::save_to_blob()` function to save document data directly into a new
     /// Javascript Blob object. This function is only available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
-    #[inline]
     pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
         self.save_to_writer(&mut File::create(path).map_err(PdfiumError::IoError)?)
     }
 
     /// Writes this [PdfDocument] to a new byte buffer, returning the byte buffer.
-    #[inline]
     pub fn save_to_bytes(&self) -> Result<Vec<u8>, PdfiumError> {
         let mut cursor = Cursor::new(Vec::new());
 
@@ -311,7 +318,6 @@ impl<'a> PdfDocument<'a> {
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
-    #[inline]
     pub fn save_to_blob(&self) -> Result<Blob, PdfiumError> {
         let bytes = self.save_to_bytes()?;
 
