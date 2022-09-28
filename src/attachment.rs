@@ -79,6 +79,34 @@ impl<'a> PdfAttachment<'a> {
         get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
     }
 
+    /// Returns the size of this [PdfAttachment] in bytes.
+    pub fn len(&self) -> usize {
+        // Calling FPDFAttachment_GetFile() with a null buffer will retrieve the length of the
+        // data in bytes without allocating any additional memory.
+
+        let mut out_buflen: c_ulong = 0;
+
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFAttachment_GetFile(
+                self.handle,
+                std::ptr::null_mut(),
+                0,
+                &mut out_buflen,
+            ))
+        {
+            out_buflen as usize
+        } else {
+            0
+        }
+    }
+
+    /// Returns `true` if there is no byte data associated with this [PdfAttachment].
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Writes this [PdfAttachment] to a new byte buffer, returning the byte buffer.
     pub fn save_to_bytes(&self) -> Result<Vec<u8>, PdfiumError> {
         // Retrieving the attachment data from Pdfium is a two-step operation. First, we call

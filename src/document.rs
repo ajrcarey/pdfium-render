@@ -119,12 +119,15 @@ impl PdfDocumentVersion {
 
 /// An entry point to all the various object collections contained in a single PDF file.
 /// These collections include:
-/// * [PdfDocument::pages()], all the [PdfPages] in the document.
-/// * [PdfDocument::metadata()], all the [PdfMetadata] tags in the document.
-/// * [PdfDocument::form()], the [PdfForm] optionally embedded in the document.
-/// * [PdfDocument::bookmarks()], all the [PdfBookmarks] in the document.
+/// * [PdfDocument::attachments()], an immutable collection of all the [PdfAttachments] in the document.
+/// * [PdfDocument::attachments_mut()], a mutable collection of all the [PdfAttachments] in the document.
+/// * [PdfDocument::bookmarks()], an immutable collection of all the [PdfBookmarks] in the document.
+/// * [PdfDocument::form()], an immutable reference to the [PdfForm] embedded in the document, if any.
+/// * [PdfDocument::metadata()], an immutable collection of all the [PdfMetadata] tags in the document.
+/// * [PdfDocument::pages()], a collection of all the [PdfPages] in the document.
 /// * [PdfDocument::permissions()], settings relating to security handlers and document permissions
 /// for the document.
+/// * [PdfDocument::signatures()], an immutable collection of all the [PdfSignatures] in the document.
 pub struct PdfDocument<'a> {
     handle: FPDF_DOCUMENT,
     output_version: Option<PdfDocumentVersion>,
