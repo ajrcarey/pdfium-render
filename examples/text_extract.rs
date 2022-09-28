@@ -12,7 +12,7 @@ pub fn main() -> Result<(), PdfiumError> {
     .iter()
     .enumerate()
     .for_each(|(index, page)| {
-        // For each page in the document, output the images on the page to files.
+        // For each page in the document, output the text on the page to the console.
 
         println!("=============== Page {} ===============", index);
 

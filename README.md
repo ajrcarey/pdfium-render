@@ -9,7 +9,7 @@ from scratch.
     use pdfium_render::prelude::*;
 
     fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
-        // Renders each page in the given test PDF file to a separate JPEG file.
+        // Renders each page in the PDF file at the given path to a separate JPEG file.
 
         // Bind to a Pdfium library in the same directory as our Rust executable;
         // failing that, fall back to using a Pdfium library provided by the operating system.
@@ -19,7 +19,7 @@ from scratch.
                 .or_else(|_| Pdfium::bind_to_system_library())?,
         );
 
-        // Load the document...
+        // Load the document from the given path...
 
         let document = pdfium.load_pdf_from_file(path, password)?;
 

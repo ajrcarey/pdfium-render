@@ -58,10 +58,7 @@ pub fn main() -> Result<(), PdfiumError> {
         println!("=============== Attachment {} ===============", index);
 
         println!("Name: {:?}", attachment.name());
-        println!(
-            "Content length: {} bytes",
-            attachment.save_to_bytes()?.len()
-        );
+        println!("Content length: {} bytes", attachment.len());
     }
 
     Ok(())
