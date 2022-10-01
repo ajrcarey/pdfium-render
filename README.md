@@ -78,6 +78,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.21 fixes some bugs in color version when working with `PdfPageImageObject` page objects,
+and adds the additional crate features `libstdc++` and `libc++` to provide more flexibility
+when linking against statically-compiled builds of Pdfium. See the "Static linking" section below
+for details.
+
 Version 0.7.20 adds attachment creation and deletion to the `PdfAttachments` collection, and adds
 embedded page thumbnail support to `PdfPage`.
 
@@ -176,6 +181,25 @@ library itself; it should just be the path of the containing directory. You must
 statically-built library is named in the appropriate way for your target platform
 (`libpdfium.a` on Linux and macOS, for example) in order for the Rust compiler to locate it.
 
+Depending on how your Pdfium library was built, you may need to also link against a C++ standard library.
+To link against the GNU C++ standard library (`libstdc++`), use the optional `libstdc++` feature.
+`pdfium-render` will pass the following additional flag to `cargo`:
+
+```rust
+    cargo:rustc-link-lib=dylib=stdc++
+```
+
+To link against the LLVM C++ standard library (`libc++`), use the optional `libc++` feature.
+`pdfium-render` will pass the following additional flag to `cargo`:
+
+```rust
+    cargo:rustc-link-lib=dylib=c++
+```
+
+Alternatively, use the `link-cplusplus` crate to link against a C++ standard library. `link-cplusplus`
+offers more options for deciding which standard library should be selected, including automatically
+selecting the build platform's installed default.
+
 `pdfium-render` will not build Pdfium for you; you must build Pdfium yourself, or source a
 pre-built static archive from elsewhere.
 
@@ -264,8 +288,10 @@ This crate provides the following optional features:
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
+* `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
+* `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
-  See the "Multithreading" section above. 
+  See the "Multithreading" section above.
 
 The `thread_safe` feature is enabled by default. All other features are disabled by default.
 
@@ -320,6 +346,11 @@ The `PdfiumLibraryBindings::TRUE()`, `PdfiumLibraryBindings::FALSE()`,
 `PdfiumLibraryBindings::is_true()`, and `PdfiumLibraryBindings::bool_to_pdfium()` utility functions
 are provided for converting to and from `FPDF_BOOL` in your own code.
 
+Image pixel data in Pdfium is encoded in either three-channel BGR or four-channel BGRA.
+The `PdfiumLibraryBindings::bgr_to_rgba()`, `PdfiumLibraryBindings::bgra_to_rgba()`,
+`PdfiumLibraryBindings::rgb_to_bgra()`, and `PdfiumLibraryBindings::rgba_to_bgra()` utility functions
+are provided for converting between RGB and BGR image data in your own code. 
+
 ## Development status
 
 The initial focus of this crate was on rendering pages in a PDF file; consequently, `FPDF_*`
@@ -336,7 +367,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.20, 297 (81%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.21, 309 (84%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of roughly three-quarters of
 these available via the `pdfium-render` high-level interface.
 
@@ -348,6 +379,12 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.21: adds bindings for `FPDF_GetPageAAction()`, `FPDF_GetFileIdentifier()`, and all remaining
+  `FPDFDest_*()` and `FPDFLink_*()` functions; adds `PdfAttachment::len()` and
+  `PdfAttachment::is_empty()` convenience functions; adds `libstdc++` and `libc++` crate features;
+  adds color conversion functions to `PdfiumLibraryBindings`; corrects bugs in color conversion
+  when working with `PdfPageImageObject`, as detailed in <https://github.com/ajrcarey/pdfium-render/issues/50>;
+  corrects some small typos in examples.
 * 0.7.20: adds bindings for `FPDFPage_*Thumbnail*()`, `FPDFLink_*()`, and `FPDFText_Find*()` functions;
   adds `PdfAttachments::create_attachment_from_bytes()`, `PdfAttachments::create_attachment_from_file()`,
   `PdfAttachments::create_attachment_from_reader()`, `PdfAttachments::create_attachment_from_fetch()`,  

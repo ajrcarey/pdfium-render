@@ -72,5 +72,16 @@ fn statically_link_pdfium() {
 
         println!("cargo:rustc-link-lib=static=pdfium");
         println!("cargo:rustc-link-search=native={}", path);
+
+        // Optionally instruct cargo to link to a C++ standard library during the build.
+        // TODO: AJRC - 30/9/22 - for now, we dynamically link to the selected standard library,
+        // but ultimately we want to use a link type of "static:-bundle" once the feature is stabilised
+        // (currently it is available only in nightly builds of Rust).
+
+        #[cfg(feature = "libstdc++")]
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+
+        #[cfg(feature = "libc++")]
+        println!("cargo:rustc-link-lib=dylib=c++");
     }
 }
