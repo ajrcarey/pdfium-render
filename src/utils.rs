@@ -1,3 +1,39 @@
+pub(crate) mod pixels {
+    /// Converts the given byte array, containing pixel data encoded as three-channel BGR,
+    /// into pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
+    #[inline]
+    pub(crate) fn bgr_to_rgba(bgr: &[u8]) -> Vec<u8> {
+        bgr.chunks_exact(3)
+            .flat_map(|channels| [channels[2], channels[1], channels[0], 255])
+            .collect::<Vec<_>>()
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as four-channel BGRA,
+    /// into pixel data encoded as four-channel RGBA.
+    #[inline]
+    pub(crate) fn bgra_to_rgba(bgra: &[u8]) -> Vec<u8> {
+        bgra.chunks_exact(4)
+            .flat_map(|channels| [channels[2], channels[1], channels[0], channels[3]])
+            .collect::<Vec<_>>()
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as three-channel RGB,
+    /// into pixel data encoded as four-channel BGRA. A new alpha channel is created with full opacity.
+    #[inline]
+    pub(crate) fn rgb_to_bgra(rgb: &[u8]) -> Vec<u8> {
+        // RGB <-> BGR is an invertible operation where we simply swap bytes 0 and 2.
+        bgr_to_rgba(rgb)
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as four-channel RGBA,
+    /// into pixel data encoded as four-channel BGRA.
+    #[inline]
+    pub(crate) fn rgba_to_bgra(rgba: &[u8]) -> Vec<u8> {
+        // RGBA <-> BGRA is an invertible operation where we simply swap bytes 0 and 2.
+        bgra_to_rgba(rgba)
+    }
+}
+
 pub(crate) mod mem {
     /// Creates an empty byte buffer of the given length.
     #[inline]
@@ -275,25 +311,76 @@ pub(crate) mod files {
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
+pub(crate) mod test {
     // Provides a function that binds to the correct Pdfium configuration during unit tests,
     // depending on selected crate features.
 
     use crate::pdfium::Pdfium;
+    use crate::utils::pixels::*;
 
     #[inline]
     #[cfg(feature = "static")]
-    pub(crate) fn tests_bind_to_pdfium() -> Pdfium {
+    pub(crate) fn test_bind_to_pdfium() -> Pdfium {
         Pdfium::default()
     }
 
     #[inline]
     #[cfg(not(feature = "static"))]
-    pub(crate) fn tests_bind_to_pdfium() -> Pdfium {
+    pub(crate) fn test_bind_to_pdfium() -> Pdfium {
         Pdfium::new(
             Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
                 .or_else(|_| Pdfium::bind_to_system_library())
                 .unwrap(),
         )
+    }
+
+    // Tests of color conversion functions.
+
+    #[test]
+    fn test_bgr_to_rgba() {
+        let data: [u8; 15] = [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12];
+
+        let result = rgb_to_bgra(data.as_slice());
+
+        assert_eq!(
+            result,
+            [0, 1, 2, 255, 5, 6, 3, 255, 10, 7, 4, 255, 11, 8, 9, 255, 12, 13, 14, 255]
+        );
+    }
+
+    #[test]
+    fn test_bgra_to_rgba() {
+        let data: [u8; 16] = [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15];
+
+        let result = bgra_to_rgba(data.as_slice());
+
+        assert_eq!(
+            result,
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        );
+    }
+
+    #[test]
+    fn test_rgb_to_bgra() {
+        let data: [u8; 15] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+        let result = rgb_to_bgra(data.as_slice());
+
+        assert_eq!(
+            result,
+            [2, 1, 0, 255, 5, 4, 3, 255, 8, 7, 6, 255, 11, 10, 9, 255, 14, 13, 12, 255]
+        );
+    }
+
+    #[test]
+    fn test_rgba_to_bgra() {
+        let data: [u8; 16] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+        let result = rgba_to_bgra(data.as_slice());
+
+        assert_eq!(
+            result,
+            [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15]
+        );
     }
 }
