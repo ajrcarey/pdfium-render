@@ -4,18 +4,19 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
+    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
+    FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
     FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX,
-    FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
+    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::document::PdfDocument;
 use crate::error::PdfiumInternalError;
 use crate::page::PdfPage;
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgb_to_bgra, rgba_to_bgra};
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
@@ -95,6 +96,34 @@ pub trait PdfiumLibraryBindings {
         get_string_from_pdfium_utf16le_bytes(buffer)
     }
 
+    /// Converts the given byte array, containing pixel data encoded as three-channel BGR,
+    /// into pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
+    #[inline]
+    fn bgr_to_rgba(&self, bgr: &[u8]) -> Vec<u8> {
+        bgr_to_rgba(bgr)
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as four-channel BGRA,
+    /// into pixel data encoded as four-channel RGBA.
+    #[inline]
+    fn bgra_to_rgba(&self, bgra: &[u8]) -> Vec<u8> {
+        bgra_to_rgba(bgra)
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as three-channel RGB,
+    /// into pixel data encoded as four-channel BGRA. A new alpha channel is created with full opacity.
+    #[inline]
+    fn rgb_to_bgra(&self, rgb: &[u8]) -> Vec<u8> {
+        rgb_to_bgra(rgb)
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as four-channel RGBA,
+    /// into pixel data encoded as four-channel BGRA.
+    #[inline]
+    fn rgba_to_bgra(&self, rgba: &[u8]) -> Vec<u8> {
+        rgba_to_bgra(rgba)
+    }
+
     /// Returns Pdfium's internal `FPDF_DOCUMENT` handle for the given [PdfDocument].
     #[inline]
     fn get_handle_from_document(&self, document: &PdfDocument) -> FPDF_DOCUMENT {
@@ -172,6 +201,15 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetFileIdentifier(
+        &self,
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
 
     #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int;
@@ -1143,6 +1181,64 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFDest_GetView(
+        &self,
+        dest: FPDF_DEST,
+        pNumParams: *mut c_ulong,
+        pParams: *mut FS_FLOAT,
+    ) -> c_ulong;
+
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn FPDFDest_GetLocationInPage(
+        &self,
+        dest: FPDF_DEST,
+        hasXVal: *mut FPDF_BOOL,
+        hasYVal: *mut FPDF_BOOL,
+        hasZoomVal: *mut FPDF_BOOL,
+        x: *mut FS_FLOAT,
+        y: *mut FS_FLOAT,
+        zoom: *mut FS_FLOAT,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_Enumerate(
+        &self,
+        page: FPDF_PAGE,
+        start_pos: *mut c_int,
+        link_annot: *mut FPDF_LINK,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetQuadPoints(
+        &self,
+        link_annot: FPDF_LINK,
+        quad_index: c_int,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE;

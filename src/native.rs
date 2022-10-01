@@ -2,11 +2,11 @@ use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
     FPDF_BYTESTRING, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
-    FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
+    FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
     FPDF_STRING, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
@@ -34,6 +34,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDF_SaveWithVersion()?;
         result.extern_FPDF_CloseDocument()?;
         result.extern_FPDF_GetFileVersion()?;
+        result.extern_FPDF_GetFileIdentifier()?;
         result.extern_FPDF_GetFormType()?;
         result.extern_FPDF_GetMetaText()?;
         result.extern_FPDF_GetDocPermissions()?;
@@ -173,6 +174,17 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFAction_GetFilePath()?;
         result.extern_FPDFAction_GetURIPath()?;
         result.extern_FPDFDest_GetDestPageIndex()?;
+        result.extern_FPDFDest_GetView()?;
+        result.extern_FPDFDest_GetLocationInPage()?;
+        result.extern_FPDFLink_GetLinkAtPoint()?;
+        result.extern_FPDFLink_GetLinkZOrderAtPoint()?;
+        result.extern_FPDFLink_GetDest()?;
+        result.extern_FPDFLink_GetAction()?;
+        result.extern_FPDFLink_Enumerate()?;
+        result.extern_FPDFLink_GetAnnot()?;
+        result.extern_FPDFLink_GetAnnotRect()?;
+        result.extern_FPDFLink_CountQuadPoints()?;
+        result.extern_FPDFLink_GetQuadPoints()?;
         result.extern_FPDFText_LoadPage()?;
         result.extern_FPDFText_ClosePage()?;
         result.extern_FPDFText_CountChars()?;
@@ -448,6 +460,23 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDF_GetFileVersion\0") }
+    }
+
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetFileIdentifier(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                document: FPDF_DOCUMENT,
+                id_type: FPDF_FILEIDTYPE,
+                buffer: *mut c_void,
+                buflen: c_ulong,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_GetFileIdentifier\0") }
     }
 
     #[inline]
@@ -2360,6 +2389,152 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFDest_GetDestPageIndex\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFDest_GetView(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                dest: FPDF_DEST,
+                pNumParams: *mut c_ulong,
+                pParams: *mut FS_FLOAT,
+            ) -> c_ulong,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFDest_GetView\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn extern_FPDFDest_GetLocationInPage(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                dest: FPDF_DEST,
+                hasXVal: *mut FPDF_BOOL,
+                hasYVal: *mut FPDF_BOOL,
+                hasZoomVal: *mut FPDF_BOOL,
+                x: *mut FS_FLOAT,
+                y: *mut FS_FLOAT,
+                zoom: *mut FS_FLOAT,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFDest_GetLocationInPage\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetLinkAtPoint(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetLinkAtPoint\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetLinkZOrderAtPoint(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, x: f64, y: f64) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetLinkZOrderAtPoint\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetDest(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetDest\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetAction(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(link: FPDF_LINK) -> FPDF_ACTION>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFLink_GetAction\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_Enumerate(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                start_pos: *mut c_int,
+                link_annot: *mut FPDF_LINK,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_Enumerate\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetAnnot(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetAnnot\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetAnnotRect(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetAnnotRect\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_CountQuadPoints(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(link_annot: FPDF_LINK) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFLink_CountQuadPoints\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFLink_GetQuadPoints(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                link_annot: FPDF_LINK,
+                quad_index: c_int,
+                quad_points: *mut FS_QUADPOINTSF,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFLink_GetQuadPoints\0") }
     }
 
     #[inline]
@@ -4453,6 +4628,18 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_GetFileIdentifier(
+        &self,
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDF_GetFileIdentifier().unwrap()(document, id_type, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { self.extern_FPDF_GetFormType().unwrap()(document) }
     }
@@ -5804,6 +5991,103 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int {
         unsafe { self.extern_FPDFDest_GetDestPageIndex().unwrap()(document, dest) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDest_GetView(
+        &self,
+        dest: FPDF_DEST,
+        pNumParams: *mut c_ulong,
+        pParams: *mut FS_FLOAT,
+    ) -> c_ulong {
+        unsafe { self.extern_FPDFDest_GetView().unwrap()(dest, pNumParams, pParams) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn FPDFDest_GetLocationInPage(
+        &self,
+        dest: FPDF_DEST,
+        hasXVal: *mut FPDF_BOOL,
+        hasYVal: *mut FPDF_BOOL,
+        hasZoomVal: *mut FPDF_BOOL,
+        x: *mut FS_FLOAT,
+        y: *mut FS_FLOAT,
+        zoom: *mut FS_FLOAT,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFDest_GetLocationInPage().unwrap()(
+                dest, hasXVal, hasYVal, hasZoomVal, x, y, zoom,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK {
+        unsafe { self.extern_FPDFLink_GetLinkAtPoint().unwrap()(page, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> c_int {
+        unsafe { self.extern_FPDFLink_GetLinkZOrderAtPoint().unwrap()(page, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST {
+        unsafe { self.extern_FPDFLink_GetDest().unwrap()(document, link) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION {
+        unsafe { self.extern_FPDFLink_GetAction().unwrap()(link) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_Enumerate(
+        &self,
+        page: FPDF_PAGE,
+        start_pos: *mut c_int,
+        link_annot: *mut FPDF_LINK,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFLink_Enumerate().unwrap()(page, start_pos, link_annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION {
+        unsafe { self.extern_FPDFLink_GetAnnot().unwrap()(page, link_annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFLink_GetAnnotRect().unwrap()(link_annot, rect) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int {
+        unsafe { self.extern_FPDFLink_CountQuadPoints().unwrap()(link_annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetQuadPoints(
+        &self,
+        link_annot: FPDF_LINK,
+        quad_index: c_int,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDFLink_GetQuadPoints().unwrap()(link_annot, quad_index, quad_points)
+        }
     }
 
     #[inline]

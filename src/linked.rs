@@ -1,12 +1,12 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
+    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
+    FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
     FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX,
-    FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
+    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::CString;
@@ -127,6 +127,18 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDF_GetFileVersion(doc, fileVersion) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetFileIdentifier(
+        &self,
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDF_GetFileIdentifier(document, id_type, buffer, buflen) }
     }
 
     #[inline]
@@ -1454,6 +1466,100 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int {
         unsafe { crate::bindgen::FPDFDest_GetDestPageIndex(document, dest) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDest_GetView(
+        &self,
+        dest: FPDF_DEST,
+        pNumParams: *mut c_ulong,
+        pParams: *mut FS_FLOAT,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDFDest_GetView(dest, pNumParams, pParams) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDest_GetLocationInPage(
+        &self,
+        dest: FPDF_DEST,
+        hasXVal: *mut FPDF_BOOL,
+        hasYVal: *mut FPDF_BOOL,
+        hasZoomVal: *mut FPDF_BOOL,
+        x: *mut FS_FLOAT,
+        y: *mut FS_FLOAT,
+        zoom: *mut FS_FLOAT,
+    ) -> FPDF_BOOL {
+        unsafe {
+            crate::bindgen::FPDFDest_GetLocationInPage(
+                dest, hasXVal, hasYVal, hasZoomVal, x, y, zoom,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK {
+        unsafe { crate::bindgen::FPDFLink_GetLinkAtPoint(page, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> c_int {
+        unsafe { crate::bindgen::FPDFLink_GetLinkZOrderAtPoint(page, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST {
+        unsafe { crate::bindgen::FPDFLink_GetDest(document, link) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION {
+        unsafe { crate::bindgen::FPDFLink_GetAction(link) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_Enumerate(
+        &self,
+        page: FPDF_PAGE,
+        start_pos: *mut c_int,
+        link_annot: *mut FPDF_LINK,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFLink_Enumerate(page, start_pos, link_annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION {
+        unsafe { crate::bindgen::FPDFLink_GetAnnot(page, link_annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFLink_GetAnnotRect(link_annot, rect) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int {
+        unsafe { crate::bindgen::FPDFLink_CountQuadPoints(link_annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetQuadPoints(
+        &self,
+        link_annot: FPDF_LINK,
+        quad_index: c_int,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFLink_GetQuadPoints(link_annot, quad_index, quad_points) }
     }
 
     #[inline]
