@@ -244,7 +244,7 @@ impl<'a> PdfDocument<'a> {
         &self.permissions
     }
 
-    /// Returns a collection of all the [PdfSignatures] attached to this [PdfDocument].
+    /// Returns an immutable collection of all the [PdfSignatures] attached to this [PdfDocument].
     #[inline]
     pub fn signatures(&self) -> &PdfSignatures {
         &self.signatures

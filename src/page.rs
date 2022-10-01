@@ -957,6 +957,7 @@ impl<'a> Drop for PdfPage<'a> {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
+    use crate::utils::test::test_bind_to_pdfium;
 
     #[test]
     fn test_pdf_rect_is_inside() {
@@ -993,10 +994,7 @@ mod test {
         // Renders each page in the given test PDF file to a separate JPEG file
         // by re-using the same bitmap buffer for each render.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = test_bind_to_pdfium();
 
         let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
 
@@ -1005,12 +1003,8 @@ mod test {
             .set_maximum_height(2000)
             .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
 
-        let mut bitmap = PdfBitmap::empty(
-            2500,
-            2500,
-            PdfBitmapFormat::default(),
-            pdfium.get_bindings(),
-        )?;
+        let mut bitmap =
+            PdfBitmap::empty(2500, 2500, PdfBitmapFormat::default(), pdfium.bindings())?;
 
         for (index, page) in document.pages().iter().enumerate() {
             page.render_into_bitmap_with_config(&mut bitmap, &render_config)?; // Re-uses the same bitmap for rendering each page.

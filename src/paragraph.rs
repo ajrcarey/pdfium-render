@@ -694,11 +694,11 @@ impl<'a> PdfParagraph<'a> {
 pub mod tests {
     use crate::paragraph::PdfParagraph;
     use crate::prelude::*;
-    use crate::utils::tests::tests_bind_to_pdfium; // Temporary until PdfParagraph is included in the prelude.
+    use crate::utils::test::test_bind_to_pdfium; // Temporary until PdfParagraph is included in the prelude.
 
     #[test]
     fn test_paragraph_construction() -> Result<(), PdfiumError> {
-        let pdfium = tests_bind_to_pdfium();
+        let pdfium = test_bind_to_pdfium();
 
         let document = pdfium.load_pdf_from_file("./test/text-test.pdf", None)?;
 

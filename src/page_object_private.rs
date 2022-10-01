@@ -239,14 +239,14 @@ pub(crate) mod internal {
 #[cfg(test)]
 pub mod tests {
     use crate::prelude::*;
-    use crate::utils::tests::tests_bind_to_pdfium;
+    use crate::utils::test::test_bind_to_pdfium;
 
     #[test]
     fn test_object_get_translation() -> Result<(), PdfiumError> {
         // Tests to make sure we can retrieve the correct horizontal and vertical translation deltas
         // from an object after applying a translation transformation.
 
-        let pdfium = tests_bind_to_pdfium();
+        let pdfium = test_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
@@ -280,7 +280,7 @@ pub mod tests {
         // Tests to make sure we can retrieve the correct horizontal and vertical scale factors
         // from an object after applying a scale transformation.
 
-        let pdfium = tests_bind_to_pdfium();
+        let pdfium = test_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
@@ -314,7 +314,7 @@ pub mod tests {
         // Tests to make sure we can retrieve the correct clockwise rotation angle from an object
         // after applying a rotation transformation.
 
-        let pdfium = tests_bind_to_pdfium();
+        let pdfium = test_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
@@ -348,7 +348,7 @@ pub mod tests {
         // Tests to make sure we can retrieve the correct skew axes values from an object
         // after applying a skew transformation.
 
-        let pdfium = tests_bind_to_pdfium();
+        let pdfium = test_bind_to_pdfium();
 
         let document = pdfium.create_new_pdf()?;
 
