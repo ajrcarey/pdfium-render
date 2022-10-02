@@ -16,10 +16,8 @@ use crate::utils::mem::create_byte_buffer;
 use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
 use image::{DynamicImage, EncodableLayout, RgbaImage};
 use std::convert::TryInto;
-use std::ffi::c_void;
 use std::ops::{Range, RangeInclusive};
-use std::os::raw::c_int;
-use std::ptr::null_mut;
+use std::os::raw::{c_int, c_void};
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`. The page object defines a single
 /// bitmapped image.
@@ -171,11 +169,11 @@ impl<'a> PdfPageImageObject<'a> {
         // Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/52
         // Attempt to work-around this by flipping the matrix values from negative to positive.
 
-        let mut matrix = self.matrix().unwrap();
+        let mut matrix = self.matrix()?;
 
         let is_matrix_a_flipped = if matrix.a < 0f32 {
             matrix.a = -matrix.a;
-            self.set_matrix(matrix).unwrap();
+            self.set_matrix(matrix)?;
 
             true
         } else {
@@ -184,7 +182,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         let is_matrix_d_flipped = if matrix.d < 0f32 {
             matrix.d = -matrix.d;
-            self.set_matrix(matrix).unwrap();
+            self.set_matrix(matrix)?;
 
             true
         } else {
@@ -208,12 +206,12 @@ impl<'a> PdfPageImageObject<'a> {
 
         if is_matrix_a_flipped {
             matrix.a = -matrix.a;
-            self.set_matrix(matrix).unwrap();
+            self.set_matrix(matrix)?;
         }
 
         if is_matrix_d_flipped {
             matrix.d = -matrix.d;
-            self.set_matrix(matrix).unwrap();
+            self.set_matrix(matrix)?;
         }
 
         result
@@ -223,25 +221,10 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         bitmap: FPDF_BITMAP,
     ) -> Result<DynamicImage, PdfiumError> {
-        println!("get_image_from_bitmap_handle: 0");
-
-        println!(
-            "decoded image data length: {}",
-            self.bindings
-                .FPDFImageObj_GetImageDataDecoded(self.object_handle, null_mut(), 0)
-        );
-
-        println!("{:#?}", self.get_raw_metadata());
-        println!("{:#?}", self.matrix());
-
         if bitmap.is_null() {
-            println!("get_image_from_bitmap_handle: 1");
-
             if let Some(error) = self.bindings.get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
-                println!("get_image_from_bitmap_handle: 2");
-
                 // This would be an unusual situation; a null handle indicating failure,
                 // yet Pdfium's error code indicates success.
 
@@ -250,8 +233,6 @@ impl<'a> PdfPageImageObject<'a> {
                 ))
             }
         } else {
-            println!("get_image_from_bitmap_handle: 3");
-
             let width = self.bindings.FPDFBitmap_GetWidth(bitmap);
 
             let height = self.bindings.FPDFBitmap_GetHeight(bitmap);
@@ -267,11 +248,6 @@ impl<'a> PdfPageImageObject<'a> {
                 std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
             };
 
-            println!(
-                "get_image_from_bitmap_handle: 4: format = {:#?}, buffer length = {}",
-                format, buffer_length
-            );
-
             let result = match format {
                 PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx => {
                     RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
@@ -285,11 +261,7 @@ impl<'a> PdfPageImageObject<'a> {
             }
             .ok_or(PdfiumError::ImageError);
 
-            println!("get_image_from_bitmap_handle: 5");
-
             self.bindings.FPDFBitmap_Destroy(bitmap);
-
-            println!("get_image_from_bitmap_handle: 6");
 
             result
         }
