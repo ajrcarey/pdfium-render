@@ -78,10 +78,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-Version 0.7.21 fixes some bugs in color version when working with `PdfPageImageObject` page objects,
-and adds the additional crate features `libstdc++` and `libc++` to provide more flexibility
-when linking against statically-compiled builds of Pdfium. See the "Static linking" section below
-for details.
+Version 0.7.21 fixes some bugs in color conversion from RGBA to BGRA when working with
+`PdfPageImageObject` page objects, and adds the additional crate features `libstdc++` and `libc++`
+to provide more flexibility when linking against statically-compiled builds of Pdfium.
+See the "Static linking" section below for details.
 
 Version 0.7.20 adds attachment creation and deletion to the `PdfAttachments` collection, and adds
 embedded page thumbnail support to `PdfPage`.
@@ -201,7 +201,8 @@ offers more options for deciding which standard library should be selected, incl
 selecting the build platform's installed default.
 
 `pdfium-render` will not build Pdfium for you; you must build Pdfium yourself, or source a
-pre-built static archive from elsewhere.
+pre-built static archive from elsewhere. For an overview of the build process, including a sample
+build script, see <https://github.com/ajrcarey/pdfium-render/issues/53>.
 
 ## Compiling to WASM
 
