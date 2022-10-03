@@ -1204,10 +1204,10 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK;
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK;
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> c_int;
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;

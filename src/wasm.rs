@@ -1,12 +1,12 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK,
-    FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
+    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
+    FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
     FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_MATRIX,
-    FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
+    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -1059,6 +1059,18 @@ impl WasmPdfiumBindings {
         Self::js_value_from_offset(dest as usize)
     }
 
+    /// Converts a pointer to an `FPDF_LINK` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_link(link: FPDF_LINK) -> JsValue {
+        Self::js_value_from_offset(link as usize)
+    }
+
+    /// Converts a mutable pointer to an `FPDF_LINK` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_link_mut(page: *mut FPDF_LINK) -> JsValue {
+        Self::js_value_from_offset(page as usize)
+    }
+
     /// Converts a pointer to an `FPDF_PAGEOBJECT` struct to a [JsValue].
     #[inline]
     fn js_value_from_object(object: FPDF_PAGEOBJECT) -> JsValue {
@@ -1609,6 +1621,63 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(buffer_ptr);
 
         result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetFileIdentifier(
+        &self,
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFileIdentifier(): entering");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFileIdentifier(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_GetFileIdentifier(): calling FPDF_GetFileIdentifier()"
+        );
+
+        let result = state
+            .call(
+                "FPDF_GetFileIdentifier",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_document(document),
+                    &JsValue::from_f64(id_type as f64),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &Self::js_value_from_offset(buffer_length),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFileIdentifier(): leaving");
+
+        result as c_ulong
     }
 
     #[allow(non_snake_case)]
@@ -3878,25 +3947,25 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *R = state
                     .copy_bytes_from_pdfium(ptr_r, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *G = state
                     .copy_bytes_from_pdfium(ptr_g, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *B = state
                     .copy_bytes_from_pdfium(ptr_b, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *A = state
                     .copy_bytes_from_pdfium(ptr_a, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -4338,19 +4407,19 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *horizontal_radius = state
                     .copy_bytes_from_pdfium(ptr_horizontal_radius, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
+                    .map(c_float::from_le_bytes)
                     .unwrap_or(0.0);
 
                 *vertical_radius = state
                     .copy_bytes_from_pdfium(ptr_vertical_radius, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
+                    .map(c_float::from_le_bytes)
                     .unwrap_or(0.0);
 
                 *border_width = state
                     .copy_bytes_from_pdfium(ptr_border_width, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
+                    .map(c_float::from_le_bytes)
                     .unwrap_or(0.0);
             }
         }
@@ -4569,8 +4638,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *value = state
                     .copy_bytes_from_pdfium(value_ptr, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -5091,8 +5160,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *value = state
                     .copy_bytes_from_pdfium(value_ptr, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -5909,6 +5978,431 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFDest_GetView(
+        &self,
+        dest: FPDF_DEST,
+        pNumParams: *mut c_ulong,
+        pParams: *mut FS_FLOAT,
+    ) -> c_ulong {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDest_GetView()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len_pNumParams = size_of::<c_ulong>();
+
+        let ptr_pNumParams = state.malloc(len_pNumParams);
+
+        let len_pParams = size_of::<FS_FLOAT>();
+
+        let ptr_pParams = state.malloc(len_pParams);
+
+        let result = state
+            .call(
+                "FPDFDest_GetView",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_destination(dest),
+                    &Self::js_value_from_offset(ptr_pNumParams),
+                    &Self::js_value_from_offset(ptr_pParams),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_ulong;
+
+        unsafe {
+            *pNumParams = state
+                .copy_bytes_from_pdfium(ptr_pNumParams, len_pNumParams)
+                .try_into()
+                .map(c_ulong::from_le_bytes)
+                .unwrap_or(0);
+
+            *pParams = state
+                .copy_bytes_from_pdfium(ptr_pParams, len_pParams)
+                .try_into()
+                .map(FS_FLOAT::from_le_bytes)
+                .unwrap_or(0.0);
+        }
+
+        state.free(ptr_pNumParams);
+        state.free(ptr_pParams);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn FPDFDest_GetLocationInPage(
+        &self,
+        dest: FPDF_DEST,
+        hasXVal: *mut FPDF_BOOL,
+        hasYVal: *mut FPDF_BOOL,
+        hasZoomVal: *mut FPDF_BOOL,
+        x: *mut FS_FLOAT,
+        y: *mut FS_FLOAT,
+        zoom: *mut FS_FLOAT,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDest_GetLocationInPage()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len_hasXVal = size_of::<FPDF_BOOL>();
+
+        let ptr_hasXVal = state.malloc(len_hasXVal);
+
+        let len_hasYVal = size_of::<FPDF_BOOL>();
+
+        let ptr_hasYVal = state.malloc(len_hasYVal);
+
+        let len_hasZoomVal = size_of::<FPDF_BOOL>();
+
+        let ptr_hasZoomVal = state.malloc(len_hasZoomVal);
+
+        let len_x = size_of::<FS_FLOAT>();
+
+        let ptr_x = state.malloc(len_x);
+
+        let len_y = size_of::<FS_FLOAT>();
+
+        let ptr_y = state.malloc(len_y);
+
+        let len_zoom = size_of::<FS_FLOAT>();
+
+        let ptr_zoom = state.malloc(len_zoom);
+
+        let result = state
+            .call(
+                "FPDFDest_GetLocationInPage",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_destination(dest),
+                    Self::js_value_from_offset(ptr_hasXVal),
+                    Self::js_value_from_offset(ptr_hasYVal),
+                    Self::js_value_from_offset(ptr_hasZoomVal),
+                    Self::js_value_from_offset(ptr_x),
+                    Self::js_value_from_offset(ptr_y),
+                    Self::js_value_from_offset(ptr_zoom),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *hasXVal = state
+                    .copy_bytes_from_pdfium(ptr_hasXVal, len_hasXVal)
+                    .try_into()
+                    .map(FPDF_BOOL::from_le_bytes)
+                    .unwrap_or(0);
+
+                *hasYVal = state
+                    .copy_bytes_from_pdfium(ptr_hasYVal, len_hasYVal)
+                    .try_into()
+                    .map(FPDF_BOOL::from_le_bytes)
+                    .unwrap_or(0);
+
+                *hasZoomVal = state
+                    .copy_bytes_from_pdfium(ptr_hasZoomVal, len_hasZoomVal)
+                    .try_into()
+                    .map(FPDF_BOOL::from_le_bytes)
+                    .unwrap_or(0);
+
+                *x = state
+                    .copy_bytes_from_pdfium(ptr_x, len_x)
+                    .try_into()
+                    .map(FS_FLOAT::from_le_bytes)
+                    .unwrap_or(0.0);
+
+                *y = state
+                    .copy_bytes_from_pdfium(ptr_y, len_y)
+                    .try_into()
+                    .map(FS_FLOAT::from_le_bytes)
+                    .unwrap_or(0.0);
+
+                *zoom = state
+                    .copy_bytes_from_pdfium(ptr_zoom, len_zoom)
+                    .try_into()
+                    .map(FS_FLOAT::from_le_bytes)
+                    .unwrap_or(0.0);
+            }
+        }
+
+        state.free(ptr_hasXVal);
+        state.free(ptr_hasYVal);
+        state.free(ptr_hasZoomVal);
+        state.free(ptr_x);
+        state.free(ptr_y);
+        state.free(ptr_zoom);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetLinkAtPoint()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFLink_GetLinkAtPoint",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(x),
+                    &JsValue::from_f64(y),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_LINK
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetLinkZOrderAtPoint()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFLink_GetLinkZOrderAtPoint",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(x),
+                    &JsValue::from_f64(y),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetDest()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFLink_GetDest",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_document(document),
+                    &Self::js_value_from_link(link),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_DEST
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetAction()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFLink_GetAction",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_link(link)))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_ACTION
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_Enumerate(
+        &self,
+        page: FPDF_PAGE,
+        start_pos: *mut c_int,
+        link_annot: *mut FPDF_LINK,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_Enumerate()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len_start_pos = size_of::<c_int>();
+
+        let ptr_start_pos = state.malloc(len_start_pos);
+
+        let len_link_annot = size_of::<FPDF_LINK>();
+
+        let ptr_link_annot = state.malloc(len_link_annot);
+
+        let result = state
+            .call(
+                "FPDFLink_Enumerate",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_link_mut(link_annot),
+                    &Self::js_value_from_offset(ptr_start_pos),
+                    &Self::js_value_from_offset(ptr_link_annot),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *start_pos = state
+                    .copy_bytes_from_pdfium(ptr_start_pos, len_start_pos)
+                    .try_into()
+                    .map(c_int::from_le_bytes)
+                    .unwrap_or(0);
+            }
+
+            state.copy_struct_from_pdfium(ptr_link_annot, len_link_annot, link_annot);
+        }
+
+        state.free(ptr_start_pos);
+        state.free(ptr_link_annot);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetAnnot()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFLink_GetAnnot",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_page(page),
+                    &Self::js_value_from_link(link_annot),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_ANNOTATION
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetAnnotRect()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len_rect = size_of::<FS_RECTF>();
+
+        let ptr_rect = state.malloc(len_rect);
+
+        let result = state
+            .call(
+                "FPDFLink_GetAnnotRect",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_link(link_annot),
+                    &Self::js_value_from_offset(ptr_rect),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(ptr_rect, len_rect, rect);
+        }
+
+        state.free(ptr_rect);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_CountQuadPoints()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFLink_CountQuadPoints",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_link(
+                    link_annot,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFLink_GetQuadPoints(
+        &self,
+        link_annot: FPDF_LINK,
+        quad_index: c_int,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetQuadPoints()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len_quad_points = size_of::<FS_QUADPOINTSF>();
+
+        let ptr_quad_points = state.malloc(len_quad_points);
+
+        let result = state
+            .call(
+                "FPDFLink_GetQuadPoints",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_link(link_annot),
+                    &JsValue::from_f64(quad_index as f64),
+                    &Self::js_value_from_offset(ptr_quad_points),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(ptr_quad_points, len_quad_points, quad_points);
+        }
+
+        state.free(ptr_quad_points);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_LoadPage()");
 
@@ -6056,7 +6550,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *flags = state
                     .copy_bytes_from_pdfium(ptr_flags, flags_len)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(c_int::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -6167,25 +6661,25 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *R = state
                     .copy_bytes_from_pdfium(ptr_r, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *G = state
                     .copy_bytes_from_pdfium(ptr_g, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *B = state
                     .copy_bytes_from_pdfium(ptr_b, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *A = state
                     .copy_bytes_from_pdfium(ptr_a, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -6250,25 +6744,25 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *R = state
                     .copy_bytes_from_pdfium(ptr_r, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *G = state
                     .copy_bytes_from_pdfium(ptr_g, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *B = state
                     .copy_bytes_from_pdfium(ptr_b, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *A = state
                     .copy_bytes_from_pdfium(ptr_a, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -6355,26 +6849,26 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *left = state
                     .copy_bytes_from_pdfium(ptr_left, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *top = state
                     .copy_bytes_from_pdfium(ptr_top, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *right = state
                     .copy_bytes_from_pdfium(ptr_right, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *bottom = state
                     .copy_bytes_from_pdfium(ptr_bottom, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -6513,14 +7007,14 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *x = state
                     .copy_bytes_from_pdfium(ptr_x, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *y = state
                     .copy_bytes_from_pdfium(ptr_y, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -6605,7 +7099,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *result = state
                     .copy_bytes_from_pdfium(ptr_result, len)
                     .try_into()
-                    .map(u16::from_le_bytes)
+                    .map(c_ushort::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -6696,26 +7190,26 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *left = state
                     .copy_bytes_from_pdfium(ptr_left, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *top = state
                     .copy_bytes_from_pdfium(ptr_top, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *right = state
                     .copy_bytes_from_pdfium(ptr_right, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *bottom = state
                     .copy_bytes_from_pdfium(ptr_bottom, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -7083,26 +7577,26 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *left = state
                     .copy_bytes_from_pdfium(ptr_left, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *top = state
                     .copy_bytes_from_pdfium(ptr_top, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *right = state
                     .copy_bytes_from_pdfium(ptr_right, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *bottom = state
                     .copy_bytes_from_pdfium(ptr_bottom, len)
                     .try_into()
-                    .map(f64::from_le_bytes)
-                    .unwrap_or(0_f64);
+                    .map(c_double::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -7157,13 +7651,13 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *start_char_index = state
                     .copy_bytes_from_pdfium(ptr_start_char_index, len)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(c_int::from_le_bytes)
                     .unwrap_or(0);
 
                 *char_count = state
                     .copy_bytes_from_pdfium(ptr_char_count, len)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(c_int::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -7532,8 +8026,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *size = state
                     .copy_bytes_from_pdfium(ptr_size, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -7727,13 +8221,13 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *fillmode = state
                     .copy_bytes_from_pdfium(fillmode_ptr, fillmode_length)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(c_int::from_le_bytes)
                     .unwrap_or(0);
 
                 *stroke = state
                     .copy_bytes_from_pdfium(stroke_ptr, stroke_length)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(FPDF_BOOL::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -8302,7 +8796,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *out_buflen = state
                     .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_ulong::from_le_bytes)
                     .unwrap_or(0);
 
                 if *out_buflen > 0 {
@@ -8383,7 +8877,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *out_buflen = state
                     .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_ulong::from_le_bytes)
                     .unwrap_or(0);
 
                 if *out_buflen > 0 {
@@ -8475,7 +8969,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *out_value = state
                     .copy_bytes_from_pdfium(out_value_ptr, out_value_length)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(c_int::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -8539,7 +9033,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *out_buflen = state
                     .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_ulong::from_le_bytes)
                     .unwrap_or(0);
 
                 if *out_buflen > 0 {
@@ -8611,7 +9105,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *out_buflen = state
                     .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_ulong::from_le_bytes)
                     .unwrap_or(0);
 
                 if *out_buflen > 0 {
@@ -9312,26 +9806,26 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *left = state
                     .copy_bytes_from_pdfium(ptr_left, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *bottom = state
                     .copy_bytes_from_pdfium(ptr_bottom, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *right = state
                     .copy_bytes_from_pdfium(ptr_right, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
 
                 *top = state
                     .copy_bytes_from_pdfium(ptr_top, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -9453,25 +9947,25 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *R = state
                     .copy_bytes_from_pdfium(ptr_r, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *G = state
                     .copy_bytes_from_pdfium(ptr_g, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *B = state
                     .copy_bytes_from_pdfium(ptr_b, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *A = state
                     .copy_bytes_from_pdfium(ptr_a, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -9544,8 +10038,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *width = state
                     .copy_bytes_from_pdfium(ptr_width, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -9714,25 +10208,25 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *R = state
                     .copy_bytes_from_pdfium(ptr_r, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *G = state
                     .copy_bytes_from_pdfium(ptr_g, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *B = state
                     .copy_bytes_from_pdfium(ptr_b, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
 
                 *A = state
                     .copy_bytes_from_pdfium(ptr_a, len)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_uint::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -9780,8 +10274,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *phase = state
                     .copy_bytes_from_pdfium(ptr_phase, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
-                    .unwrap_or(0_f32);
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
             }
         }
 
@@ -10033,7 +10527,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *angle = state
                     .copy_bytes_from_pdfium(ptr_angle, len)
                     .try_into()
-                    .map(i32::from_le_bytes)
+                    .map(c_int::from_le_bytes)
                     .unwrap_or(0);
             }
         }
@@ -10081,7 +10575,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *ascent = state
                     .copy_bytes_from_pdfium(ptr_ascent, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
+                    .map(c_float::from_le_bytes)
                     .unwrap_or(0.0);
             }
         }
@@ -10129,7 +10623,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *descent = state
                     .copy_bytes_from_pdfium(ptr_descent, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
+                    .map(c_float::from_le_bytes)
                     .unwrap_or(0.0);
             }
         }
@@ -10180,7 +10674,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *width = state
                     .copy_bytes_from_pdfium(ptr_width, len)
                     .try_into()
-                    .map(f32::from_le_bytes)
+                    .map(c_float::from_le_bytes)
                     .unwrap_or(0.0);
             }
         }
@@ -10835,7 +11329,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 *out_buflen = state
                     .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
                     .try_into()
-                    .map(u32::from_le_bytes)
+                    .map(c_ulong::from_le_bytes)
                     .unwrap_or(0);
 
                 if *out_buflen > 0 {

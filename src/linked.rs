@@ -1500,13 +1500,13 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK {
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK {
         unsafe { crate::bindgen::FPDFLink_GetLinkAtPoint(page, x, y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> c_int {
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int {
         unsafe { crate::bindgen::FPDFLink_GetLinkZOrderAtPoint(page, x, y) }
     }
 

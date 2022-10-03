@@ -2435,7 +2435,7 @@ impl DynamicPdfiumBindings {
     fn extern_FPDFLink_GetLinkAtPoint(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK>,
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFLink_GetLinkAtPoint\0") }
@@ -2446,7 +2446,7 @@ impl DynamicPdfiumBindings {
     fn extern_FPDFLink_GetLinkZOrderAtPoint(
         &self,
     ) -> Result<
-        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, x: f64, y: f64) -> c_int>,
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, x: c_double, y: c_double) -> c_int>,
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFLink_GetLinkZOrderAtPoint\0") }
@@ -2833,10 +2833,10 @@ impl DynamicPdfiumBindings {
         Symbol<
             unsafe extern "C" fn(
                 text_page: FPDF_TEXTPAGE,
-                left: f64,
-                top: f64,
-                right: f64,
-                bottom: f64,
+                left: c_double,
+                top: c_double,
+                right: c_double,
+                bottom: c_double,
                 buffer: *mut c_ushort,
                 buflen: c_int,
             ) -> c_int,
@@ -6026,13 +6026,13 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> FPDF_LINK {
+    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK {
         unsafe { self.extern_FPDFLink_GetLinkAtPoint().unwrap()(page, x, y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: f64, y: f64) -> c_int {
+    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int {
         unsafe { self.extern_FPDFLink_GetLinkZOrderAtPoint().unwrap()(page, x, y) }
     }
 
