@@ -385,7 +385,8 @@ If you need a binding to a Pdfium function that is not currently available, just
   `PdfAttachment::is_empty()` convenience functions; adds `libstdc++` and `libc++` crate features;
   adds color conversion functions to `PdfiumLibraryBindings`; corrects bugs in color conversion
   when working with `PdfPageImageObject`, as detailed in <https://github.com/ajrcarey/pdfium-render/issues/50>;
-  corrects some small typos in examples.
+  fixes a bug in the WASM implementation of `FPDFAnnot_GetAttachmentPoints()`; corrects
+  some small typos in examples.
 * 0.7.20: adds bindings for `FPDFPage_*Thumbnail*()`, `FPDFLink_*()`, and `FPDFText_Find*()` functions;
   adds `PdfAttachments::create_attachment_from_bytes()`, `PdfAttachments::create_attachment_from_file()`,
   `PdfAttachments::create_attachment_from_reader()`, `PdfAttachments::create_attachment_from_fetch()`,  

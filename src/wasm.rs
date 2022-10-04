@@ -4092,9 +4092,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let len = quad_index as usize * size_of::<FS_POINTF>();
+        let len = size_of::<FS_QUADPOINTSF>();
 
-        let ptr_quad_points = if len > 0 { state.malloc(len) } else { 0 };
+        let ptr_quad_points = state.malloc(len);
 
         let result = state
             .call(
@@ -4102,10 +4102,12 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 JsFunctionArgumentType::Number,
                 Some(vec![
                     JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
                     JsFunctionArgumentType::Pointer,
                 ]),
-                Some(&JsValue::from(Array::of2(
+                Some(&JsValue::from(Array::of3(
                     &Self::js_value_from_annotation(annot),
+                    &JsValue::from_f64(quad_index as f64),
                     &Self::js_value_from_offset(ptr_quad_points),
                 ))),
             )
