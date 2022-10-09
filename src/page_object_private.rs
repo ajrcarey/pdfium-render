@@ -128,7 +128,7 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageObjectCommon::transform()].
         #[inline]
         fn transform_impl(
-            &mut self,
+            &self,
             a: f64,
             b: f64,
             c: f64,

@@ -5,7 +5,7 @@ use crate::bindgen::{
     fpdf_page_t__, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE, FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
+use crate::bitmap::{PdfBitmap, PdfBitmapFormat, Pixels};
 use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
@@ -161,33 +161,105 @@ impl<'a> PdfPageImageObject<'a> {
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
     /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
+    #[inline]
     pub fn get_processed_image(&self, document: &PdfDocument) -> Result<DynamicImage, PdfiumError> {
-        // TODO: AJRC - 1/10/22 - Pdfium's FPDFImageObj_GetRenderedBitmap() function fails,
+        let (width, height) = self.get_current_width_and_height_from_metadata()?;
+
+        self.get_processed_image_with_size(document, width, height)
+    }
+
+    /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
+    /// this [PdfPageImageObject], taking into account any image filters, image mask, and
+    /// object transforms applied to this page object.
+    ///
+    /// The returned image will be scaled during rendering so its width matches the given target width.
+    #[inline]
+    pub fn get_processed_image_with_width(
+        &self,
+        document: &PdfDocument,
+        width: Pixels,
+    ) -> Result<DynamicImage, PdfiumError> {
+        let (current_width, current_height) = self.get_current_width_and_height_from_metadata()?;
+
+        let aspect_ratio = current_width as f32 / current_height as f32;
+
+        self.get_processed_image_with_size(
+            document,
+            width,
+            ((width as f32 * aspect_ratio) as u32)
+                .try_into()
+                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?,
+        )
+    }
+
+    /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
+    /// this [PdfPageImageObject], taking into account any image filters, image mask, and
+    /// object transforms applied to this page object.
+    ///
+    /// The returned image will be scaled during rendering so its height matches the given target height.
+    #[inline]
+    pub fn get_processed_image_with_height(
+        &self,
+        document: &PdfDocument,
+        height: Pixels,
+    ) -> Result<DynamicImage, PdfiumError> {
+        let (current_width, current_height) = self.get_current_width_and_height_from_metadata()?;
+
+        let aspect_ratio = current_width as f32 / current_height as f32;
+
+        self.get_processed_image_with_size(
+            document,
+            ((height as f32 / aspect_ratio) as u32)
+                .try_into()
+                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?,
+            height,
+        )
+    }
+
+    /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
+    /// this [PdfPageImageObject], taking into account any image filters, image mask, and
+    /// object transforms applied to this page object.
+    ///
+    /// The returned image will be scaled during rendering so its width and height match
+    /// the given target dimensions.
+    pub fn get_processed_image_with_size(
+        &self,
+        document: &PdfDocument,
+        width: Pixels,
+        height: Pixels,
+    ) -> Result<DynamicImage, PdfiumError> {
+        // We attempt to work around two separate problems in Pdfium's
+        // FPDFImageObj_GetRenderedBitmap() function.
+
+        // First, the call to FPDFImageObj_GetRenderedBitmap() can fail,
         // returning a null FPDF_BITMAP handle, if the image object's transformation matrix
         // includes negative values for either the matrix.a or matrix.d values.
-        // See https://groups.google.com/g/pdfium/c/V-H9LpuHpPY
-        // Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/52
-        // Attempt to work-around this by flipping the matrix values from negative to positive.
+        // We flip those values in the transformation matrix if they are negative,
+        // and we make sure we return them to their original values before we return to
+        // the caller.
+
+        // Second, Pdfium seems to often return a rendered bitmap that is much smaller
+        // than the image object's metadata suggests. We look at the dimensions of the bitmap
+        // returned from FPDFImageObj_GetRenderedBitmap(), and we apply a scale factor to the
+        // image object's transformation matrix if the bitmap is not the expected size.
+
+        // For more details, see: https://github.com/ajrcarey/pdfium-render/issues/52
 
         let mut matrix = self.matrix()?;
 
-        let is_matrix_a_flipped = if matrix.a < 0f32 {
+        let original_matrix = matrix; // We'll reset the matrix to this before we return.
+
+        // Flip the matrix.a and/or matrix.d values if they are negative.
+
+        if matrix.a < 0f32 {
             matrix.a = -matrix.a;
             self.set_matrix(matrix)?;
+        }
 
-            true
-        } else {
-            false
-        };
-
-        let is_matrix_d_flipped = if matrix.d < 0f32 {
+        if matrix.d < 0f32 {
             matrix.d = -matrix.d;
             self.set_matrix(matrix)?;
-
-            true
-        } else {
-            false
-        };
+        }
 
         let result = self.get_image_from_bitmap_handle(match self.page_handle {
             Some(page_handle) => self.bindings.FPDFImageObj_GetRenderedBitmap(
@@ -202,19 +274,58 @@ impl<'a> PdfPageImageObject<'a> {
             ),
         });
 
-        // Restore the previous transformation matrix values, if necessary.
+        if result.is_err() {
+            // Restore the original transformation matrix values before we return the error
+            // to the caller.
 
-        if is_matrix_a_flipped {
-            matrix.a = -matrix.a;
-            self.set_matrix(matrix)?;
+            self.set_matrix(original_matrix)?;
+            return result;
         }
 
-        if is_matrix_d_flipped {
-            matrix.d = -matrix.d;
-            self.set_matrix(matrix)?;
-        }
+        let result = result.unwrap();
 
-        result
+        return if width as u32 == result.width() && height as u32 == result.height() {
+            // The bitmap generated by Pdfium is already at the caller's requested dimensions.
+            // Restore the original transformation matrix values before we return to the caller.
+
+            self.set_matrix(original_matrix)?;
+
+            Ok(result)
+        } else {
+            // The bitmap generated by Pdfium is not at the caller's requested dimensions.
+            // We apply a scale transform to the page object to coerce Pdfium into generating
+            // a bitmap at the caller's requested dimensions.
+
+            self.transform_impl(
+                width as f64 / result.width() as f64,
+                0.0,
+                0.0,
+                height as f64 / result.height() as f64,
+                0.0,
+                0.0,
+            )?;
+
+            // Generate the bitmap again at the new scale.
+
+            let result = self.get_image_from_bitmap_handle(match self.page_handle {
+                Some(page_handle) => self.bindings.FPDFImageObj_GetRenderedBitmap(
+                    *document.handle(),
+                    page_handle,
+                    self.object_handle,
+                ),
+                None => self.bindings.FPDFImageObj_GetRenderedBitmap(
+                    *document.handle(),
+                    std::ptr::null_mut::<fpdf_page_t__>(),
+                    self.object_handle,
+                ),
+            });
+
+            // Restore the original transformation matrix values before we return to the caller.
+
+            self.set_matrix(original_matrix)?;
+
+            result
+        };
     }
 
     pub(crate) fn get_image_from_bitmap_handle(
@@ -265,6 +376,27 @@ impl<'a> PdfPageImageObject<'a> {
 
             result
         }
+    }
+
+    /// Return the expected pixel width and height of the processed image from Pdfium's metadata.
+    pub(crate) fn get_current_width_and_height_from_metadata(
+        &self,
+    ) -> Result<(Pixels, Pixels), PdfiumError> {
+        let width = self.get_raw_metadata().and_then(|metadata| {
+            metadata
+                .width
+                .try_into()
+                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)
+        })?;
+
+        let height = self.get_raw_metadata().and_then(|metadata| {
+            metadata
+                .height
+                .try_into()
+                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)
+        })?;
+
+        Ok((width, height))
     }
 
     /// Applies the byte data in the given `Image::DynamicImage` to this [PdfPageImageObject].

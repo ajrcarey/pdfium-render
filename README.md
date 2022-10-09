@@ -78,6 +78,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.7.22 attempts to work around two problems in Pdfium's bitmap generation when 
+retrieving processed renderings of individual `PdfPageImageObject` page objects.
+
 Version 0.7.21 fixes some bugs in color conversion from RGBA to BGRA when working with
 `PdfPageImageObject` page objects, and adds the additional crate features `libstdc++` and `libc++`
 to provide more flexibility when linking against statically-compiled builds of Pdfium.
@@ -368,7 +371,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.21, 309 (84%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.22, 309 (84%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of roughly three-quarters of
 these available via the `pdfium-render` high-level interface.
 
@@ -380,6 +383,8 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.22: attempts to work around two problems in Pdfium's bitmap generation when retrieving
+  processed renderings of page image objects, as detailed in <https://github.com/ajrcarey/pdfium-render/issues/52>.
 * 0.7.21: adds bindings for `FPDF_GetPageAAction()`, `FPDF_GetFileIdentifier()`, and all remaining
   `FPDFDest_*()` and `FPDFLink_*()` functions; adds `PdfAttachment::len()` and
   `PdfAttachment::is_empty()` convenience functions; adds `libstdc++` and `libc++` crate features;

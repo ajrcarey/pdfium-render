@@ -112,7 +112,7 @@ impl<'a> PdfAttachments<'a> {
     /// data in the given byte buffer. An error will be returned if the given name is not
     /// unique in the list of attachments already present in the containing PDF document.
     pub fn create_attachment_from_bytes(
-        &self,
+        &mut self,
         name: &str,
         bytes: &[u8],
     ) -> Result<PdfAttachment, PdfiumError> {
@@ -183,7 +183,7 @@ impl<'a> PdfAttachments<'a> {
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn create_attachment_from_file(
-        &self,
+        &mut self,
         name: &str,
         path: &(impl AsRef<Path> + ?Sized),
     ) -> Result<PdfAttachment, PdfiumError> {
@@ -195,7 +195,7 @@ impl<'a> PdfAttachments<'a> {
     /// the containing document. An error will be returned if the given name is not
     /// unique in the list of attachments already present in the containing PDF document.
     pub fn create_attachment_from_reader<R: Read>(
-        &self,
+        &mut self,
         name: &str,
         mut reader: R,
     ) -> Result<PdfAttachment, PdfiumError> {
@@ -217,7 +217,7 @@ impl<'a> PdfAttachments<'a> {
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
     pub async fn create_attachment_from_fetch(
-        &'a self,
+        &'a mut self,
         name: &str,
         url: impl ToString,
     ) -> Result<PdfAttachment<'a>, PdfiumError> {
@@ -259,7 +259,7 @@ impl<'a> PdfAttachments<'a> {
     /// This function is only available when compiling to WASM.
     #[cfg(target_arch = "wasm32")]
     pub async fn create_attachment_from_blob(
-        &'a self,
+        &'a mut self,
         name: &str,
         blob: Blob,
     ) -> Result<PdfAttachment<'a>, PdfiumError> {
