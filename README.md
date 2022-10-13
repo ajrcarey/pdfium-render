@@ -78,8 +78,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-Version 0.7.22 attempts to work around two problems in Pdfium's bitmap generation when 
-retrieving processed renderings of individual `PdfPageImageObject` page objects.
+Version 0.7.22 works around two problems in Pdfium's bitmap generation when retrieving
+processed renderings of individual `PdfPageImageObject` page objects.
+See the "Version history" section below for details.
 
 Version 0.7.21 fixes some bugs in color conversion from RGBA to BGRA when working with
 `PdfPageImageObject` page objects, and adds the additional crate features `libstdc++` and `libc++`
@@ -90,11 +91,7 @@ Version 0.7.20 adds attachment creation and deletion to the `PdfAttachments` col
 embedded page thumbnail support to `PdfPage`.
 
 Version 0.7.19 adds bindings to all Pdfium functions related to document attachments, and adds
-the `PdfAttachments` and `PdfSignatures` collections to the high-level interface. 
-
-Version 0.7.18 adds convenience functions for returning the Pdfium bindings used by `PdfDocument`,
-`PdfPage`, `PdfBitmap`, `PdfFont`, and various other interfaces, thanks to an excellent
-contribution from <https://github.com/LU15W1R7H>.
+the `PdfAttachments` and `PdfSignatures` collections to the high-level interface.
 
 ## Binding to Pdfium
 
@@ -384,7 +381,8 @@ If you need a binding to a Pdfium function that is not currently available, just
 ## Version history
 
 * 0.7.22: attempts to work around two problems in Pdfium's bitmap generation when retrieving
-  processed renderings of page image objects, as detailed in <https://github.com/ajrcarey/pdfium-render/issues/52>.
+  processed renderings of page image objects. See <https://github.com/ajrcarey/pdfium-render/issues/52>
+  for more information.
 * 0.7.21: adds bindings for `FPDF_GetPageAAction()`, `FPDF_GetFileIdentifier()`, and all remaining
   `FPDFDest_*()` and `FPDFLink_*()` functions; adds `PdfAttachment::len()` and
   `PdfAttachment::is_empty()` convenience functions; adds `libstdc++` and `libc++` crate features;
