@@ -19,6 +19,19 @@ use web_sys::ImageData;
 #[cfg(target_arch = "wasm32")]
 use js_sys::Uint8Array;
 
+// The following dummy declarations are used only when running cargo doc.
+// They allow documentation of WASM-specific functionality to be included
+// in documentation generated on non-WASM targets.
+
+#[cfg(doc)]
+struct Uint8Array;
+
+#[cfg(doc)]
+struct ImageData;
+
+#[cfg(doc)]
+struct JsValue;
+
 /// The device coordinate system when rendering or displaying an image.
 pub type Pixels = u16;
 
@@ -220,7 +233,7 @@ impl<'a> PdfBitmap<'a> {
     }
 
     /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap].
-    pub fn as_bytes(&mut self) -> &'a [u8] {
+    pub fn as_bytes(&self) -> &'a [u8] {
         let buffer_length = self.bindings.FPDFBitmap_GetStride(self.handle)
             * self.bindings.FPDFBitmap_GetHeight(self.handle);
 
@@ -230,7 +243,7 @@ impl<'a> PdfBitmap<'a> {
     }
 
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing this [PdfBitmap].
-    pub fn as_image(&mut self) -> DynamicImage {
+    pub fn as_image(&self) -> DynamicImage {
         ImageBuffer::from_raw(
             self.width() as u32,
             self.height() as u32,
@@ -254,20 +267,24 @@ impl<'a> PdfBitmap<'a> {
     )]
     #[doc(hidden)]
     #[inline]
-    pub fn render(&mut self) {}
+    pub fn render(&self) {}
 
     /// Returns a Javascript `Uint8Array` object representing the bitmap buffer backing
     /// this [PdfBitmap].
     ///
+    /// This function avoids a memory allocation and copy required by both
+    /// [PdfBitmap::as_bytes()] and [PdfBitmap::as_image_data()], making it preferable for
+    /// situations where performance is paramount.
+    ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
-    pub fn as_array(&mut self) -> Uint8Array {
+    #[cfg(any(doc, target_arch = "wasm32"))]
+    pub fn as_array(&self) -> Uint8Array {
         self.bindings.FPDFBitmap_GetArray(self.handle)
     }
 
     /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
     /// this [PdfBitmap]. The resulting `ImageData` can be easily displayed in an
-    /// HTML <canvas> element like so:
+    /// HTML `<canvas>` element like so:
     ///
     /// `canvas.getContext('2d').putImageData(image_data);`
     ///
@@ -276,8 +293,8 @@ impl<'a> PdfBitmap<'a> {
     /// the [PdfBitmap::as_array()] function directly if performance is paramount.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
-    pub fn as_image_data(&mut self) -> Result<ImageData, JsValue> {
+    #[cfg(any(doc, target_arch = "wasm32"))]
+    pub fn as_image_data(&self) -> Result<ImageData, JsValue> {
         ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(self.as_bytes()),
             self.width() as u32,
