@@ -27,6 +27,13 @@ use js_sys::{ArrayBuffer, Uint8Array};
 #[cfg(target_arch = "wasm32")]
 use web_sys::{window, Blob, Response};
 
+// The following dummy declaration is used only when running cargo doc.
+// It allows documentation of WASM-specific functionality to be included
+// in documentation generated on non-WASM targets.
+
+#[cfg(doc)]
+struct Blob;
+
 pub type PdfAttachmentIndex = u16;
 
 /// The collection of [PdfAttachment] objects embedded in a `PdfDocument`.
@@ -171,10 +178,10 @@ impl<'a> PdfAttachments<'a> {
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading attachment data in WASM:
-    /// * Use the `PdfAttachments::create_attachment_from_fetch()` function to download attachment data
+    /// * Use the [PdfAttachments::create_attachment_from_fetch()] function to download attachment data
     /// from a URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
-    /// * Use the `PdfAttachments::create_attachment_from_blob()` function to load attachment data
+    /// * Use the [PdfAttachments::create_attachment_from_blob()] function to load attachment data
     /// from a Javascript File or Blob object (such as a File object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target attachment over the network,
@@ -215,7 +222,7 @@ impl<'a> PdfAttachments<'a> {
     /// already present in the containing PDF document.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn create_attachment_from_fetch(
         &'a mut self,
         name: &str,
@@ -250,14 +257,14 @@ impl<'a> PdfAttachments<'a> {
     /// unique in the list of attachments already present in the containing PDF document.
     /// A File object returned from a FileList is a suitable Blob:
     ///
-    /// ```
+    /// ```text
     /// <input id="filePicker" type="file">
     ///
     /// const file = document.getElementById('filePicker').files[0];
     /// ```
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn create_attachment_from_blob(
         &'a mut self,
         name: &str,

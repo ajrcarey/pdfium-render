@@ -24,6 +24,13 @@ use wasm_bindgen::JsValue;
 #[cfg(target_arch = "wasm32")]
 use web_sys::Blob;
 
+// The following dummy declaration is used only when running cargo doc.
+// It allows documentation of WASM-specific functionality to be included
+// in documentation generated on non-WASM targets.
+
+#[cfg(doc)]
+struct Blob;
+
 /// A single attached data file embedded in a `PdfDocument`.
 pub struct PdfAttachment<'a> {
     handle: FPDF_ATTACHMENT,
@@ -167,7 +174,7 @@ impl<'a> PdfAttachment<'a> {
     /// saving attachment data in WASM:
     /// * Use either the [PdfAttachment::save_to_writer()] or the [PdfAttachment::save_to_bytes()] functions,
     /// both of which are available when compiling to WASM.
-    /// * Use the `PdfAttachment::save_to_blob()` function to save attachment data directly into a new
+    /// * Use the [PdfAttachment::save_to_blob()] function to save attachment data directly into a new
     /// Javascript Blob object. This function is only available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
@@ -177,7 +184,7 @@ impl<'a> PdfAttachment<'a> {
     /// Writes this [PdfAttachment] to a new Blob, returning the Blob.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub fn save_to_blob(&self) -> Result<Blob, PdfiumError> {
         let bytes = self.save_to_bytes()?;
 

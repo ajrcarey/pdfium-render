@@ -29,6 +29,13 @@ use js_sys::{ArrayBuffer, Uint8Array};
 #[cfg(target_arch = "wasm32")]
 use web_sys::{window, Blob, Response};
 
+// The following dummy declaration is used only when running cargo doc.
+// It allows documentation of WASM-specific functionality to be included
+// in documentation generated on non-WASM targets.
+
+#[cfg(doc)]
+struct Blob;
+
 bitflags! {
     pub(crate) struct FpdfFontDescriptorFlags: u32 {
         const FIXED_PITCH_BIT_1 =  0b00000000000000000000000000000001;
@@ -252,10 +259,10 @@ impl<'a> PdfFont<'a> {
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading font data in WASM:
-    /// * Use the `PdfFont::load_type1_from_fetch()` function to download font data from a
+    /// * Use the [PdfFont::load_type1_from_fetch()] function to download font data from a
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
-    /// * Use the `PdfFont::load_type1_from_blob()` function to load font data from a
+    /// * Use the [PdfFont::load_type1_from_blob()] function to load font data from a
     /// Javascript File or Blob object (such as a File object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use the [PdfFont::load_type1_from_reader()] function to load font data from any
@@ -306,7 +313,7 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_type1_from_fetch(
         document: &'a PdfDocument<'a>,
         url: impl ToString,
@@ -338,7 +345,7 @@ impl<'a> PdfFont<'a> {
     /// Attempts to load a Type 1 font from the given Blob.
     /// A File object returned from a FileList is a suitable Blob:
     ///
-    /// ```
+    /// ```text
     /// <input id="filePicker" type="file">
     ///
     /// const file = document.getElementById('filePicker').files[0];
@@ -350,7 +357,7 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_type1_from_blob(
         document: &'a PdfDocument<'a>,
         blob: Blob,
@@ -391,10 +398,10 @@ impl<'a> PdfFont<'a> {
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading font data in WASM:
-    /// * Use the `PdfFont::load_true_type_from_fetch()` function to download font data from a
+    /// * Use the [PdfFont::load_true_type_from_fetch()] function to download font data from a
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
-    /// * Use the `PdfFont::load_true_type_from_blob()` function to load font data from a
+    /// * Use the [PdfFont::load_true_type_from_blob()] function to load font data from a
     /// Javascript File or Blob object (such as a File object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use the [PdfFont::load_true_type_from_reader()] function to load font data from any
@@ -445,7 +452,7 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_true_type_from_fetch(
         document: &'a PdfDocument<'a>,
         url: impl ToString,
@@ -477,7 +484,7 @@ impl<'a> PdfFont<'a> {
     /// Attempts to load a TrueType font from the given Blob.
     /// A File object returned from a FileList is a suitable Blob:
     ///
-    /// ```
+    /// ```text
     /// <input id="filePicker" type="file">
     ///
     /// const file = document.getElementById('filePicker').files[0];
@@ -489,7 +496,7 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_true_type_from_blob(
         document: &'a PdfDocument<'a>,
         blob: Blob,
