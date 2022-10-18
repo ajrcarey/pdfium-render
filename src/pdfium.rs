@@ -213,7 +213,7 @@ impl Pdfium {
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
     /// * Use the [Pdfium::load_pdf_from_blob()] function to load document data from a
-    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
     /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
@@ -248,7 +248,7 @@ impl Pdfium {
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
     /// * Use the [Pdfium::load_pdf_from_blob()] function to load document data from a
-    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
     /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
@@ -311,8 +311,8 @@ impl Pdfium {
         }
     }
 
-    /// Attempts to open a [PdfDocument] by loading document data from the given Blob.
-    /// A File object returned from a FileList is a suitable Blob:
+    /// Attempts to open a [PdfDocument] by loading document data from the given `Blob`.
+    /// A `File` object returned from a `FileList` is a suitable `Blob`:
     ///
     /// ```text
     /// <input id="filePicker" type="file">

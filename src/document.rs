@@ -16,7 +16,6 @@ use crate::utils::files::get_pdfium_file_writer_from_writer;
 use crate::utils::files::FpdfFileAccessExt;
 use std::io::Cursor;
 use std::io::Write;
-use std::os::raw::c_int;
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
@@ -194,7 +193,7 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns the file version of this [PdfDocument].
     pub fn version(&self) -> PdfDocumentVersion {
-        let mut version: c_int = 0;
+        let mut version = 0;
 
         if self.bindings.FPDF_GetFileVersion(self.handle, &mut version) != 0 {
             PdfDocumentVersion::from_pdfium(version)
@@ -203,18 +202,19 @@ impl<'a> PdfDocument<'a> {
         }
     }
 
-    /// Sets the file version that will be used the next time this [PdfDocument] is saved
-    /// using the [PdfDocument::save_to_writer()] function.
+    /// Sets the file version that will be used the next time this [PdfDocument] is saved.
     pub fn set_version(&mut self, version: PdfDocumentVersion) {
         self.output_version = Some(version);
     }
 
     /// Returns an immutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
+    #[inline]
     pub fn attachments(&self) -> &PdfAttachments {
         &self.attachments
     }
 
     /// Returns a mutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
+    #[inline]
     pub fn attachments_mut(&mut self) -> &mut PdfAttachments<'a> {
         &mut self.attachments
     }
@@ -238,8 +238,8 @@ impl<'a> PdfDocument<'a> {
     }
 
     /// Returns a collection of all the [PdfPages] in this [PdfDocument].
-    // TODO: AJRC - 26/9/22 - distinguish between immutable and mutable access to PdfPages
-    // as per https://github.com/ajrcarey/pdfium-render/issues/47.
+    // TODO: AJRC - 26/9/22 - distinguish between immutable and mutable access to PdfPages.
+    // Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/47.
     #[inline]
     pub fn pages(&'a self) -> PdfPages<'a> {
         PdfPages::new(self)
@@ -309,7 +309,7 @@ impl<'a> PdfDocument<'a> {
     /// * Use either the [PdfDocument::save_to_writer()] or the [PdfDocument::save_to_bytes()] functions,
     /// both of which are available when compiling to WASM.
     /// * Use the [PdfDocument::save_to_blob()] function to save document data directly into a new
-    /// Javascript Blob object. This function is only available when compiling to WASM.
+    /// Javascript `Blob` object. This function is only available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
         self.save_to_writer(&mut File::create(path).map_err(PdfiumError::IoError)?)
@@ -324,7 +324,7 @@ impl<'a> PdfDocument<'a> {
         Ok(cursor.into_inner())
     }
 
-    /// Writes this [PdfDocument] to a new Blob, returning the Blob.
+    /// Writes this [PdfDocument] to a new `Blob`, returning the `Blob`.
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]

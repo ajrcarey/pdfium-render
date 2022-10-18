@@ -402,7 +402,7 @@ impl<'a> PdfFont<'a> {
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
     /// * Use the [PdfFont::load_true_type_from_blob()] function to load font data from a
-    /// Javascript File or Blob object (such as a File object returned from an HTML
+    /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use the [PdfFont::load_true_type_from_reader()] function to load font data from any
     /// valid Rust reader.
@@ -481,8 +481,8 @@ impl<'a> PdfFont<'a> {
         }
     }
 
-    /// Attempts to load a TrueType font from the given Blob.
-    /// A File object returned from a FileList is a suitable Blob:
+    /// Attempts to load a TrueType font from the given `Blob`.
+    /// A `File` object returned from a `FileList` is a suitable `Blob`:
     ///
     /// ```text
     /// <input id="filePicker" type="file">

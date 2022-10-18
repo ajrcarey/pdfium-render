@@ -182,7 +182,7 @@ impl<'a> PdfAttachments<'a> {
     /// from a URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
     /// * Use the [PdfAttachments::create_attachment_from_blob()] function to load attachment data
-    /// from a Javascript File or Blob object (such as a File object returned from an HTML
+    /// from a Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target attachment over the network,
     /// then load those bytes into Pdfium using the [PdfAttachments::create_attachment_from_bytes()] function.
@@ -252,10 +252,10 @@ impl<'a> PdfAttachments<'a> {
     }
 
     /// Attempts to create a new [PdfAttachment] to this collection, using the given name and
-    /// the given Blob. Byte data from the given Blob will be embedded directly into
+    /// the given `Blob`. Byte data from the given `Blob` will be embedded directly into
     /// the containing document. An error will be returned if the given name is not
     /// unique in the list of attachments already present in the containing PDF document.
-    /// A File object returned from a FileList is a suitable Blob:
+    /// A `File` object returned from a `FileList` is a suitable `Blob`:
     ///
     /// ```text
     /// <input id="filePicker" type="file">
