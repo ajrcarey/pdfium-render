@@ -1,12 +1,12 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
-    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
-    FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
-    FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
-    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
+    FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
+    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
+    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -1149,6 +1149,18 @@ impl WasmPdfiumBindings {
         Self::js_value_from_offset(page_link as usize)
     }
 
+    /// Converts a pointer to an `FPDF_PATHSEGMENT` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_segment(segment: FPDF_PATHSEGMENT) -> JsValue {
+        Self::js_value_from_offset(segment as usize)
+    }
+
+    /// Converts a pointer to an `FPDF_CLIPPATH` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_clip_path(clip_path: FPDF_CLIPPATH) -> JsValue {
+        Self::js_value_from_offset(clip_path as usize)
+    }
+
     /// Converts a WASM memory heap offset to a [JsValue].
     #[inline]
     fn js_value_from_offset(offset: usize) -> JsValue {
@@ -1167,7 +1179,7 @@ impl WasmPdfiumBindings {
         array
     }
 
-    /// Calls an FPDF_Get*Box() function. Since all of these functions share the same
+    /// Calls an `FPDF_Get*Box()` function. Since all of these functions share the same
     /// signature, we abstract out the function call into this separate function so it can
     /// be re-used.
     #[inline]
@@ -3184,6 +3196,55 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_SetArtBox()");
 
         self.call_pdfium_set_page_box_fn("FPDFPage_SetArtBox", page, left, bottom, right, top);
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFClipPath_CountPathSegments()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFClipPath_CountPathSegments",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_clip_path(clip_path),
+                    &JsValue::from_f64(path_index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_GetPathSegment(
+        &self,
+        clip_path: FPDF_CLIPPATH,
+        path_index: c_int,
+        segment_index: c_int,
+    ) -> FPDF_PATHSEGMENT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFClipPath_GetPathSegment()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFClipPath_GetPathSegment",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_clip_path(clip_path),
+                    &JsValue::from_f64(path_index as f64),
+                    &JsValue::from_f64(segment_index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_PATHSEGMENT
     }
 
     #[allow(non_snake_case)]
@@ -10412,6 +10473,135 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(buffer_ptr);
 
         result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPath_CountSegments()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPath_CountSegments",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_object(
+                    path,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_GetPathSegment(&self, path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPath_GetPathSegment()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPath_GetPathSegment",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_object(path),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_PATHSEGMENT
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetPoint(
+        &self,
+        segment: FPDF_PATHSEGMENT,
+        x: *mut c_float,
+        y: *mut c_float,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPathSegment_GetPoint()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len = size_of::<c_float>();
+
+        let ptr_x = state.malloc(len);
+
+        let ptr_y = state.malloc(len);
+
+        let result = state
+            .call(
+                "FPDFPathSegment_GetPoint",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_segment(segment),
+                    &Self::js_value_from_offset(ptr_x),
+                    &Self::js_value_from_offset(ptr_y),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *x = state
+                    .copy_bytes_from_pdfium(ptr_x, len)
+                    .try_into()
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
+
+                *y = state
+                    .copy_bytes_from_pdfium(ptr_y, len)
+                    .try_into()
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
+            }
+        }
+
+        state.free(ptr_x);
+        state.free(ptr_y);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPathSegment_GetType()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPathSegment_GetType",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_segment(
+                    segment,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPathSegment_GetClose()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPathSegment_GetClose",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_segment(
+                    segment,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]

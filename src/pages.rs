@@ -131,6 +131,22 @@ impl<'a> PdfPages<'a> {
         )
     }
 
+    /// Returns the first [PdfPage] from this [PdfPages] collection.
+    #[inline]
+    pub fn first(&self) -> Result<PdfPage<'a>, PdfiumError> {
+        self.get(0)
+    }
+
+    /// Returns the last [PdfPage] from this [PdfPages] collection.
+    #[inline]
+    pub fn last(&self) -> Result<PdfPage<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(self.len() - 1)
+        } else {
+            Err(PdfiumError::PageIndexOutOfBounds)
+        }
+    }
+
     /// Creates a new, empty [PdfPage] with the given [PdfPagePaperSize] and inserts it
     /// at the start of this [PdfPages] collection, shuffling down all other pages.
     #[inline]

@@ -1,12 +1,13 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
-    FPDF_BYTESTRING, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
-    FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
-    FPDF_STRING, FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE,
-    FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_BYTESTRING, FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD,
+    FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
+    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
+    FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
+    FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT,
+    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
+    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::{Library, Symbol};
@@ -86,6 +87,8 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPage_SetBleedBox()?;
         result.extern_FPDFPage_SetTrimBox()?;
         result.extern_FPDFPage_SetArtBox()?;
+        result.extern_FPDFClipPath_CountPathSegments()?;
+        result.extern_FPDFClipPath_GetPathSegment()?;
         result.extern_FPDFPage_HasTransparency()?;
         result.extern_FPDFPage_GenerateContent()?;
         result.extern_FPDFBitmap_CreateEx()?;
@@ -297,6 +300,11 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPageObj_GetDashCount()?;
         result.extern_FPDFPageObj_GetDashArray()?;
         result.extern_FPDFPageObj_SetDashArray()?;
+        result.extern_FPDFPath_CountSegments()?;
+        result.extern_FPDFPath_GetPathSegment()?;
+        result.extern_FPDFPathSegment_GetPoint()?;
+        result.extern_FPDFPathSegment_GetType()?;
+        result.extern_FPDFPathSegment_GetClose()?;
         result.extern_FPDFFont_GetFontName()?;
         result.extern_FPDFFont_GetFlags()?;
         result.extern_FPDFFont_GetWeight()?;
@@ -1196,6 +1204,34 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFPage_SetArtBox\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFClipPath_CountPathSegments(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFClipPath_CountPathSegments\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFClipPath_GetPathSegment(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                clip_path: FPDF_CLIPPATH,
+                path_index: c_int,
+                segment_index: c_int,
+            ) -> FPDF_PATHSEGMENT,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFClipPath_GetPathSegment\0") }
     }
 
     #[inline]
@@ -4151,6 +4187,59 @@ impl DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDFPath_CountSegments(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(path: FPDF_PAGEOBJECT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFPath_CountSegments\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPath_GetPathSegment(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPath_GetPathSegment\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPathSegment_GetPoint(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(segment: FPDF_PATHSEGMENT, x: *mut f32, y: *mut f32) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPathSegment_GetPoint\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPathSegment_GetType(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFPathSegment_GetType\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPathSegment_GetClose(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> FPDF_BOOL>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPathSegment_GetClose\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFFont_GetFontName(
         &self,
     ) -> Result<
@@ -5157,6 +5246,25 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         top: c_float,
     ) {
         unsafe { self.extern_FPDFPage_SetArtBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
+        unsafe { self.extern_FPDFClipPath_CountPathSegments().unwrap()(clip_path, path_index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_GetPathSegment(
+        &self,
+        clip_path: FPDF_CLIPPATH,
+        path_index: c_int,
+        segment_index: c_int,
+    ) -> FPDF_PATHSEGMENT {
+        unsafe {
+            self.extern_FPDFClipPath_GetPathSegment().unwrap()(clip_path, path_index, segment_index)
+        }
     }
 
     #[inline]
@@ -7267,6 +7375,41 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
                 phase,
             )
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int {
+        unsafe { self.extern_FPDFPath_CountSegments().unwrap()(path) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPath_GetPathSegment(&self, path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT {
+        unsafe { self.extern_FPDFPath_GetPathSegment().unwrap()(path, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetPoint(
+        &self,
+        segment: FPDF_PATHSEGMENT,
+        x: *mut c_float,
+        y: *mut c_float,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPathSegment_GetPoint().unwrap()(segment, x, y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int {
+        unsafe { self.extern_FPDFPathSegment_GetType().unwrap()(segment) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPathSegment_GetClose().unwrap()(segment) }
     }
 
     #[inline]

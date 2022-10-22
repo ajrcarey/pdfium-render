@@ -11,7 +11,10 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::path_segment::PdfPathSegment;
+use crate::path_segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use crate::prelude::PdfDocument;
+use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
 /// Sets the method used to determine the path region to fill.
@@ -892,6 +895,12 @@ impl<'a> PdfPagePathObject<'a> {
             ))
         }
     }
+
+    /// Returns the collection of path segments currently defined by this [PdfPagePathObject].
+    #[inline]
+    pub fn segments(&self) -> PdfPagePathObjectSegments {
+        PdfPagePathObjectSegments::from_pdfium(self.object_handle, self.bindings())
+    }
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
@@ -918,5 +927,62 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
+    }
+}
+
+/// The collection of [PdfPathSegment] objects inside a path page object.
+pub struct PdfPagePathObjectSegments<'a> {
+    handle: FPDF_PAGEOBJECT,
+    bindings: &'a dyn PdfiumLibraryBindings,
+}
+
+impl<'a> PdfPagePathObjectSegments<'a> {
+    #[inline]
+    pub(crate) fn from_pdfium(
+        handle: FPDF_PAGEOBJECT,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Self {
+        Self { handle, bindings }
+    }
+}
+
+impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
+    #[inline]
+    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+
+    #[inline]
+    fn len(&self) -> PdfPathSegmentIndex {
+        self.bindings()
+            .FPDFPath_CountSegments(self.handle)
+            .try_into()
+            .unwrap_or(0)
+    }
+
+    fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
+        let handle = self
+            .bindings()
+            .FPDFPath_GetPathSegment(self.handle, index as c_int);
+
+        if handle.is_null() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet Pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        } else {
+            Ok(PdfPathSegment::from_pdfium(handle, self.bindings()))
+        }
+    }
+
+    #[inline]
+    fn iter(&'a self) -> PdfPathSegmentsIterator<'a> {
+        PdfPathSegmentsIterator::new(self)
     }
 }

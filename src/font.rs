@@ -26,6 +26,7 @@ use wasm_bindgen_futures::JsFuture;
 #[cfg(target_arch = "wasm32")]
 use js_sys::{ArrayBuffer, Uint8Array};
 
+use crate::font_glyphs::PdfFontGlyphs;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{window, Blob, Response};
 
@@ -136,6 +137,7 @@ pub struct PdfFont<'a> {
     built_in: Option<PdfFontBuiltin>,
     handle: FPDF_FONT,
     bindings: &'a dyn PdfiumLibraryBindings,
+    glyphs: PdfFontGlyphs<'a>,
     is_font_memory_loaded: bool,
 }
 
@@ -146,6 +148,7 @@ impl<'a> PdfFont<'a> {
             built_in: None,
             handle,
             bindings,
+            glyphs: PdfFontGlyphs::from_pdfium(handle, bindings),
             is_font_memory_loaded: false,
         }
     }
@@ -817,6 +820,18 @@ impl<'a> PdfFont<'a> {
     pub fn is_bold_reenforced(&self) -> bool {
         self.get_flags_bits()
             .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
+    }
+
+    /// Returns a collection of all the [PdfFontGlyphs] defined for this [PdfFont] in the containing
+    /// `PdfDocument`.
+    ///
+    /// Note that documents typically include only the specific glyphs they need from any given font,
+    /// not the entire font glyphset. This is a PDF feature known as font subsetting. The collection
+    /// of glyphs returned by this function may therefore not cover the entire font glyphset.
+    #[inline]
+    pub fn glyphs(&self) -> &PdfFontGlyphs {
+        self.glyphs.initialize_len();
+        &self.glyphs
     }
 }
 

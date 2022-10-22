@@ -8,12 +8,14 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::font::PdfFont;
 use crate::page_boundaries::PdfPageBoundaries;
 use crate::page_objects::PdfPageObjects;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::prelude::PdfPageAnnotations;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
+use std::collections::HashMap;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 use std::os::raw::c_int;
 
@@ -598,6 +600,30 @@ impl<'a> PdfPage<'a> {
         );
 
         &mut self.objects
+    }
+
+    /// Returns a list of all the distinct [PdfFont] instances used by the page text objects
+    /// on this [PdfPage], if any.
+    pub fn fonts(&self) -> Vec<PdfFont> {
+        let mut distinct_font_handles = HashMap::new();
+
+        let mut result = Vec::new();
+
+        for object in self.objects().iter() {
+            if let Some(object) = object.as_text_object() {
+                let font = object.font();
+
+                if !distinct_font_handles.contains_key(font.handle()) {
+                    distinct_font_handles.insert(*font.handle(), true);
+                    result.push(*font.handle());
+                }
+            }
+        }
+
+        result
+            .into_iter()
+            .map(|handle| PdfFont::from_pdfium(handle, self.bindings()))
+            .collect()
     }
 
     /// Renders this [PdfPage] into a [PdfBitmap] with the given pixel dimensions and page rotation.

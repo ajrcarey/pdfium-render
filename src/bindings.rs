@@ -3,13 +3,13 @@
 
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL, FPDF_DEST,
-    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
-    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
-    FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK,
-    FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
-    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
+    FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
+    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
+    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::document::PdfDocument;
 use crate::error::PdfiumInternalError;
@@ -561,6 +561,17 @@ pub trait PdfiumLibraryBindings {
         right: c_float,
         top: c_float,
     );
+
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_GetPathSegment(
+        &self,
+        clip_path: FPDF_CLIPPATH,
+        path_index: c_int,
+        segment_index: c_int,
+    ) -> FPDF_PATHSEGMENT;
 
     #[allow(non_snake_case)]
     fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL;
@@ -1984,6 +1995,26 @@ pub trait PdfiumLibraryBindings {
         dash_count: size_t,
         phase: c_float,
     ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFPath_GetPathSegment(&self, path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetPoint(
+        &self,
+        segment: FPDF_PATHSEGMENT,
+        x: *mut c_float,
+        y: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int;
+
+    #[allow(non_snake_case)]
+    fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFFont_GetFontName(

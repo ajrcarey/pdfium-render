@@ -36,11 +36,9 @@ fn main() -> Result<(), PdfiumError> {
 
         // At the time of writing, Pdfium does not reliably return font weights,
         // italic angles, and certain other properties correctly for built-in fonts.
-        // TODO: AJRC - 31/5/22 - A future revision of this example will output these
-        // properties for a custom font loaded from a file.
 
         println!(
-            "Built-in PDF font {} is {:?}: name = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}",
+            "Built-in PDF font {} is built-in {:?}: name = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}, number of glyphs: {}",
             index,
             built_in,
             font.name(),
@@ -48,7 +46,30 @@ fn main() -> Result<(), PdfiumError> {
             font.is_non_symbolic(),
             font.ascent(font_size),
             font.descent(font_size),
+            font.glyphs().len()
         );
+    }
+
+    // At the time of writing, Pdfium does not reliably return font weights,
+    // italic angles, and certain other properties correctly for built-in fonts.
+    // So let's also output these properties for some fonts embedded into a file.
+
+    let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
+
+    for (page_index, page) in document.pages().iter().enumerate() {
+        for (font_index, font) in page.fonts().iter().enumerate() {
+            println!(
+            "Font {} on page {} is embedded: name = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}, number of glyphs: {}",
+            font_index,
+            page_index,
+            font.name(),
+            font.is_symbolic(),
+            font.is_non_symbolic(),
+            font.ascent(font_size),
+            font.descent(font_size),
+            font.glyphs().len()
+        );
+        }
     }
 
     Ok(())

@@ -63,6 +63,8 @@ pub enum PdfiumError {
     SignatureIndexOutOfBounds,
     AttachmentIndexOutOfBounds,
     NoDataInAttachment,
+    FontGlyphIndexOutOfBounds,
+    UnknownPathSegmentType,
 
     /// Two data buffers are expected to have the same size, but they do not.
     DataBufferLengthMismatch,

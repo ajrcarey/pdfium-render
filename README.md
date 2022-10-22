@@ -78,11 +78,12 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-Version 0.7.23 reworks the crate's internal documentation so that `cargo doc` generates documentation
-for both native and WASM functionality. (Previously, `cargo doc` only generated documentation for
-functionality available on the platform on which `cargo doc` was executed; since documentation is
-typically built on a native platform, this meant that documentation for WASM-specific functionality
-was usually omitted from the generated documentation.)
+Version 0.7.24 adds bindings to Pdfium functions related to individual segments of a Path page object,
+and adds the `PdfPagePathObjectSegments` and `PdfFontGlyphs` collections to the high-level interface,
+along with functions for retrieving path segments for individual font glyphs and page path objects.
+
+Version 0.7.23 improves the crate's documentation so that `cargo doc` always generates
+documentation for both native and WASM functionality, no matter the current platform.
 
 Version 0.7.22 works around two problems in Pdfium's bitmap generation when retrieving
 processed renderings of individual `PdfPageImageObject` page objects.
@@ -210,9 +211,8 @@ See <https://github.com/ajrcarey/pdfium-render/tree/master/examples> for a full 
 how to bundle a Rust application using `pdfium-render` alongside a pre-built Pdfium WASM module for
 inspection and rendering of PDF files in a web browser.
 
-Certain functions that access the filesystem are not available when compiling to WASM. Browser-specific
-equivalents are provided instead. A complete list of functional differences between native and WASM
-is available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
+Certain functions that access the file system are not available when compiling to WASM. In all cases,
+browser-specific alternatives are provided, as detailed at the link above.
 
 ## Multithreading
 
@@ -316,9 +316,9 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.23, 309 (84%) have
-bindings available in `PdfiumLibraryBindings`, with the functionality of roughly three-quarters of
-these available via the `pdfium-render` high-level interface.
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.24, 316 (86%) have
+bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
+these exposed through the `pdfium-render` high-level interface.
 
 Some functions and type definitions in the high-level interface have been renamed or revised since
 their initial implementation. The initial implementations are still available but are marked as
@@ -328,6 +328,11 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.24: adds bindings for `FPDFClipPath_CountPathSegments()`, `FPDFClipPath_GetPathSegment()`,
+  `FPDFPath_CountSegments()`, `FPDFPath_GetPathSegment()`, and `FPDFPathSegment_*()` functions;
+  adds `PdfFontGlyphs` and `PdfPagePathObjectSegments` collections to the high-level interface,
+  along with accessor functions in `PdfFont` and `PdfPagePathObject`; adds the `PdfPathSegments` trait;
+  introduces some infrastructure necessary for the future implementation of a `PdfClipPath` object.
 * 0.7.23: removes some unnecessary mutable bindings in `PdfBitmap`; uses `#[cfg(doc)]` declarations
   to ensure `cargo doc` generates documentation for all functionality, irrespective of the platform.
 * 0.7.22: attempts to work around two problems in Pdfium's bitmap generation when retrieving

@@ -17,6 +17,7 @@ For general comments about `pdfium-render` and binding to Pdfium, see `export.rs
 * `image_extract.rs`: extracts and outputs the images on each page in `test/image-test.pdf` to files. Run this example via `cargo run --example image_extract`.
 * `objects.rs`: iterates over every page object on every page in `test/export-test.pdf`, displaying information about each page object. Run this example via `cargo run --example objects`.
 * `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`. Run this example via `cargo run --example path`.
+* `segments.rs`: iterates over every path object in `test/segments.pdf`, displaying information on each path segment in the path object. Run this example via `cargo run --example segments`.
 * `signatures.rs`: iterates over every digital signature in `test/signatures.pdf`, displaying information on about each signature. Run this example via `cargo run --example signatures`.
 * `text_extract.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console. Run this example via `cargo run --example text_extract`.
 * `thread_safe.rs`: explains in comments `pdfium-render`'s approach to ensuring thread-safe access to Pdfium, and demonstrates using a parallel iterator to process multiple rendering tasks on separate threads. Run this example via `cargo run --example thread_safe`.
