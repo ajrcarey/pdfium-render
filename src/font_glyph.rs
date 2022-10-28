@@ -100,6 +100,7 @@ impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
         self.bindings
     }
 
+    #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
         self.bindings()
             .FPDFGlyphPath_CountGlyphSegments(self.handle)

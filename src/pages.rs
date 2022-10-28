@@ -134,7 +134,11 @@ impl<'a> PdfPages<'a> {
     /// Returns the first [PdfPage] from this [PdfPages] collection.
     #[inline]
     pub fn first(&self) -> Result<PdfPage<'a>, PdfiumError> {
-        self.get(0)
+        if !self.is_empty() {
+            self.get(0)
+        } else {
+            Err(PdfiumError::NoPagesInDocument)
+        }
     }
 
     /// Returns the last [PdfPage] from this [PdfPages] collection.
@@ -143,7 +147,7 @@ impl<'a> PdfPages<'a> {
         if !self.is_empty() {
             self.get(self.len() - 1)
         } else {
-            Err(PdfiumError::PageIndexOutOfBounds)
+            Err(PdfiumError::NoPagesInDocument)
         }
     }
 

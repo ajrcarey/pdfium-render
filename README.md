@@ -332,7 +332,8 @@ If you need a binding to a Pdfium function that is not currently available, just
   `FPDFPath_CountSegments()`, `FPDFPath_GetPathSegment()`, and `FPDFPathSegment_*()` functions;
   adds `PdfFontGlyphs` and `PdfPagePathObjectSegments` collections to the high-level interface,
   along with accessor functions in `PdfFont` and `PdfPagePathObject`; adds the `PdfPathSegments` trait;
-  introduces some infrastructure necessary for the future implementation of a `PdfClipPath` object.
+  introduces some infrastructure necessary for the future implementation of a `PdfClipPath` object;
+  adds `PdfPages::first()`, `PdfPages::last()`, and `PdfPage::fonts()` convenience functions.
 * 0.7.23: removes some unnecessary mutable bindings in `PdfBitmap`; uses `#[cfg(doc)]` declarations
   to ensure `cargo doc` generates documentation for all functionality, irrespective of the platform.
 * 0.7.22: attempts to work around two problems in Pdfium's bitmap generation when retrieving

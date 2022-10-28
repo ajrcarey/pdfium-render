@@ -50,6 +50,7 @@ impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
         self.bindings
     }
 
+    #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
         self.bindings()
             .FPDFClipPath_CountPathSegments(self.handle, self.path_index)

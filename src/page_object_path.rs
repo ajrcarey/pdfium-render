@@ -814,7 +814,6 @@ impl<'a> PdfPagePathObject<'a> {
 
     /// Returns the method used to determine which sub-paths of any path in this [PdfPagePathObject]
     /// should be filled.
-    #[inline]
     pub fn fill_mode(&self) -> Result<PdfPathFillMode, PdfiumError> {
         let mut raw_fill_mode: c_int = 0;
 
@@ -843,7 +842,6 @@ impl<'a> PdfPagePathObject<'a> {
     ///
     /// Even if this path is set to be stroked, the stroke must be configured with a visible color
     /// and a non-zero width in order to actually be visible.
-    #[inline]
     pub fn is_stroked(&self) -> Result<bool, PdfiumError> {
         let mut _raw_fill_mode: c_int = 0;
 
@@ -872,7 +870,6 @@ impl<'a> PdfPagePathObject<'a> {
     ///
     /// Even if this object's path is set to be stroked, the stroke must be configured with
     /// a visible color and a non-zero width in order to actually be visible.
-    #[inline]
     pub fn set_fill_and_stroke_mode(
         &mut self,
         fill_mode: PdfPathFillMode,
