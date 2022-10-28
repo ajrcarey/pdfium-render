@@ -21,23 +21,23 @@ doctest = false
 bitflags = "^1"
 bytes = "^1"
 image = ">= 0.24.0" # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we expect at least version 0.24.0
-iter_tools = "^0"
+iter_tools = "^0.1"
 lazy_static = "^1"
-log = "^0"
-maybe-owned = "^0"
-utf16string = "^0"
+log = "^0.4"
+maybe-owned = "^0.3"
+utf16string = "^0.2"
 vecmath = "^1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-console_log = "^0"
-console_error_panic_hook = "^0"
-js-sys = "^0"
-wasm-bindgen = { version = "^0", features = ["enable-interning"] }
-wasm-bindgen-futures = { version = "^0" }
-web-sys = { version = "^0", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
+console_log = "^0.2"
+console_error_panic_hook = "^0.1"
+js-sys = "^0.3.60"
+wasm-bindgen = { version = "^0.2", features = ["enable-interning"] }
+wasm-bindgen-futures = { version = "^0.4" }
+web-sys = { version = "^0.3", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libloading = "^0"
+libloading = "^0.7"
 
 [build-dependencies]
 bindgen = { version = "^0" }
