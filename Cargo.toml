@@ -20,7 +20,7 @@ doctest = false
 [dependencies]
 bitflags = "^1"
 bytes = "^1"
-image = ">= 0.24.0" # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we expect at least version 0.24.0
+image = ">= 0.24.0" # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we use trait from version 0.24.0 and later.
 iter_tools = "^0.1"
 lazy_static = "^1"
 log = "^0.4"
@@ -31,7 +31,7 @@ vecmath = "^1"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_log = "^0.2"
 console_error_panic_hook = "^0.1"
-js-sys = "^0.3.60"
+js-sys = "^0.3"
 wasm-bindgen = { version = "^0.2", features = ["enable-interning"] }
 wasm-bindgen-futures = { version = "^0.4" }
 web-sys = { version = "^0.3", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
@@ -43,9 +43,8 @@ libloading = "^0.7"
 bindgen = { version = "^0" }
 
 [dev-dependencies]
-# Dependencies specific to examples.
-# Note that dependencies for the WASM example in examples/wasm.rs are specified separately
-# in examples/Cargo.toml.
+# Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
+# are specified separately in examples/Cargo.toml.
 rand = "^0" # Used by examples/create.rs
 rayon = "^1" # Used by examples/thread_safe.rs
 

@@ -65,7 +65,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// [PdfPageImageObject::new_with_height()], or [PdfPageImageObject::new_with_size()] functions
     /// to scale the page object to a specific width and/or height at the time the object is created.
     #[inline]
-    pub fn new(document: &PdfDocument<'a>, image: DynamicImage) -> Result<Self, PdfiumError> {
+    pub fn new(document: &PdfDocument<'a>, image: &DynamicImage) -> Result<Self, PdfiumError> {
         Self::new_from_handle(*document.handle(), image, document.bindings())
     }
 
@@ -73,7 +73,7 @@ impl<'a> PdfPageImageObject<'a> {
     // associated with borrowing PdfDocument<'a>.
     pub(crate) fn new_from_handle(
         document: FPDF_DOCUMENT,
-        image: DynamicImage,
+        image: &DynamicImage,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
         let handle = bindings.FPDFPageObj_NewImageObj(document);
@@ -108,7 +108,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
     pub fn new_with_width(
         document: &PdfDocument<'a>,
-        image: DynamicImage,
+        image: &DynamicImage,
         width: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         let aspect_ratio = image.height() as f32 / image.width() as f32;
@@ -124,7 +124,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
     pub fn new_with_height(
         document: &PdfDocument<'a>,
-        image: DynamicImage,
+        image: &DynamicImage,
         height: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         let aspect_ratio = image.height() as f32 / image.width() as f32;
@@ -140,7 +140,7 @@ impl<'a> PdfPageImageObject<'a> {
     #[inline]
     pub fn new_with_size(
         document: &PdfDocument<'a>,
-        image: DynamicImage,
+        image: &DynamicImage,
         width: PdfPoints,
         height: PdfPoints,
     ) -> Result<Self, PdfiumError> {
@@ -399,60 +399,41 @@ impl<'a> PdfPageImageObject<'a> {
     }
 
     /// Applies the byte data in the given `Image::DynamicImage` to this [PdfPageImageObject].
-    pub fn set_image(&mut self, image: DynamicImage) -> Result<(), PdfiumError> {
-        if let Some(image) = image.as_rgba8() {
+    pub fn set_image(&mut self, image: &DynamicImage) -> Result<(), PdfiumError> {
+        let width: u16 = image
+            .width()
+            .try_into()
+            .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
+
+        let height: u16 = image
+            .height()
+            .try_into()
+            .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
+
+        let bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::BGRA, self.bindings)?;
+
+        let buffer = if let Some(image) = image.as_rgba8() {
             // The given image is already in RGBA format.
 
-            let width: u16 = image
-                .width()
-                .try_into()
-                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
-
-            let height: u16 = image
-                .height()
-                .try_into()
-                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
-
-            let bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::BGRA, self.bindings)?;
-
-            if !self
-                .bindings
-                .FPDFBitmap_SetBuffer(*bitmap.handle(), rgba_to_bgra(image.as_bytes()).as_slice())
-            {
-                return Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ));
-            }
-
-            self.set_bitmap(&bitmap)
+            rgba_to_bgra(image.as_bytes())
         } else {
             // The image must be converted to RGBA first.
 
             let image = image.to_rgba8();
 
-            let width: u16 = image
-                .width()
-                .try_into()
-                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
+            rgba_to_bgra(image.as_bytes())
+        };
 
-            let height: u16 = image
-                .height()
-                .try_into()
-                .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
-
-            let bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::BGRA, self.bindings)?;
-
-            if !self
-                .bindings
-                .FPDFBitmap_SetBuffer(*bitmap.handle(), rgba_to_bgra(image.as_bytes()).as_slice())
-            {
-                return Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ));
-            }
-
-            self.set_bitmap(&bitmap)
+        if !self
+            .bindings
+            .FPDFBitmap_SetBuffer(*bitmap.handle(), buffer.as_slice())
+        {
+            return Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ));
         }
+
+        self.set_bitmap(&bitmap)
     }
 
     /// Applies the byte data in the given [PdfBitmap] to this [PdfPageImageObject].
@@ -749,7 +730,7 @@ pub mod tests {
         let object = page.objects_mut().create_image_object(
             PdfPoints::new(100.0),
             PdfPoints::new(100.0),
-            image.clone(),
+            &image,
             Some(PdfPoints::new(image.width() as f32)),
             Some(PdfPoints::new(image.height() as f32)),
         )?;

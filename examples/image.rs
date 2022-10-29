@@ -54,7 +54,7 @@ fn main() -> Result<(), PdfiumError> {
 
         let mut object = PdfPageImageObject::new_with_width(
             &document,
-            image,
+            &image,
             PdfPoints::new(target_object_width_on_page),
         )?;
 

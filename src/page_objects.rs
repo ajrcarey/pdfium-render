@@ -466,7 +466,7 @@ impl<'a> PdfPageObjects<'a> {
         &mut self,
         x: PdfPoints,
         y: PdfPoints,
-        image: DynamicImage,
+        image: &DynamicImage,
         width: Option<PdfPoints>,
         height: Option<PdfPoints>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
