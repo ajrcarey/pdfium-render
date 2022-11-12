@@ -11,6 +11,7 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page_boundaries::PdfPageBoundaries;
 use crate::page_objects::PdfPageObjects;
+use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::prelude::PdfPageAnnotations;
@@ -350,7 +351,7 @@ impl<'a> PdfPage<'a> {
             document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             is_content_regeneration_required: false,
-            annotations: PdfPageAnnotations::from_pdfium(handle, document.bindings()),
+            annotations: PdfPageAnnotations::from_pdfium(handle, document),
             boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
             objects: PdfPageObjects::from_pdfium(*document.handle(), handle, document.bindings()),
         }

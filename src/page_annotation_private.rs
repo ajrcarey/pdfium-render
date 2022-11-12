@@ -12,11 +12,12 @@ pub(crate) mod internal {
     use crate::error::PdfiumError;
     use crate::page::PdfRect;
     use crate::page_annotation::PdfPageAnnotationCommon;
+    use crate::page_annotation_objects::PdfPageAnnotationObjects;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
-    pub trait PdfPageAnnotationPrivate: PdfPageAnnotationCommon {
+    pub trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
         /// Returns the internal `FPDF_ANNOTATION` handle for this [PdfPageAnnotation].
         fn handle(&self) -> &FPDF_ANNOTATION;
 
@@ -124,5 +125,15 @@ pub(crate) mod internal {
         fn modification_date_impl(&self) -> Option<String> {
             self.get_string_value("M")
         }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::objects()].
+        fn objects_impl(&self) -> &PdfPageAnnotationObjects;
+
+        /// Internal mutable accessor available for all [PdfPageAnnotation] types.
+        /// This differs from the public interface, which makes mutable page object access
+        /// available only for the ink annotation and stamp annotation types, since those
+        /// are the only annotation types for which Pdfium itself supports adding or removing
+        /// page objects.
+        fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a>;
     }
 }

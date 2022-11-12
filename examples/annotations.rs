@@ -3,66 +3,97 @@ use pdfium_render::prelude::*;
 pub fn main() -> Result<(), PdfiumError> {
     // For general comments about pdfium-render and binding to Pdfium, see export.rs.
 
-    Pdfium::new(
+    let pdfium = Pdfium::new(
         Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
             .or_else(|_| Pdfium::bind_to_system_library())?,
-    )
-    .load_pdf_from_file("test/annotations-test.pdf", None)?
-    .pages()
-    .iter()
-    .enumerate()
-    .for_each(|(page_index, page)| {
+    );
+
+    let document = pdfium.load_pdf_from_file("test/annotations-test.pdf", None)?;
+
+    for (page_index, page) in document.pages().iter().enumerate() {
         // For each page in the document, iterate over the annotations attached to that page.
 
         println!("=============== Page {} ===============", page_index);
 
-        page.annotations()
-            .iter()
-            .enumerate()
-            .for_each(|(annotation_index, annotation)| {
+        for (annotation_index, annotation) in page.annotations().iter().enumerate() {
+            println!(
+                "Annotation {} is of type {:?} with bounds {:?}",
+                annotation_index,
+                annotation.annotation_type(),
+                annotation.bounds()
+            );
+
+            println!(
+                "{}",
+                page.text().unwrap().for_annotation(&annotation).unwrap()
+            );
+
+            println!(
+                "Annotation {} name: {:?}",
+                annotation_index,
+                annotation.name()
+            );
+
+            println!(
+                "Annotation {} contents: {:?}",
+                annotation_index,
+                annotation.contents()
+            );
+
+            println!(
+                "Annotation {} author: {:?}",
+                annotation_index,
+                annotation.creator()
+            );
+
+            println!(
+                "Annotation {} created: {:?}",
+                annotation_index,
+                annotation.creation_date()
+            );
+
+            println!(
+                "Annotation {} last modified: {:?}",
+                annotation_index,
+                annotation.modification_date()
+            );
+
+            println!(
+                "Annotation {} contains {} page objects",
+                annotation_index,
+                annotation.objects().len()
+            );
+
+            for (object_index, object) in annotation.objects().iter().enumerate() {
                 println!(
-                    "Annotation {} is of type {:?} with bounds {:?}",
+                    "Annotation {} page object {} is of type {:?}",
                     annotation_index,
-                    annotation.annotation_type(),
-                    annotation.bounds()
+                    object_index,
+                    object.object_type()
                 );
 
                 println!(
-                    "{}",
-                    page.text().unwrap().for_annotation(&annotation).unwrap()
+                    "Bounds: {:?}, width: {:?}, height: {:?}",
+                    object.bounds()?,
+                    object.width()?,
+                    object.height()?
                 );
 
-                println!(
-                    "Annotation {} name: {:?}",
-                    annotation_index,
-                    annotation.name()
-                );
+                // For text objects, we take the extra step of outputting the text
+                // contained by the object.
 
-                println!(
-                    "Annotation {} contents: {:?}",
-                    annotation_index,
-                    annotation.contents()
-                );
-
-                println!(
-                    "Annotation {} author: {:?}",
-                    annotation_index,
-                    annotation.creator()
-                );
-
-                println!(
-                    "Annotation {} created: {:?}",
-                    annotation_index,
-                    annotation.creation_date()
-                );
-
-                println!(
-                    "Annotation {} last modified: {:?}",
-                    annotation_index,
-                    annotation.modification_date()
-                );
-            });
-    });
+                if let Some(object) = object.as_text_object() {
+                    println!(
+                        "Text: {} {}-pt {:?}: \"{}\"",
+                        object.font().name(),
+                        object.unscaled_font_size().value,
+                        object.font().weight()?,
+                        object.text()
+                    );
+                }
+            }
+        }
+    }
 
     Ok(())
 }

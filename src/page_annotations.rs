@@ -3,8 +3,10 @@
 
 use crate::bindgen::FPDF_PAGE;
 use crate::bindings::PdfiumLibraryBindings;
+use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_annotation::PdfPageAnnotation;
+use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 use std::ops::Range;
 use std::os::raw::c_int;
 
@@ -13,19 +15,16 @@ pub type PdfPageAnnotationIndex = usize;
 /// The annotations that have been added to a single `PdfPage`.
 pub struct PdfPageAnnotations<'a> {
     page_handle: FPDF_PAGE,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    document: &'a PdfDocument<'a>,
     do_regenerate_page_content_after_each_change: bool,
 }
 
 impl<'a> PdfPageAnnotations<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        page_handle: FPDF_PAGE,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(page_handle: FPDF_PAGE, document: &'a PdfDocument<'a>) -> Self {
         Self {
             page_handle,
-            bindings,
+            document,
             do_regenerate_page_content_after_each_change: false,
         }
     }
@@ -37,6 +36,14 @@ impl<'a> PdfPageAnnotations<'a> {
         &mut self,
         do_regenerate_page_content_after_each_change: bool,
     ) {
+        for mut annotation in self.iter() {
+            annotation
+                .objects_mut_impl()
+                .do_regenerate_page_content_after_each_change(
+                    do_regenerate_page_content_after_each_change,
+                );
+        }
+
         self.do_regenerate_page_content_after_each_change =
             do_regenerate_page_content_after_each_change;
     }
@@ -44,13 +51,13 @@ impl<'a> PdfPageAnnotations<'a> {
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotations] collection.
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
+        self.document.bindings()
     }
 
     /// Returns the total number of annotations that have been added to the containing `PdfPage`.
     #[inline]
     pub fn len(&self) -> PdfPageAnnotationIndex {
-        self.bindings.FPDFPage_GetAnnotCount(self.page_handle) as PdfPageAnnotationIndex
+        self.bindings().FPDFPage_GetAnnotCount(self.page_handle) as PdfPageAnnotationIndex
     }
 
     /// Returns true if this [PdfPageAnnotations] collection is empty.
@@ -72,11 +79,11 @@ impl<'a> PdfPageAnnotations<'a> {
         }
 
         let annotation_handle = self
-            .bindings
+            .bindings()
             .FPDFPage_GetAnnot(self.page_handle, index as c_int);
 
         if annotation_handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
@@ -89,7 +96,8 @@ impl<'a> PdfPageAnnotations<'a> {
         } else {
             Ok(PdfPageAnnotation::from_pdfium(
                 annotation_handle,
-                self.bindings,
+                self.page_handle,
+                self.document,
             ))
         }
     }

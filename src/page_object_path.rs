@@ -2,8 +2,8 @@
 //! page object defining a path.
 
 use crate::bindgen::{
-    FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING, FPDF_PAGE,
-    FPDF_PAGEOBJECT,
+    FPDF_ANNOTATION, FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING,
+    FPDF_PAGE, FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
@@ -141,6 +141,7 @@ impl Default for PdfPathFillMode {
 pub struct PdfPagePathObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     page_handle: Option<FPDF_PAGE>,
+    annotation_handle: Option<FPDF_ANNOTATION>,
     bindings: &'a dyn PdfiumLibraryBindings,
     current_point_x: PdfPoints,
     current_point_y: PdfPoints,
@@ -150,12 +151,14 @@ impl<'a> PdfPagePathObject<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
-        page_handle: FPDF_PAGE,
+        page_handle: Option<FPDF_PAGE>,
+        annotation_handle: Option<FPDF_ANNOTATION>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPagePathObject {
             object_handle,
-            page_handle: Some(page_handle),
+            page_handle,
+            annotation_handle,
             bindings,
             current_point_x: PdfPoints::ZERO,
             current_point_y: PdfPoints::ZERO,
@@ -222,6 +225,7 @@ impl<'a> PdfPagePathObject<'a> {
             let mut result = PdfPagePathObject {
                 object_handle: handle,
                 page_handle: None,
+                annotation_handle: None,
                 bindings,
                 current_point_x: x,
                 current_point_y: y,
@@ -919,6 +923,21 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     #[inline]
     fn clear_page_handle(&mut self) {
         self.page_handle = None;
+    }
+
+    #[inline]
+    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
+        &self.annotation_handle
+    }
+
+    #[inline]
+    fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION) {
+        self.annotation_handle = Some(annotation);
+    }
+
+    #[inline]
+    fn clear_annotation_handle(&mut self) {
+        self.annotation_handle = None;
     }
 
     #[inline]

@@ -1,0 +1,608 @@
+//! Defines the [PdfPageObjectsCommon] trait, providing functionality common to all
+//! containers of multiple `PdfPageObject` objects.
+
+use crate::color::PdfColor;
+use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::font::PdfFont;
+use crate::page::{PdfPoints, PdfRect};
+use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
+use crate::page_object_image::PdfPageImageObject;
+use crate::page_object_path::PdfPagePathObject;
+use crate::page_object_text::PdfPageTextObject;
+use crate::page_objects_private::internal::PdfPageObjectsPrivate;
+use image::DynamicImage;
+use std::ops::{Range, RangeInclusive};
+
+pub type PdfPageObjectIndex = usize;
+
+/// Functionality common to all containers of multiple [PdfPageObject] objects.
+/// Both pages and annotations can contain page objects.
+pub trait PdfPageObjectsCommon<'a> {
+    /// Returns the total number of page objects in the collection.
+    fn len(&self) -> PdfPageObjectIndex;
+
+    /// Returns true if this page objects collection is empty.
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns a Range from `0..(number of objects)` for this page objects collection.
+    #[inline]
+    fn as_range(&self) -> Range<PdfPageObjectIndex> {
+        0..self.len()
+    }
+
+    /// Returns an inclusive Range from `0..=(number of objects - 1)` for this page objects collection.
+    #[inline]
+    fn as_range_inclusive(&self) -> RangeInclusive<PdfPageObjectIndex> {
+        if self.is_empty() {
+            0..=0
+        } else {
+            0..=(self.len() - 1)
+        }
+    }
+
+    /// Returns a single [PdfPageObject] from this page objects collection.
+    fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Returns an iterator over all the [PdfPageObject] objects in this page objects collection.
+    fn iter(&'a self) -> PdfPageObjectsIterator<'a>;
+
+    /// Adds the given [PdfPageObject] to this page objects collection. The object's
+    /// memory ownership will be transferred to the `PdfPage` containing this page objects
+    /// collection, and the updated page object will be returned.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn add_object(&mut self, object: PdfPageObject<'a>) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Adds the given [PdfPageTextObject] to this page objects collection,
+    /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    fn add_text_object(
+        &mut self,
+        object: PdfPageTextObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.add_object(PdfPageObject::Text(object))
+    }
+
+    /// Creates a new [PdfPageTextObject] at the given x and y page co-ordinates
+    /// from the given arguments and adds it to this page objects collection,
+    /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn create_text_object(
+        &mut self,
+        x: PdfPoints,
+        y: PdfPoints,
+        text: impl ToString,
+        font: &PdfFont,
+        font_size: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Adds the given [PdfPagePathObject] to this page objects collection,
+    /// returning the path object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    fn add_path_object(
+        &mut self,
+        object: PdfPagePathObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.add_object(PdfPageObject::Path(object))
+    }
+
+    /// Creates a new [PdfPagePathObject] for the given line, with the given
+    /// stroke settings applied. The new path object will be added to this page objects collection
+    /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn create_path_object_line(
+        &mut self,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Creates a new [PdfPagePathObject] for the given cubic Bézier curve, with the given
+    /// stroke settings applied. The new path object will be added to this page objects collection
+    /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[allow(clippy::too_many_arguments)]
+    fn create_path_object_bezier(
+        &mut self,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        control1_x: PdfPoints,
+        control1_y: PdfPoints,
+        control2_x: PdfPoints,
+        control2_y: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Creates a new [PdfPagePathObject] for the given rectangle, with the given
+    /// fill and stroke settings applied. Both the stroke color and the stroke width must be
+    /// provided for the rectangle to be stroked. The new path object will be added to
+    /// this page objects collection and then returned, wrapped inside a generic
+    /// [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn create_path_object_rect(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with a circle that fills
+    /// the given rectangle, with the given fill and stroke settings applied. Both the stroke color
+    /// and the stroke width must be provided for the circle to be stroked. The new path object
+    /// will be added to this page objects collection and then returned, wrapped inside a generic
+    /// [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn create_path_object_circle(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with a circle centered
+    /// at the given coordinates, with the given radius, and with the given fill and stroke settings
+    /// applied. Both the stroke color and the stroke width must be provided for the circle to be
+    /// stroked. The new path object will be added to this page objects collection and then
+    /// returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    fn create_path_object_circle_at(
+        &mut self,
+        center_x: PdfPoints,
+        center_y: PdfPoints,
+        radius: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with an ellipse that fills
+    /// the given rectangle, with the given fill and stroke settings applied. Both the stroke color
+    /// and the stroke width must be provided for the ellipse to be stroked. The new path object
+    /// will be added to this page objects collection and then returned, wrapped inside a generic
+    /// [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    fn create_path_object_ellipse(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Creates a new [PdfPagePathObject]. The new path will be created with an ellipse centered
+    /// at the given coordinates, with the given radii, and with the given fill and stroke settings
+    /// applied. Both the stroke color and the stroke width must be provided for the ellipse to be
+    /// stroked. The new path object will be added to this page objects collection and then
+    /// returned, wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    #[allow(clippy::too_many_arguments)]
+    fn create_path_object_ellipse_at(
+        &mut self,
+        center_x: PdfPoints,
+        center_y: PdfPoints,
+        x_radius: PdfPoints,
+        y_radius: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Adds the given [PdfPageImageObject] to this page objects collection,
+    /// returning the image object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    fn add_image_object(
+        &mut self,
+        object: PdfPageImageObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.add_object(PdfPageObject::Image(object))
+    }
+
+    /// Creates a new [PdfPageImageObject] at the given x and y page co-ordinates
+    /// from the given arguments and adds it to this page objects collection,
+    /// returning the image object wrapped inside a generic [PdfPageObject] wrapper.
+    ///
+    /// By default, new image objects have their width and height both set to 1.0 points.
+    /// If provided, the given width and/or height will be applied to the newly created object to
+    /// scale its size.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// will be triggered on the page.
+    fn create_image_object(
+        &mut self,
+        x: PdfPoints,
+        y: PdfPoints,
+        image: &DynamicImage,
+        width: Option<PdfPoints>,
+        height: Option<PdfPoints>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Removes the given [PdfPageObject] from this page objects collection. The object's
+    /// memory ownership will be removed from the `PdfPage` containing this page objects
+    /// collection, and the updated page object will be returned. It can be added back to a
+    /// page objects collection or dropped, at which point the memory owned by the object will
+    /// be freed.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn remove_object(
+        &mut self,
+        object: PdfPageObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+
+    /// Removes the [PdfPageObject] at the given index from this page objects collection.
+    /// The object's memory ownership will be removed from the `PdfPage` containing this page objects
+    /// collection, and the updated page object will be returned. It can be added back into a
+    /// page objects collection or discarded, at which point the memory owned by the object will
+    /// be freed.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    fn remove_object_at_index(
+        &mut self,
+        index: PdfPageObjectIndex,
+    ) -> Result<PdfPageObject<'a>, PdfiumError>;
+}
+
+// Blanket implementation for all PdfPageObjects collection types.
+
+impl<'a, T> PdfPageObjectsCommon<'a> for T
+where
+    T: PdfPageObjectsPrivate<'a>,
+{
+    #[inline]
+    fn len(&self) -> PdfPageObjectIndex {
+        self.len_impl()
+    }
+
+    #[inline]
+    fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.get_impl(index)
+    }
+
+    #[inline]
+    fn iter(&'a self) -> PdfPageObjectsIterator<'a> {
+        self.iter_impl()
+    }
+
+    #[inline]
+    fn add_object(&mut self, object: PdfPageObject<'a>) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.add_object_impl(object)
+    }
+
+    #[inline]
+    fn create_text_object(
+        &mut self,
+        x: PdfPoints,
+        y: PdfPoints,
+        text: impl ToString,
+        font: &PdfFont,
+        font_size: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let mut object = PdfPageTextObject::new_from_handles(
+            self.document_handle(),
+            text,
+            *font.handle(),
+            font_size,
+            self.bindings(),
+        )?;
+
+        object.translate(x, y)?;
+
+        self.add_text_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_line(
+        &mut self,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_line_from_bindings(
+            self.bindings(),
+            x1,
+            y1,
+            x2,
+            y2,
+            stroke_color,
+            stroke_width,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_bezier(
+        &mut self,
+        x1: PdfPoints,
+        y1: PdfPoints,
+        x2: PdfPoints,
+        y2: PdfPoints,
+        control1_x: PdfPoints,
+        control1_y: PdfPoints,
+        control2_x: PdfPoints,
+        control2_y: PdfPoints,
+        stroke_color: PdfColor,
+        stroke_width: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_bezier_from_bindings(
+            self.bindings(),
+            x1,
+            y1,
+            x2,
+            y2,
+            control1_x,
+            control1_y,
+            control2_x,
+            control2_y,
+            stroke_color,
+            stroke_width,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_rect(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_rect_from_bindings(
+            self.bindings(),
+            rect,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_circle(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_circle_from_bindings(
+            self.bindings(),
+            rect,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_circle_at(
+        &mut self,
+        center_x: PdfPoints,
+        center_y: PdfPoints,
+        radius: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_circle_at_from_bindings(
+            self.bindings(),
+            center_x,
+            center_y,
+            radius,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_ellipse(
+        &mut self,
+        rect: PdfRect,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_ellipse_from_bindings(
+            self.bindings(),
+            rect,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    #[inline]
+    fn create_path_object_ellipse_at(
+        &mut self,
+        center_x: PdfPoints,
+        center_y: PdfPoints,
+        x_radius: PdfPoints,
+        y_radius: PdfPoints,
+        stroke_color: Option<PdfColor>,
+        stroke_width: Option<PdfPoints>,
+        fill_color: Option<PdfColor>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let object = PdfPagePathObject::new_ellipse_at_from_bindings(
+            self.bindings(),
+            center_x,
+            center_y,
+            x_radius,
+            y_radius,
+            stroke_color,
+            stroke_width,
+            fill_color,
+        )?;
+
+        self.add_path_object(object)
+    }
+
+    fn create_image_object(
+        &mut self,
+        x: PdfPoints,
+        y: PdfPoints,
+        image: &DynamicImage,
+        width: Option<PdfPoints>,
+        height: Option<PdfPoints>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        let image_width = image.width();
+
+        let image_height = image.height();
+
+        let mut object =
+            PdfPageImageObject::new_from_handle(self.document_handle(), image, self.bindings())?;
+
+        // Apply specified dimensions, if provided.
+
+        match (width, height) {
+            (Some(width), Some(height)) => {
+                object.scale(width.value as f64, height.value as f64)?;
+            }
+            (Some(width), None) => {
+                let aspect_ratio = image_height as f32 / image_width as f32;
+
+                let height = width * aspect_ratio;
+
+                object.scale(width.value as f64, height.value as f64)?;
+            }
+            (None, Some(height)) => {
+                let aspect_ratio = image_height as f32 / image_width as f32;
+
+                let width = height / aspect_ratio;
+
+                object.scale(width.value as f64, height.value as f64)?;
+            }
+            (None, None) => {}
+        }
+
+        object.translate(x, y)?;
+
+        self.add_image_object(object)
+    }
+
+    #[inline]
+    fn remove_object(
+        &mut self,
+        object: PdfPageObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.remove_object_impl(object)
+    }
+
+    fn remove_object_at_index(
+        &mut self,
+        index: PdfPageObjectIndex,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        if index >= self.len() {
+            return Err(PdfiumError::PageObjectIndexOutOfBounds);
+        }
+
+        if let Ok(object) = self.get(index) {
+            self.remove_object(object)
+        } else {
+            #[allow(clippy::collapsible_else_if)] // Prefer to keep the intention clear
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        }
+    }
+}
+
+/// An iterator over all the [PdfPageObject] objects in a page objects collection.
+pub struct PdfPageObjectsIterator<'a> {
+    objects: &'a dyn PdfPageObjectsPrivate<'a>,
+    next_index: PdfPageObjectIndex,
+}
+
+impl<'a> PdfPageObjectsIterator<'a> {
+    #[inline]
+    pub(crate) fn new(objects: &'a dyn PdfPageObjectsPrivate<'a>) -> Self {
+        PdfPageObjectsIterator {
+            objects,
+            next_index: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for PdfPageObjectsIterator<'a> {
+    type Item = PdfPageObject<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.objects.get_impl(self.next_index);
+
+        self.next_index += 1;
+
+        next.ok()
+    }
+}

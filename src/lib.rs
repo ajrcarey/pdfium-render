@@ -35,6 +35,7 @@ pub mod page_annotation_free_text;
 pub mod page_annotation_highlight;
 pub mod page_annotation_ink;
 pub mod page_annotation_link;
+pub mod page_annotation_objects;
 pub mod page_annotation_popup;
 mod page_annotation_private; // Keep private so that the PdfPageAnnotationPrivate trait is not exposed.
 pub mod page_annotation_square;
@@ -56,6 +57,8 @@ pub mod page_object_shading;
 pub mod page_object_text;
 pub mod page_object_unsupported;
 pub mod page_objects;
+pub mod page_objects_common;
+mod page_objects_private; // Keep private so that the PdfPageObjectsPrivate trait is not exposed.
 pub mod page_size;
 pub mod page_text;
 pub mod page_text_char;
@@ -85,15 +88,16 @@ pub mod prelude {
         bookmark::*, bookmarks::*, clip_path::*, color::*, color_space::*, document::*, error::*,
         font::*, font_glyph::*, font_glyphs::*, form::*, metadata::*, page::*, page_annotation::*,
         page_annotation_circle::*, page_annotation_free_text::*, page_annotation_highlight::*,
-        page_annotation_ink::*, page_annotation_link::*, page_annotation_popup::*,
-        page_annotation_square::*, page_annotation_squiggly::*, page_annotation_stamp::*,
-        page_annotation_strikeout::*, page_annotation_text::*, page_annotation_underline::*,
-        page_annotation_unsupported::*, page_annotations::*, page_boundaries::*, page_object::*,
-        page_object_form_fragment::*, page_object_group::*, page_object_image::*,
-        page_object_path::*, page_object_shading::*, page_object_text::*,
-        page_object_unsupported::*, page_objects::*, page_size::*, page_text::*, page_text_char::*,
-        page_text_chars::*, page_text_segment::*, page_text_segments::*, pages::*, path_segment::*,
-        path_segments::*, pdfium::*, permissions::*, render_config::*, signature::*, signatures::*,
+        page_annotation_ink::*, page_annotation_link::*, page_annotation_objects::*,
+        page_annotation_popup::*, page_annotation_square::*, page_annotation_squiggly::*,
+        page_annotation_stamp::*, page_annotation_strikeout::*, page_annotation_text::*,
+        page_annotation_underline::*, page_annotation_unsupported::*, page_annotations::*,
+        page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_group::*,
+        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
+        page_object_unsupported::*, page_objects::*, page_objects_common::*, page_size::*,
+        page_text::*, page_text_char::*, page_text_chars::*, page_text_segment::*,
+        page_text_segments::*, pages::*, path_segment::*, path_segments::*, pdfium::*,
+        permissions::*, render_config::*, signature::*, signatures::*,
     };
 }
 

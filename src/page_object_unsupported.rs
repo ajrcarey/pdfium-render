@@ -1,25 +1,28 @@
 //! Defines the [PdfPageUnsupportedObject] struct, exposing functionality related to a single
 //! page object of type `PdfPageObjectType::Unsupported`.
 
-use crate::bindgen::{FPDF_PAGE, FPDF_PAGEOBJECT};
+use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 
 pub struct PdfPageUnsupportedObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     page_handle: Option<FPDF_PAGE>,
+    annotation_handle: Option<FPDF_ANNOTATION>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageUnsupportedObject<'a> {
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
-        page_handle: FPDF_PAGE,
+        page_handle: Option<FPDF_PAGE>,
+        annotation_handle: Option<FPDF_ANNOTATION>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageUnsupportedObject {
             object_handle,
-            page_handle: Some(page_handle),
+            page_handle,
+            annotation_handle,
             bindings,
         }
     }
@@ -44,6 +47,21 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageUnsupportedObject<'a> {
     #[inline]
     fn clear_page_handle(&mut self) {
         self.page_handle = None;
+    }
+
+    #[inline]
+    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
+        &self.annotation_handle
+    }
+
+    #[inline]
+    fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION) {
+        self.annotation_handle = Some(annotation);
+    }
+
+    #[inline]
+    fn clear_annotation_handle(&mut self) {
+        self.annotation_handle = None;
     }
 
     #[inline]

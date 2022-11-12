@@ -1,9 +1,8 @@
 # Idiomatic Rust bindings for Pdfium
 
 `pdfium-render` provides an idiomatic high-level Rust interface to Pdfium, the C++ PDF library
-used by the Google Chromium project. With this library, you can render pages in PDF files to
-bitmaps, load, edit, and extract text and images from existing PDF files, and create new PDF files
-from scratch.
+used by the Google Chromium project. Pdfium can render pages in PDF files to bitmaps, load, edit,
+and extract text and images from existing PDF files, and create new PDF files from scratch.
 
 ```rust
     use pdfium_render::prelude::*;
@@ -78,21 +77,24 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+_Note: Upcoming version 0.8.0 will include a breaking change._ The `PdfDocument::pages()` function,
+which currently returns an owned `PdfPages` instance, will be changed to that it returns
+an immutable `&PdfPages` reference instead. A new `PdfDocument::pages_mut()` function
+will return a mutable `&mut PdfPages` reference. It will no longer be possible to retrieve
+an owned `PdfPages` instance. For more information on the motivation behind this change,
+see <https://github.com/ajrcarey/pdfium-render/issues/47>.
+
+Version 0.7.25 adds the `PdfPageAnnotation::objects()` function, allowing inspection of all page
+objects attached to an annotation, and the `PdfPageInkAnnotation::objects_mut()` and
+`PdfPageStampAnnotation::objects_mut()` functions, allowing adding page objects to, and removing
+page objects from, ink and stamp annotations.
+
 Version 0.7.24 adds bindings to Pdfium functions related to individual segments of a Path page object,
 and adds the `PdfPagePathObjectSegments` and `PdfFontGlyphs` collections to the high-level interface,
 along with functions for retrieving path segments for individual font glyphs and page path objects.
 
 Version 0.7.23 improves the crate's documentation so that `cargo doc` always generates
 documentation for both native and WASM functionality, no matter the current platform.
-
-Version 0.7.22 works around two problems in Pdfium's bitmap generation when retrieving
-processed renderings of individual `PdfPageImageObject` page objects.
-See the "Version history" section below for details.
-
-Version 0.7.21 fixes some bugs in color conversion from RGBA to BGRA when working with
-`PdfPageImageObject` page objects, and adds the additional crate features `libstdc++` and `libc++`
-to provide more flexibility when linking against statically-compiled builds of Pdfium.
-See the "Static linking" section below for details.
 
 ## Binding to Pdfium
 
@@ -316,7 +318,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.24, 316 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.25, 316 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -328,6 +330,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.25: adds the `PdfPageAnnotationObjects` collection and the `PdfPageAnnotation::objects()`,
+  `PdfPageInkAnnotation::objects_mut()`, and `PdfPageStampAnnotation::objects_mut()` functions
+  to the high-level interface.
 * 0.7.24: adds bindings for `FPDFClipPath_CountPathSegments()`, `FPDFClipPath_GetPathSegment()`,
   `FPDFPath_CountSegments()`, `FPDFPath_GetPathSegment()`, and `FPDFPathSegment_*()` functions;
   adds `PdfFontGlyphs` and `PdfPagePathObjectSegments` collections to the high-level interface,

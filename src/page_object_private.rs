@@ -7,10 +7,11 @@ pub(crate) mod internal {
     // Instead of making the PdfPageObjectPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::{FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF};
+    use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF};
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::page::{PdfPoints, PdfRect};
+    use crate::page_annotation_objects::PdfPageAnnotationObjects;
     use crate::page_object::PdfPageObjectCommon;
     use crate::page_objects::PdfPageObjects;
 
@@ -29,16 +30,31 @@ pub(crate) mod internal {
         /// This [PdfPageObject] is detached from any containing page.
         fn clear_page_handle(&mut self);
 
+        /// Returns the internal `FPDF_ANNOTATION` handle for the annotation containing
+        /// this [PdfPageObject], if any.
+        fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION>;
+
+        /// Sets the internal `FPDF_ANNOTATION` handle for the annotation containing this [PdfPageObject].
+        fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION);
+
+        /// Clears the internal `FPDF_ANNOTATION` handle for the annotation containing
+        /// this [PdfPageObject]. This [PdfPageObject] is detached from any containing annotation.
+        fn clear_annotation_handle(&mut self);
+
+        /// Returns the [PdfiumLibraryBindings] used by this [PdfPageObject].
         fn bindings(&self) -> &dyn PdfiumLibraryBindings;
 
-        /// Returns `true` if the memory allocated to this [PdfPageObject] is owned by a containing
-        /// [PdfPage]. Page objects that are contained within a [PdfPage] do not require their
-        /// data buffers to be de-allocated when references to them are dropped. Returns `false`
-        /// for a [PdfPageObject] that has been created programmatically but not yet added to an
-        /// existing [PdfPage].
+        /// Returns `true` if the memory allocated to this [PdfPageObject] is owned by either
+        /// a containing [PdfPage] or a containing [PdfPageAnnotation].
+        ///
+        /// Page objects that are contained within another object do not require their
+        /// data buffers to be de-allocated when references to them are dropped.
+        ///
+        /// Returns `false` for a [PdfPageObject] that has been created programmatically but not
+        /// yet added to either an existing [PdfPage] or an existing [PdfPageAnnotation].
         #[inline]
-        fn is_object_memory_owned_by_page(&self) -> bool {
-            self.get_page_handle().is_some()
+        fn is_object_memory_owned_by_container(&self) -> bool {
+            self.get_page_handle().is_some() || self.get_annotation_handle().is_some()
         }
 
         /// Adds this [PdfPageObject] to the given [PdfPageObjects] collection.
@@ -83,6 +99,80 @@ pub(crate) mod internal {
                 }
             } else {
                 Err(PdfiumError::PageObjectNotAttachedToPage)
+            }
+        }
+
+        /// Adds this [PdfPageObject] to the given [PdfPageAnnotationObjects] collection.
+        // We use inversion of control here so that PdfPageAnnotationObjects doesn't need to care
+        // whether the page object being added is a single object or a group.
+        #[inline]
+        fn add_object_to_annotation(
+            &mut self,
+            annotation_objects: &PdfPageAnnotationObjects,
+        ) -> Result<(), PdfiumError> {
+            self.add_object_to_annotation_handle(*annotation_objects.get_annotation_handle())
+        }
+
+        fn add_object_to_annotation_handle(
+            &mut self,
+            annotation_handle: FPDF_ANNOTATION,
+        ) -> Result<(), PdfiumError> {
+            self.bindings()
+                .FPDFAnnot_AppendObject(annotation_handle, *self.get_object_handle());
+
+            if let Some(error) = self.bindings().get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                self.set_annotation_handle(annotation_handle);
+
+                Ok(())
+            }
+        }
+
+        /// Removes this [PdfPageObject] from the [PdfPageAnnotationsObjects] collection that contains it.
+        // We use inversion of control here so that PdfPageAnnotationsObjects doesn't need to care
+        // whether the page object being removed is a single object or a group.
+        fn remove_object_from_annotation(&mut self) -> Result<(), PdfiumError> {
+            if let Some(annotation_handle) = self.get_annotation_handle() {
+                // Pdfium only allows removing objects from annotations by index. We must
+                // perform a linear scan over the annotation's page objects.
+
+                let index = {
+                    let mut result = None;
+
+                    for i in 0..self.bindings().FPDFAnnot_GetObjectCount(*annotation_handle) {
+                        if *self.get_object_handle()
+                            == self.bindings().FPDFAnnot_GetObject(*annotation_handle, i)
+                        {
+                            result = Some(i);
+
+                            break;
+                        }
+                    }
+
+                    result
+                };
+
+                if let Some(index) = index {
+                    if self.bindings().is_true(
+                        self.bindings()
+                            .FPDFAnnot_RemoveObject(*annotation_handle, index),
+                    ) {
+                        self.clear_page_handle();
+
+                        Ok(())
+                    } else {
+                        Err(PdfiumError::PdfiumLibraryInternalError(
+                            self.bindings()
+                                .get_pdfium_last_error()
+                                .unwrap_or(PdfiumInternalError::Unknown),
+                        ))
+                    }
+                } else {
+                    Err(PdfiumError::PageObjectNotAttachedToAnnotation)
+                }
+            } else {
+                Err(PdfiumError::PageObjectNotAttachedToAnnotation)
             }
         }
 

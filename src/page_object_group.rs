@@ -12,7 +12,7 @@ use crate::page_object::{
 };
 use crate::page_object_path::PdfPathFillMode;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::page_objects::PdfPageObjectIndex;
+use crate::page_objects_common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
 /// The page objects contained in the group can be manipulated and transformed together
@@ -264,7 +264,8 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn has_transparency(&self) -> bool {
         self.object_handles.iter().any(|object_handle| {
-            PdfPageObject::from_pdfium(*object_handle, self.page, self.bindings).has_transparency()
+            PdfPageObject::from_pdfium(*object_handle, Some(self.page), None, self.bindings)
+                .has_transparency()
         })
     }
 
@@ -275,7 +276,8 @@ impl<'a> PdfPageGroupObject<'a> {
 
         self.object_handles.iter().for_each(|object_handle| {
             if let Ok(object_bounds) =
-                PdfPageObject::from_pdfium(*object_handle, self.page, self.bindings).bounds()
+                PdfPageObject::from_pdfium(*object_handle, Some(self.page), None, self.bindings)
+                    .bounds()
             {
                 if let Some(bounds) = bounds.as_mut() {
                     if object_bounds.bottom < bounds.bottom {
@@ -497,7 +499,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Inflates an internal `FPDF_PAGEOBJECT` handle into a [PdfPageObject].
     #[inline]
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
-        PdfPageObject::from_pdfium(*handle, self.page, self.bindings)
+        PdfPageObject::from_pdfium(*handle, Some(self.page), None, self.bindings)
     }
 }
 

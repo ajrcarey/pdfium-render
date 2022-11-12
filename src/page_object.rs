@@ -1,15 +1,16 @@
 //! Defines the [PdfPageObject] enum, exposing functionality related to a single page object.
 
 use crate::bindgen::{
-    FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND, FPDF_LINEJOIN_BEVEL,
-    FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_PAGEOBJ_FORM,
-    FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING, FPDF_PAGEOBJ_TEXT,
-    FPDF_PAGEOBJ_UNKNOWN,
+    FPDF_ANNOTATION, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
+    FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING,
+    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::error::PdfiumError;
 use crate::page::{PdfPoints, PdfRect};
+use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_object_form_fragment::PdfPageFormFragmentObject;
 use crate::page_object_image::PdfPageImageObject;
 use crate::page_object_path::PdfPagePathObject;
@@ -255,38 +256,59 @@ pub enum PdfPageObject<'a> {
 }
 
 impl<'a> PdfPageObject<'a> {
+    // Page objects can be attached either directly to a page or to an annotation.
+    // We accommodate both possibilities.
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
-        page_handle: FPDF_PAGE,
+        page_handle: Option<FPDF_PAGE>,
+        annotation_handle: Option<FPDF_ANNOTATION>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         match PdfPageObjectType::from_pdfium(bindings.FPDFPageObj_GetType(object_handle) as u32)
             .unwrap_or(PdfPageObjectType::Unsupported)
         {
-            PdfPageObjectType::Unsupported => PdfPageObject::Unsupported(
-                PdfPageUnsupportedObject::from_pdfium(object_handle, page_handle, bindings),
-            ),
+            PdfPageObjectType::Unsupported => {
+                PdfPageObject::Unsupported(PdfPageUnsupportedObject::from_pdfium(
+                    object_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
             PdfPageObjectType::Text => PdfPageObject::Text(PdfPageTextObject::from_pdfium(
                 object_handle,
                 page_handle,
+                annotation_handle,
                 bindings,
             )),
             PdfPageObjectType::Path => PdfPageObject::Path(PdfPagePathObject::from_pdfium(
                 object_handle,
                 page_handle,
+                annotation_handle,
                 bindings,
             )),
             PdfPageObjectType::Image => PdfPageObject::Image(PdfPageImageObject::from_pdfium(
                 object_handle,
                 page_handle,
+                annotation_handle,
                 bindings,
             )),
-            PdfPageObjectType::Shading => PdfPageObject::Shading(
-                PdfPageShadingObject::from_pdfium(object_handle, page_handle, bindings),
-            ),
-            PdfPageObjectType::FormFragment => PdfPageObject::FormFragment(
-                PdfPageFormFragmentObject::from_pdfium(object_handle, page_handle, bindings),
-            ),
+            PdfPageObjectType::Shading => {
+                PdfPageObject::Shading(PdfPageShadingObject::from_pdfium(
+                    object_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageObjectType::FormFragment => {
+                PdfPageObject::FormFragment(PdfPageFormFragmentObject::from_pdfium(
+                    object_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
         }
     }
 
@@ -1070,13 +1092,28 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 
     #[inline]
+    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
+        self.unwrap_as_trait().get_annotation_handle()
+    }
+
+    #[inline]
+    fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION) {
+        self.unwrap_as_trait_mut().set_annotation_handle(annotation);
+    }
+
+    #[inline]
+    fn clear_annotation_handle(&mut self) {
+        self.unwrap_as_trait_mut().clear_annotation_handle();
+    }
+
+    #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.unwrap_as_trait().bindings()
     }
 
     #[inline]
-    fn is_object_memory_owned_by_page(&self) -> bool {
-        self.unwrap_as_trait().is_object_memory_owned_by_page()
+    fn is_object_memory_owned_by_container(&self) -> bool {
+        self.unwrap_as_trait().is_object_memory_owned_by_container()
     }
 
     #[inline]
@@ -1087,6 +1124,20 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
     fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
         self.unwrap_as_trait_mut().remove_object_from_page()
+    }
+
+    #[inline]
+    fn add_object_to_annotation(
+        &mut self,
+        annotation_objects: &PdfPageAnnotationObjects,
+    ) -> Result<(), PdfiumError> {
+        self.unwrap_as_trait_mut()
+            .add_object_to_annotation(annotation_objects)
+    }
+
+    #[inline]
+    fn remove_object_from_annotation(&mut self) -> Result<(), PdfiumError> {
+        self.unwrap_as_trait_mut().remove_object_from_annotation()
     }
 }
 
@@ -1139,12 +1190,14 @@ impl<'a> Drop for PdfPageObject<'a> {
         // The documentation for FPDFPageObj_Destroy() states that we only need
         // call the function for page objects created by FPDFPageObj_CreateNew*() or
         // FPDFPageObj_New*Obj() _and_ where the newly-created object was _not_ subsequently
-        // added to a PdfPage via a call to FPDFPage_InsertObject() or FPDFAnnot_AppendObject().
+        // added to a PdfPage or PdfPageAnnotation via a call to FPDFPage_InsertObject() or
+        // FPDFAnnot_AppendObject().
+
         // In other words, retrieving a page object that already exists in a document evidently
         // does not allocate any additional resources, so we don't need to free anything.
         // (Indeed, if we try to, Pdfium segfaults.)
 
-        if !self.is_object_memory_owned_by_page() {
+        if !self.is_object_memory_owned_by_container() {
             self.bindings()
                 .FPDFPageObj_Destroy(*self.get_object_handle());
         }
