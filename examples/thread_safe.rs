@@ -33,6 +33,13 @@ use std::thread;
 // _not_ multi-threading.
 
 fn main() -> Result<(), PdfiumError> {
+    // Define bitmap rendering settings that will be used by all threads.
+
+    let config = PdfRenderConfig::new()
+        .set_target_width(2000)
+        .set_maximum_height(2000)
+        .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+
     // Launch separate, simultaneous rendering tasks on different threads using rayon::par_iter().
     // In theory, all tasks should execute concurrently; in practice, pdfium-render will force
     // threads to block in order to maintain thread-safe access to Pdfium.
@@ -44,16 +51,7 @@ fn main() -> Result<(), PdfiumError> {
         "test/path-test.pdf",
     ]
     .par_iter() // rayon will spawn a separate thread for each task
-    .for_each(|path| {
-        assert!(render(
-            &PdfRenderConfig::new()
-                .set_target_width(2000)
-                .set_maximum_height(2000)
-                .rotate_if_landscape(PdfBitmapRotation::Degrees90, true),
-            path
-        )
-        .is_ok())
-    });
+    .for_each(|path| assert!(render(&config, path).is_ok()));
 
     println!("All done!");
 
