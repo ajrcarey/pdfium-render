@@ -131,7 +131,7 @@ impl<'a> PdfPages<'a> {
         )
     }
 
-    /// Returns the first [PdfPage] from this [PdfPages] collection.
+    /// Returns the first [PdfPage] in this [PdfPages] collection.
     #[inline]
     pub fn first(&self) -> Result<PdfPage<'a>, PdfiumError> {
         if !self.is_empty() {
@@ -141,7 +141,7 @@ impl<'a> PdfPages<'a> {
         }
     }
 
-    /// Returns the last [PdfPage] from this [PdfPages] collection.
+    /// Returns the last [PdfPage] in this [PdfPages] collection.
     #[inline]
     pub fn last(&self) -> Result<PdfPage<'a>, PdfiumError> {
         if !self.is_empty() {

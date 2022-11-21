@@ -8,6 +8,8 @@ mod bindgen {
     #![allow(non_snake_case)]
     #![allow(dead_code)]
     include!("bindgen.rs");
+
+    pub type size_t = usize;
 }
 
 pub mod action;

@@ -377,8 +377,8 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the label assigned to this [PdfPage], if any.
     #[inline]
-    pub fn label(&self) -> Option<&String> {
-        self.label.as_ref()
+    pub fn label(&self) -> Option<&str> {
+        self.label.as_deref()
     }
 
     /// Returns the width of this [PdfPage] in device-independent points.
