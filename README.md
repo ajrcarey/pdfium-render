@@ -78,7 +78,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 ## What's new
 
 _Note: Upcoming version 0.8.0 will include a breaking change._ The `PdfDocument::pages()` function,
-which currently returns an owned `PdfPages` instance, will be changed to that it returns
+which currently returns an owned `PdfPages` instance, will be changed so that it returns
 an immutable `&PdfPages` reference instead. A new `PdfDocument::pages_mut()` function
 will return a mutable `&mut PdfPages` reference. It will no longer be possible to retrieve
 an owned `PdfPages` instance. For more information on the motivation behind this change,

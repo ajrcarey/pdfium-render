@@ -4,6 +4,8 @@ use crate::bindgen::{
     FPDF_ERR_FILE, FPDF_ERR_FORMAT, FPDF_ERR_PAGE, FPDF_ERR_PASSWORD, FPDF_ERR_SECURITY,
     FPDF_ERR_UNKNOWN,
 };
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
@@ -143,3 +145,11 @@ pub enum PdfiumError {
     /// A wrapped internal library error from Pdfium's `FPDF_ERR_*` constant values.
     PdfiumLibraryInternalError(PdfiumInternalError),
 }
+
+impl Display for PdfiumError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#?}", self)
+    }
+}
+
+impl Error for PdfiumError {}
