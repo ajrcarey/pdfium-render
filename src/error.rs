@@ -5,7 +5,7 @@ use crate::bindgen::{
     FPDF_ERR_UNKNOWN,
 };
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Result};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
@@ -147,7 +147,7 @@ pub enum PdfiumError {
 }
 
 impl Display for PdfiumError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{:#?}", self)
     }
 }

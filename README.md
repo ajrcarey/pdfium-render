@@ -84,6 +84,9 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
+Version 0.7.26 adds implementations of `std::fmt::Display` and `std::error::Error`
+to the `PdfiumError` enum, so that it can be used by error handling libraries such as `anyhow`.
+
 Version 0.7.25 adds the `PdfPageAnnotation::objects()` function, allowing inspection of all page
 objects attached to an annotation, and the `PdfPageInkAnnotation::objects_mut()` and
 `PdfPageStampAnnotation::objects_mut()` functions, allowing adding page objects to, and removing
@@ -92,9 +95,6 @@ page objects from, ink and stamp annotations.
 Version 0.7.24 adds bindings to Pdfium functions related to individual segments of a Path page object,
 and adds the `PdfPagePathObjectSegments` and `PdfFontGlyphs` collections to the high-level interface,
 along with functions for retrieving path segments for individual font glyphs and page path objects.
-
-Version 0.7.23 improves the crate's documentation so that `cargo doc` always generates
-documentation for both native and WASM functionality, no matter the current platform.
 
 ## Binding to Pdfium
 
@@ -113,8 +113,10 @@ Binding to a dynamically-built Pdfium library is the simplest option. On Android
 longer permit user applications to access it); alternatively, you can package a pre-built
 dynamic library appropriate for your operating system alongside your Rust executable.
 
+Pre-built Pdfium libraries suitable for dynamic linking are available from several sources:
+
 * Native (i.e. non-WASM) builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
-* WASM builds of Pdfium: <https://github.com/paulocoutinhox/pdfium-lib/releases>
+* Android, iOS, macOS, and WASM builds of Pdfium: <https://github.com/paulocoutinhox/pdfium-lib/releases>
 
 If you are compiling a native (i.e. non-WASM) build, and you place an appropriate Pdfium library
 in the same folder as your compiled application, then binding to it dynamically at runtime is
@@ -141,12 +143,6 @@ attempt to fall back to a system-provided library if that fails:
             .unwrap() // Or use the ? unwrapping operator to pass any error up to the caller
     );
 ```
-
-At the time of writing, the WASM builds at <https://github.com/bblanchon/pdfium-binaries/releases>
-are compiled with a non-growable WASM heap memory allocator. This means that attempting to open
-a PDF document longer than just a few pages will result in an unrecoverable out of memory error.
-The WASM builds at <https://github.com/paulocoutinhox/pdfium-lib/releases> are recommended as they
-do not have this problem.
 
 ## Static linking
 
@@ -215,6 +211,12 @@ inspection and rendering of PDF files in a web browser.
 
 Certain functions that access the file system are not available when compiling to WASM. In all cases,
 browser-specific alternatives are provided, as detailed at the link above.
+
+At the time of writing, the WASM builds of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases>
+are compiled with a non-growable WASM heap memory allocator. This means that attempting to open
+a PDF document longer than just a few pages will result in an unrecoverable out of memory error.
+The WASM builds of Pdfium at <https://github.com/paulocoutinhox/pdfium-lib/releases> are recommended
+as they do not have this problem.
 
 ## Multithreading
 
@@ -318,7 +320,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.25, 316 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.26, 316 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -330,6 +332,7 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.26: adds `Display` and `Error` trait implementations to `PdfiumError` for `anyhow` compatibility.
 * 0.7.25: adds the `PdfPageAnnotationObjects` collection and the `PdfPageAnnotation::objects()`,
   `PdfPageInkAnnotation::objects_mut()`, and `PdfPageStampAnnotation::objects_mut()` functions
   to the high-level interface.
