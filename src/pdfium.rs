@@ -400,3 +400,9 @@ impl Default for Pdfium {
         Pdfium::new(Pdfium::bind_to_system_library().unwrap())
     }
 }
+
+#[cfg(feature = "sync")]
+unsafe impl Sync for Pdfium {}
+
+#[cfg(feature = "sync")]
+unsafe impl Send for Pdfium {}
