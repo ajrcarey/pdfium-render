@@ -49,10 +49,10 @@ rand = "^0" # Used by examples/create.rs
 rayon = "^1" # Used by examples/thread_safe.rs
 
 [features]
-default = ["thread_safe"]
+default = ["sync", "thread_safe"]
 bindings = []
 static = []
 thread_safe = []
 "libstdc++" = ["static"]
 "libc++" = ["static"]
-sync = []
+sync = ["thread_safe"]

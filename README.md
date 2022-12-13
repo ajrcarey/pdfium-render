@@ -84,8 +84,10 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
-Version 0.7.26 adds implementations of `std::fmt::Display` and `std::error::Error`
-to the `PdfiumError` enum, so that it can be used by error handling libraries such as `anyhow`.
+Version 0.7.26 adds the `sync` crate feature, providing implementations of the `Send` and
+`Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely, 
+and adds implementations of the `std::fmt::Display` and `std::error::Error` traits to the
+`PdfiumError` enum, so that it can be used by error handling libraries such as `anyhow`.
 
 Version 0.7.25 adds the `PdfPageAnnotation::objects()` function, allowing inspection of all page
 objects attached to an annotation, and the `PdfPageInkAnnotation::objects_mut()` and
@@ -244,8 +246,10 @@ This crate provides the following optional features:
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above.
+* `sync`: provides an implementation of the `Send` and `Sync` traits for the Pdfium struct. This allows
+  a `Pdfium` instance to be shared across threads. Requires the `thread_safe` feature.
 
-The `thread_safe` feature is enabled by default. All other features are disabled by default.
+The `sync` and `thread_safe` features are enabled by default. All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 
@@ -331,7 +335,8 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
-* 0.7.26: adds `Display` and `Error` trait implementations to `PdfiumError` for `anyhow` compatibility.
+* 0.7.26: adds `sync` default crate feature providing `Send` and `Sync` implementations for `Pdfium`
+  struct; adds `Display` and `Error` trait implementations to `PdfiumError` for `anyhow` compatibility.
 * 0.7.25: adds the `PdfPageAnnotationObjects` collection and the `PdfPageAnnotation::objects()`,
   `PdfPageInkAnnotation::objects_mut()`, and `PdfPageStampAnnotation::objects_mut()` functions
   to the high-level interface.
