@@ -144,6 +144,7 @@ pub struct PdfDocument<'a> {
     permissions: PdfPermissions<'a>,
     signatures: PdfSignatures<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
+    source_byte_buffer: Option<Vec<u8>>,
 
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     // This field is never used when compiling to WASM.
@@ -166,6 +167,7 @@ impl<'a> PdfDocument<'a> {
             permissions: PdfPermissions::from_pdfium(handle, bindings),
             signatures: PdfSignatures::from_pdfium(handle, bindings),
             bindings,
+            source_byte_buffer: None,
             file_access_reader: None,
         }
     }
@@ -180,6 +182,13 @@ impl<'a> PdfDocument<'a> {
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
+    }
+
+    /// Binds a byte buffer to the lifetime of this [PdfDocument], so that it will always be
+    /// available for Pdfium to read data from as needed.
+    #[inline]
+    pub(crate) fn set_source_byte_buffer(&mut self, bytes: Vec<u8>) {
+        self.source_byte_buffer = Some(bytes);
     }
 
     /// Binds an `FPDF_FILEACCESS` reader to the lifetime of this [PdfDocument], so that

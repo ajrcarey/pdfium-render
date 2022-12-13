@@ -108,19 +108,18 @@ When compiling to WASM, packaging an external build of Pdfium as a separate WASM
 
 ## Dynamic linking
 
-Binding to a dynamically-built Pdfium library is the simplest option. On Android, a system-provided
+Binding to a pre-built Pdfium dynamic library at runtime is the simplest option. On Android, a pre-built
 `libpdfium.so` is packaged as part of the operating system (although recent versions of Android no
 longer permit user applications to access it); alternatively, you can package a pre-built
 dynamic library appropriate for your operating system alongside your Rust executable.
 
-Pre-built Pdfium libraries suitable for dynamic linking are available from several sources:
+Pre-built Pdfium dynamic libraries suitable for runtime linking are available from several sources:
 
 * Native (i.e. non-WASM) builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
 * Android, iOS, macOS, and WASM builds of Pdfium: <https://github.com/paulocoutinhox/pdfium-lib/releases>
 
 If you are compiling a native (i.e. non-WASM) build, and you place an appropriate Pdfium library
-in the same folder as your compiled application, then binding to it dynamically at runtime is
-as simple as:
+in the same folder as your compiled application, then binding to it at runtime is as simple as:
 
 ```rust
     use pdfium_render::prelude::*;

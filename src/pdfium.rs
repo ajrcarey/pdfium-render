@@ -191,15 +191,37 @@ impl Pdfium {
         self.bindings.as_ref()
     }
 
-    /// Attempts to open a [PdfDocument] from the given byte buffer.
+    /// Attempts to open a [PdfDocument] from the given static byte buffer.
     ///
     /// If the document is password protected, the given password will be used to unlock it.
     pub fn load_pdf_from_bytes(
         &self,
-        bytes: &[u8],
+        bytes: &'static [u8],
         password: Option<&str>,
     ) -> Result<PdfDocument, PdfiumError> {
         self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadMemDocument64(bytes, password))
+    }
+
+    /// Attempts to open a [PdfDocument] from the given owned byte buffer.
+    ///
+    /// If the document is password protected, the given password will be used to unlock it.
+    pub fn load_pdf_from_bytes_owned(
+        &self,
+        bytes: Vec<u8>,
+        password: Option<&str>,
+    ) -> Result<PdfDocument, PdfiumError> {
+        self.pdfium_document_handle_to_result(
+            self.bindings
+                .FPDF_LoadMemDocument64(bytes.as_slice(), password),
+        )
+        .map(|mut document| {
+            // Give the newly-created document ownership of the byte buffer, so that Pdfium can continue
+            // to read from it on an as-needed basis throughout the lifetime of the document.
+
+            document.set_source_byte_buffer(bytes);
+
+            document
+        })
     }
 
     /// Attempts to open a [PdfDocument] from the given file path.
@@ -338,7 +360,7 @@ impl Pdfium {
 
         let bytes: Vec<u8> = u8_array.to_vec();
 
-        self.load_pdf_from_bytes(bytes.as_slice(), password)
+        self.load_pdf_from_bytes_owned(bytes, password)
     }
 
     /// Creates a new, empty [PdfDocument] in memory.
