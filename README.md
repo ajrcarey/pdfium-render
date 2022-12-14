@@ -112,10 +112,10 @@ When compiling to WASM, packaging an external build of Pdfium as a separate WASM
 
 Binding to a pre-built Pdfium dynamic library at runtime is the simplest option. On Android, a pre-built
 `libpdfium.so` is packaged as part of the operating system (although recent versions of Android no
-longer permit user applications to access it); alternatively, you can package a pre-built
-dynamic library appropriate for your operating system alongside your Rust executable.
+longer permit user applications to access it); alternatively, you can package a dynamic library
+appropriate for your operating system alongside your Rust executable.
 
-Pre-built Pdfium dynamic libraries suitable for runtime linking are available from several sources:
+Pre-built Pdfium dynamic libraries suitable for runtime binding are available from several sources:
 
 * Native (i.e. non-WASM) builds of Pdfium for all major platforms: <https://github.com/bblanchon/pdfium-binaries/releases>
 * Android, iOS, macOS, and WASM builds of Pdfium: <https://github.com/paulocoutinhox/pdfium-lib/releases>
@@ -249,7 +249,7 @@ This crate provides the following optional features:
 * `sync`: provides an implementation of the `Send` and `Sync` traits for the Pdfium struct. This allows
   a `Pdfium` instance to be shared across threads. Requires the `thread_safe` feature.
 
-The `sync` and `thread_safe` features are enabled by default. All other features are disabled by default.
+The `thread_safe` and `sync` features are enabled by default. All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 

@@ -136,14 +136,38 @@ impl PdfiumRenderWasmState {
         // function signatures. For more information, see:
         // https://github.com/ajrcarey/pdfium-render/issues/8.
 
-        // Pdfium's function table is exported by Emscripten directly into the wasmTable
-        // global variable available to each web worker running in the browser.
-        // Scan the function table for function signatures that take 4 arguments.
+        // For builds of Pdfium downloaded from https://github.com/paulocoutinhox/pdfium-lib/releases
+        // _before_ V5407, Pdfium's function table is exported by Emscripten directly into
+        // the wasmTable global variable available to each web worker running in the browser.
+        // For builds of Pdfium downloaded from https://github.com/paulocoutinhox/pdfium-lib/releases
+        // _including or after_ V5407, Pdfium's function table is available in the Emscripten-wrapped
+        // Pdfium WASM module, but is not exported into a global variable.
+
+        // Retrieve the function table by looking for the wasmTable global variable first;
+        // failing that, attempt to retrieve it from the asm.__indirect_function_table property
+        // in the Pdfium WASM module.
 
         let table: WebAssembly::Table =
             Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
-                .map_err(|_| "wasmTable global variable not defined")?
+                .and_then(|value: JsValue| {
+                    if value == JsValue::UNDEFINED {
+                        // The wasmTable global variable is not defined. Try the
+                        // asm.__indirect_function_table property in the Pdfium WASM module instead.
+
+                        log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): global wasmTable variable not defined, falling back to Module.asm.__indirect_function_table");
+
+                        let asm = Reflect::get(&pdfium_wasm_module, &JsValue::from("asm"))
+                            .map_err(|_| "Module.asm not defined")?;
+
+                        Reflect::get(&asm, &JsValue::from("__indirect_function_table"))
+                    } else {
+                        Ok(value)
+                    }
+                })
+                .map_err(|_| "Unable to locate wasmTable")?
                 .into();
+
+        // Once we have the function table, we scan it for function signatures that take 4 arguments.
 
         for index in 1..table.length() {
             if let Ok(function) = table.get(index) {
