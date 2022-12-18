@@ -49,6 +49,7 @@ enum JsFunctionArgumentType {
 pub(crate) struct PdfiumRenderWasmState {
     pdfium_wasm_module: Option<Object>,
     local_wasm_module: Option<Object>,
+    wasm_table: Option<WebAssembly::Table>,
     malloc_js_fn: Option<Function>,
     free_js_fn: Option<Function>,
     call_js_fn: Option<Function>,
@@ -226,6 +227,7 @@ impl PdfiumRenderWasmState {
 
         self.pdfium_wasm_module = Some(pdfium_wasm_module);
         self.local_wasm_module = Some(local_wasm_module);
+        self.wasm_table = Some(table);
         self.debug = debug;
 
         Ok(())
@@ -747,16 +749,6 @@ impl PdfiumRenderWasmState {
             local_function_name
         );
 
-        // Pdfium's function table is exported by Emscripten directly into the wasmTable
-        // global variable available to each web worker running in the browser.
-        // Replace the function entry with the given index with the function in this module
-        // with the given name.
-
-        let table: WebAssembly::Table =
-            Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
-                .map_err(PdfiumError::JsSysErrorRetrievingFunctionTable)?
-                .into();
-
         let local_module = self.local_wasm_module.as_ref().unwrap();
 
         let local_function = Function::from(
@@ -765,15 +757,15 @@ impl PdfiumRenderWasmState {
         );
 
         // Save the current entry in the function table, so we can restore it later.
-
-        if let Ok(function) = table.get(pdfium_function_index as u32) {
+        
+        if let Ok(function) = self.wasm_table.as_ref().unwrap().get(pdfium_function_index as u32) {
             self.set(
                 format!("function_{}", pdfium_function_index).as_str(),
                 function.into(),
             );
         }
 
-        table
+        self.wasm_table.as_mut().unwrap()
             .set(pdfium_function_index as u32, &local_function)
             .map_err(PdfiumError::JsSysErrorPatchingFunctionTable)?;
 
@@ -796,14 +788,9 @@ impl PdfiumRenderWasmState {
         );
 
         if let Some(value) = self.take(format!("function_{}", pdfium_function_index).as_str()) {
-            let table: WebAssembly::Table =
-                Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
-                    .map_err(PdfiumError::JsSysErrorRetrievingFunctionTable)?
-                    .into();
-
             let original_function = Function::from(value);
 
-            table
+            self.wasm_table.as_mut().unwrap()
                 .set(pdfium_function_index as u32, &original_function)
                 .map_err(PdfiumError::JsSysErrorPatchingFunctionTable)?;
 
@@ -883,6 +870,7 @@ impl Default for PdfiumRenderWasmState {
         PdfiumRenderWasmState {
             pdfium_wasm_module: None,
             local_wasm_module: None,
+            wasm_table: None,
             malloc_js_fn: None,
             free_js_fn: None,
             call_js_fn: None,
