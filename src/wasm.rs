@@ -101,7 +101,7 @@ impl PdfiumRenderWasmState {
         self.pdfium_wasm_module.is_some()
     }
 
-    /// Configures this [PdfiumRenderWasmState] with bindings to emscripten-exposed Pdfium functions
+    /// Configures this [PdfiumRenderWasmState] with bindings to Emscripten-exposed Pdfium functions
     /// in the given Javascript Object.
     fn bind_to_pdfium(
         &mut self,
@@ -109,24 +109,61 @@ impl PdfiumRenderWasmState {
         local_wasm_module: Object,
         debug: bool,
     ) -> Result<(), &str> {
+        // When looking up functions in Pdfium's WASM module, treat a return value of
+        // JsValue::UNDEFINED as if it were an error.
+
         self.malloc_js_fn = Some(Function::from(
             Reflect::get(&pdfium_wasm_module, &JsValue::from("_malloc"))
+                .map_err(|_| PdfiumError::JsValueUndefined)
+                .and_then(|value: JsValue| {
+                    if value == JsValue::UNDEFINED {
+                        Err(PdfiumError::JsValueUndefined)
+                    } else {
+                        Ok(value)
+                    }
+                })
                 .map_err(|_| "Module._malloc() not defined")?,
         ));
 
         self.free_js_fn = Some(Function::from(
             Reflect::get(&pdfium_wasm_module, &JsValue::from("_free"))
+                .map_err(|_| PdfiumError::JsValueUndefined)
+                .and_then(|value: JsValue| {
+                    if value == JsValue::UNDEFINED {
+                        Err(PdfiumError::JsValueUndefined)
+                    } else {
+                        Ok(value)
+                    }
+                })
                 .map_err(|_| "Module._free() not defined")?,
         ));
 
         self.call_js_fn = Some(Function::from(
             Reflect::get(&pdfium_wasm_module, &JsValue::from("ccall"))
+                .map_err(|_| PdfiumError::JsValueUndefined)
+                .and_then(|value: JsValue| {
+                    if value == JsValue::UNDEFINED {
+                        Err(PdfiumError::JsValueUndefined)
+                    } else {
+                        Ok(value)
+                    }
+                })
                 .map_err(|_| "Module.ccall() not defined")?,
         ));
 
         // We don't define a fixed binding to it, but check now that the Module.HEAPU8 accessor works.
 
-        if Reflect::get(&pdfium_wasm_module, &JsValue::from("HEAPU8")).is_err() {
+        if Reflect::get(&pdfium_wasm_module, &JsValue::from("HEAPU8"))
+            .map_err(|_| PdfiumError::JsValueUndefined)
+            .and_then(|value: JsValue| {
+                if value == JsValue::UNDEFINED {
+                    Err(PdfiumError::JsValueUndefined)
+                } else {
+                    Ok(value)
+                }
+            })
+            .is_err()
+        {
             return Err("Module.HEAPU8[] not defined");
         }
 

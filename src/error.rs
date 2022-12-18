@@ -94,6 +94,11 @@ pub enum PdfiumError {
     /// The browser's built-in `Window` object could not be retrieved.
     WebSysWindowObjectNotAvailable,
 
+    /// A JsValue returned from a function call was set to JsValue::UNDEFINED instead of
+    /// a valid value of the expected type.
+    #[cfg(target_arch = "wasm32")]
+    JsValueUndefined,
+
     /// An error was returned when attempting to use the browser's built-in `fetch()` API.
     #[cfg(target_arch = "wasm32")]
     WebSysFetchError(JsValue),
