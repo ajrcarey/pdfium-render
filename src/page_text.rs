@@ -14,7 +14,7 @@ use crate::page_text_segments::PdfPageTextSegments;
 use crate::prelude::PdfiumError;
 use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-use image::EncodableLayout;
+use bytemuck::cast_slice;
 use std::fmt::{Display, Formatter};
 use std::ptr::null_mut;
 
@@ -200,7 +200,8 @@ impl<'a> PdfPageText<'a> {
 
         assert_eq!(result, chars_count);
 
-        get_string_from_pdfium_utf16le_bytes(buffer.as_bytes().to_vec()).unwrap_or_default()
+        get_string_from_pdfium_utf16le_bytes(cast_slice(buffer.as_slice()).to_vec())
+            .unwrap_or_default()
     }
 
     /// Returns all characters assigned to the given [PdfPageTextObject] in this [PdfPageText] object,
@@ -218,7 +219,7 @@ impl<'a> PdfPageText<'a> {
         let buffer_length = self.bindings.FPDFTextObj_GetText(
             *object.get_object_handle(),
             self.handle,
-            std::ptr::null_mut(),
+            null_mut(),
             0,
         );
 

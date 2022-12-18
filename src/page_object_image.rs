@@ -2,23 +2,39 @@
 //! object defining a bitmapped image.
 
 use crate::bindgen::{
-    fpdf_page_t__, FPDF_ANNOTATION, FPDF_BITMAP, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE,
+    fpdf_page_t__, FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_IMAGEOBJ_METADATA, FPDF_PAGE,
     FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap::{PdfBitmap, PdfBitmapFormat, Pixels};
+use crate::bitmap::PdfBitmap;
 use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::PdfPoints;
-use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::utils::mem::create_byte_buffer;
-use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
-use image::{DynamicImage, EncodableLayout, RgbaImage};
-use std::convert::TryInto;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_void};
+
+#[cfg(feature = "image")]
+use crate::bindgen::FPDF_BITMAP;
+
+#[cfg(feature = "image")]
+use crate::bitmap::{PdfBitmapFormat, Pixels};
+
+#[cfg(feature = "image")]
+use crate::page::PdfPoints;
+
+#[cfg(feature = "image")]
+use crate::page_object::PdfPageObjectCommon;
+
+#[cfg(feature = "image")]
+use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
+
+#[cfg(feature = "image")]
+use std::convert::TryInto;
+
+#[cfg(feature = "image")]
+use image::{DynamicImage, EncodableLayout, RgbaImage};
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`. The page object defines a single
 /// bitmapped image.
@@ -68,16 +84,36 @@ impl<'a> PdfPageImageObject<'a> {
     /// to the object after it is created, or use one of the [PdfPageImageObject::new_with_width()],
     /// [PdfPageImageObject::new_with_height()], or [PdfPageImageObject::new_with_size()] functions
     /// to scale the page object to a specific width and/or height at the time the object is created.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     #[inline]
     pub fn new(document: &PdfDocument<'a>, image: &DynamicImage) -> Result<Self, PdfiumError> {
-        Self::new_from_handle(*document.handle(), image, document.bindings())
+        let mut result = Self::new_from_handle(*document.handle(), document.bindings());
+
+        if let Ok(result) = result.as_mut() {
+            result.set_image(image)?;
+        }
+
+        result
+    }
+
+    /// Creates a new [PdfPageImageObject] from the given arguments. The returned page object
+    /// will not be rendered until it is added to a `PdfPage` using the
+    /// `PdfPageObjects::add_image_object()` function.
+    ///
+    /// The returned page object will have its width and height both set to 1.0 points.
+    /// Use the [PdfPageObjectCommon::scale()] function to apply a horizontal and vertical scale
+    /// to the object after it is created.
+    #[cfg(not(feature = "image"))]
+    pub fn new(document: &PdfDocument<'a>) -> Result<Self, PdfiumError> {
+        Self::new_from_handle(*document.handle(), document.bindings())
     }
 
     // Takes a raw FPDF_DOCUMENT handle to avoid cascading lifetime problems
     // associated with borrowing PdfDocument<'a>.
     pub(crate) fn new_from_handle(
         document: FPDF_DOCUMENT,
-        image: &DynamicImage,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
         let handle = bindings.FPDFPageObj_NewImageObj(document);
@@ -94,16 +130,12 @@ impl<'a> PdfPageImageObject<'a> {
                 ))
             }
         } else {
-            let mut result = PdfPageImageObject {
+            Ok(PdfPageImageObject {
                 object_handle: handle,
                 page_handle: None,
                 annotation_handle: None,
                 bindings,
-            };
-
-            result.set_image(image)?;
-
-            Ok(result)
+            })
         }
     }
 
@@ -111,6 +143,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// horizontally to match the given width; its height will be adjusted to maintain the aspect
     /// ratio of the given image. The returned page object will not be rendered until it is
     /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     pub fn new_with_width(
         document: &PdfDocument<'a>,
         image: &DynamicImage,
@@ -127,6 +162,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// vertically to match the given height; its width will be adjusted to maintain the aspect
     /// ratio of the given image. The returned page object will not be rendered until it is
     /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     pub fn new_with_height(
         document: &PdfDocument<'a>,
         image: &DynamicImage,
@@ -142,6 +180,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled to
     /// match the given width and height. The returned page object will not be rendered until it is
     /// added to a `PdfPage` using the `PdfPageObjects::add_image_object()` function.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     #[inline]
     pub fn new_with_size(
         document: &PdfDocument<'a>,
@@ -149,7 +190,7 @@ impl<'a> PdfPageImageObject<'a> {
         width: PdfPoints,
         height: PdfPoints,
     ) -> Result<Self, PdfiumError> {
-        let mut result = Self::new_from_handle(*document.handle(), image, document.bindings())?;
+        let mut result = Self::new(document, image)?;
 
         result.scale(width.value as f64, height.value as f64)?;
 
@@ -159,6 +200,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
     /// this [PdfPageImageObject], ignoring any image filters, image mask, or object
     /// transforms applied to this page object.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     pub fn get_raw_image(&self) -> Result<DynamicImage, PdfiumError> {
         self.get_image_from_bitmap_handle(self.bindings.FPDFImageObj_GetBitmap(self.object_handle))
     }
@@ -166,6 +210,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing
     /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     #[inline]
     pub fn get_processed_image(&self, document: &PdfDocument) -> Result<DynamicImage, PdfiumError> {
         let (width, height) = self.get_current_width_and_height_from_metadata()?;
@@ -178,6 +225,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// object transforms applied to this page object.
     ///
     /// The returned image will be scaled during rendering so its width matches the given target width.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     #[inline]
     pub fn get_processed_image_with_width(
         &self,
@@ -202,6 +252,9 @@ impl<'a> PdfPageImageObject<'a> {
     /// object transforms applied to this page object.
     ///
     /// The returned image will be scaled during rendering so its height matches the given target height.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     #[inline]
     pub fn get_processed_image_with_height(
         &self,
@@ -227,6 +280,9 @@ impl<'a> PdfPageImageObject<'a> {
     ///
     /// The returned image will be scaled during rendering so its width and height match
     /// the given target dimensions.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     pub fn get_processed_image_with_size(
         &self,
         document: &PdfDocument,
@@ -332,6 +388,7 @@ impl<'a> PdfPageImageObject<'a> {
         }
     }
 
+    #[cfg(feature = "image")]
     pub(crate) fn get_image_from_bitmap_handle(
         &self,
         bitmap: FPDF_BITMAP,
@@ -383,6 +440,7 @@ impl<'a> PdfPageImageObject<'a> {
     }
 
     /// Return the expected pixel width and height of the processed image from Pdfium's metadata.
+    #[cfg(feature = "image")]
     pub(crate) fn get_current_width_and_height_from_metadata(
         &self,
     ) -> Result<(Pixels, Pixels), PdfiumError> {
@@ -404,6 +462,9 @@ impl<'a> PdfPageImageObject<'a> {
     }
 
     /// Applies the byte data in the given `Image::DynamicImage` to this [PdfPageImageObject].
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     pub fn set_image(&mut self, image: &DynamicImage) -> Result<(), PdfiumError> {
         let width: u16 = image
             .width()

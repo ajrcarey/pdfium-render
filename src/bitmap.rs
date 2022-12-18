@@ -6,9 +6,11 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use image::{DynamicImage, ImageBuffer};
 use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::c_int;
+
+#[cfg(feature = "image")]
+use image::{DynamicImage, ImageBuffer};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::{Clamped, JsValue};
@@ -243,6 +245,9 @@ impl<'a> PdfBitmap<'a> {
     }
 
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing this [PdfBitmap].
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     pub fn as_image(&self) -> DynamicImage {
         ImageBuffer::from_raw(
             self.width() as u32,

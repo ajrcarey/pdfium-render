@@ -20,7 +20,8 @@ doctest = false
 [dependencies]
 bitflags = "^1"
 bytes = "^1"
-image = ">= 0.24.0" # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we use trait from version 0.24.0 and later.
+bytemuck = "^1"
+image = { version = ">= 0.24.0", optional = true } # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we use trait from version 0.24.0 and later.
 iter_tools = "^0.1"
 lazy_static = "^1"
 log = "^0.4"
@@ -49,8 +50,9 @@ rand = "^0" # Used by examples/create.rs
 rayon = "^1" # Used by examples/thread_safe.rs
 
 [features]
-default = ["sync", "thread_safe"]
+default = ["image", "sync", "thread_safe"]
 bindings = []
+image = ["dep:image"]
 static = []
 thread_safe = []
 "libstdc++" = ["static"]

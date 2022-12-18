@@ -84,6 +84,11 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
+Version 0.7.27 adjusts the WASM example to take into account upstream packaging changes in the
+WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
+and adds the `image` crate feature, making the `image` crate an optional dependency instead of
+a mandatory one.
+
 Version 0.7.26 fixes a lifetime bug in the `Pdfium::load_pdf_from_bytes()` function,
 adds the `sync` crate feature, providing implementations of the `Send` and
 `Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely,
@@ -242,6 +247,9 @@ This crate provides the following optional features:
 * `bindings`: uses `cbindgen` to generate Rust bindings to the Pdfium functions defined in the
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
+* `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page 
+  rendering functionality. This lets projects that do not need to render pages or page objects
+  to bitmaps to avoid the need to compile the `image` crate into their binaries.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
@@ -250,7 +258,8 @@ This crate provides the following optional features:
 * `sync`: provides an implementation of the `Send` and `Sync` traits for the Pdfium struct. This allows
   a `Pdfium` instance to be shared across threads. Requires the `thread_safe` feature.
 
-The `thread_safe` and `sync` features are enabled by default. All other features are disabled by default.
+The `image`, `thread_safe`, and `sync` features are enabled by default.
+All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 
@@ -324,7 +333,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.26, 316 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.27, 316 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -336,6 +345,9 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.27: adjusts `examples/index.html` to take into account upstream packaging changes in the
+  WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
+  adds the `image` crate feature.
 * 0.7.26: adds `sync` default crate feature providing `Send` and `Sync` implementations for `Pdfium`
   struct; adds `Display` and `Error` trait implementations to `PdfiumError` for `anyhow` compatibility;
   adjusts WASM example to account for upstream changes in Emscripten packaging of Pdfium WASM builds;

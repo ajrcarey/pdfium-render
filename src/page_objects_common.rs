@@ -10,8 +10,10 @@ use crate::page_object_image::PdfPageImageObject;
 use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
-use image::DynamicImage;
 use std::ops::{Range, RangeInclusive};
+
+#[cfg(feature = "image")]
+use image::DynamicImage;
 
 pub type PdfPageObjectIndex = usize;
 
@@ -257,6 +259,9 @@ pub trait PdfPageObjectsCommon<'a> {
     /// If the containing `PdfPage` has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
     /// will be triggered on the page.
+    ///
+    /// This function is only available when this crate's `image` feature is enabled.
+    #[cfg(feature = "image")]
     fn create_image_object(
         &mut self,
         x: PdfPoints,
@@ -502,6 +507,7 @@ where
         self.add_path_object(object)
     }
 
+    #[cfg(feature = "image")]
     fn create_image_object(
         &mut self,
         x: PdfPoints,
@@ -515,7 +521,9 @@ where
         let image_height = image.height();
 
         let mut object =
-            PdfPageImageObject::new_from_handle(self.document_handle(), image, self.bindings())?;
+            PdfPageImageObject::new_from_handle(self.document_handle(), self.bindings())?;
+
+        object.set_image(image)?;
 
         // Apply specified dimensions, if provided.
 
