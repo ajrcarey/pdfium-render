@@ -382,7 +382,7 @@ impl Pdfium {
 
         let bytes: Vec<u8> = u8_array.to_vec();
 
-        self.load_pdf_from_bytes_owned(bytes, password)
+        self.load_pdf_from_byte_vec(bytes, password)
     }
 
     /// Creates a new, empty [PdfDocument] in memory.
