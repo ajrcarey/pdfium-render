@@ -191,10 +191,27 @@ impl Pdfium {
         self.bindings.as_ref()
     }
 
+    // TODO: AJRC - 18/12/22 - remove deprecated Pdfium::load_pdf_from_bytes() function in 0.9.0
+    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
+    #[deprecated(
+        since = "0.7.26",
+        note = "This function has been renamed. Use the Pdfium::load_pdf_from_byte_slice() function instead."
+    )]
+    #[doc(hidden)]
+    #[inline]
+    pub fn load_pdf_from_bytes(
+        &self,
+        bytes: &'static [u8],
+        password: Option<&str>,
+    ) -> Result<PdfDocument, PdfiumError> {
+        self.load_pdf_from_byte_slice(bytes, password)
+    }
+
     /// Attempts to open a [PdfDocument] from the given static byte buffer.
     ///
     /// If the document is password protected, the given password will be used to unlock it.
-    pub fn load_pdf_from_bytes(
+    pub fn load_pdf_from_byte_slice(
         &self,
         bytes: &'static [u8],
         password: Option<&str>,
@@ -205,7 +222,10 @@ impl Pdfium {
     /// Attempts to open a [PdfDocument] from the given owned byte buffer.
     ///
     /// If the document is password protected, the given password will be used to unlock it.
-    pub fn load_pdf_from_bytes_owned(
+    ///
+    /// `pdfium-render` will take ownership of the given byte buffer, ensuring its lifetime lasts
+    /// as long as the [PdfDocument] opened from it.
+    pub fn load_pdf_from_byte_vec(
         &self,
         bytes: Vec<u8>,
         password: Option<&str>,
@@ -238,7 +258,8 @@ impl Pdfium {
     /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
-    /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
+    /// then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
+    /// function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
@@ -273,7 +294,8 @@ impl Pdfium {
     /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
-    /// then load those bytes into Pdfium using the [Pdfium::load_pdf_from_bytes()] function.
+    /// then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
+    /// function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]

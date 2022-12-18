@@ -84,8 +84,9 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
-Version 0.7.26 adds the `sync` crate feature, providing implementations of the `Send` and
-`Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely, 
+Version 0.7.26 fixes a lifetime bug in the `Pdfium::load_pdf_from_bytes()` function,
+adds the `sync` crate feature, providing implementations of the `Send` and
+`Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely,
 and adds implementations of the `std::fmt::Display` and `std::error::Error` traits to the
 `PdfiumError` enum, so that it can be used by error handling libraries such as `anyhow`.
 
@@ -336,7 +337,11 @@ If you need a binding to a Pdfium function that is not currently available, just
 ## Version history
 
 * 0.7.26: adds `sync` default crate feature providing `Send` and `Sync` implementations for `Pdfium`
-  struct; adds `Display` and `Error` trait implementations to `PdfiumError` for `anyhow` compatibility.
+  struct; adds `Display` and `Error` trait implementations to `PdfiumError` for `anyhow` compatibility;
+  adjusts WASM example to account for upstream changes in Emscripten packaging of Pdfium WASM builds;
+  corrects a lifetime problem in `Pdfium::load_pdf_from_bytes()` and deprecates `Pdfium::load_pdf_from_bytes()`
+  in favour of `Pdfium::load_pdf_from_byte_slice()` and `Pdfium::load_pdf_from_byte_vec()`.
+  Deprecated items will be removed in release 0.9.0.
 * 0.7.25: adds the `PdfPageAnnotationObjects` collection and the `PdfPageAnnotation::objects()`,
   `PdfPageInkAnnotation::objects_mut()`, and `PdfPageStampAnnotation::objects_mut()` functions
   to the high-level interface.
