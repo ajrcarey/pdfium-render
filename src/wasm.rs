@@ -110,61 +110,28 @@ impl PdfiumRenderWasmState {
         local_wasm_module: Object,
         debug: bool,
     ) -> Result<(), &str> {
-        // When looking up functions in Pdfium's WASM module, treat a return value of
-        // JsValue::UNDEFINED as if it were an error.
+        self.pdfium_wasm_module = Some(pdfium_wasm_module);
+        self.local_wasm_module = Some(local_wasm_module);
+        self.debug = debug;
 
         self.malloc_js_fn = Some(Function::from(
-            Reflect::get(&pdfium_wasm_module, &JsValue::from("_malloc"))
-                .map_err(|_| PdfiumError::JsValueUndefined)
-                .and_then(|value: JsValue| {
-                    if value == JsValue::UNDEFINED {
-                        Err(PdfiumError::JsValueUndefined)
-                    } else {
-                        Ok(value)
-                    }
-                })
+            self.get_value_from_pdfium_wasm_module("_malloc")
                 .map_err(|_| "Module._malloc() not defined")?,
         ));
 
         self.free_js_fn = Some(Function::from(
-            Reflect::get(&pdfium_wasm_module, &JsValue::from("_free"))
-                .map_err(|_| PdfiumError::JsValueUndefined)
-                .and_then(|value: JsValue| {
-                    if value == JsValue::UNDEFINED {
-                        Err(PdfiumError::JsValueUndefined)
-                    } else {
-                        Ok(value)
-                    }
-                })
+            self.get_value_from_pdfium_wasm_module("_free")
                 .map_err(|_| "Module._free() not defined")?,
         ));
 
         self.call_js_fn = Some(Function::from(
-            Reflect::get(&pdfium_wasm_module, &JsValue::from("ccall"))
-                .map_err(|_| PdfiumError::JsValueUndefined)
-                .and_then(|value: JsValue| {
-                    if value == JsValue::UNDEFINED {
-                        Err(PdfiumError::JsValueUndefined)
-                    } else {
-                        Ok(value)
-                    }
-                })
+            self.get_value_from_pdfium_wasm_module("ccall")
                 .map_err(|_| "Module.ccall() not defined")?,
         ));
 
         // We don't define a fixed binding to it, but check now that the Module.HEAPU8 accessor works.
 
-        if Reflect::get(&pdfium_wasm_module, &JsValue::from("HEAPU8"))
-            .map_err(|_| PdfiumError::JsValueUndefined)
-            .and_then(|value: JsValue| {
-                if value == JsValue::UNDEFINED {
-                    Err(PdfiumError::JsValueUndefined)
-                } else {
-                    Ok(value)
-                }
-            })
-            .is_err()
-        {
+        if self.get_value_from_pdfium_wasm_module("HEAPU8").is_err() {
             return Err("Module.HEAPU8[] not defined");
         }
 
@@ -185,25 +152,18 @@ impl PdfiumRenderWasmState {
         // failing that, attempt to retrieve it from the asm.__indirect_function_table property
         // in the Pdfium WASM module.
 
-        let table: WebAssembly::Table =
-            Reflect::get(&js_sys::global(), &JsValue::from("wasmTable"))
-                .and_then(|value: JsValue| {
-                    if value == JsValue::UNDEFINED {
-                        // The wasmTable global variable is not defined. Try the
-                        // asm.__indirect_function_table property in the Pdfium WASM module instead.
+        let table: WebAssembly::Table = if let Ok(table) = self.get_value_from_browser_object(&js_sys::global(), "wasmTable") {
+            table
+        } else {
+            // The wasmTable global variable is not defined. Try the
+            // asm.__indirect_function_table property in the Pdfium WASM module instead.
 
-                        log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): global wasmTable variable not defined, falling back to Module.asm.__indirect_function_table");
+            log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): global wasmTable variable not defined, falling back to Module.asm.__indirect_function_table");
 
-                        let asm = Reflect::get(&pdfium_wasm_module, &JsValue::from("asm"))
-                            .map_err(|_| "Module.asm not defined")?;
-
-                        Reflect::get(&asm, &JsValue::from("__indirect_function_table"))
-                    } else {
-                        Ok(value)
-                    }
-                })
+            self.get_value_from_pdfium_wasm_module("asm")
+                .and_then(|asm| self.get_value_from_browser_object(&asm, "__indirect_function_table"))
                 .map_err(|_| "Unable to locate wasmTable")?
-                .into();
+        }.into();
 
         // Once we have the function table, we scan it for function signatures that take 4 arguments.
 
@@ -225,12 +185,42 @@ impl PdfiumRenderWasmState {
             self.file_write_callback_function_table_entry,
         );
 
-        self.pdfium_wasm_module = Some(pdfium_wasm_module);
-        self.local_wasm_module = Some(local_wasm_module);
         self.wasm_table = Some(table);
-        self.debug = debug;
 
         Ok(())
+    }
+
+    /// Looks up the given key in the Emscripten-wrapped Pdfium WASM module and returns
+    /// the Javascript value associated with that key, if any.
+    fn get_value_from_pdfium_wasm_module(&self, key: &str) -> Result<JsValue, PdfiumError> {
+        if let Some(pdfium_wasm_module) = self.pdfium_wasm_module.as_ref() {
+            self.get_value_from_browser_object(pdfium_wasm_module, key)
+        } else {
+            Err(PdfiumError::JsSysErrorRetrievingFunction(
+                JsValue::UNDEFINED,
+            ))
+        }
+    }
+
+    /// Looks up the given key in the given Javascript object and returns
+    /// the Javascript value associated with that key, if any.
+    fn get_value_from_browser_object(
+        &self,
+        source: &JsValue,
+        key: &str,
+    ) -> Result<JsValue, PdfiumError> {
+        // When looking up functions in a Javascript object, treat a return value of
+        // JsValue::UNDEFINED as if it were an error.
+
+        Reflect::get(source, &JsValue::from(key))
+            .map_err(|_| PdfiumError::JsValueUndefined)
+            .and_then(|value: JsValue| {
+                if value == JsValue::UNDEFINED {
+                    Err(PdfiumError::JsValueUndefined)
+                } else {
+                    Ok(value)
+                }
+            })
     }
 
     /// Allocates the given number of bytes in Pdfium's WASM memory heap, returning a pointer
@@ -752,20 +742,27 @@ impl PdfiumRenderWasmState {
         let local_module = self.local_wasm_module.as_ref().unwrap();
 
         let local_function = Function::from(
-            Reflect::get(&local_module, &JsValue::from(local_function_name))
-                .map_err(PdfiumError::JsSysErrorRetrievingFunction)?,
+            self.get_value_from_browser_object(&local_module, local_function_name)
+                .map_err(|_| PdfiumError::JsSysErrorRetrievingFunction(JsValue::UNDEFINED))?,
         );
 
         // Save the current entry in the function table, so we can restore it later.
-        
-        if let Ok(function) = self.wasm_table.as_ref().unwrap().get(pdfium_function_index as u32) {
+
+        if let Ok(function) = self
+            .wasm_table
+            .as_ref()
+            .unwrap()
+            .get(pdfium_function_index as u32)
+        {
             self.set(
                 format!("function_{}", pdfium_function_index).as_str(),
                 function.into(),
             );
         }
 
-        self.wasm_table.as_mut().unwrap()
+        self.wasm_table
+            .as_mut()
+            .unwrap()
             .set(pdfium_function_index as u32, &local_function)
             .map_err(PdfiumError::JsSysErrorPatchingFunctionTable)?;
 
@@ -790,7 +787,9 @@ impl PdfiumRenderWasmState {
         if let Some(value) = self.take(format!("function_{}", pdfium_function_index).as_str()) {
             let original_function = Function::from(value);
 
-            self.wasm_table.as_mut().unwrap()
+            self.wasm_table
+                .as_mut()
+                .unwrap()
                 .set(pdfium_function_index as u32, &original_function)
                 .map_err(PdfiumError::JsSysErrorPatchingFunctionTable)?;
 
