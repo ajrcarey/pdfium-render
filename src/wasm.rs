@@ -638,8 +638,8 @@ impl PdfiumRenderWasmState {
         // call_indirect() instruction that passes control to the adjusted function index entry,
         // our callback function is called.
 
-        // The adjustment of Pdfium's WASM function table is handled during the call to
-        // initialize_pdfium_render().
+        // The identification of a suitable function in Pdfium's WASM function table takes place
+        // during the call to initialize_pdfium_render().
 
         let file_access_with_callback = unsafe {
             FPDF_FILEACCESS {
@@ -682,8 +682,8 @@ impl PdfiumRenderWasmState {
         // therefore the duration of the adjustment of Pdfium's function table) can potentially
         // last as long as the lifetime of the document.
 
-        // The adjustment of Pdfium's WASM function table is handled during the call to
-        // initialize_pdfium_render().
+        // The identification of a suitable function in Pdfium's WASM function table takes place
+        // during the call to initialize_pdfium_render().
 
         let file_write_with_callback = unsafe {
             FPDF_FILEWRITE {

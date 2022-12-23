@@ -93,7 +93,7 @@ Version 0.7.26 fixes a lifetime bug in the `Pdfium::load_pdf_from_bytes()` funct
 adds the `sync` crate feature, providing implementations of the `Send` and
 `Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely,
 and adds implementations of the `std::fmt::Display` and `std::error::Error` traits to the
-`PdfiumError` enum, so that it can be used by error handling libraries such as `anyhow`.
+`PdfiumError` enum so that it can be used by error handling libraries such as `anyhow`.
 
 Version 0.7.25 adds the `PdfPageAnnotation::objects()` function, allowing inspection of all page
 objects attached to an annotation, and the `PdfPageInkAnnotation::objects_mut()` and
@@ -248,8 +248,8 @@ This crate provides the following optional features:
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
 * `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page 
-  rendering functionality. This lets projects that do not need to render pages or page objects
-  to bitmaps to avoid the need to compile the `image` crate into their binaries.
+  rendering functionality. This let projects avoid the need to compile the `image` crate into
+  their binaries if they do not need to render pages or page objects to bitmaps.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
