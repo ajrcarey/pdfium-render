@@ -84,6 +84,16 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
+Version 0.7.28 removes the `PdfPageObjects::take_*()` functions, since upstream bugs in memory handling
+in Pdfium render them unreliable; adds the `PdfPageObject::is_cloneable()` and `PdfPageObject::try_clone()`
+functions, allowing most path, text, and image page objects to be cloned; adds the
+`PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_cloneable()`, `PdfPageObjectGroup::is_cloneable()`,
+and `PdfPageObjectGroup::try_clone_onto_page()` functions, allowing a group of page objects to be
+cloned onto a destination page; adds the `examples/clone.rs` example that demonstrates the new functionality;
+and fixes a bug in the propagation of a page's content regeneration strategy from the page to
+its collection of page objects collection and to any `PdfPageObjectGroup` objects created from that
+page objects collection.
+
 Version 0.7.27 adjusts the WASM example to take into account upstream packaging changes in the
 WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
 and adds the `image` crate feature, making the `image` crate an optional dependency instead of
@@ -247,9 +257,9 @@ This crate provides the following optional features:
 * `bindings`: uses `cbindgen` to generate Rust bindings to the Pdfium functions defined in the
   `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies
   are not available then the build will fail.
-* `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page 
-  rendering functionality. This let projects avoid the need to compile the `image` crate into
-  their binaries if they do not need to render pages or page objects to bitmaps.
+* `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page and
+  page object rendering functionality. Projects that do not require page or page object rendering
+  can avoid having to include the `image` crate in their binaries.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
@@ -333,7 +343,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.27, 316 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.28, 316 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -345,6 +355,10 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.28: removes the `PdfPageObjects::take_*()` functions; adds `PdfPageObject::is_cloneable()`
+  `PdfPageObject::try_clone()`, `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_cloneable()`,
+  `PdfPageObjectGroup::is_cloneable()`, and `PdfPageObjectGroup::try_clone_onto_page()` functions;
+  adds `examples/clone.rs` example; fixes a bug in the propagation of a page's content regeneration strategy.
 * 0.7.27: adjusts `examples/index.html` to take into account upstream packaging changes in the
   WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
   adds the `image` crate feature.

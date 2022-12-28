@@ -9,10 +9,11 @@ pub(crate) mod internal {
 
     use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF};
     use crate::bindings::PdfiumLibraryBindings;
+    use crate::document::PdfDocument;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::page::{PdfPoints, PdfRect};
     use crate::page_annotation_objects::PdfPageAnnotationObjects;
-    use crate::page_object::PdfPageObjectCommon;
+    use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
     use crate::page_objects::PdfPageObjects;
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
@@ -323,6 +324,17 @@ pub(crate) mod internal {
                 .map(|matrix| matrix.b.atan2(matrix.a))
                 .unwrap_or(0.0)
         }
+
+        /// Returns `true` if this [PdfPageObject] can be successfully cloned by calling its
+        /// `try_clone()` function.
+        fn is_cloneable_impl(&self) -> bool;
+
+        /// Attempts to clone this [PdfPageObject] by creating a new page object and copying across
+        /// all the properties of this [PdfPageObject] to the new page object.
+        fn try_clone_impl<'b>(
+            &self,
+            document: &PdfDocument<'b>,
+        ) -> Result<PdfPageObject<'b>, PdfiumError>;
     }
 }
 

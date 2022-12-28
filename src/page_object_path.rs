@@ -9,9 +9,9 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPoints, PdfRect};
-use crate::page_object::PdfPageObjectCommon;
+use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::path_segment::PdfPathSegment;
+use crate::path_segment::{PdfPathSegment, PdfPathSegmentType};
 use crate::path_segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use crate::prelude::PdfDocument;
 use std::convert::TryInto;
@@ -943,6 +943,55 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
+    }
+
+    #[inline]
+    fn is_cloneable_impl(&self) -> bool {
+        // The path object can only be cloned if it contains no Bézier path segments.
+        // Pdfium does not currently provide any way to retrieve the Bézier control points
+        // of an existing Bézier path segment.
+
+        !self
+            .segments()
+            .iter()
+            .any(|segment| segment.segment_type() == PdfPathSegmentType::BezierTo)
+    }
+
+    fn try_clone_impl<'b>(
+        &self,
+        document: &PdfDocument<'b>,
+    ) -> Result<PdfPageObject<'b>, PdfiumError> {
+        let mut clone =
+            PdfPagePathObject::new(document, PdfPoints::ZERO, PdfPoints::ZERO, None, None, None)?;
+
+        clone.set_fill_and_stroke_mode(self.fill_mode()?, self.is_stroked()?)?;
+        clone.set_fill_color(self.fill_color()?)?;
+        clone.set_stroke_color(self.stroke_color()?)?;
+        clone.set_stroke_width(self.stroke_width()?)?;
+        clone.set_line_join(self.line_join()?)?;
+        clone.set_line_cap(self.line_cap()?)?;
+
+        for segment in self.segments().iter() {
+            if segment.segment_type() == PdfPathSegmentType::Unknown {
+                return Err(PdfiumError::PathObjectUnknownSegmentTypeNotCloneable);
+            } else if segment.segment_type() == PdfPathSegmentType::BezierTo {
+                return Err(PdfiumError::PathObjectBezierControlPointsNotCloneable);
+            } else {
+                match segment.segment_type() {
+                    PdfPathSegmentType::Unknown | PdfPathSegmentType::BezierTo => {}
+                    PdfPathSegmentType::LineTo => clone.line_to(segment.x(), segment.y())?,
+                    PdfPathSegmentType::MoveTo => clone.move_to(segment.x(), segment.y())?,
+                }
+
+                if segment.is_close() {
+                    clone.close_path()?;
+                }
+            }
+        }
+
+        clone.set_matrix(self.matrix()?)?;
+
+        Ok(PdfPageObject::Path(clone))
     }
 }
 

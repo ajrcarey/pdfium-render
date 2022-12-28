@@ -24,7 +24,7 @@ use crate::page_objects_common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 /// [PdfPageGroupObject::from_vec()], or [PdfPageGroupObject::from_slice()] functions.
 pub struct PdfPageGroupObject<'a> {
     object_handles: Vec<FPDF_PAGEOBJECT>,
-    page: FPDF_PAGE,
+    page_handle: FPDF_PAGE,
     bindings: &'a dyn PdfiumLibraryBindings,
     do_regenerate_page_content_after_each_change: bool,
 }
@@ -38,7 +38,7 @@ impl<'a> PdfPageGroupObject<'a> {
     ) -> Self {
         PdfPageGroupObject {
             object_handles: Vec::new(),
-            page,
+            page_handle: page,
             bindings,
             do_regenerate_page_content_after_each_change,
         }
@@ -127,7 +127,7 @@ impl<'a> PdfPageGroupObject<'a> {
     pub fn push(&mut self, object: &mut PdfPageObject<'a>) -> Result<(), PdfiumError> {
         let was_object_already_attached_to_group_page =
             if let Some(page_handle) = object.get_page_handle() {
-                if *page_handle != self.page {
+                if *page_handle != self.page_handle {
                     // The object is attached to a different page.
 
                     // In theory, transferring ownership of the page object from its current
@@ -149,7 +149,7 @@ impl<'a> PdfPageGroupObject<'a> {
             } else {
                 // The object isn't attached to a page.
 
-                object.add_object_to_page_handle(self.page)?;
+                object.add_object_to_page_handle(self.page_handle)?;
 
                 false
             };
@@ -159,7 +159,7 @@ impl<'a> PdfPageGroupObject<'a> {
         if !was_object_already_attached_to_group_page
             && self.do_regenerate_page_content_after_each_change
         {
-            PdfPage::regenerate_content_immut_for_handle(self.page, self.bindings)?;
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle, self.bindings)?;
         }
 
         Ok(())
@@ -184,7 +184,7 @@ impl<'a> PdfPageGroupObject<'a> {
             do_regenerate_page_content_after_each_change;
 
         if self.do_regenerate_page_content_after_each_change {
-            PdfPage::regenerate_content_immut_for_handle(self.page, self.bindings)?;
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle, self.bindings)?;
         }
 
         Ok(())
@@ -218,7 +218,7 @@ impl<'a> PdfPageGroupObject<'a> {
             do_regenerate_page_content_after_each_change;
 
         if self.do_regenerate_page_content_after_each_change {
-            PdfPage::regenerate_content_immut_for_handle(self.page, self.bindings)?;
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle, self.bindings)?;
         }
 
         Ok(())
@@ -234,9 +234,87 @@ impl<'a> PdfPageGroupObject<'a> {
         }
     }
 
+    /// Retains only the [PdfPageObject] objects in this group specified by the given predicate function.
+    ///
+    /// Unretained objects are only removed from this group. They remain on the source [PdfPage] that
+    /// currently contains them.
+    pub fn retain<F>(&mut self, f: F)
+    where
+        F: Fn(&PdfPageObject) -> bool,
+    {
+        // The naive approach of using self.object_handles.retain() directly like so:
+
+        // self.object_handles.retain(|handle| f(&self.get_object_from_handle(handle)));
+
+        // does not work, due to self being borrowed both mutably and immutably simultaneously.
+        // Instead, we build a separate list indicating whether each object should be retained
+        // or discarded ...
+
+        let mut do_retain = vec![false; self.object_handles.len()];
+
+        for (index, handle) in self.object_handles.iter().enumerate() {
+            do_retain[index] = f(&self.get_object_from_handle(handle));
+        }
+
+        // ... and then we use that marker list in our call to self.object_handles.retain().
+
+        let mut index = 0;
+
+        self.object_handles.retain(|_| {
+            // Should the object at index position |index| be retained?
+
+            let do_retain = do_retain[index];
+
+            index += 1;
+
+            do_retain
+        });
+    }
+
+    /// Retains only the [PdfPageObject] objects in this group that are cloneable.
+    ///
+    /// Objects that are not cloneable are only removed from this group. They remain on the source
+    /// [PdfPage] that currently contains them.
+    #[inline]
+    pub fn retain_if_cloneable(&mut self) {
+        self.retain(|object| object.is_cloneable());
+    }
+
+    /// Returns `true` if all the [PdfPageObjects] in this group are cloneable.
+    #[inline]
+    pub fn is_cloneable(&self) -> bool {
+        self.iter().all(|object| object.is_cloneable())
+    }
+
+    /// Attempts to clone all the [PdfPageObject] objects in this group, placing the cloned objects
+    /// onto the given destination [PdfPage].
+    ///
+    /// If all objects were cloned successfully, then a new [PdfPageGroupObject] containing the clones
+    /// is returned, allowing the new objects to be manipulated as a group.
+    pub fn try_clone_onto_page<'b>(
+        &self,
+        destination: &mut PdfPage<'b>,
+    ) -> Result<PdfPageGroupObject<'b>, PdfiumError> {
+        if !self.is_cloneable() {
+            return Err(PdfiumError::GroupContainsNonCloneablePageObjects);
+        }
+
+        let mut group = destination.objects_mut().create_empty_group();
+
+        for handle in self.object_handles.iter() {
+            let source = self.get_object_from_handle(handle);
+
+            let clone = source.try_clone(destination.document())?;
+
+            group.push(&mut destination.objects_mut().add_object(clone)?)?;
+        }
+
+        Ok(group)
+    }
+
     /// Returns an iterator over all the [PdfPageObject] objects in this group.
     #[inline]
-    pub fn iter(&self) -> PdfPageGroupObjectIterator {
+    pub fn iter(&'a self) -> PdfPageGroupObjectIterator<'a> {
         PdfPageGroupObjectIterator::new(self)
     }
 
@@ -264,7 +342,7 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn has_transparency(&self) -> bool {
         self.object_handles.iter().any(|object_handle| {
-            PdfPageObject::from_pdfium(*object_handle, Some(self.page), None, self.bindings)
+            PdfPageObject::from_pdfium(*object_handle, Some(self.page_handle), None, self.bindings)
                 .has_transparency()
         })
     }
@@ -275,9 +353,13 @@ impl<'a> PdfPageGroupObject<'a> {
         let mut bounds: Option<PdfRect> = None;
 
         self.object_handles.iter().for_each(|object_handle| {
-            if let Ok(object_bounds) =
-                PdfPageObject::from_pdfium(*object_handle, Some(self.page), None, self.bindings)
-                    .bounds()
+            if let Ok(object_bounds) = PdfPageObject::from_pdfium(
+                *object_handle,
+                Some(self.page_handle),
+                None,
+                self.bindings,
+            )
+            .bounds()
             {
                 if let Some(bounds) = bounds.as_mut() {
                     if object_bounds.bottom < bounds.bottom {
@@ -499,7 +581,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Inflates an internal `FPDF_PAGEOBJECT` handle into a [PdfPageObject].
     #[inline]
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
-        PdfPageObject::from_pdfium(*handle, Some(self.page), None, self.bindings)
+        PdfPageObject::from_pdfium(*handle, Some(self.page_handle), None, self.bindings)
     }
 }
 

@@ -3,6 +3,9 @@
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::document::PdfDocument;
+use crate::error::PdfiumError;
+use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 
 pub struct PdfPageShadingObject<'a> {
@@ -67,5 +70,15 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageShadingObject<'a> {
     #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
+    }
+
+    #[inline]
+    fn is_cloneable_impl(&self) -> bool {
+        false
+    }
+
+    #[inline]
+    fn try_clone_impl<'b>(&self, _: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
+        Err(PdfiumError::UnsupportedPdfPageObjectType)
     }
 }

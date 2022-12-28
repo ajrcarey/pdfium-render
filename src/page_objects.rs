@@ -3,9 +3,7 @@
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::PdfPage;
 use crate::page_object::PdfPageObject;
 use crate::page_object_group::PdfPageGroupObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
@@ -13,7 +11,6 @@ use crate::page_objects_common::{
     PdfPageObjectIndex, PdfPageObjectsCommon, PdfPageObjectsIterator,
 };
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
-use std::ops::RangeInclusive;
 use std::os::raw::c_int;
 
 /// The page objects contained within a single [PdfPage].
@@ -64,88 +61,6 @@ impl<'a> PdfPageObjects<'a> {
             do_regenerate_page_content_after_each_change;
     }
 
-    /// Removes a single page object with the given source page object index from the given
-    /// source [PdfPage], adding the object to the end of this [PdfPageObjects] collection.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    ///
-    /// Likewise, if the given source [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the source page.
-    pub fn take_object_from_page(
-        &mut self,
-        source: &mut PdfPage,
-        source_page_object_index: PdfPageObjectIndex,
-    ) -> Result<(), PdfiumError> {
-        self.take_object_range_from_page(
-            source,
-            source_page_object_index..=source_page_object_index,
-        )
-    }
-
-    /// Removes one or more page objects with the given range of indices from the given
-    /// source [PdfPage], adding the objects sequentially to the end of this
-    /// [PdfPageObjects] collection.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    ///
-    /// Likewise, if the given source [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the source page.
-    pub fn take_object_range_from_page(
-        &mut self,
-        source: &mut PdfPage,
-        source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
-    ) -> Result<(), PdfiumError> {
-        self.take_object_range_from_handles(
-            *source.handle(),
-            source.document(),
-            source_page_object_range,
-        )
-    }
-
-    // Take a raw FPDF_PAGE handle to avoid cascading lifetime problems associated with borrowing
-    // &'a mut PdfPage<'a>.
-    pub(crate) fn take_object_range_from_handles(
-        &mut self,
-        page: FPDF_PAGE,
-        document: &PdfDocument,
-        source_page_object_range: RangeInclusive<PdfPageObjectIndex>,
-    ) -> Result<(), PdfiumError> {
-        let source = PdfPage::from_pdfium(page, None, document);
-
-        // Make sure we iterate over the range backwards. The collection's length will reduce
-        // each time we remove an object from it, and we must avoid overflow or Pdfium may segfault.
-
-        for index in source_page_object_range.rev() {
-            let mut object = source.objects().get(index)?;
-
-            object.remove_object_from_page()?;
-            object.add_object_to_page(self)?;
-        }
-
-        Ok(())
-    }
-
-    /// Moves all page objects in the given [PdfPage] into this [PdfPageObjects] collection,
-    /// appending them to the end of this [PdfPageObjects] collection. The given [PdfPage]
-    /// will be drained of all page objects once this operation is completed.
-    ///
-    /// If the containing [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    ///
-    /// Likewise, if the given source [PdfPage] has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the source page.
-    pub fn take_all(&mut self, source: &mut PdfPage) -> Result<(), PdfiumError> {
-        self.take_object_range_from_page(source, source.objects().as_range_inclusive())
-    }
-
     /// Creates a new [PdfPageGroupObject] object group that includes any page objects in this
     /// [PdfPageObjects] collection matching the given predicate function.
     pub fn create_group<F>(&'a self, predicate: F) -> Result<PdfPageGroupObject<'a>, PdfiumError>
@@ -162,7 +77,7 @@ impl<'a> PdfPageObjects<'a> {
     }
 
     /// Creates a new [PdfPageGroupObject] object group that can accept any [PdfPageObject]
-    /// in this [PdfPageObjects]. The newly created group will be empty;
+    /// in this [PdfPageObjects] collection. The newly created group will be empty;
     /// you will need to manually add to it the objects you want to manipulate.
     #[inline]
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {

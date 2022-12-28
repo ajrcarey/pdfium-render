@@ -339,22 +339,33 @@ pub struct PdfPage<'a> {
 }
 
 impl<'a> PdfPage<'a> {
+    /// The default content regeneration strategy used by `pdfium-render`. This can be overridden
+    /// on a page-by-page basis using the [PdfPage::set_content_regeneration_strategy()] function.
+    const DEFAULT_CONTENT_REGENERATION_STRATEGY: PdfPageContentRegenerationStrategy =
+        PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
+
     #[inline]
     pub(crate) fn from_pdfium(
         handle: FPDF_PAGE,
         label: Option<String>,
         document: &'a PdfDocument<'a>,
     ) -> Self {
-        PdfPage {
+        let mut result = PdfPage {
             handle,
             label,
             document,
-            regeneration_strategy: PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+            regeneration_strategy: PdfPageContentRegenerationStrategy::Manual,
             is_content_regeneration_required: false,
             annotations: PdfPageAnnotations::from_pdfium(handle, document),
             boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
             objects: PdfPageObjects::from_pdfium(*document.handle(), handle, document.bindings()),
-        }
+        };
+
+        // Make sure the default content regeneration strategy is applied to child containers.
+
+        result.set_content_regeneration_strategy(Self::DEFAULT_CONTENT_REGENERATION_STRATEGY);
+
+        result
     }
 
     /// Returns the internal `FPDF_PAGE` handle for this [PdfPage].
@@ -916,6 +927,10 @@ impl<'a> PdfPage<'a> {
         strategy: PdfPageContentRegenerationStrategy,
     ) {
         self.regeneration_strategy = strategy;
+        self.objects.do_regenerate_page_content_after_each_change(
+            self.regeneration_strategy
+                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        );
     }
 
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].

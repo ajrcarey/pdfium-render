@@ -69,6 +69,11 @@ pub enum PdfiumError {
     FontGlyphIndexOutOfBounds,
     UnknownPathSegmentType,
     NoPagesInDocument,
+    PageObjectNotCloneable,
+    ImageObjectFiltersNotCloneable,
+    PathObjectBezierControlPointsNotCloneable,
+    PathObjectUnknownSegmentTypeNotCloneable,
+    GroupContainsNonCloneablePageObjects,
 
     /// Two data buffers are expected to have the same size, but they do not.
     DataBufferLengthMismatch,

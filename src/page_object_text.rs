@@ -17,7 +17,7 @@ use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page::PdfPoints;
-use crate::page_object::PdfPageObjectCommon;
+use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_text::PdfPageText;
 use crate::page_text_chars::PdfPageTextChars;
@@ -461,5 +461,32 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
+    }
+
+    #[inline]
+    fn is_cloneable_impl(&self) -> bool {
+        true
+    }
+
+    #[inline]
+    fn try_clone_impl<'b>(
+        &self,
+        document: &PdfDocument<'b>,
+    ) -> Result<PdfPageObject<'b>, PdfiumError> {
+        let mut clone = PdfPageTextObject::new(
+            document,
+            self.text(),
+            &self.font(),
+            self.unscaled_font_size(),
+        )?;
+
+        clone.set_fill_color(self.fill_color()?)?;
+        clone.set_stroke_color(self.stroke_color()?)?;
+        clone.set_stroke_width(self.stroke_width()?)?;
+        clone.set_line_join(self.line_join()?)?;
+        clone.set_line_cap(self.line_cap()?)?;
+        clone.set_matrix(self.matrix()?)?;
+
+        Ok(PdfPageObject::Text(clone))
     }
 }

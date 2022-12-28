@@ -205,6 +205,15 @@ impl<'a> PdfPages<'a> {
         }
     }
 
+    /// Deletes all pages in the given range from this [PdfPages] collection.
+    pub fn delete_page_range(&mut self, range: Range<PdfPageIndex>) -> Result<(), PdfiumError> {
+        for index in range.rev() {
+            self.delete_page_at_index(index)?;
+        }
+
+        Ok(())
+    }
+
     /// Copies a single page with the given source page index from the given
     /// source [PdfDocument], inserting it at the given destination page index
     /// in this [PdfPages] collection.
@@ -340,8 +349,8 @@ impl<'a> PdfPages<'a> {
         }
     }
 
-    /// Returns a PdfPage from the given `FPDF_PAGE` handle, if possible.
-    fn pdfium_page_handle_to_result(
+    /// Returns a [PdfPage] from the given `FPDF_PAGE` handle, if possible.
+    pub(crate) fn pdfium_page_handle_to_result(
         &self,
         index: PdfPageIndex,
         handle: FPDF_PAGE,
