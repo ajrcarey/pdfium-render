@@ -87,6 +87,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPage_SetBleedBox()?;
         result.extern_FPDFPage_SetTrimBox()?;
         result.extern_FPDFPage_SetArtBox()?;
+        result.extern_FPDFPage_TransFormWithClip()?;
         result.extern_FPDFClipPath_CountPathSegments()?;
         result.extern_FPDFClipPath_GetPathSegment()?;
         result.extern_FPDFPage_HasTransparency()?;
@@ -1204,6 +1205,23 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFPage_SetArtBox\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_TransFormWithClip(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                matrix: *const FS_MATRIX,
+                clipRect: *const FS_RECTF,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_TransFormWithClip\0") }
     }
 
     #[inline]
@@ -5246,6 +5264,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         top: c_float,
     ) {
         unsafe { self.extern_FPDFPage_SetArtBox().unwrap()(page, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_TransFormWithClip(
+        &self,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipRect: *const FS_RECTF,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_TransFormWithClip().unwrap()(page, matrix, clipRect) }
     }
 
     #[inline]

@@ -2,8 +2,9 @@
 //! `PdfDocument`.
 
 use crate::bindgen::{
-    size_t, FPDF_PAGE, PAGEMODE_FULLSCREEN, PAGEMODE_UNKNOWN, PAGEMODE_USEATTACHMENTS,
-    PAGEMODE_USENONE, PAGEMODE_USEOC, PAGEMODE_USEOUTLINES, PAGEMODE_USETHUMBS,
+    size_t, FPDF_DOCUMENT, FPDF_PAGE, PAGEMODE_FULLSCREEN, PAGEMODE_UNKNOWN,
+    PAGEMODE_USEATTACHMENTS, PAGEMODE_USENONE, PAGEMODE_USEOC, PAGEMODE_USEOUTLINES,
+    PAGEMODE_USETHUMBS,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
@@ -236,20 +237,40 @@ impl<'a> PdfPages<'a> {
     ///
     /// The page range string should be in a comma-separated list of indexes and ranges,
     /// for example \"1,3,5-7\". Pages are indexed starting at one, not zero.
+    #[inline]
     pub fn copy_pages_from_document(
         &mut self,
         source: &PdfDocument,
         pages: &str,
         destination_page_index: PdfPageIndex,
     ) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(self.bindings().FPDF_ImportPages(
-            *self.document().handle(),
+        Self::copy_pages_between_documents(
             *source.handle(),
+            pages,
+            *self.document.handle(),
+            destination_page_index,
+            self.bindings(),
+        )
+    }
+
+    /// Copies one or more pages, specified using a user-friendly page range string,
+    /// from one raw document handle to another, inserting the pages sequentially
+    /// starting at the given destination page index.
+    pub(crate) fn copy_pages_between_documents(
+        source: FPDF_DOCUMENT,
+        pages: &str,
+        destination: FPDF_DOCUMENT,
+        destination_page_index: PdfPageIndex,
+        bindings: &dyn PdfiumLibraryBindings,
+    ) -> Result<(), PdfiumError> {
+        if bindings.is_true(bindings.FPDF_ImportPages(
+            destination,
+            source,
             pages,
             destination_page_index as c_int,
         )) {
             Ok(())
-        } else if let Some(error) = self.bindings().get_pdfium_last_error() {
+        } else if let Some(error) = bindings.get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
             // This would be an unusual situation; a null handle indicating failure,
@@ -264,16 +285,35 @@ impl<'a> PdfPages<'a> {
     /// Copies one or more pages with the given range of indices from the given
     /// source [PdfDocument], inserting the pages sequentially starting at the given
     /// destination page index in this [PdfPages] collection.
+    #[inline]
     pub fn copy_page_range_from_document(
         &mut self,
         source: &PdfDocument,
         source_page_range: RangeInclusive<PdfPageIndex>,
         destination_page_index: PdfPageIndex,
     ) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
-            self.bindings().FPDF_ImportPagesByIndex_vec(
-                *self.document().handle(),
-                *source.handle(),
+        Self::copy_page_range_between_documents(
+            *source.handle(),
+            source_page_range,
+            *self.document.handle(),
+            destination_page_index,
+            self.bindings(),
+        )
+    }
+
+    /// Copies one or more pages with the given range of indices from one raw document handle
+    /// to another, inserting the pages sequentially starting at the given destination page index.
+    pub(crate) fn copy_page_range_between_documents(
+        source: FPDF_DOCUMENT,
+        source_page_range: RangeInclusive<PdfPageIndex>,
+        destination: FPDF_DOCUMENT,
+        destination_page_index: PdfPageIndex,
+        bindings: &dyn PdfiumLibraryBindings,
+    ) -> Result<(), PdfiumError> {
+        if bindings.is_true(
+            bindings.FPDF_ImportPagesByIndex_vec(
+                destination,
+                source,
                 source_page_range
                     .map(|index| index as c_int)
                     .collect::<Vec<_>>(),
@@ -281,7 +321,7 @@ impl<'a> PdfPages<'a> {
             ),
         ) {
             Ok(())
-        } else if let Some(error) = self.bindings().get_pdfium_last_error() {
+        } else if let Some(error) = bindings.get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
             // This would be an unusual situation; a null handle indicating failure,
@@ -411,7 +451,7 @@ impl<'a> PdfPages<'a> {
                 }
             };
 
-            Ok(PdfPage::from_pdfium(handle, label, self.document()))
+            Ok(PdfPage::from_pdfium(handle, label, index, self.document()))
         }
     }
 
@@ -475,6 +515,8 @@ impl<'a> PdfPages<'a> {
         for (index, page) in self.iter().enumerate() {
             let mut group = PdfPageGroupObject::from_pdfium(
                 *page.handle(),
+                index as PdfPageIndex,
+                *page.document().handle(),
                 self.bindings(),
                 page.content_regeneration_strategy()
                     == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,

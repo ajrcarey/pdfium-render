@@ -1113,12 +1113,6 @@ impl WasmPdfiumBindings {
         Self::js_value_from_offset(link as usize)
     }
 
-    /// Converts a mutable pointer to an `FPDF_LINK` struct to a [JsValue].
-    #[inline]
-    fn js_value_from_link_mut(page: *mut FPDF_LINK) -> JsValue {
-        Self::js_value_from_offset(page as usize)
-    }
-
     /// Converts a pointer to an `FPDF_PAGEOBJECT` struct to a [JsValue].
     #[inline]
     fn js_value_from_object(object: FPDF_PAGEOBJECT) -> JsValue {
@@ -3244,6 +3238,34 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_SetArtBox()");
 
         self.call_pdfium_set_page_box_fn("FPDFPage_SetArtBox", page, left, bottom, right, top);
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_TransFormWithClip(
+        &self,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipRect: *const FS_RECTF,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_TransFormWithClip()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPage_TransFormWithClip",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_page(page),
+                    &Self::js_value_from_offset(matrix as usize),
+                    &Self::js_value_from_offset(clipRect as usize),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -6372,7 +6394,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                     JsFunctionArgumentType::Pointer,
                 ]),
                 Some(&JsValue::from(Array::of3(
-                    &Self::js_value_from_link_mut(link_annot),
+                    &Self::js_value_from_page(page),
                     &Self::js_value_from_offset(ptr_start_pos),
                     &Self::js_value_from_offset(ptr_link_annot),
                 ))),

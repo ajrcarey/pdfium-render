@@ -216,7 +216,10 @@ impl Pdfium {
         bytes: &'static [u8],
         password: Option<&str>,
     ) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_document_handle_to_result(self.bindings.FPDF_LoadMemDocument64(bytes, password))
+        Self::pdfium_document_handle_to_result(
+            self.bindings.FPDF_LoadMemDocument64(bytes, password),
+            self.bindings(),
+        )
     }
 
     /// Attempts to open a [PdfDocument] from the given owned byte buffer.
@@ -230,9 +233,10 @@ impl Pdfium {
         bytes: Vec<u8>,
         password: Option<&str>,
     ) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_document_handle_to_result(
+        Self::pdfium_document_handle_to_result(
             self.bindings
                 .FPDF_LoadMemDocument64(bytes.as_slice(), password),
+            self.bindings(),
         )
         .map(|mut document| {
             // Give the newly-created document ownership of the byte buffer, so that Pdfium can continue
@@ -306,9 +310,10 @@ impl Pdfium {
     ) -> Result<PdfDocument, PdfiumError> {
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
-        self.pdfium_document_handle_to_result(
+        Self::pdfium_document_handle_to_result(
             self.bindings
                 .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password),
+            self.bindings(),
         )
         .map(|mut document| {
             // Give the newly-created document ownership of the reader, so that Pdfium can continue
@@ -387,21 +392,24 @@ impl Pdfium {
 
     /// Creates a new, empty [PdfDocument] in memory.
     pub fn create_new_pdf(&self) -> Result<PdfDocument, PdfiumError> {
-        self.pdfium_document_handle_to_result(self.bindings.FPDF_CreateNewDocument())
-            .map(|mut document| {
-                document.set_version(PdfDocumentVersion::DEFAULT_VERSION);
+        Self::pdfium_document_handle_to_result(
+            self.bindings.FPDF_CreateNewDocument(),
+            self.bindings(),
+        )
+        .map(|mut document| {
+            document.set_version(PdfDocumentVersion::DEFAULT_VERSION);
 
-                document
-            })
+            document
+        })
     }
 
     /// Returns a [PdfDocument] from the given `FPDF_DOCUMENT` handle, if possible.
-    fn pdfium_document_handle_to_result(
-        &self,
+    pub(crate) fn pdfium_document_handle_to_result(
         handle: crate::bindgen::FPDF_DOCUMENT,
+        bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<PdfDocument, PdfiumError> {
         if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
+            if let Some(error) = bindings.get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
@@ -412,7 +420,7 @@ impl Pdfium {
                 ))
             }
         } else {
-            Ok(PdfDocument::from_pdfium(handle, self.bindings.as_ref()))
+            Ok(PdfDocument::from_pdfium(handle, bindings))
         }
     }
 }

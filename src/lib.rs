@@ -76,6 +76,7 @@ pub mod permissions;
 pub mod render_config;
 pub mod signature;
 pub mod signatures;
+pub mod transform;
 mod utils;
 
 /// A prelude for conveniently importing all public `pdfium-render` definitions at once.
@@ -99,7 +100,7 @@ pub mod prelude {
         page_object_unsupported::*, page_objects::*, page_objects_common::*, page_size::*,
         page_text::*, page_text_char::*, page_text_chars::*, page_text_segment::*,
         page_text_segments::*, pages::*, path_segment::*, path_segments::*, pdfium::*,
-        permissions::*, render_config::*, signature::*, signatures::*,
+        permissions::*, render_config::*, signature::*, signatures::*, transform::*,
     };
 }
 

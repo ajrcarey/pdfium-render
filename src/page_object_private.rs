@@ -15,6 +15,7 @@ pub(crate) mod internal {
     use crate::page_annotation_objects::PdfPageAnnotationObjects;
     use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
     use crate::page_objects::PdfPageObjects;
+    use crate::transform::PdfMatrix;
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
     pub(crate) trait PdfPageObjectPrivate<'a>: PdfPageObjectCommon<'a> {
@@ -237,7 +238,7 @@ pub(crate) mod internal {
         }
 
         /// Returns the current raw transformation matrix for this page object.
-        fn matrix(&self) -> Result<FS_MATRIX, PdfiumError> {
+        fn matrix(&self) -> Result<PdfMatrix, PdfiumError> {
             let mut matrix = FS_MATRIX {
                 a: 0.0,
                 b: 0.0,
@@ -251,7 +252,7 @@ pub(crate) mod internal {
                 self.bindings()
                     .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
             ) {
-                Ok(matrix)
+                Ok(PdfMatrix::from_pdfium(matrix))
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     self.bindings()
@@ -262,10 +263,10 @@ pub(crate) mod internal {
         }
 
         /// Sets the raw transformation matrix for this page object.
-        fn set_matrix(&self, matrix: FS_MATRIX) -> Result<(), PdfiumError> {
+        fn set_matrix(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
             if self.bindings().is_true(
                 self.bindings()
-                    .FPDFPageObj_SetMatrix(*self.get_object_handle(), &matrix),
+                    .FPDFPageObj_SetMatrix(*self.get_object_handle(), &matrix.to_pdfium()),
             ) {
                 Ok(())
             } else {

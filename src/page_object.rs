@@ -29,7 +29,7 @@ use std::os::raw::{c_int, c_uint};
 /// Pdfium does not currently support or recognize the External Object ("XObject") page object
 /// type supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium
 /// will return [PdfPageObjectType::Unsupported].
-#[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialOrd, PartialEq, Eq, Hash)]
 pub enum PdfPageObjectType {
     Unsupported = FPDF_PAGEOBJ_UNKNOWN as isize,
     Text = FPDF_PAGEOBJ_TEXT as isize,
@@ -855,7 +855,7 @@ pub trait PdfPageObjectCommon<'a> {
     /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
     /// original object will not be transferred to the clone.
     ///
-    /// The returned page object will be detached from any existing [PdfPage]. Its lifetime
+    /// The returned page object will be detached from any existing `PdfPage`. Its lifetime
     /// will be bound to the lifetime of the given destination [PdfDocument].
     fn try_clone<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError>;
 }

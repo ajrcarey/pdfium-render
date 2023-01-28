@@ -11,9 +11,10 @@ use crate::page_objects_common::{
     PdfPageObjectIndex, PdfPageObjectsCommon, PdfPageObjectsIterator,
 };
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
+use crate::prelude::PdfPageIndex;
 use std::os::raw::c_int;
 
-/// The page objects contained within a single [PdfPage].
+/// The page objects contained within a single `PdfPage`.
 ///
 /// Content on a page is structured as a stream of [PdfPageObject] objects of different types:
 /// text objects, image objects, path objects, and so on.
@@ -23,8 +24,9 @@ use std::os::raw::c_int;
 /// supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium will return
 /// `PdfPageObjectType::Unsupported`.
 pub struct PdfPageObjects<'a> {
-    document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
+    page_index_at_handle_creation_time: PdfPageIndex,
+    document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
     do_regenerate_page_content_after_each_change: bool,
 }
@@ -32,13 +34,15 @@ pub struct PdfPageObjects<'a> {
 impl<'a> PdfPageObjects<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
+        page_index_at_handle_creation_time: PdfPageIndex,
+        document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         Self {
-            document_handle,
             page_handle,
+            page_index_at_handle_creation_time,
+            document_handle,
             bindings,
             do_regenerate_page_content_after_each_change: false,
         }
@@ -83,6 +87,8 @@ impl<'a> PdfPageObjects<'a> {
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
         PdfPageGroupObject::from_pdfium(
             self.page_handle,
+            self.page_index_at_handle_creation_time,
+            self.document_handle,
             self.bindings,
             self.do_regenerate_page_content_after_each_change,
         )

@@ -10,7 +10,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     let document = pdfium.load_pdf_from_file("test/text-test.pdf", None)?; // Load the sample file...
 
-    // Move all objects on the bottom half of the first page to the first page of a new document.
+    // Move all the page objects on the bottom half of the first page to a new page.
 
     let source_page = document.pages().get(0)?;
 
@@ -24,7 +24,7 @@ pub fn main() -> Result<(), PdfiumError> {
             .map(|bounds| {
                 // Only select objects on the bottom half of the page.
 
-                bounds.top > source_page.height() / 2.0
+                bounds.top < source_page.height() / 2.0
             })
             .unwrap_or(false)
     })?;
@@ -33,19 +33,23 @@ pub fn main() -> Result<(), PdfiumError> {
 
     source_objects.retain_if_cloneable();
 
+    for o in source_objects.iter() {
+        if let Some(o) = o.as_text_object() {
+            println!("Selected line: {}", o.text());
+        }
+    }
+
     println!("{} objects to clone", source_objects.len());
 
     let mut destination_page = document
         .pages()
         .create_page_at_end(PdfPagePaperSize::a4())?;
 
-    let destination_objects = source_objects.try_clone_onto_page(&mut destination_page)?;
+    let destination_objects = source_objects.try_clone_onto_existing_page(&mut destination_page)?;
 
     println!("{} objects cloned onto page", destination_objects.len());
 
     source_objects.remove_objects_from_page()?;
-
-    println!("{} objects left over", source_objects.len());
 
     document.save_to_file("test/clone-test.pdf")?;
 

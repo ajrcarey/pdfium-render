@@ -654,6 +654,17 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFPage_TransFormWithClip(
+        &self,
+        page: FPDF_PAGE,
+        matrix: *const FS_MATRIX,
+        clipRect: *const FS_RECTF,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPage_TransFormWithClip(page, matrix, clipRect) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
         unsafe { crate::bindgen::FPDFClipPath_CountPathSegments(clip_path, path_index) }
     }

@@ -88,11 +88,15 @@ Version 0.7.28 removes the `PdfPageObjects::take_*()` functions, since upstream 
 in Pdfium render them unreliable; adds the `PdfPageObject::is_cloneable()` and `PdfPageObject::try_clone()`
 functions, allowing most path, text, and image page objects to be cloned; adds the
 `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_cloneable()`, `PdfPageObjectGroup::is_cloneable()`,
-and `PdfPageObjectGroup::try_clone_onto_page()` functions, allowing a group of page objects to be
-cloned onto a destination page; adds the `examples/clone.rs` example that demonstrates the new functionality;
-and fixes a bug in the propagation of a page's content regeneration strategy from the page to
-its collection of page objects collection and to any `PdfPageObjectGroup` objects created from that
-page objects collection.
+`PdfPageObjectGroup::try_clone_onto_existing_page()`, `PdfPageObjectGroup::clone_onto_new_page_at_start()`,
+`PdfPageObjectGroup::clone_onto_new_page_at_start_in_document()`,
+`PdfPageObjectGroup::clone_onto_new_page_at_end()`, `PdfPageObjectGroup::clone_onto_new_page_at_end_in_document()`,
+`PdfPageObjectGroup::clone_onto_new_page_at_index()`, and
+`PdfPageObjectGroup::clone_onto_new_page_at_index_in_document()` functions, allowing a group of page objects
+to be cloned onto a destination page; adds the `examples/clone.rs` example that demonstrates the
+new functionality; and fixes a bug in the propagation of a page's content regeneration strategy from
+the page to its collection of page objects collection and to any `PdfPageObjectGroup` objects created
+from that page objects collection.
 
 Version 0.7.27 adjusts the WASM example to take into account upstream packaging changes in the
 WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
@@ -104,15 +108,6 @@ adds the `sync` crate feature, providing implementations of the `Send` and
 `Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely,
 and adds implementations of the `std::fmt::Display` and `std::error::Error` traits to the
 `PdfiumError` enum so that it can be used by error handling libraries such as `anyhow`.
-
-Version 0.7.25 adds the `PdfPageAnnotation::objects()` function, allowing inspection of all page
-objects attached to an annotation, and the `PdfPageInkAnnotation::objects_mut()` and
-`PdfPageStampAnnotation::objects_mut()` functions, allowing adding page objects to, and removing
-page objects from, ink and stamp annotations.
-
-Version 0.7.24 adds bindings to Pdfium functions related to individual segments of a Path page object,
-and adds the `PdfPagePathObjectSegments` and `PdfFontGlyphs` collections to the high-level interface,
-along with functions for retrieving path segments for individual font glyphs and page path objects.
 
 ## Binding to Pdfium
 
@@ -343,7 +338,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.28, 316 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.28, 317 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -357,7 +352,13 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 * 0.7.28: removes the `PdfPageObjects::take_*()` functions; adds `PdfPageObject::is_cloneable()`
   `PdfPageObject::try_clone()`, `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_cloneable()`,
-  `PdfPageObjectGroup::is_cloneable()`, and `PdfPageObjectGroup::try_clone_onto_page()` functions;
+  `PdfPageObjectGroup::is_cloneable()`, `PdfPageObjectGroup::try_clone_onto_existing_page()`,
+  `PdfPageObjectGroup::clone_onto_new_page_at_start()`,
+  `PdfPageObjectGroup::clone_onto_new_page_at_start_in_document()`,
+  `PdfPageObjectGroup::clone_onto_new_page_at_end()`,
+  `PdfPageObjectGroup::clone_onto_new_page_at_end_in_document()`,
+  `PdfPageObjectGroup::clone_onto_new_page_at_index()`, and
+  `PdfPageObjectGroup::clone_onto_new_page_at_index_in_document()` functions;
   adds `examples/clone.rs` example; fixes a bug in the propagation of a page's content regeneration strategy.
 * 0.7.27: adjusts `examples/index.html` to take into account upstream packaging changes in the
   WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;

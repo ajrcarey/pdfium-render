@@ -1,5 +1,7 @@
+#![allow(unused)] // AJRC - 28/1/23 - Suppress unused function warnings during development of PdfParagraph
+
 //! Defines the [PdfParagraph] struct, exposing functionality related to a group of
-//! styled text strings that should be laid out together on a [PdfPage] as single paragraph.
+//! styled text strings that should be laid out together on a `PdfPage` as single paragraph.
 #[doc(hidden)]
 use crate::bindgen::FPDF_PAGEOBJECT;
 use crate::document::PdfDocument;

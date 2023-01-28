@@ -14,9 +14,11 @@ use crate::page_objects::PdfPageObjects;
 use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
+use crate::pages::PdfPageIndex;
 use crate::prelude::PdfPageAnnotations;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 use std::os::raw::c_int;
 
@@ -29,7 +31,7 @@ pub struct PdfPoints {
 }
 
 impl PdfPoints {
-    /// A [PdfPoints] object with the value 0.0.
+    /// A [PdfPoints] object with the identity value 0.0.
     pub const ZERO: PdfPoints = PdfPoints::zero();
 
     /// Creates a new [PdfPoints] object with the given value.
@@ -148,7 +150,7 @@ impl Neg for PdfPoints {
 /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
 /// with x values increasing as coordinates move horizontally to the right and
 /// y values increasing as coordinates move vertically up.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub struct PdfRect {
     pub bottom: PdfPoints,
     pub left: PdfPoints,
@@ -157,6 +159,9 @@ pub struct PdfRect {
 }
 
 impl PdfRect {
+    /// A [PdfRect] object with the identity value (0.0, 0.0, 0.0, 0.0).
+    pub const ZERO: PdfRect = PdfRect::zero();
+
     #[inline]
     pub(crate) fn from_pdfium(rect: FS_RECTF) -> Self {
         Self {
@@ -195,7 +200,7 @@ impl PdfRect {
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
     #[inline]
-    pub fn new(bottom: PdfPoints, left: PdfPoints, top: PdfPoints, right: PdfPoints) -> Self {
+    pub const fn new(bottom: PdfPoints, left: PdfPoints, top: PdfPoints, right: PdfPoints) -> Self {
         Self {
             bottom,
             left,
@@ -210,13 +215,22 @@ impl PdfRect {
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
     #[inline]
-    pub fn new_from_values(bottom: f32, left: f32, top: f32, right: f32) -> Self {
+    pub const fn new_from_values(bottom: f32, left: f32, top: f32, right: f32) -> Self {
         Self::new(
             PdfPoints::new(bottom),
             PdfPoints::new(left),
             PdfPoints::new(top),
             PdfPoints::new(right),
         )
+    }
+
+    /// Creates a new [PdfRect] object with all values set to 0.0.
+    ///
+    /// Consider using the compile-time constant value [PdfRect::ZERO]
+    /// rather than calling this function directly.
+    #[inline]
+    pub const fn zero() -> Self {
+        Self::new_from_values(0.0, 0.0, 0.0, 0.0)
     }
 
     /// Returns the width of this [PdfRect].
@@ -266,6 +280,32 @@ impl PdfRect {
             && self.right > rect.left
             && self.bottom < rect.top
             && self.top > rect.bottom
+    }
+}
+
+// We could derive PartialEq automatically, but it's good practice to implement PartialEq
+// by hand when implementing Hash.
+
+impl PartialEq for PdfRect {
+    fn eq(&self, other: &Self) -> bool {
+        self.bottom == other.bottom
+            && self.left == other.left
+            && self.top == other.top
+            && self.right == other.right
+    }
+}
+
+// The f32 values inside PdfRect will never be NaN or Infinity, so these implementations
+// of Eq and Hash are safe.
+
+impl Eq for PdfRect {}
+
+impl Hash for PdfRect {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u32(self.bottom.value.to_bits());
+        state.write_u32(self.left.value.to_bits());
+        state.write_u32(self.top.value.to_bits());
+        state.write_u32(self.right.value.to_bits());
     }
 }
 
@@ -330,6 +370,7 @@ pub enum PdfPageContentRegenerationStrategy {
 pub struct PdfPage<'a> {
     handle: FPDF_PAGE,
     label: Option<String>,
+    index_at_handle_creation_time: PdfPageIndex,
     document: &'a PdfDocument<'a>,
     regeneration_strategy: PdfPageContentRegenerationStrategy,
     is_content_regeneration_required: bool,
@@ -348,17 +389,24 @@ impl<'a> PdfPage<'a> {
     pub(crate) fn from_pdfium(
         handle: FPDF_PAGE,
         label: Option<String>,
+        index_at_handle_creation_time: PdfPageIndex,
         document: &'a PdfDocument<'a>,
     ) -> Self {
         let mut result = PdfPage {
             handle,
             label,
+            index_at_handle_creation_time,
             document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::Manual,
             is_content_regeneration_required: false,
             annotations: PdfPageAnnotations::from_pdfium(handle, document),
             boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
-            objects: PdfPageObjects::from_pdfium(*document.handle(), handle, document.bindings()),
+            objects: PdfPageObjects::from_pdfium(
+                handle,
+                index_at_handle_creation_time,
+                *document.handle(),
+                document.bindings(),
+            ),
         };
 
         // Make sure the default content regeneration strategy is applied to child containers.
@@ -372,6 +420,14 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub(crate) fn handle(&self) -> &FPDF_PAGE {
         &self.handle
+    }
+
+    /// Returns the index of this [PdfPage] in its containing [PdfDocument] at the moment
+    /// the internal `FPDF_PAGE` handle for this [PdfPage] was created. This value is not
+    /// guaranteed to be stable if the containing [PdfDocument] is mutated.
+    #[inline]
+    pub(crate) fn index_at_handle_creation_time(&self) -> PdfPageIndex {
+        self.index_at_handle_creation_time
     }
 
     /// Returns the [PdfDocument] containing this [PdfPage].
