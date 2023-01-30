@@ -49,6 +49,7 @@ pub mod page_annotation_underline;
 pub mod page_annotation_unsupported;
 pub mod page_annotations;
 pub mod page_boundaries;
+mod page_index_cache; // Keep private since not part of the public API.
 pub mod page_object;
 pub mod page_object_form_fragment;
 pub mod page_object_group;

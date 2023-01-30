@@ -15,7 +15,7 @@ use crate::utils::files::{
 };
 use crate::utils::mem::create_byte_buffer;
 use js_sys::{Array, Function, Object, Reflect, Uint8Array, WebAssembly};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::ffi::CString;
@@ -25,10 +25,8 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use wasm_bindgen::intern;
 use wasm_bindgen::prelude::*;
 
-lazy_static! {
-    static ref PDFIUM_RENDER_WASM_STATE: RwLock<PdfiumRenderWasmState> =
-        RwLock::new(PdfiumRenderWasmState::default());
-}
+static PDFIUM_RENDER_WASM_STATE: Lazy<RwLock<PdfiumRenderWasmState>> =
+    Lazy::new(|| RwLock::new(PdfiumRenderWasmState::default()));
 
 #[derive(Debug, Copy, Clone)]
 enum JsFunctionArgumentType {

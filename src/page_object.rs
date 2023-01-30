@@ -816,12 +816,12 @@ pub trait PdfPageObjectCommon<'a> {
     /// in this [PdfPageObject].
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError>;
 
-    /// Returns `true` if this [PdfPageObject] can be successfully cloned by calling its
-    /// `try_clone()` function.
+    /// Returns `true` if this [PdfPageObject] can be successfully copied by calling its
+    /// `try_copy()` function.
     ///
-    /// Not all page objects can be successfully cloned. The following restrictions apply:
+    /// Not all page objects can be successfully copied. The following restrictions apply:
     ///
-    /// * For path objects, it is not possible to clone a path object that contains a Bézier path
+    /// * For path objects, it is not possible to copy a path object that contains a Bézier path
     /// segment, because Pdfium does not currently provide any way to retrieve the control points of a
     /// Bézier curve of an existing path object.
     /// * For text objects, the font used by the object must be present in the destination document,
@@ -829,19 +829,19 @@ pub trait PdfPageObjectCommon<'a> {
     /// font data is embedded into documents separately from text objects.
     /// * For image objects, Pdfium allows iterating over the list of image filters applied
     /// to an image object, but currently provides no way to set a new object's image filters.
-    /// As a result, it is not possible to clone an image object that has any image filters applied.
+    /// As a result, it is not possible to copy an image object that has any image filters applied.
     ///
     /// Pdfium currently allows setting the blend mode for a page object, but provides no way
     /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
-    /// original object will not be transferred to the clone.
-    fn is_cloneable(&self) -> bool;
+    /// original object will not be transferred to the copy.
+    fn is_copyable(&self) -> bool;
 
-    /// Attempts to clone this [PdfPageObject] by creating a new page object and copying across
+    /// Attempts to copy this [PdfPageObject] by creating a new page object and copying across
     /// all the properties of this [PdfPageObject] to the new page object.
     ///
-    /// Not all page objects can be successfully cloned. The following restrictions apply:
+    /// Not all page objects can be successfully copied. The following restrictions apply:
     ///
-    /// * For path objects, it is not possible to clone a path object that contains a Bézier path
+    /// * For path objects, it is not possible to copy a path object that contains a Bézier path
     /// segment, because Pdfium does not currently provide any way to retrieve the control points of a
     /// Bézier curve of an existing path object.
     /// * For text objects, the font used by the object must be present in the destination document,
@@ -849,15 +849,15 @@ pub trait PdfPageObjectCommon<'a> {
     /// font data is embedded into documents separately from text objects.
     /// * For image objects, Pdfium allows iterating over the list of image filters applied
     /// to an image object, but currently provides no way to set a new object's image filters.
-    /// As a result, it is not possible to clone an image object that has any image filters applied.
+    /// As a result, it is not possible to copy an image object that has any image filters applied.
     ///
     /// Pdfium currently allows setting the blend mode for a page object, but provides no way
     /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
-    /// original object will not be transferred to the clone.
+    /// original object will not be transferred to the copy.
     ///
     /// The returned page object will be detached from any existing `PdfPage`. Its lifetime
     /// will be bound to the lifetime of the given destination [PdfDocument].
-    fn try_clone<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError>;
+    fn try_copy<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError>;
 }
 
 // Blanket implementation for all PdfPageObject types.
@@ -1114,12 +1114,12 @@ where
     }
 
     #[inline]
-    fn is_cloneable(&self) -> bool {
+    fn is_copyable(&self) -> bool {
         self.is_cloneable_impl()
     }
 
     #[inline]
-    fn try_clone<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
+    fn try_copy<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
         self.try_clone_impl(document)
     }
 }
@@ -1204,7 +1204,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
         &self,
         document: &PdfDocument<'b>,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        self.unwrap_as_trait().try_clone(document)
+        self.unwrap_as_trait().try_copy(document)
     }
 }
 

@@ -6,6 +6,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::error::PdfiumError;
 use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints, PdfRect};
+use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_object::{
     PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectCommon, PdfPageObjectLineCap,
     PdfPageObjectLineJoin,
@@ -30,7 +31,6 @@ use std::collections::HashMap;
 pub struct PdfPageGroupObject<'a> {
     object_handles: Vec<FPDF_PAGEOBJECT>,
     page_handle: FPDF_PAGE,
-    page_index_at_handle_creation_time: PdfPageIndex,
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
     do_regenerate_page_content_after_each_change: bool,
@@ -40,7 +40,6 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         page_handle: FPDF_PAGE,
-        page_index_at_handle_creation_time: PdfPageIndex,
         document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
         do_regenerate_page_content_after_each_change: bool,
@@ -48,7 +47,6 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPageGroupObject {
             object_handles: Vec::new(),
             page_handle,
-            page_index_at_handle_creation_time,
             document_handle,
             bindings,
             do_regenerate_page_content_after_each_change,
@@ -60,7 +58,6 @@ impl<'a> PdfPageGroupObject<'a> {
     pub fn empty(page: &'a PdfPage) -> Self {
         Self::from_pdfium(
             *page.handle(),
-            page.index_at_handle_creation_time(),
             *page.document().handle(),
             page.bindings(),
             page.content_regeneration_strategy()
@@ -76,7 +73,6 @@ impl<'a> PdfPageGroupObject<'a> {
     {
         let mut result = Self::from_pdfium(
             *page.handle(),
-            page.index_at_handle_creation_time(),
             *page.document().handle(),
             page.bindings(),
             page.content_regeneration_strategy()
@@ -108,7 +104,6 @@ impl<'a> PdfPageGroupObject<'a> {
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::from_pdfium(
             *page.handle(),
-            page.index_at_handle_creation_time(),
             *page.document().handle(),
             page.bindings(),
             page.content_regeneration_strategy()
@@ -315,38 +310,38 @@ impl<'a> PdfPageGroupObject<'a> {
         });
     }
 
-    /// Retains only the [PdfPageObject] objects in this group that are cloneable.
+    /// Retains only the [PdfPageObject] objects in this group that can be copied.
     ///
-    /// Objects that are not cloneable are only removed from this group. They remain on the source
+    /// Objects that cannot be copied are only removed from this group. They remain on the source
     /// [PdfPage] that currently contains them.
     #[inline]
-    pub fn retain_if_cloneable(&mut self) {
-        self.retain(|object| object.is_cloneable());
+    pub fn retain_if_copyable(&mut self) {
+        self.retain(|object| object.is_copyable());
     }
 
-    /// Returns `true` if all the [PdfPageObject] objects in this group are cloneable.
+    /// Returns `true` if all the [PdfPageObject] objects in this group can be copied.
     #[inline]
-    pub fn is_cloneable(&self) -> bool {
-        self.iter().all(|object| object.is_cloneable())
+    pub fn is_copyable(&self) -> bool {
+        self.iter().all(|object| object.is_copyable())
     }
 
-    /// Attempts to clone all the [PdfPageObject] objects in this group, placing the cloned objects
+    /// Attempts to copy all the [PdfPageObject] objects in this group, placing the copied objects
     /// onto the given existing destination [PdfPage].
     ///
-    /// This function can only clone page objects supported by the [PdfPageObjectCommon::try_clone()]
+    /// This function can only copy page objects supported by the [PdfPageObjectCommon::try_copy()]
     /// method. For a different approach that supports more page object types but is more limited
-    /// in where the cloned objects can be placed, see the [PdfPageGroupObject::clone_onto_new_page_at_start()],
-    /// [PdfPageGroupObject::clone_onto_new_page_at_start_in_document()], [PdfPageGroupObject::clone_onto_new_page_at_end()],
-    /// [PdfPageGroupObject::clone_onto_new_page_at_end_in_document()], [PdfPageGroupObject::clone_onto_new_page_at_index()],
-    /// and [PdfPageGroupObject::clone_onto_new_page_at_index_in_document()] functions.
+    /// in where the copied objects can be placed, see the [PdfPageGroupObject::copy_onto_new_page_at_start()],
+    /// [PdfPageGroupObject::copy_onto_new_page_at_start_in_document()], [PdfPageGroupObject::copy_onto_new_page_at_end()],
+    /// [PdfPageGroupObject::copy_onto_new_page_at_end_in_document()], [PdfPageGroupObject::copy_onto_new_page_at_index()],
+    /// and [PdfPageGroupObject::copy_onto_new_page_at_index_in_document()] functions.
     ///
-    /// If all objects were cloned successfully, then a new [PdfPageGroupObject] containing the clones
+    /// If all objects were copied successfully, then a new [PdfPageGroupObject] containing the clones
     /// is returned, allowing the new objects to be manipulated as a group.
-    pub fn try_clone_onto_existing_page<'b>(
+    pub fn try_copy_onto_existing_page<'b>(
         &self,
         destination: &mut PdfPage<'b>,
     ) -> Result<PdfPageGroupObject<'b>, PdfiumError> {
-        if !self.is_cloneable() {
+        if !self.is_copyable() {
             return Err(PdfiumError::GroupContainsNonCloneablePageObjects);
         }
 
@@ -355,7 +350,7 @@ impl<'a> PdfPageGroupObject<'a> {
         for handle in self.object_handles.iter() {
             let source = self.get_object_from_handle(handle);
 
-            let clone = source.try_clone(destination.document())?;
+            let clone = source.try_copy(destination.document())?;
 
             group.push(&mut destination.objects_mut().add_object(clone)?)?;
         }
@@ -363,138 +358,66 @@ impl<'a> PdfPageGroupObject<'a> {
         Ok(group)
     }
 
-    /// Clones all the [PdfPageObject] objects in this group by copying the page containing the
-    /// objects in this group into a new page at the start of the same document, then removing
-    /// all objects from the new page _except_ for those in this group.
-    ///
-    /// This function differs internally from [PdfPageGroupObject::try_clone_onto_existing_page()]
-    /// in that it uses `Pdfium` to create cloned objects, rather than the [PdfPageObjectCommon::try_clone()]
-    /// method provided by `pdfium-render`. As a result, this function can clone some objects that
-    /// [PdfPageGroupObject::try_clone_onto_existing_page()] cannot; for example, it can clone
-    /// path objects containing Bézier curves. However, it can only clone objects onto a new page,
-    /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
-    /// newly created objects.
-    ///
-    /// The new page will have the same size and bounding box configuration as the page containing
-    /// the objects in this group.
-    #[inline]
-    pub fn clone_onto_new_page_at_start(&self) -> Result<(), PdfiumError> {
-        self.clone_onto_new_page_at_index(0)
-    }
-
-    /// Clones all the [PdfPageObject] objects in this group by copying the page containing the
+    /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
     /// objects in this group into a new page at the start of the given destination [PdfDocument]
-    /// then removing all objects from the new page _except_ for those in this group.
+    /// then removing all objects from the new page _not_ in this group.
     ///
-    /// This function differs internally from [PdfPageGroupObject::try_clone_onto_existing_page()]
-    /// in that it uses `Pdfium` to create cloned objects, rather than the [PdfPageObjectCommon::try_clone()]
-    /// method provided by `pdfium-render`. As a result, this function can clone some objects that
-    /// [PdfPageGroupObject::try_clone_onto_existing_page()] cannot; for example, it can clone
-    /// path objects containing Bézier curves. However, it can only clone objects onto a new page,
+    /// This function differs internally from [PdfPageGroupObject::try_copy_onto_existing_page()]
+    /// in that it uses `Pdfium` to copy page objects instead of the [PdfPageObjectCommon::try_copy()]
+    /// method provided by `pdfium-render`. As a result, this function can copy some objects that
+    /// [PdfPageGroupObject::try_copy_onto_existing_page()] cannot; for example, it can copy
+    /// path objects containing Bézier curves. However, it can only copy objects onto a new page,
     /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
     /// newly created objects.
     ///
     /// The new page will have the same size and bounding box configuration as the page containing
     /// the objects in this group.
     #[inline]
-    pub fn clone_onto_new_page_at_start_in_document(
+    pub fn copy_onto_new_page_at_start(
         &self,
-        destination: &mut PdfDocument,
+        destination: &PdfDocument,
     ) -> Result<(), PdfiumError> {
-        self.clone_onto_new_page_at_index_in_document(0, destination)
+        self.copy_onto_new_page_at_index(0, destination)
     }
 
-    /// Clones all the [PdfPageObject] objects in this group by copying the page containing the
-    /// objects in this group into a new page at the end of the same document, then removing
-    /// all objects from the new page _except_ for those in this group.
-    ///
-    /// This function differs internally from [PdfPageGroupObject::try_clone_onto_existing_page()]
-    /// in that it uses `Pdfium` to create cloned objects, rather than the [PdfPageObjectCommon::try_clone()]
-    /// method provided by `pdfium-render`. As a result, this function can clone some objects that
-    /// [PdfPageGroupObject::try_clone_onto_existing_page()] cannot; for example, it can clone
-    /// path objects containing Bézier curves. However, it can only clone objects onto a new page,
-    /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
-    /// newly created objects.
-    ///
-    /// The new page will have the same size and bounding box configuration as the page containing
-    /// the objects in this group.
-    #[inline]
-    pub fn clone_onto_new_page_at_end(&self) -> Result<(), PdfiumError> {
-        self.clone_onto_new_page_at_index(
-            self.bindings.FPDF_GetPageCount(self.document_handle) as PdfPageIndex
-        )
-    }
-
-    /// Clones all the [PdfPageObject] objects in this group by copying the page containing the
+    /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
     /// objects in this group into a new page at the end of the given destination [PdfDocument]
-    /// then removing all objects from the new page _except_ for those in this group.
+    /// then removing all objects from the new page _not_ in this group.
     ///
-    /// This function differs internally from [PdfPageGroupObject::try_clone_onto_existing_page()]
-    /// in that it uses `Pdfium` to create cloned objects, rather than the [PdfPageObjectCommon::try_clone()]
-    /// method provided by `pdfium-render`. As a result, this function can clone some objects that
-    /// [PdfPageGroupObject::try_clone_onto_existing_page()] cannot; for example, it can clone
-    /// path objects containing Bézier curves. However, it can only clone objects onto a new page,
+    /// This function differs internally from [PdfPageGroupObject::try_copy_onto_existing_page()]
+    /// in that it uses `Pdfium` to copy page objects instead of the [PdfPageObjectCommon::try_copy()]
+    /// method provided by `pdfium-render`. As a result, this function can copy some objects that
+    /// [PdfPageGroupObject::try_copy_onto_existing_page()] cannot; for example, it can copy
+    /// path objects containing Bézier curves. However, it can only copy objects onto a new page,
     /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
     /// newly created objects.
     ///
     /// The new page will have the same size and bounding box configuration as the page containing
     /// the objects in this group.
     #[inline]
-    pub fn clone_onto_new_page_at_end_in_document(
-        &self,
-        destination: &mut PdfDocument,
-    ) -> Result<(), PdfiumError> {
-        self.clone_onto_new_page_at_index_in_document(destination.pages().len(), destination)
+    pub fn copy_onto_new_page_at_end(&self, destination: &PdfDocument) -> Result<(), PdfiumError> {
+        self.copy_onto_new_page_at_index(destination.pages().len(), destination)
     }
 
-    /// Clones all the [PdfPageObject] objects in this group by copying the page containing the
-    /// objects in this group into a new page in the same document at the given page index,
-    /// then removing all objects from the new page _except_ for those in this group.
-    ///
-    /// This function differs internally from [PdfPageGroupObject::try_clone_onto_existing_page()]
-    /// in that it uses `Pdfium` to create cloned objects, rather than the [PdfPageObjectCommon::try_clone()]
-    /// method provided by `pdfium-render`. As a result, this function can clone some objects that
-    /// [PdfPageGroupObject::try_clone_onto_existing_page()] cannot; for example, it can clone
-    /// path objects containing Bézier curves. However, it can only clone objects onto a new page,
-    /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
-    /// newly created objects.
-    ///
-    /// The new page will have the same size and bounding box configuration as the page containing
-    /// the objects in this group.
-    #[inline]
-    pub fn clone_onto_new_page_at_index(&self, index: PdfPageIndex) -> Result<(), PdfiumError> {
-        self.clone_onto_new_page_at_index_in_document_handle(index, self.document_handle)
-    }
-
-    /// Clones all the [PdfPageObject] objects in this group by copying the page containing the
+    /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
     /// objects in this group into a new page in the given destination [PdfDocument] at the given
-    /// page index, then removing all objects from the new page _except_ for those in this group.
+    /// page index, then removing all objects from the new page _not_ in this group.
     ///
-    /// This function differs internally from [PdfPageGroupObject::try_clone_onto_existing_page()]
-    /// in that it uses `Pdfium` to create cloned objects, rather than the [PdfPageObjectCommon::try_clone()]
-    /// method provided by `pdfium-render`. As a result, this function can clone some objects that
-    /// [PdfPageGroupObject::try_clone_onto_existing_page()] cannot; for example, it can clone
-    /// path objects containing Bézier curves. However, it can only clone objects onto a new page,
+    /// This function differs internally from [PdfPageGroupObject::try_copy_onto_existing_page()]
+    /// in that it uses `Pdfium` to copy page objects instead of the [PdfPageObjectCommon::try_copy()]
+    /// method provided by `pdfium-render`. As a result, this function can copy some objects that
+    /// [PdfPageGroupObject::try_copy_onto_existing_page()] cannot; for example, it can copy
+    /// path objects containing Bézier curves. However, it can only copy objects onto a new page,
     /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
     /// newly created objects.
     ///
     /// The new page will have the same size and bounding box configuration as the page containing
     /// the objects in this group.
     #[inline]
-    pub fn clone_onto_new_page_at_index_in_document(
+    pub fn copy_onto_new_page_at_index(
         &self,
         index: PdfPageIndex,
-        destination: &mut PdfDocument,
-    ) -> Result<(), PdfiumError> {
-        self.clone_onto_new_page_at_index_in_document_handle(index, *destination.handle())
-    }
-
-    // Avoids lifetime problems with the borrow checker when cloning into the same document
-    // as the source by using raw document handles.
-    fn clone_onto_new_page_at_index_in_document_handle(
-        &self,
-        index: PdfPageIndex,
-        destination: FPDF_DOCUMENT,
+        destination: &PdfDocument,
     ) -> Result<(), PdfiumError> {
         // Pdfium provides the FPDF_ImportPages() function for copying one or more pages
         // from one document into another. Using this function as a substitute for true
@@ -511,13 +434,19 @@ impl<'a> PdfPageGroupObject<'a> {
             self.bindings,
         )?;
 
-        PdfPages::copy_page_range_between_documents(
-            self.document_handle,
-            self.page_index_at_handle_creation_time..=self.page_index_at_handle_creation_time,
-            *cache.handle(),
-            0,
-            self.bindings,
-        )?;
+        if let Some(source_page_index) =
+            PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
+        {
+            PdfPages::copy_page_range_between_documents(
+                self.document_handle,
+                source_page_index..=source_page_index,
+                *cache.handle(),
+                0,
+                self.bindings,
+            )?;
+        } else {
+            return Err(PdfiumError::GroupCannotLocateSourcePageIndex);
+        }
 
         // Next, we remove all page objects from the in-memory document _except_ the ones in this group.
 
@@ -565,7 +494,7 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPages::copy_page_range_between_documents(
             *cache.handle(),
             0..=0,
-            destination,
+            *destination.handle(),
             index,
             self.bindings,
         )?;

@@ -10,11 +10,11 @@ use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page_boundaries::PdfPageBoundaries;
+use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_objects::PdfPageObjects;
 use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
-use crate::pages::PdfPageIndex;
 use crate::prelude::PdfPageAnnotations;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
 use std::collections::HashMap;
@@ -370,7 +370,6 @@ pub enum PdfPageContentRegenerationStrategy {
 pub struct PdfPage<'a> {
     handle: FPDF_PAGE,
     label: Option<String>,
-    index_at_handle_creation_time: PdfPageIndex,
     document: &'a PdfDocument<'a>,
     regeneration_strategy: PdfPageContentRegenerationStrategy,
     is_content_regeneration_required: bool,
@@ -389,24 +388,17 @@ impl<'a> PdfPage<'a> {
     pub(crate) fn from_pdfium(
         handle: FPDF_PAGE,
         label: Option<String>,
-        index_at_handle_creation_time: PdfPageIndex,
         document: &'a PdfDocument<'a>,
     ) -> Self {
         let mut result = PdfPage {
             handle,
             label,
-            index_at_handle_creation_time,
             document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::Manual,
             is_content_regeneration_required: false,
             annotations: PdfPageAnnotations::from_pdfium(handle, document),
             boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
-            objects: PdfPageObjects::from_pdfium(
-                handle,
-                index_at_handle_creation_time,
-                *document.handle(),
-                document.bindings(),
-            ),
+            objects: PdfPageObjects::from_pdfium(handle, *document.handle(), document.bindings()),
         };
 
         // Make sure the default content regeneration strategy is applied to child containers.
@@ -420,14 +412,6 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub(crate) fn handle(&self) -> &FPDF_PAGE {
         &self.handle
-    }
-
-    /// Returns the index of this [PdfPage] in its containing [PdfDocument] at the moment
-    /// the internal `FPDF_PAGE` handle for this [PdfPage] was created. This value is not
-    /// guaranteed to be stable if the containing [PdfDocument] is mutated.
-    #[inline]
-    pub(crate) fn index_at_handle_creation_time(&self) -> PdfPageIndex {
-        self.index_at_handle_creation_time
     }
 
     /// Returns the [PdfDocument] containing this [PdfPage].
@@ -1049,6 +1033,8 @@ impl<'a> Drop for PdfPage<'a> {
         }
 
         self.bindings().FPDF_ClosePage(self.handle);
+
+        PdfPageIndexCache::remove_index_for_page(*self.document.handle(), self.handle);
     }
 }
 

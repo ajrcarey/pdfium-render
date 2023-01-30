@@ -16,15 +16,13 @@ use crate::bindgen::{
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 use std::sync::{Mutex, MutexGuard};
 
-lazy_static! {
-    static ref PDFIUM_THREAD_MARSHALL: Mutex<PdfiumThreadMarshall> =
-        Mutex::new(PdfiumThreadMarshall::new());
-}
+static PDFIUM_THREAD_MARSHALL: Lazy<Mutex<PdfiumThreadMarshall>> =
+    Lazy::new(|| Mutex::new(PdfiumThreadMarshall::new()));
 
 struct PdfiumThreadMarshall {}
 

@@ -10,6 +10,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints};
+use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_object_group::PdfPageGroupObject;
 use crate::page_size::PdfPagePaperSize;
 use crate::utils::mem::create_byte_buffer;
@@ -125,11 +126,13 @@ impl<'a> PdfPages<'a> {
             return Err(PdfiumError::PageIndexOutOfBounds);
         }
 
-        self.pdfium_page_handle_to_result(
-            index,
-            self.bindings()
-                .FPDF_LoadPage(*self.document().handle(), index as c_int),
-        )
+        let handle = self
+            .bindings()
+            .FPDF_LoadPage(*self.document().handle(), index as c_int);
+
+        PdfPageIndexCache::set_index_for_page(*self.document.handle(), handle, index);
+
+        self.pdfium_page_handle_to_result(index, handle)
     }
 
     /// Returns the first [PdfPage] in this [PdfPages] collection.
@@ -179,7 +182,7 @@ impl<'a> PdfPages<'a> {
         size: PdfPagePaperSize,
         index: PdfPageIndex,
     ) -> Result<PdfPage<'a>, PdfiumError> {
-        self.pdfium_page_handle_to_result(
+        let result = self.pdfium_page_handle_to_result(
             index,
             self.bindings().FPDFPage_New(
                 *self.document().handle(),
@@ -187,7 +190,14 @@ impl<'a> PdfPages<'a> {
                 size.width().value as c_double,
                 size.height().value as c_double,
             ),
-        )
+        );
+
+        if let Ok(page) = result.as_ref() {
+            PdfPageIndexCache::insert_pages_at_index(*self.document.handle(), index, 1);
+            PdfPageIndexCache::set_index_for_page(*self.document.handle(), *page.handle(), index);
+        }
+
+        result
     }
 
     /// Deletes the page at the given index from this [PdfPages] collection.
@@ -202,6 +212,8 @@ impl<'a> PdfPages<'a> {
         if let Some(error) = self.bindings().get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
+            PdfPageIndexCache::delete_pages_at_index(*self.document.handle(), index, 1);
+
             Ok(())
         }
     }
@@ -263,12 +275,23 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
+        let destination_page_count_before_import = bindings.FPDF_GetPageCount(destination);
+
         if bindings.is_true(bindings.FPDF_ImportPages(
             destination,
             source,
             pages,
             destination_page_index as c_int,
         )) {
+            let destination_page_count_after_import = bindings.FPDF_GetPageCount(destination);
+
+            PdfPageIndexCache::insert_pages_at_index(
+                destination,
+                destination_page_index,
+                (destination_page_count_after_import - destination_page_count_before_import)
+                    as PdfPageIndex,
+            );
+
             Ok(())
         } else if let Some(error) = bindings.get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
@@ -310,6 +333,8 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
+        let no_of_pages_to_import = source_page_range.len() as PdfPageIndex;
+
         if bindings.is_true(
             bindings.FPDF_ImportPagesByIndex_vec(
                 destination,
@@ -320,6 +345,12 @@ impl<'a> PdfPages<'a> {
                 destination_page_index as c_int,
             ),
         ) {
+            PdfPageIndexCache::insert_pages_at_index(
+                destination,
+                destination_page_index,
+                no_of_pages_to_import,
+            );
+
             Ok(())
         } else if let Some(error) = bindings.get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
@@ -451,7 +482,7 @@ impl<'a> PdfPages<'a> {
                 }
             };
 
-            Ok(PdfPage::from_pdfium(handle, label, index, self.document()))
+            Ok(PdfPage::from_pdfium(handle, label, self.document()))
         }
     }
 
@@ -515,7 +546,6 @@ impl<'a> PdfPages<'a> {
         for (index, page) in self.iter().enumerate() {
             let mut group = PdfPageGroupObject::from_pdfium(
                 *page.handle(),
-                index as PdfPageIndex,
                 *page.document().handle(),
                 self.bindings(),
                 page.content_regeneration_strategy()

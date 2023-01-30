@@ -11,7 +11,6 @@ use crate::page_objects_common::{
     PdfPageObjectIndex, PdfPageObjectsCommon, PdfPageObjectsIterator,
 };
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
-use crate::prelude::PdfPageIndex;
 use std::os::raw::c_int;
 
 /// The page objects contained within a single `PdfPage`.
@@ -25,7 +24,6 @@ use std::os::raw::c_int;
 /// `PdfPageObjectType::Unsupported`.
 pub struct PdfPageObjects<'a> {
     page_handle: FPDF_PAGE,
-    page_index_at_handle_creation_time: PdfPageIndex,
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
     do_regenerate_page_content_after_each_change: bool,
@@ -35,13 +33,11 @@ impl<'a> PdfPageObjects<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         page_handle: FPDF_PAGE,
-        page_index_at_handle_creation_time: PdfPageIndex,
         document_handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         Self {
             page_handle,
-            page_index_at_handle_creation_time,
             document_handle,
             bindings,
             do_regenerate_page_content_after_each_change: false,
@@ -87,7 +83,6 @@ impl<'a> PdfPageObjects<'a> {
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
         PdfPageGroupObject::from_pdfium(
             self.page_handle,
-            self.page_index_at_handle_creation_time,
             self.document_handle,
             self.bindings,
             self.do_regenerate_page_content_after_each_change,

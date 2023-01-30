@@ -31,7 +31,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     println!("{} objects selected on page", source_objects.len());
 
-    source_objects.retain_if_cloneable();
+    source_objects.retain_if_copyable();
 
     for o in source_objects.iter() {
         if let Some(o) = o.as_text_object() {
@@ -39,15 +39,15 @@ pub fn main() -> Result<(), PdfiumError> {
         }
     }
 
-    println!("{} objects to clone", source_objects.len());
+    println!("{} objects to copy", source_objects.len());
 
     let mut destination_page = document
         .pages()
         .create_page_at_end(PdfPagePaperSize::a4())?;
 
-    let destination_objects = source_objects.try_clone_onto_existing_page(&mut destination_page)?;
+    let destination_objects = source_objects.try_copy_onto_existing_page(&mut destination_page)?;
 
-    println!("{} objects cloned onto page", destination_objects.len());
+    println!("{} objects copied to page", destination_objects.len());
 
     source_objects.remove_objects_from_page()?;
 
