@@ -84,16 +84,17 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
-Version 0.7.28 removes the `PdfPageObjects::take_*()` functions, since upstream bugs in memory handling
-in Pdfium render them unreliable; adds the `PdfPageObject::is_copyable()` and `PdfPageObject::try_copy()`
-functions, allowing most path, text, and image page objects to be copied; adds the
-`PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_cloneable()`,
+Version 0.7.28 removes the `PdfPageObjects::take_*()` functions, as bugs in Pdfium's memory handling
+make them too unreliable to be useful. Instead, new functions `PdfPageObject::is_copyable()` and
+`PdfPageObject::try_copy()` are introduced, allowing most path, text, and image page objects to be copied.
+New functions `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_copyable()`,
 `PdfPageObjectGroup::is_copyable()`, `PdfPageObjectGroup::try_copy_onto_existing_page()`,
-and `PdfPageObjectGroup::copy_onto_new_page_at_*()` functions, allowing a group of page objects to be
-copied onto a destination page; adds the `examples/clone.rs` example that demonstrates the new functionality;
-and fixes a bug in the propagation of a page's content regeneration strategy from the page to its
-collection of page objects collection and to any `PdfPageObjectGroup` objects created from that
-page objects collection.
+`PdfPageObjectGroup::copy_onto_new_page_at_start()`, `PdfPageObjectGroup::copy_onto_new_page_at_end()`,
+and `PdfPageObjectGroup::copy_onto_new_page_at_index()` allow a group of page objects to be copied
+onto a destination page. A new `examples/copy_objects.rs` example demonstrates the new functionality.
+This release also fixes a bug in the propagation of a page's content regeneration strategy from#
+the page to its collection of page objects collection and to any `PdfPageObjectGroup` objects
+created from that page objects collection.
 
 Version 0.7.27 adjusts the WASM example to take into account upstream packaging changes in the
 WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
@@ -353,7 +354,8 @@ If you need a binding to a Pdfium function that is not currently available, just
   `PdfPageObjectGroup::copy_onto_new_page_at_start()`,
   `PdfPageObjectGroup::copy_onto_new_page_at_end()`, and
   `PdfPageObjectGroup::copy_onto_new_page_at_index()` functions;
-  adds `examples/clone.rs` example; fixes a bug in the propagation of a page's content regeneration strategy.
+  adds `examples/copy_objects.rs` example; fixes a bug in the propagation of a page's content
+  regeneration strategy; removes all use of `lazy_static!` macro in favour of `once_cell::sync::Lazy`.
 * 0.7.27: adjusts `examples/index.html` to take into account upstream packaging changes in the
   WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
   adds the `image` crate feature.
