@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.7.28"
+version = "0.7.29"
 edition = "2018"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
@@ -50,7 +50,7 @@ rand = "^0" # Used by examples/create.rs
 rayon = "^1" # Used by examples/thread_safe.rs
 
 [features]
-default = ["image", "sync", "thread_safe"]
+default = ["image", "thread_safe"]
 bindings = []
 image = ["dep:image"]
 static = []

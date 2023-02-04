@@ -84,6 +84,10 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
+Version 0.7.29 removes the `sync` crate feature from the list of default crate features.
+`sync` is still available as an optional crate feature. For the motivation behind this change,
+see <https://github.com/ajrcarey/pdfium-render/issues/66>.
+
 Version 0.7.28 removes the `PdfPageObjects::take_*()` functions, as bugs in Pdfium's memory handling
 make them too unreliable to be useful. Instead, new functions `PdfPageObject::is_copyable()` and
 `PdfPageObject::try_copy()` are introduced, allowing most path, text, and image page objects to be copied.
@@ -243,7 +247,7 @@ but it ensures that Pdfium will not crash when running as part of a multi-thread
 An example of safely using `pdfium-render` as part of a multithreaded parallel iterator is
 available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
-## Optional features
+## Features
 
 This crate provides the following optional features:
 
@@ -259,10 +263,10 @@ This crate provides the following optional features:
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above.
 * `sync`: provides an implementation of the `Send` and `Sync` traits for the Pdfium struct. This allows
-  a `Pdfium` instance to be shared across threads. Requires the `thread_safe` feature.
+  a `Pdfium` instance to be shared across threads. This is particularly useful for creating a static
+  instance of `Pdfium` that can be used with `lazy_static` or `once_cell`. Requires the `thread_safe` feature.
 
-The `image`, `thread_safe`, and `sync` features are enabled by default.
-All other features are disabled by default.
+The `image` and `thread_safe` features are enabled by default. All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 
@@ -336,7 +340,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.28, 317 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.29, 317 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -348,6 +352,8 @@ If you need a binding to a Pdfium function that is not currently available, just
 
 ## Version history
 
+* 0.7.29: removes the `sync` crate feature from the list of default crate features in response
+  to <https://github.com/ajrcarey/pdfium-render/issues/66>.
 * 0.7.28: removes the `PdfPageObjects::take_*()` functions; adds `PdfPageObject::is_copyable()`
   `PdfPageObject::try_copy()`, `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_copyable()`,
   `PdfPageObjectGroup::is_copyable()`, `PdfPageObjectGroup::try_copy_onto_existing_page()`,
