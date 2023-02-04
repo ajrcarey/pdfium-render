@@ -331,9 +331,8 @@ impl<'a> PdfPageGroupObject<'a> {
     /// This function can only copy page objects supported by the [PdfPageObjectCommon::try_copy()]
     /// method. For a different approach that supports more page object types but is more limited
     /// in where the copied objects can be placed, see the [PdfPageGroupObject::copy_onto_new_page_at_start()],
-    /// [PdfPageGroupObject::copy_onto_new_page_at_start_in_document()], [PdfPageGroupObject::copy_onto_new_page_at_end()],
-    /// [PdfPageGroupObject::copy_onto_new_page_at_end_in_document()], [PdfPageGroupObject::copy_onto_new_page_at_index()],
-    /// and [PdfPageGroupObject::copy_onto_new_page_at_index_in_document()] functions.
+    /// [PdfPageGroupObject::copy_onto_new_page_at_end()], and
+    /// [PdfPageGroupObject::copy_onto_new_page_at_index()] functions.
     ///
     /// If all objects were copied successfully, then a new [PdfPageGroupObject] containing the clones
     /// is returned, allowing the new objects to be manipulated as a group.
