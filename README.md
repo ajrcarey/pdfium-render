@@ -77,12 +77,18 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-_Note: Upcoming version 0.8.0 will include a breaking change._ The `PdfDocument::pages()` function,
+_Note: Upcoming release 0.8.0 will include a breaking change._ The `PdfDocument::pages()` function,
 which currently returns an owned `PdfPages` instance, will be changed so that it returns
 an immutable `&PdfPages` reference instead. A new `PdfDocument::pages_mut()` function
 will return a mutable `&mut PdfPages` reference. It will no longer be possible to retrieve
 an owned `PdfPages` instance. For more information on the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/47>.
+
+Version 0.7.30 corrects a potential use-after-free error in the high level interface by deprecating
+the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions in favour of
+the new `PdfPage::delete()` function. (Previously, it was possible to hold a `PdfPage` reference
+after deleting the page from the containing `PdfPages` collection.) Deprecated items will be removed
+in release 0.9.0.
 
 Version 0.7.29 removes the `sync` crate feature from the list of default crate features.
 `sync` is still available as an optional crate feature. For the motivation behind this change,
@@ -340,7 +346,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.29, 317 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.30, 317 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -348,10 +354,16 @@ Some functions and type definitions in the high-level interface have been rename
 their initial implementation. The initial implementations are still available but are marked as
 deprecated. These deprecated items will be removed in release 0.9.0.
 
-If you need a binding to a Pdfium function that is not currently available, just raise an issue.
+If you need a binding to a Pdfium function that is not currently available, just raise an issue
+at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.7.30: deprecates the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions;
+  adds `PdfPage::delete()` function in response to <https://github.com/ajrcarey/pdfium-render/issues/67>.
+  Deprecated items will be removed in release 0.9.0, although it may be possible to restore these
+  functions if safer reference handling in `PdfDocument` and `PdfPages` is introduced as part of
+  <https://github.com/ajrcarey/pdfium-render/issues/47>.
 * 0.7.29: removes the `sync` crate feature from the list of default crate features in response
   to <https://github.com/ajrcarey/pdfium-render/issues/66>.
 * 0.7.28: removes the `PdfPageObjects::take_*()` functions; adds `PdfPageObject::is_copyable()`

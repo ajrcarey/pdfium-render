@@ -928,11 +928,28 @@ impl<'a> PdfPage<'a> {
         }
     }
 
+    /// Deletes this [PdfPage] from its containing `PdfPages` collection, consuming this [PdfPage].
+    pub fn delete(self) -> Result<(), PdfiumError> {
+        let index = PdfPageIndexCache::get_index_for_page(*self.document.handle(), self.handle)
+            .ok_or(PdfiumError::SourcePageIndexNotInCache)?;
+
+        self.bindings()
+            .FPDFPage_Delete(*self.document().handle(), index as c_int);
+
+        if let Some(error) = self.bindings().get_pdfium_last_error() {
+            Err(PdfiumError::PdfiumLibraryInternalError(error))
+        } else {
+            PdfPageIndexCache::delete_pages_at_index(*self.document.handle(), index, 1);
+
+            Ok(())
+        }
+    }
+
     /// Returns the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
     ///
     /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
-    /// content, any changes not applied are lost.
+    /// content, all uncommitted changes will be lost.
     ///
     /// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
     /// this removes the possibility of data loss, and ensures changes can be read back from other
@@ -951,7 +968,7 @@ impl<'a> PdfPage<'a> {
     ///
     /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
-    /// content, any changes not applied are lost.
+    /// content, all uncommitted changes will be lost.
     ///
     /// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
     /// this removes the possibility of data loss, and ensures changes can be read back from other
@@ -977,7 +994,7 @@ impl<'a> PdfPage<'a> {
     ///
     /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
-    /// content, any changes not applied are lost.
+    /// content, all uncommitted changes will be lost.
     ///
     /// By default, `pdfium-render` will trigger content regeneration on any change to a [PdfPage];
     /// this removes the possibility of data loss, and ensures changes can be read back from other

@@ -668,11 +668,11 @@ mod test {
             let mut pages = Vec::new();
 
             for _ in 1..=100 {
-                pages.push(
+                pages.push(Some(
                     document
                         .pages()
                         .create_page_at_end(PdfPagePaperSize::a4())?,
-                );
+                ));
             }
 
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 100);
@@ -690,20 +690,21 @@ mod test {
             );
 
             for (index, page) in pages.iter().enumerate() {
-                assert!(PdfPageIndexCache::lock()
-                    .get(*document.handle(), *page.handle())
-                    .is_some());
+                assert!(page.is_some());
+
+                let document = *document.handle();
+                let page = *(page.as_ref().unwrap().handle());
+
+                assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                 assert_eq!(
-                    PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
-                        .unwrap(),
+                    PdfPageIndexCache::lock().get(document, page).unwrap(),
                     index as PdfPageIndex
                 );
             }
 
             // Our cache now holds 100 index positions. Delete the page at the start of the document...
 
-            document.pages().delete_page_at_index(0)?;
+            pages.first_mut().unwrap().take().unwrap().delete()?;
 
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 99);
             assert!(PdfPageIndexCache::lock()
@@ -725,17 +726,16 @@ mod test {
                 if index == 0 {
                     // This page no longer exists.
 
-                    // The fact we still have a reference to it actually highlights a use-after-free
-                    // bug exposed by the pdfium-render API. This will be corrected in a future
-                    // release. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/67
+                    assert!(page.is_none());
                 } else {
-                    assert!(PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
-                        .is_some());
+                    assert!(page.is_some());
+
+                    let document = *document.handle();
+                    let page = *(page.as_ref().unwrap().handle());
+
+                    assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
-                        PdfPageIndexCache::lock()
-                            .get(*document.handle(), *page.handle())
-                            .unwrap(),
+                        PdfPageIndexCache::lock().get(document, page).unwrap(),
                         index as PdfPageIndex - 1
                     );
                 }
@@ -743,7 +743,7 @@ mod test {
 
             // Our cache now holds 99 index positions. Delete the page at index position 50...
 
-            document.pages().delete_page_at_index(50)?;
+            pages.get_mut(50).unwrap().take().unwrap().delete()?;
 
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 98);
             assert!(PdfPageIndexCache::lock()
@@ -763,34 +763,36 @@ mod test {
             // while the index positions for pages _after_ position 50 _have_ shuffled up.
 
             for (index, page) in pages.iter().enumerate() {
-                // We compare against an index position of 51 rather than 50 because we've already
-                // deleted one page at the beginning of the document. This deletion at index position
-                // 50 is our _second_ deletion from the page sequence.
-
-                if index == 0 || index == 51 {
+                if index == 0 || index == 50 {
                     // This page no longer exists.
 
-                    // The fact we still have a reference to it actually highlights a use-after-free
-                    // bug exposed by the pdfium-render API. This will be corrected in a future
-                    // release. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/67
-                } else if index < 51 {
-                    assert!(PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
-                        .is_some());
+                    println!("{} is_none()? {}", index, page.is_none());
+
+                    assert!(page.is_none());
+                } else if index < 50 {
+                    println!("{} < 50 is_some()? {}", index, page.is_some());
+
+                    assert!(page.is_some());
+
+                    let document = *document.handle();
+                    let page = *(page.as_ref().unwrap().handle());
+
+                    assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
-                        PdfPageIndexCache::lock()
-                            .get(*document.handle(), *page.handle())
-                            .unwrap(),
+                        PdfPageIndexCache::lock().get(document, page).unwrap(),
                         index as PdfPageIndex - 1
                     );
-                } else if index > 51 {
-                    assert!(PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
-                        .is_some());
+                } else if index > 50 {
+                    println!("{} > 50 is_some()? {}", index, page.is_some());
+
+                    assert!(page.is_some());
+
+                    let document = *document.handle();
+                    let page = *(page.as_ref().unwrap().handle());
+
+                    assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
-                        PdfPageIndexCache::lock()
-                            .get(*document.handle(), *page.handle())
-                            .unwrap(),
+                        PdfPageIndexCache::lock().get(document, page).unwrap(),
                         index as PdfPageIndex - 2
                     );
                 }

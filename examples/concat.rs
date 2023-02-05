@@ -74,9 +74,10 @@ fn main() -> Result<(), PdfiumError> {
 
     // ... remove the sixth page ...
 
-    document.pages().delete_page_at_index(
-        5, // 0-indexed
-    )?;
+    document
+        .pages()
+        .get(5)? // 0-indexed
+        .delete()?;
 
     // ... and save the final result.
 

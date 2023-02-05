@@ -200,7 +200,19 @@ impl<'a> PdfPages<'a> {
         result
     }
 
+    // TODO: AJRC - 5/2/23 - remove deprecated PdfPages::delete_page_range() function in 0.9.0
+    // as part of tracking issue: https://github.com/ajrcarey/pdfium-render/issues/36
+    // TODO: AJRC - 5/2/23 - if PdfDocument::pages() returned a &PdfPages reference (rather than an
+    // owned PdfPages instance), and if PdfPages::get() returned a &PdfPage reference (rather than an
+    // owned PdfPage instance), then it might be possible to reinstate this function, as Rust
+    // would be able to manage the reference lifetimes safely. Tracking issue:
+    // https://github.com/ajrcarey/pdfium-render/issues/47
     /// Deletes the page at the given index from this [PdfPages] collection.
+    #[deprecated(
+        since = "0.7.30",
+        note = "This function has been deprecated. Use the PdfPage::delete() function instead."
+    )]
+    #[doc(hidden)]
     pub fn delete_page_at_index(&mut self, index: PdfPageIndex) -> Result<(), PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::PageIndexOutOfBounds);
@@ -218,9 +230,22 @@ impl<'a> PdfPages<'a> {
         }
     }
 
+    // TODO: AJRC - 5/2/23 - remove deprecated PdfPages::delete_page_range() function in 0.9.0
+    // as part of tracking issue: https://github.com/ajrcarey/pdfium-render/issues/36
+    // TODO: AJRC - 5/2/23 - if PdfDocument::pages() returned a &PdfPages reference (rather than an
+    // owned PdfPages instance), and if PdfPages::get() returned a &PdfPage reference (rather than an
+    // owned PdfPage instance), then it might be possible to reinstate this function, as Rust
+    // would be able to manage the reference lifetimes safely. Tracking issue:
+    // https://github.com/ajrcarey/pdfium-render/issues/47
     /// Deletes all pages in the given range from this [PdfPages] collection.
+    #[deprecated(
+        since = "0.7.30",
+        note = "This function has been deprecated. Use the PdfPage::delete() function instead."
+    )]
+    #[doc(hidden)]
     pub fn delete_page_range(&mut self, range: Range<PdfPageIndex>) -> Result<(), PdfiumError> {
         for index in range.rev() {
+            #[allow(deprecated)] // Both functions will be removed at the same time.
             self.delete_page_at_index(index)?;
         }
 

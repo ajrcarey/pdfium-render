@@ -444,7 +444,7 @@ impl<'a> PdfPageGroupObject<'a> {
                 self.bindings,
             )?;
         } else {
-            return Err(PdfiumError::GroupCannotLocateSourcePageIndex);
+            return Err(PdfiumError::SourcePageIndexNotInCache);
         }
 
         // Next, we remove all page objects from the in-memory document _except_ the ones in this group.

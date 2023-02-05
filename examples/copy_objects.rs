@@ -10,13 +10,15 @@ pub fn main() -> Result<(), PdfiumError> {
 
     let document = pdfium.load_pdf_from_file("test/text-test.pdf", None)?; // Load the sample file...
 
+    // Delete all pages in the document except the first.
+
+    for index in (1..document.pages().len()).rev() {
+        document.pages().get(index)?.delete()?;
+    }
+
     // Move all the page objects on the bottom half of the first page to a new page.
 
     let source_page = document.pages().get(0)?;
-
-    document
-        .pages()
-        .delete_page_range(1..document.pages().len())?;
 
     let mut source_objects = source_page.objects().create_group(|object| {
         object
