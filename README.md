@@ -88,15 +88,15 @@ Version 0.7.29 removes the `sync` crate feature from the list of default crate f
 `sync` is still available as an optional crate feature. For the motivation behind this change,
 see <https://github.com/ajrcarey/pdfium-render/issues/66>.
 
-Version 0.7.28 removes the `PdfPageObjects::take_*()` functions, as bugs in Pdfium's memory handling
+Version 0.7.28 removes the `PdfPageObjects::take_*()` functions; bugs in Pdfium's memory handling
 make them too unreliable to be useful. Instead, new functions `PdfPageObject::is_copyable()` and
 `PdfPageObject::try_copy()` are introduced, allowing most path, text, and image page objects to be copied.
 New functions `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_copyable()`,
 `PdfPageObjectGroup::is_copyable()`, `PdfPageObjectGroup::try_copy_onto_existing_page()`,
 `PdfPageObjectGroup::copy_onto_new_page_at_start()`, `PdfPageObjectGroup::copy_onto_new_page_at_end()`,
 and `PdfPageObjectGroup::copy_onto_new_page_at_index()` allow a group of page objects to be copied
-onto a destination page. A new `examples/copy_objects.rs` example demonstrates the new functionality.
-This release also fixes a bug in the propagation of a page's content regeneration strategy from#
+onto a destination page. The new `examples/copy_objects.rs` example demonstrates this functionality.
+This release also fixes a bug in the propagation of a page's content regeneration strategy from
 the page to its collection of page objects collection and to any `PdfPageObjectGroup` objects
 created from that page objects collection.
 
@@ -160,9 +160,9 @@ attempt to fall back to a system-provided library if that fails:
 
 ## Static linking
 
-If you prefer to link Pdfium directly into your executable at compile time, use the optional `static`
-crate feature. This enables the `Pdfium::bind_to_statically_linked_library()` function which binds
-directly to the Pdfium functions included in your executable:
+The `static` crate feature offers an alternative to dynamic linking if you prefer to link Pdfium
+directly into your executable at compile time. This enables the `Pdfium::bind_to_statically_linked_library()`
+function which binds directly to the Pdfium functions compiled into your executable:
 
 ```rust
     use pdfium_render::prelude::*;
@@ -247,7 +247,7 @@ but it ensures that Pdfium will not crash when running as part of a multi-thread
 An example of safely using `pdfium-render` as part of a multithreaded parallel iterator is
 available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
-## Features
+## Crate features
 
 This crate provides the following optional features:
 
@@ -257,14 +257,14 @@ This crate provides the following optional features:
 * `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page and
   page object rendering functionality. Projects that do not require page or page object rendering
   can avoid having to include the `image` crate in their binaries.
-* `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
+* `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
+* `sync`: provides an implementation of the `Send` and `Sync` traits for the `Pdfium` struct. This allows
+  a `Pdfium` instance to be shared across threads. This is particularly useful for creating a static
+  instance that can be used with `lazy_static` or `once_cell`. Requires the `thread_safe` feature.
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above.
-* `sync`: provides an implementation of the `Send` and `Sync` traits for the Pdfium struct. This allows
-  a `Pdfium` instance to be shared across threads. This is particularly useful for creating a static
-  instance of `Pdfium` that can be used with `lazy_static` or `once_cell`. Requires the `thread_safe` feature.
 
 The `image` and `thread_safe` features are enabled by default. All other features are disabled by default.
 
