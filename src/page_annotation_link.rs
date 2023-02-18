@@ -4,8 +4,11 @@
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
+use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::link::PdfLink;
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
+use crate::page_objects_private::internal::PdfPageObjectsPrivate;
 
 pub struct PdfPageLinkAnnotation<'a> {
     handle: FPDF_ANNOTATION,
@@ -28,6 +31,30 @@ impl<'a> PdfPageLinkAnnotation<'a> {
                 annotation_handle,
                 document.bindings(),
             ),
+        }
+    }
+
+    /// Returns the [PdfLink] associated with this [PdfPageLinkAnnotation], if any.
+    pub fn link(&self) -> Result<PdfLink, PdfiumError> {
+        let handle = self.bindings.FPDFAnnot_GetLink(self.handle);
+
+        if handle.is_null() {
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
+                Err(PdfiumError::PdfiumLibraryInternalError(error))
+            } else {
+                // This would be an unusual situation; a null handle indicating failure,
+                // yet Pdfium's error code indicates success.
+
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        } else {
+            Ok(PdfLink::from_pdfium(
+                handle,
+                self.objects.document_handle(),
+                self.bindings,
+            ))
         }
     }
 }

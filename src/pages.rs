@@ -130,9 +130,13 @@ impl<'a> PdfPages<'a> {
             .bindings()
             .FPDF_LoadPage(*self.document().handle(), index as c_int);
 
-        PdfPageIndexCache::set_index_for_page(*self.document.handle(), handle, index);
+        let result = self.pdfium_page_handle_to_result(index, handle);
 
-        self.pdfium_page_handle_to_result(index, handle)
+        if result.is_ok() {
+            PdfPageIndexCache::set_index_for_page(*self.document.handle(), handle, index);
+        }
+
+        result
     }
 
     /// Returns the first [PdfPage] in this [PdfPages] collection.

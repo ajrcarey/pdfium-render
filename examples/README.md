@@ -18,6 +18,7 @@ Each example can run via `cargo run --example <example_name>`.
 * `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered.
 * `image.rs`: generates a new document by placing image objects onto a blank page, saving the new document to `test/image-test.pdf`.
 * `image_extract.rs`: extracts and outputs the images on each page in `test/image-test.pdf` to files.
+* `links.rs`: iterates over every link on every page in `test/links-test.pdf`, displaying information about each link.
 * `objects.rs`: iterates over every page object on every page in `test/export-test.pdf`, displaying information about each page object.
 * `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`.
 * `segments.rs`: iterates over every path object in `test/segments.pdf`, displaying information on each path segment in the path object.

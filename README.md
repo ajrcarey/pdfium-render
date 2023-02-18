@@ -81,8 +81,13 @@ _Note: Upcoming release 0.8.0 will include a breaking change._ The `PdfDocument:
 which currently returns an owned `PdfPages` instance, will be changed so that it returns
 an immutable `&PdfPages` reference instead. A new `PdfDocument::pages_mut()` function
 will return a mutable `&mut PdfPages` reference. It will no longer be possible to retrieve
-an owned `PdfPages` instance. For more information on the motivation behind this change,
-see <https://github.com/ajrcarey/pdfium-render/issues/47>.
+an owned `PdfPages` instance. For the motivation behind this change, see
+<https://github.com/ajrcarey/pdfium-render/issues/47>.
+
+Version 0.7.31 adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
+functions, the `PdfLink` and `PdfDestination` structs, and fleshes out the implementation of
+`PdfAction`. It is now possible to retrieve the URI of an action associated with a link using the
+`PdfActionUri::uri()` function.
 
 Version 0.7.30 corrects a potential use-after-free error in the high level interface by deprecating
 the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions in favour of
@@ -105,17 +110,6 @@ onto a destination page. The new `examples/copy_objects.rs` example demonstrates
 This release also fixes a bug in the propagation of a page's content regeneration strategy from
 the page to its collection of page objects collection and to any `PdfPageObjectGroup` objects
 created from that page objects collection.
-
-Version 0.7.27 adjusts the WASM example to take into account upstream packaging changes in the
-WASM builds of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
-and adds the `image` crate feature, making the `image` crate an optional dependency instead of
-a mandatory one.
-
-Version 0.7.26 fixes a lifetime bug in the `Pdfium::load_pdf_from_bytes()` function,
-adds the `sync` crate feature, providing implementations of the `Send` and
-`Sync` traits for the `Pdfium` struct that allow it to be shared across threads safely,
-and adds implementations of the `std::fmt::Display` and `std::error::Error` traits to the
-`PdfiumError` enum so that it can be used by error handling libraries such as `anyhow`.
 
 ## Binding to Pdfium
 
@@ -346,7 +340,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.30, 317 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.31, 317 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -359,6 +353,9 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.7.31: adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
+  functions, the `PdfLink` and `PdfDestination` structs, the `PdfActionCommon` and `PdfActionPrivate`
+  traits, structs for the action types supported by Pdfium, and the `PdfActionUri::uri()` function.
 * 0.7.30: deprecates the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions;
   adds `PdfPage::delete()` function in response to <https://github.com/ajrcarey/pdfium-render/issues/67>.
   Deprecated items will be removed in release 0.9.0, although it may be possible to restore these

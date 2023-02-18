@@ -48,6 +48,26 @@ pub trait PdfPageObjectsCommon<'a> {
     /// Returns a single [PdfPageObject] from this page objects collection.
     fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError>;
 
+    /// Returns the first [PdfPageObject] in this page objects collection.
+    #[inline]
+    fn first(&self) -> Result<PdfPageObject<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(0)
+        } else {
+            Err(PdfiumError::NoPageObjectsInCollection)
+        }
+    }
+
+    /// Returns the last [PdfPageObject] in this page objects collection.
+    #[inline]
+    fn last(&self) -> Result<PdfPageObject<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(self.len() - 1)
+        } else {
+            Err(PdfiumError::NoPageObjectsInCollection)
+        }
+    }
+
     /// Returns an iterator over all the [PdfPageObject] objects in this page objects collection.
     fn iter(&'a self) -> PdfPageObjectsIterator<'a>;
 

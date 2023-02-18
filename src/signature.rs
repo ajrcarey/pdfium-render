@@ -114,7 +114,7 @@ impl<'a> PdfSignature<'a> {
 
         // If the length is non-zero, then we reserve a byte buffer of the given
         // length and call FPDFSignatureObj_GetTime() again with a pointer to the buffer;
-        // this will write the reason text to the buffer as an array of 7-bit ASCII characters.
+        // this will write the timestamp to the buffer as an array of 7-bit ASCII characters.
 
         let buffer_length =
             self.bindings()

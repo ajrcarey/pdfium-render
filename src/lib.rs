@@ -13,7 +13,13 @@ mod bindgen {
 }
 
 pub mod action;
-pub mod action_destination;
+pub mod action_embedded_destination;
+pub mod action_launch;
+pub mod action_local_destination;
+pub mod action_private;
+pub mod action_remote_destination;
+pub mod action_unsupported;
+pub mod action_uri;
 pub mod attachment;
 pub mod attachments;
 pub mod bindings;
@@ -23,12 +29,14 @@ pub mod bookmarks;
 mod clip_path; // Keep private while PdfClipPath is still in development.
 pub mod color;
 pub mod color_space;
+pub mod destination;
 pub mod document;
 pub mod error;
 pub mod font;
 pub mod font_glyph;
 pub mod font_glyphs;
 pub mod form;
+pub mod link;
 pub mod metadata;
 pub mod page;
 pub mod page_annotation;
@@ -50,6 +58,7 @@ pub mod page_annotation_unsupported;
 pub mod page_annotations;
 pub mod page_boundaries;
 mod page_index_cache; // Keep private since not part of the public API.
+pub mod page_links;
 pub mod page_object;
 pub mod page_object_form_fragment;
 pub mod page_object_group;
@@ -78,7 +87,7 @@ pub mod render_config;
 pub mod signature;
 pub mod signatures;
 pub mod transform;
-mod utils;
+mod utils; // Keep internal utility functions private.
 
 /// A prelude for conveniently importing all public `pdfium-render` definitions at once.
 ///
@@ -88,16 +97,17 @@ mod utils;
 /// ```
 pub mod prelude {
     pub use super::{
-        action::*, action_destination::*, attachment::*, attachments::*, bindings::*, bitmap::*,
-        bookmark::*, bookmarks::*, clip_path::*, color::*, color_space::*, document::*, error::*,
-        font::*, font_glyph::*, font_glyphs::*, form::*, metadata::*, page::*, page_annotation::*,
-        page_annotation_circle::*, page_annotation_free_text::*, page_annotation_highlight::*,
-        page_annotation_ink::*, page_annotation_link::*, page_annotation_objects::*,
-        page_annotation_popup::*, page_annotation_square::*, page_annotation_squiggly::*,
-        page_annotation_stamp::*, page_annotation_strikeout::*, page_annotation_text::*,
-        page_annotation_underline::*, page_annotation_unsupported::*, page_annotations::*,
-        page_boundaries::*, page_object::*, page_object_form_fragment::*, page_object_group::*,
-        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
+        action::*, attachment::*, attachments::*, bindings::*, bitmap::*, bookmark::*,
+        bookmarks::*, clip_path::*, color::*, color_space::*, destination::*, document::*,
+        error::*, font::*, font_glyph::*, font_glyphs::*, form::*, link::*, metadata::*, page::*,
+        page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
+        page_annotation_highlight::*, page_annotation_ink::*, page_annotation_link::*,
+        page_annotation_objects::*, page_annotation_popup::*, page_annotation_square::*,
+        page_annotation_squiggly::*, page_annotation_stamp::*, page_annotation_strikeout::*,
+        page_annotation_text::*, page_annotation_underline::*, page_annotation_unsupported::*,
+        page_annotations::*, page_boundaries::*, page_links::*, page_object::*,
+        page_object_form_fragment::*, page_object_group::*, page_object_image::*,
+        page_object_path::*, page_object_shading::*, page_object_text::*,
         page_object_unsupported::*, page_objects::*, page_objects_common::*, page_size::*,
         page_text::*, page_text_char::*, page_text_chars::*, page_text_segment::*,
         page_text_segments::*, pages::*, path_segment::*, path_segments::*, pdfium::*,

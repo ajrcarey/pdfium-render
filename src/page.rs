@@ -11,6 +11,7 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page_boundaries::PdfPageBoundaries;
 use crate::page_index_cache::PdfPageIndexCache;
+use crate::page_links::PdfPageLinks;
 use crate::page_objects::PdfPageObjects;
 use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::page_size::PdfPagePaperSize;
@@ -375,6 +376,7 @@ pub struct PdfPage<'a> {
     is_content_regeneration_required: bool,
     annotations: PdfPageAnnotations<'a>,
     boundaries: PdfPageBoundaries<'a>,
+    links: PdfPageLinks<'a>,
     objects: PdfPageObjects<'a>,
 }
 
@@ -398,6 +400,7 @@ impl<'a> PdfPage<'a> {
             is_content_regeneration_required: false,
             annotations: PdfPageAnnotations::from_pdfium(handle, document),
             boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
+            links: PdfPageLinks::from_pdfium(handle, *document.handle(), document.bindings()),
             objects: PdfPageObjects::from_pdfium(handle, *document.handle(), document.bindings()),
         };
 
@@ -621,6 +624,18 @@ impl<'a> PdfPage<'a> {
     #[inline]
     pub fn boundaries_mut(&mut self) -> &mut PdfPageBoundaries<'a> {
         &mut self.boundaries
+    }
+
+    /// Returns an immutable collection of the links on this [PdfPage].
+    #[inline]
+    pub fn links(&self) -> &PdfPageLinks<'a> {
+        &self.links
+    }
+
+    /// Returns a mutable collection of the links on this [PdfPage].
+    #[inline]
+    pub fn links_mut(&mut self) -> &mut PdfPageLinks<'a> {
+        &mut self.links
     }
 
     /// Returns an immutable collection of all the page objects on this [PdfPage].

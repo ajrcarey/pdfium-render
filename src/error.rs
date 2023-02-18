@@ -5,6 +5,7 @@ use crate::bindgen::{
     FPDF_ERR_UNKNOWN,
 };
 use std::error::Error;
+use std::ffi::IntoStringError;
 use std::fmt::{Display, Formatter, Result};
 
 #[cfg(target_arch = "wasm32")]
@@ -36,6 +37,7 @@ pub enum PdfiumError {
 
     UnrecognizedPath,
     PageIndexOutOfBounds,
+    LinkIndexOutOfBounds,
     UnknownBitmapFormat,
     UnknownBitmapRotation,
     UnknownFormType,
@@ -69,12 +71,17 @@ pub enum PdfiumError {
     FontGlyphIndexOutOfBounds,
     UnknownPathSegmentType,
     NoPagesInDocument,
+    NoPageObjectsInCollection,
     PageObjectNotCloneable,
     ImageObjectFiltersNotCloneable,
     PathObjectBezierControlPointsNotCloneable,
     PathObjectUnknownSegmentTypeNotCloneable,
     GroupContainsNonCloneablePageObjects,
     SourcePageIndexNotInCache,
+    NoUriForAction,
+
+    /// An error occurred converting a byte stream into a CString.
+    CStringConversionError(IntoStringError),
 
     /// Two data buffers are expected to have the same size, but they do not.
     DataBufferLengthMismatch,
