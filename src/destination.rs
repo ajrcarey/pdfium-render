@@ -12,6 +12,9 @@ pub struct PdfDestination<'a> {
 }
 
 impl<'a> PdfDestination<'a> {
+    // TODO: AJRC - 18/2/23 - as the PdfDestination struct is fleshed out, the example at
+    // examples/links.rs should be expanded to demonstrate the new functionality.
+
     pub(crate) fn from_pdfium(handle: FPDF_DEST, bindings: &'a dyn PdfiumLibraryBindings) -> Self {
         PdfDestination { handle, bindings }
     }
@@ -23,7 +26,7 @@ impl<'a> PdfDestination<'a> {
         &self.handle
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfAction].
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfDestination].
     #[inline]
     pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings

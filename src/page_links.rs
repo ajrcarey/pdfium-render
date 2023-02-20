@@ -159,6 +159,7 @@ impl<'a> Iterator for PdfPageLinksIterator<'a> {
                 &mut self.start_pos,
                 &mut handle,
             ))
+            && !handle.is_null()
         {
             Some(PdfLink::from_pdfium(
                 handle,

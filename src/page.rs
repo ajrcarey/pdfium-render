@@ -366,6 +366,8 @@ pub enum PdfPageContentRegenerationStrategy {
 /// * [PdfPage::annotations_mut()], a mutable collection of all the user annotations attached to the [PdfPage].
 /// * [PdfPage::boundaries()], an immutable collection of the boundary boxes relating to the [PdfPage].
 /// * [PdfPage::boundaries_mut()], a mutable collection of the boundary boxes relating to the [PdfPage].
+/// * [PdfPage::links()], an immutable collection of the links on the [PdfPage].
+/// * [PdfPage::links_mut()], a mutable collection of the links on the [PdfPage].
 /// * [PdfPage::objects()], an immutable collection of all the displayable objects on the [PdfPage].
 /// * [PdfPage::objects_mut()], a mutable collection of all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {

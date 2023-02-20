@@ -16,7 +16,7 @@ pub mod action;
 pub mod action_embedded_destination;
 pub mod action_launch;
 pub mod action_local_destination;
-pub mod action_private;
+mod action_private; // Keep private so that the PdfActionPrivate trait is not exposed.
 pub mod action_remote_destination;
 pub mod action_unsupported;
 pub mod action_uri;

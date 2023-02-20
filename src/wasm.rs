@@ -6376,7 +6376,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let len_start_pos = size_of::<c_int>();
 
-        let ptr_start_pos = state.malloc(len_start_pos);
+        let ptr_start_pos = state.copy_ptr_with_len_to_pdfium(start_pos, len_start_pos);
 
         let len_link_annot = size_of::<FPDF_LINK>();
 

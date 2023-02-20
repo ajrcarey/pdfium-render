@@ -1,3 +1,6 @@
+//! Defines the [PdfLink] struct, exposing functionality related to a single link contained
+//! within a `PdfPage`, a `PdfPageAnnotation`, or a `PdfBookmark`.
+
 use crate::action::PdfAction;
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_LINK};
 use crate::bindings::PdfiumLibraryBindings;
@@ -9,6 +12,11 @@ pub struct PdfLink<'a> {
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
+/// A single link contained within a `PdfPage`, a `PdfPageAnnotation`, or a `PdfBookmark`.
+///
+/// Each link may have a corresponding [PdfAction] that will be triggered when the user
+/// interacts with the link, and a [PdfDestination] that indicates the target of any behaviour
+/// triggered by the [PdfAction].
 impl<'a> PdfLink<'a> {
     #[inline]
     pub(crate) fn from_pdfium(

@@ -68,6 +68,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Document concatenation.
 * Page object introspection.
 * Page annotation introspection.
+* Page link introspection.
 * Creation of new documents and new pages.
 * Creation of page objects for text, paths, and bitmaps.
 * Multi-page tiled output.
@@ -87,7 +88,7 @@ an owned `PdfPages` instance. For the motivation behind this change, see
 Version 0.7.31 adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
 functions, the `PdfLink` and `PdfDestination` structs, and fleshes out the implementation of
 `PdfAction`. It is now possible to retrieve the URI of an action associated with a link using the
-`PdfActionUri::uri()` function.
+`PdfActionUri::uri()` function. `examples/links.rs` demonstrates the new functionality.
 
 Version 0.7.30 corrects a potential use-after-free error in the high level interface by deprecating
 the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions in favour of
@@ -355,7 +356,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 * 0.7.31: adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
   functions, the `PdfLink` and `PdfDestination` structs, the `PdfActionCommon` and `PdfActionPrivate`
-  traits, structs for the action types supported by Pdfium, and the `PdfActionUri::uri()` function.
+  traits, structs for the action types supported by Pdfium, the `PdfActionUri::uri()` function
+  to address <https://github.com/ajrcarey/pdfium-render/issues/68>, and the new `examples/links.rs` example.
 * 0.7.30: deprecates the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions;
   adds `PdfPage::delete()` function in response to <https://github.com/ajrcarey/pdfium-render/issues/67>.
   Deprecated items will be removed in release 0.9.0, although it may be possible to restore these

@@ -50,14 +50,14 @@ pub async fn log_page_metrics_to_console(url: String) {
         .pages()
         .iter()
         .enumerate()
-        .for_each(|(index, page)| {
+        .for_each(|(page_index, page)| {
             if let Some(label) = page.label() {
-                log::info!("Page {} has a label: {}", index, label);
+                log::info!("Page {} has a label: {}", page_index, label);
             }
 
             log::info!(
                 "Page {} width: {}, height: {}",
-                index,
+                page_index,
                 page.width().value,
                 page.height().value
             );
@@ -65,7 +65,7 @@ pub async fn log_page_metrics_to_console(url: String) {
             for boundary in page.boundaries().iter() {
                 log::info!(
                     "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
-                    index,
+                    page_index,
                     boundary.box_type,
                     boundary.bounds.left.value,
                     boundary.bounds.top.value,
@@ -74,7 +74,28 @@ pub async fn log_page_metrics_to_console(url: String) {
                 );
             }
 
-            log::info!("Page {} has paper size {:#?}", index, page.paper_size());
+            log::info!(
+                "Page {} has paper size {:#?}",
+                page_index,
+                page.paper_size()
+            );
+
+            for (link_index, link) in page.links().iter().enumerate() {
+                log::info!(
+                    "Page {} link {} has action of type {:?}",
+                    page_index,
+                    link_index,
+                    link.action().map(|action| action.action_type())
+                );
+
+                // For links that have URI actions, output the destination URI.
+
+                if let Some(action) = link.action() {
+                    if let Some(uri_action) = action.as_uri_action() {
+                        log::info!("Link URI destination: {:#?}", uri_action.uri())
+                    }
+                }
+            }
         });
 }
 
