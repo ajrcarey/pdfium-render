@@ -128,7 +128,7 @@ impl<'a> PdfPageText<'a> {
             (Some(start), Some(end)) => Ok(PdfPageTextChars::new(
                 self,
                 start.index() as i32,
-                (end.index() - start.index() + 1) as i32,
+                end.index().saturating_sub(start.index()) as i32 + 1,
                 self.bindings,
             )),
             _ => Err(PdfiumError::NoCharsInRect),
