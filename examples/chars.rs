@@ -40,33 +40,40 @@ fn main() -> Result<(), PdfiumError> {
 
             let str = char.unicode_string().unwrap();
 
-            if str == " " {
-                if let Some(start) = start_of_word {
-                    // We found the end of the current word.
-
-                    println!(
-                        "{}: ({}, {}) - ({}, {})",
-                        word,
-                        start.left.value,
-                        start.bottom.value,
-                        char.loose_bounds()?.left.value, // The word ends at the space's leading (left) edge
-                        char.loose_bounds()?.top.value
-                    );
-
-                    // Prepare for the next word.
-
-                    start_of_word = None;
-                    word = String::new();
-                }
-            } else if start_of_word.is_none() {
+            if start_of_word.is_none() {
                 // We found the start of a new word.
 
                 start_of_word = Some(char.loose_bounds()?);
                 word += &str;
-            } else if index == chars.len() - 1 {
-                // We're at the end of the text string. Output the final word.
+            } else {
 
-                word += &str;
+                if str == " " {
+                    if let Some(start) = start_of_word {
+                        // We found the end of the current word.
+    
+                        println!(
+                            "{}: ({}, {}) - ({}, {})",
+                            word,
+                            start.left.value,
+                            start.bottom.value,
+                            char.loose_bounds()?.left.value, // The word ends at the space's leading (left) edge
+                            char.loose_bounds()?.top.value
+                        );
+    
+                        // Prepare for the next word.
+    
+                        start_of_word = None;
+                        word = String::new();
+                    }
+                } else {
+                    // We're progressing through the middle of a word.
+    
+                    word += &str;
+                }
+            }
+                
+            if index == chars.len() - 1 {
+                // We're at the end of the text string. Output the final word.
 
                 if let Some(start) = start_of_word {
                     println!(
@@ -78,11 +85,7 @@ fn main() -> Result<(), PdfiumError> {
                         char.loose_bounds()?.top.value
                     );
                 }
-            } else {
-                // We're progressing through the middle of a word.
-
-                word += &str;
-            }
+            }    
         }
     }
 
