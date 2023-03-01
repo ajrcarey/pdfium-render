@@ -35,7 +35,7 @@ use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
 use std::convert::TryInto;
 
 #[cfg(feature = "image")]
-use image::{DynamicImage, EncodableLayout, RgbaImage};
+use image::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`. The page object defines a single
 /// bitmapped image.
@@ -520,7 +520,10 @@ impl<'a> PdfPageImageObject<'a> {
                     RgbaImage::from_raw(width as u32, height as u32, bgr_to_rgba(buffer))
                         .map(DynamicImage::ImageRgba8)
                 }
-                _ => None,
+                PdfBitmapFormat::Gray => {
+                    GrayImage::from_raw(width as u32, height as u32, buffer.to_vec())
+                        .map(DynamicImage::ImageLuma8)
+                }
             }
             .ok_or(PdfiumError::ImageError);
 
