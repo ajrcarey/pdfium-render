@@ -85,6 +85,11 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For the motivation behind this change, see
 <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
+Version 0.7.32 fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
+thanks to an excellent contribution from <https://github.com/luketpeterson>, and adds support
+for grayscale image processing to `PdfPageImageObject` thanks to an excellent contribution
+from <https://github.com/stephenjudkins>.
+
 Version 0.7.31 adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
 functions, the `PdfLink` and `PdfDestination` structs, and fleshes out the implementation of
 `PdfAction`. It is now possible to retrieve the URI of an action associated with a link using the
@@ -341,7 +346,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.31, 317 (86%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.32, 317 (86%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
 these exposed through the `pdfium-render` high-level interface.
 
@@ -354,6 +359,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.7.32: fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
+  thanks to an excellent contribution from <https://github.com/luketpeterson>, adds support
+  for grayscale image processing to `PdfPageImageObject::get_image_from_bitmap_handle()` thanks
+  to an excellent contribution from <https://github.com/stephenjudkins>, and corrects a missing
+  dependency when using `pdfium-render` without the default `image` crate feature.
 * 0.7.31: adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
   functions, the `PdfLink` and `PdfDestination` structs, the `PdfActionCommon` and `PdfActionPrivate`
   traits, structs for the action types supported by Pdfium, the `PdfActionUri::uri()` function

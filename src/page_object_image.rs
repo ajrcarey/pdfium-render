@@ -7,12 +7,14 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::PdfBitmap;
+use crate::bitmap::Pixels;
 use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::utils::mem::create_byte_buffer;
+use std::convert::TryInto;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_void};
 
@@ -20,7 +22,7 @@ use std::os::raw::{c_int, c_void};
 use crate::bindgen::FPDF_BITMAP;
 
 #[cfg(feature = "image")]
-use crate::bitmap::{PdfBitmapFormat, Pixels};
+use crate::bitmap::PdfBitmapFormat;
 
 #[cfg(feature = "image")]
 use crate::page::PdfPoints;
@@ -30,9 +32,6 @@ use crate::page_object::PdfPageObjectCommon;
 
 #[cfg(feature = "image")]
 use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
-
-#[cfg(feature = "image")]
-use std::convert::TryInto;
 
 #[cfg(feature = "image")]
 use image::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
