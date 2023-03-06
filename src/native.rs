@@ -88,8 +88,14 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPage_SetTrimBox()?;
         result.extern_FPDFPage_SetArtBox()?;
         result.extern_FPDFPage_TransFormWithClip()?;
+        result.extern_FPDFPageObj_TransformClipPath()?;
+        result.extern_FPDFPageObj_GetClipPath()?;
+        result.extern_FPDFClipPath_CountPaths()?;
         result.extern_FPDFClipPath_CountPathSegments()?;
         result.extern_FPDFClipPath_GetPathSegment()?;
+        result.extern_FPDF_CreateClipPath()?;
+        result.extern_FPDF_DestroyClipPath()?;
+        result.extern_FPDFPage_InsertClipPath()?;
         result.extern_FPDFPage_HasTransparency()?;
         result.extern_FPDFPage_GenerateContent()?;
         result.extern_FPDFBitmap_CreateEx()?;
@@ -1226,6 +1232,47 @@ impl DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDFPageObj_TransformClipPath(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page_object: FPDF_PAGEOBJECT,
+                a: f64,
+                b: f64,
+                c: f64,
+                d: f64,
+                e: f64,
+                f: f64,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPageObj_TransformClipPath\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPageObj_GetClipPath(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPageObj_GetClipPath\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFClipPath_CountPaths(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(clip_path: FPDF_CLIPPATH) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFClipPath_CountPaths\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFClipPath_CountPathSegments(
         &self,
     ) -> Result<
@@ -1250,6 +1297,36 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFClipPath_GetPathSegment\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_CreateClipPath(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_CreateClipPath\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_DestroyClipPath(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(clipPath: FPDF_CLIPPATH)>, libloading::Error> {
+        unsafe { self.library.get(b"FPDF_DestroyClipPath\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_InsertClipPath(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, clipPath: FPDF_CLIPPATH)>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_InsertClipPath\0") }
     }
 
     #[inline]
@@ -5279,6 +5356,35 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformClipPath(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) {
+        unsafe {
+            self.extern_FPDFPageObj_TransformClipPath().unwrap()(page_object, a, b, c, d, e, f)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH {
+        unsafe { self.extern_FPDFPageObj_GetClipPath().unwrap()(page_object) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int {
+        unsafe { self.extern_FPDFClipPath_CountPaths().unwrap()(clip_path) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
         unsafe { self.extern_FPDFClipPath_CountPathSegments().unwrap()(clip_path, path_index) }
     }
@@ -5294,6 +5400,24 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe {
             self.extern_FPDFClipPath_GetPathSegment().unwrap()(clip_path, path_index, segment_index)
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH {
+        unsafe { self.extern_FPDF_CreateClipPath().unwrap()(left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH) {
+        unsafe { self.extern_FPDF_DestroyClipPath().unwrap()(clipPath) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH) {
+        unsafe { self.extern_FPDFPage_InsertClipPath().unwrap()(page, clipPath) }
     }
 
     #[inline]

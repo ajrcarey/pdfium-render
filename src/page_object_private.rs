@@ -7,15 +7,17 @@ pub(crate) mod internal {
     // Instead of making the PdfPageObjectPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF};
+    use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_RECTF};
     use crate::bindings::PdfiumLibraryBindings;
     use crate::document::PdfDocument;
     use crate::error::{PdfiumError, PdfiumInternalError};
-    use crate::page::{PdfPoints, PdfRect};
+    use crate::page::PdfRect;
     use crate::page_annotation_objects::PdfPageAnnotationObjects;
     use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
     use crate::page_objects::PdfPageObjects;
+    use crate::prelude::PdfMatrixValue;
     use crate::transform::PdfMatrix;
+    use std::os::raw::c_double;
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
     pub(crate) trait PdfPageObjectPrivate<'a>: PdfPageObjectCommon<'a> {
@@ -221,15 +223,22 @@ pub(crate) mod internal {
         #[inline]
         fn transform_impl(
             &self,
-            a: f64,
-            b: f64,
-            c: f64,
-            d: f64,
-            e: f64,
-            f: f64,
+            a: PdfMatrixValue,
+            b: PdfMatrixValue,
+            c: PdfMatrixValue,
+            d: PdfMatrixValue,
+            e: PdfMatrixValue,
+            f: PdfMatrixValue,
         ) -> Result<(), PdfiumError> {
-            self.bindings()
-                .FPDFPageObj_Transform(*self.get_object_handle(), a, b, c, d, e, f);
+            self.bindings().FPDFPageObj_Transform(
+                *self.get_object_handle(),
+                a as c_double,
+                b as c_double,
+                c as c_double,
+                d as c_double,
+                e as c_double,
+                f as c_double,
+            );
 
             match self.bindings().get_pdfium_last_error() {
                 Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
@@ -237,36 +246,11 @@ pub(crate) mod internal {
             }
         }
 
-        /// Returns the current raw transformation matrix for this page object.
-        fn matrix(&self) -> Result<PdfMatrix, PdfiumError> {
-            let mut matrix = FS_MATRIX {
-                a: 0.0,
-                b: 0.0,
-                c: 0.0,
-                d: 0.0,
-                e: 0.0,
-                f: 0.0,
-            };
-
-            if self.bindings().is_true(
-                self.bindings()
-                    .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
-            ) {
-                Ok(PdfMatrix::from_pdfium(matrix))
-            } else {
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.bindings()
-                        .get_pdfium_last_error()
-                        .unwrap_or(PdfiumInternalError::Unknown),
-                ))
-            }
-        }
-
         /// Sets the raw transformation matrix for this page object.
         fn set_matrix(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
             if self.bindings().is_true(
                 self.bindings()
-                    .FPDFPageObj_SetMatrix(*self.get_object_handle(), &matrix.to_pdfium()),
+                    .FPDFPageObj_SetMatrix(*self.get_object_handle(), &matrix.as_pdfium()),
             ) {
                 Ok(())
             } else {
@@ -278,61 +262,13 @@ pub(crate) mod internal {
             }
         }
 
-        /// Internal implementation of [PdfPageObjectCommon::get_horizontal_translation()].
-        #[inline]
-        fn get_horizontal_translation_impl(&self) -> PdfPoints {
-            self.matrix()
-                .map(|matrix| PdfPoints::new(matrix.e))
-                .unwrap_or(PdfPoints::ZERO)
-        }
-
-        /// Internal implementation of [PdfPageObjectCommon::get_vertical_translation()].
-        #[inline]
-        fn get_vertical_translation_impl(&self) -> PdfPoints {
-            self.matrix()
-                .map(|matrix| PdfPoints::new(matrix.f))
-                .unwrap_or(PdfPoints::ZERO)
-        }
-
-        /// Internal implementation of [PdfPageObjectCommon::get_horizontal_scale()].
-        #[inline]
-        fn get_horizontal_scale_impl(&self) -> f64 {
-            self.matrix().map(|matrix| matrix.a).unwrap_or(0.0) as f64
-        }
-
-        /// Internal implementation of [PdfPageObjectCommon::get_vertical_scale()].
-        #[inline]
-        fn get_vertical_scale_impl(&self) -> f64 {
-            self.matrix().map(|matrix| matrix.d).unwrap_or(0.0) as f64
-        }
-
-        /// Internal implementation of [PdfPageObjectCommon::get_x_axis_skew_radians()].
-        #[inline]
-        fn get_x_axis_skew_radians_impl(&self) -> f32 {
-            self.matrix().map(|matrix| matrix.b.atan()).unwrap_or(0.0)
-        }
-
-        /// Internal implementation of [PdfPageObjectCommon::get_y_axis_skew_radians()].
-        #[inline]
-        fn get_y_axis_skew_radians_impl(&self) -> f32 {
-            self.matrix().map(|matrix| matrix.c.atan()).unwrap_or(0.0)
-        }
-
-        /// Internal implementation of [PdfPageObjectCommon::get_rotation_counter_clockwise_radians()].
-        #[inline]
-        fn get_rotation_counter_clockwise_radians_impl(&self) -> f32 {
-            self.matrix()
-                .map(|matrix| matrix.b.atan2(matrix.a))
-                .unwrap_or(0.0)
-        }
-
         /// Returns `true` if this [PdfPageObject] can be successfully cloned by calling its
         /// `try_clone()` function.
-        fn is_cloneable_impl(&self) -> bool;
+        fn is_copyable_impl(&self) -> bool;
 
         /// Attempts to clone this [PdfPageObject] by creating a new page object and copying across
         /// all the properties of this [PdfPageObject] to the new page object.
-        fn try_clone_impl<'b>(
+        fn try_copy_impl<'b>(
             &self,
             document: &PdfDocument<'b>,
         ) -> Result<PdfPageObject<'b>, PdfiumError>;

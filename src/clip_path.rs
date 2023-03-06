@@ -15,9 +15,26 @@ use std::os::raw::c_int;
 
 #[allow(dead_code)]
 // The PdfClipPath struct is not currently used, but we expect it to be in future
-pub struct PdfClipPath {
+pub struct PdfClipPath<'a> {
     // TODO: AJRC - 22/10/22 - this will contain a collection of paths
     // each of which can return a PdfClipPathSegments object
+    handle: FPDF_CLIPPATH,
+    bindings: &'a dyn PdfiumLibraryBindings,
+}
+
+impl<'a> PdfClipPath<'a> {
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+}
+
+impl<'a> Drop for PdfClipPath<'a> {
+    /// Closes this [PdfClipPath], releasing held memory.
+    #[inline]
+    fn drop(&mut self) {
+        self.bindings.FPDF_DestroyClipPath(self.handle)
+    }
 }
 
 /// The collection of [PdfPathSegment] objects inside a single path within a clip path.

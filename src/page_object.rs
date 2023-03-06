@@ -4,12 +4,12 @@ use crate::bindgen::{
     FPDF_ANNOTATION, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
     FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING,
-    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
+    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN, FS_MATRIX,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::document::PdfDocument;
-use crate::error::PdfiumError;
+use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_object_form_fragment::PdfPageFormFragmentObject;
@@ -20,6 +20,8 @@ use crate::page_object_shading::PdfPageShadingObject;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_object_unsupported::PdfPageUnsupportedObject;
 use crate::page_objects::PdfPageObjects;
+use crate::prelude::{PdfMatrix, PdfMatrixValue};
+use crate::transform::{ReadTransforms, WriteTransforms};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
@@ -518,253 +520,11 @@ pub trait PdfPageObjectCommon<'a> {
             .unwrap_or(false)
     }
 
-    /// Applies the given transformation, expressed as six values representing the six configurable
-    /// elements of a nine-element 3x3 PDF transformation matrix, to this [PdfPageObject].
-    ///
-    /// To move, scale, rotate, or skew a [PdfPageObject], consider using one or more of the
-    /// following functions. Internally they all use [PdfPageObjectCommon::transform()], but are
-    /// probably easier to use (and certainly clearer in their intent) in most situations.
-    ///
-    /// * [PdfPageObjectCommon::translate()]: changes the position of a [PdfPageObject].
-    /// * [PdfPageObjectCommon::scale()]: changes the size of a [PdfPageObject].
-    /// * [PdfPageObjectCommon::rotate_clockwise_degrees()], [PdfPageObjectCommon::rotate_counter_clockwise_degrees()],
-    /// [PdfPageObjectCommon::rotate_clockwise_radians()], [PdfPageObjectCommon::rotate_counter_clockwise_radians()]:
-    /// rotates a [PdfPageObject] around its origin.
-    /// * [PdfPageObjectCommon::skew_degrees()], [PdfPageObjectCommon::skew_radians()]: skews a [PdfPageObject]
-    /// relative to its axes.
-    ///
-    /// **The order in which transformations are applied is significant.**
-    /// For example, the result of rotating _then_ translating a page object may be vastly different
-    /// from translating _then_ rotating the same page object. In general, to obtain the expected
-    /// results, transformations should be performed in the following order:
-    /// * Scale and/or skew
-    /// * Rotate
-    /// * Translate
-    ///
-    /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
-    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
-    fn transform(
-        &mut self,
-        a: f64,
-        b: f64,
-        c: f64,
-        d: f64,
-        e: f64,
-        f: f64,
-    ) -> Result<(), PdfiumError>;
-
     /// Transforms this [PdfPageObject] by applying the transformation matrix read from the given [PdfPageObject].
     ///
     /// Any translation, rotation, scaling, or skewing transformations currently applied to the
     /// given [PdfPageObject] will be immediately applied to this [PdfPageObject].
     fn transform_from(&mut self, other: &PdfPageObject) -> Result<(), PdfiumError>;
-
-    /// Moves the origin of this [PdfPageObject] by the given horizontal and vertical delta distances.
-    #[inline]
-    fn translate(&mut self, delta_x: PdfPoints, delta_y: PdfPoints) -> Result<(), PdfiumError> {
-        self.transform(
-            1.0,
-            0.0,
-            0.0,
-            1.0,
-            delta_x.value as f64,
-            delta_y.value as f64,
-        )
-    }
-
-    /// Returns the current horizontal and vertical translation of the origin of this [PdfPageObject].
-    #[inline]
-    fn get_translation(&self) -> (PdfPoints, PdfPoints) {
-        (
-            self.get_horizontal_translation(),
-            self.get_vertical_translation(),
-        )
-    }
-
-    /// Returns the current horizontal translation of the origin of this [PdfPageObject].
-    fn get_horizontal_translation(&self) -> PdfPoints;
-
-    /// Returns the current vertical translation of the origin of this [PdfPageObject].
-    fn get_vertical_translation(&self) -> PdfPoints;
-
-    /// Changes the size of this [PdfPageObject], scaling it by the given horizontal and
-    /// vertical scale factors.
-    #[inline]
-    fn scale(
-        &mut self,
-        horizontal_scale_factor: f64,
-        vertical_scale_factor: f64,
-    ) -> Result<(), PdfiumError> {
-        self.transform(
-            horizontal_scale_factor,
-            0.0,
-            0.0,
-            vertical_scale_factor,
-            0.0,
-            0.0,
-        )
-    }
-
-    /// Flips this [PdfPageObject] horizontally around its origin by applying a horizontal scale factor of -1.
-    #[inline]
-    fn flip_horizontally(&mut self) -> Result<(), PdfiumError> {
-        self.scale(-1.0, 1.0)
-    }
-
-    /// Flips this [PdfPageObject] vertically around its origin by applying a vertical scale factor of -1.
-    #[inline]
-    fn flip_vertically(&mut self) -> Result<(), PdfiumError> {
-        self.scale(1.0, -1.0)
-    }
-
-    /// Reflects this [PdfPageObject] by flipping it both horizontally and vertically around its origin.
-    #[inline]
-    fn reflect(&mut self) -> Result<(), PdfiumError> {
-        self.scale(-1.0, -1.0)
-    }
-
-    /// Returns the current horizontal and vertical scale factors applied to this [PdfPageObject].
-    #[inline]
-    fn get_scale(&self) -> (f64, f64) {
-        (self.get_horizontal_scale(), self.get_vertical_scale())
-    }
-
-    /// Returns the current horizontal scale factor applied to this [PdfPageObject].
-    fn get_horizontal_scale(&self) -> f64;
-
-    /// Returns the current vertical scale factor applied to this [PdfPageObject].
-    fn get_vertical_scale(&self) -> f64;
-
-    /// Rotates this [PdfPageObject] counter-clockwise by the given number of degrees.
-    #[inline]
-    fn rotate_counter_clockwise_degrees(&mut self, degrees: f32) -> Result<(), PdfiumError> {
-        self.rotate_counter_clockwise_radians(degrees.to_radians())
-    }
-
-    /// Returns the counter-clockwise rotation applied to this [PdfPageObject], in degrees.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_rotation_counter_clockwise_degrees(&self) -> f32 {
-        self.get_rotation_counter_clockwise_radians().to_degrees()
-    }
-
-    /// Rotates this [PdfPageObject] clockwise by the given number of degrees.
-    #[inline]
-    fn rotate_clockwise_degrees(&mut self, degrees: f32) -> Result<(), PdfiumError> {
-        self.rotate_counter_clockwise_degrees(-degrees)
-    }
-
-    /// Returns the clockwise rotation applied to this [PdfPageObject], in degrees.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_rotation_clockwise_degrees(&self) -> f32 {
-        -self.get_rotation_counter_clockwise_degrees()
-    }
-
-    /// Rotates this [PdfPageObject] counter-clockwise by the given number of radians.
-    #[inline]
-    fn rotate_counter_clockwise_radians(&mut self, radians: f32) -> Result<(), PdfiumError> {
-        let cos_theta = radians.cos() as f64;
-
-        let sin_theta = radians.sin() as f64;
-
-        self.transform(cos_theta, sin_theta, -sin_theta, cos_theta, 0.0, 0.0)
-    }
-
-    /// Returns the counter-clockwise rotation applied to this [PdfPageObject], in radians.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    fn get_rotation_counter_clockwise_radians(&self) -> f32;
-
-    /// Rotates this [PdfPageObject] clockwise by the given number of radians.
-    #[inline]
-    fn rotate_clockwise_radians(&mut self, radians: f32) -> Result<(), PdfiumError> {
-        self.rotate_counter_clockwise_radians(-radians)
-    }
-
-    /// Returns the clockwise rotation applied to this [PdfPageObject], in radians.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_rotation_clockwise_radians(&self) -> f32 {
-        -self.get_rotation_counter_clockwise_radians()
-    }
-
-    /// Skews the axes of this [PdfPageObject] by the given angles in degrees.
-    #[inline]
-    fn skew_degrees(&mut self, x_axis_skew: f32, y_axis_skew: f32) -> Result<(), PdfiumError> {
-        self.skew_radians(x_axis_skew.to_radians(), y_axis_skew.to_radians())
-    }
-
-    /// Returns the current x axis and y axis skew angles applied to this [PdfPageObject], in degrees.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_skew_degrees(&self) -> (f32, f32) {
-        (
-            self.get_x_axis_skew_degrees(),
-            self.get_y_axis_skew_degrees(),
-        )
-    }
-
-    /// Returns the current x axis skew angle applied to this [PdfPageObject], in degrees.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_x_axis_skew_degrees(&self) -> f32 {
-        self.get_x_axis_skew_radians().to_degrees()
-    }
-
-    /// Returns the current y axis skew applied to this [PdfPageObject], in degrees.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_y_axis_skew_degrees(&self) -> f32 {
-        self.get_y_axis_skew_radians().to_degrees()
-    }
-
-    /// Skews the axes of this [PdfPageObject] by the given angles in radians.
-    #[inline]
-    fn skew_radians(&mut self, x_axis_skew: f32, y_axis_skew: f32) -> Result<(), PdfiumError> {
-        let tan_alpha = x_axis_skew.tan() as f64;
-
-        let tan_beta = y_axis_skew.tan() as f64;
-
-        self.transform(1.0, tan_alpha, tan_beta, 1.0, 0.0, 0.0)
-    }
-
-    /// Returns the current x axis and y axis skew angles applied to this [PdfPageObject], in radians.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    fn get_skew_radians(&self) -> (f32, f32) {
-        (
-            self.get_x_axis_skew_radians(),
-            self.get_y_axis_skew_radians(),
-        )
-    }
-
-    /// Returns the current x axis skew applied to this [PdfPageObject], in radians.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    fn get_x_axis_skew_radians(&self) -> f32;
-
-    /// Returns the current y axis skew applied to this [PdfPageObject], in radians.
-    ///
-    /// If the object is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    fn get_y_axis_skew_radians(&self) -> f32;
 
     /// Sets the blend mode that will be applied when painting this [PdfPageObject].
     ///
@@ -865,6 +625,8 @@ pub trait PdfPageObjectCommon<'a> {
 impl<'a, T> PdfPageObjectCommon<'a> for T
 where
     T: PdfPageObjectPrivate<'a>,
+    T: ReadTransforms,
+    T: WriteTransforms,
 {
     #[inline]
     fn has_transparency(&self) -> bool {
@@ -877,55 +639,8 @@ where
     }
 
     #[inline]
-    fn transform(
-        &mut self,
-        a: f64,
-        b: f64,
-        c: f64,
-        d: f64,
-        e: f64,
-        f: f64,
-    ) -> Result<(), PdfiumError> {
-        self.transform_impl(a, b, c, d, e, f)
-    }
-
-    #[inline]
     fn transform_from(&mut self, other: &PdfPageObject) -> Result<(), PdfiumError> {
         self.set_matrix(other.matrix()?)
-    }
-
-    #[inline]
-    fn get_horizontal_translation(&self) -> PdfPoints {
-        self.get_horizontal_translation_impl()
-    }
-
-    #[inline]
-    fn get_vertical_translation(&self) -> PdfPoints {
-        self.get_vertical_translation_impl()
-    }
-
-    #[inline]
-    fn get_horizontal_scale(&self) -> f64 {
-        self.get_horizontal_scale_impl()
-    }
-
-    #[inline]
-    fn get_vertical_scale(&self) -> f64 {
-        self.get_vertical_scale_impl()
-    }
-
-    fn get_rotation_counter_clockwise_radians(&self) -> f32 {
-        self.get_rotation_counter_clockwise_radians_impl()
-    }
-
-    #[inline]
-    fn get_x_axis_skew_radians(&self) -> f32 {
-        self.get_x_axis_skew_radians_impl()
-    }
-
-    #[inline]
-    fn get_y_axis_skew_radians(&self) -> f32 {
-        self.get_y_axis_skew_radians_impl()
     }
 
     #[inline]
@@ -1115,12 +830,60 @@ where
 
     #[inline]
     fn is_copyable(&self) -> bool {
-        self.is_cloneable_impl()
+        self.is_copyable_impl()
     }
 
     #[inline]
     fn try_copy<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
-        self.try_clone_impl(document)
+        self.try_copy_impl(document)
+    }
+}
+
+impl<'a, T> WriteTransforms for T
+where
+    T: PdfPageObjectPrivate<'a>,
+{
+    #[inline]
+    fn transform(
+        &mut self,
+        a: PdfMatrixValue,
+        b: PdfMatrixValue,
+        c: PdfMatrixValue,
+        d: PdfMatrixValue,
+        e: PdfMatrixValue,
+        f: PdfMatrixValue,
+    ) -> Result<(), PdfiumError> {
+        self.transform_impl(a, b, c, d, e, f)
+    }
+}
+
+impl<'a, T> ReadTransforms for T
+where
+    T: PdfPageObjectPrivate<'a>,
+{
+    #[inline]
+    fn matrix(&self) -> Result<PdfMatrix, PdfiumError> {
+        let mut matrix = FS_MATRIX {
+            a: 0.0,
+            b: 0.0,
+            c: 0.0,
+            d: 0.0,
+            e: 0.0,
+            f: 0.0,
+        };
+
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
+        ) {
+            Ok(PdfMatrix::from_pdfium(matrix))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                self.bindings()
+                    .get_pdfium_last_error()
+                    .unwrap_or(PdfiumInternalError::Unknown),
+            ))
+        }
     }
 }
 
@@ -1195,12 +958,12 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 
     #[inline]
-    fn is_cloneable_impl(&self) -> bool {
-        self.unwrap_as_trait().is_cloneable_impl()
+    fn is_copyable_impl(&self) -> bool {
+        self.unwrap_as_trait().is_copyable_impl()
     }
 
     #[inline]
-    fn try_clone_impl<'b>(
+    fn try_copy_impl<'b>(
         &self,
         document: &PdfDocument<'b>,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {

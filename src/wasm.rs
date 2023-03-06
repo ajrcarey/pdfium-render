@@ -261,9 +261,9 @@ impl PdfiumRenderWasmState {
 
             if let Some(err) = result.err() {
                 log::error!(
-                "pdfium-render::PdfiumRenderWasmState::free(): call to Module._free() failed: {:#?}",
-                err
-            );
+                    "pdfium-render::PdfiumRenderWasmState::free(): call to Module._free() failed: {:#?}",
+                    err
+                );
 
                 panic!()
             }
@@ -771,13 +771,12 @@ impl PdfiumRenderWasmState {
         Ok(())
     }
 
+    /// Restores an entry in Pdfium's function table from a previously cached function,
+    /// undoing a previous call to patch_pdfium_function_table().
     pub fn unpatch_pdfium_function_table(
         &mut self,
         pdfium_function_index: usize,
     ) -> Result<(), PdfiumError> {
-        // Restore an entry in Pdfium's function table from a previously cached function,
-        // undoing a previous call to patch_pdfium_function_table().
-
         log::debug!(
             "pdfium-render::PdfiumRenderWasmState::unpatch_pdfium_function_table(): entering"
         );
@@ -936,11 +935,10 @@ pub fn initialize_pdfium_render(
 /// wrapping around `crate::utils::files::read_block_from_callback()` to shuffle data buffers
 /// from our WASM memory heap to Pdfium's WASM memory heap as they are loaded.
 #[wasm_bindgen]
-#[allow(non_snake_case)]
 pub fn read_block_from_callback_wasm(
     param: *mut c_void,
     position: c_ulong,
-    pBuf: *mut c_uchar,
+    #[allow(non_snake_case)] pBuf: *mut c_uchar,
     size: c_ulong,
 ) -> c_int {
     log::debug!(
@@ -3267,6 +3265,77 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformClipPath(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_TransformClipPath()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDFPageObj_TransformClipPath",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Self::js_array_from_vec(vec![
+                Self::js_value_from_object(page_object),
+                JsValue::from(a),
+                JsValue::from(b),
+                JsValue::from(c),
+                JsValue::from(d),
+                JsValue::from(e),
+                JsValue::from(f),
+            ]))),
+        );
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetClipPath()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPageObj_GetClipPath",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_object(
+                    page_object,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_CLIPPATH
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFClipPath_CountPaths()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFClipPath_CountPaths",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_clip_path(
+                    clip_path,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFClipPath_CountPathSegments()");
 
@@ -3313,6 +3382,63 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as usize as FPDF_PATHSEGMENT
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_CreateClipPath()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_CreateClipPath",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &JsValue::from_f64(left as f64),
+                    &JsValue::from_f64(bottom as f64),
+                    &JsValue::from_f64(right as f64),
+                    &JsValue::from_f64(top as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_CLIPPATH
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_DestroyClipPath()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDF_DestroyClipPath",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_clip_path(
+                clipPath,
+            )))),
+        );
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_InsertClipPath()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDFPage_InsertClipPath",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+            ]),
+            Some(&JsValue::from(Array::of2(
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_clip_path(clipPath),
+            ))),
+        );
     }
 
     #[allow(non_snake_case)]

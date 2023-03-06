@@ -571,6 +571,24 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformClipPath(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    );
+
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH;
+
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int;
+
+    #[allow(non_snake_case)]
     fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int;
 
     #[allow(non_snake_case)]
@@ -580,6 +598,15 @@ pub trait PdfiumLibraryBindings {
         path_index: c_int,
         segment_index: c_int,
     ) -> FPDF_PATHSEGMENT;
+
+    #[allow(non_snake_case)]
+    fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH;
+
+    #[allow(non_snake_case)]
+    fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH);
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH);
 
     #[allow(non_snake_case)]
     fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL;

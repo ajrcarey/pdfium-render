@@ -73,12 +73,12 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageUnsupportedObject<'a> {
     }
 
     #[inline]
-    fn is_cloneable_impl(&self) -> bool {
+    fn is_copyable_impl(&self) -> bool {
         false
     }
 
     #[inline]
-    fn try_clone_impl<'b>(&self, _: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
+    fn try_copy_impl<'b>(&self, _: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
         Err(PdfiumError::UnsupportedPdfPageObjectType)
     }
 }

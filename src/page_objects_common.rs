@@ -5,11 +5,12 @@ use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page::{PdfPoints, PdfRect};
-use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
+use crate::page_object::PdfPageObject;
 use crate::page_object_image::PdfPageImageObject;
 use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
+use crate::transform::WriteTransforms;
 use std::ops::{Range, RangeInclusive};
 
 #[cfg(feature = "image")]
@@ -549,21 +550,21 @@ where
 
         match (width, height) {
             (Some(width), Some(height)) => {
-                object.scale(width.value as f64, height.value as f64)?;
+                object.scale(width.value, height.value)?;
             }
             (Some(width), None) => {
                 let aspect_ratio = image_height as f32 / image_width as f32;
 
                 let height = width * aspect_ratio;
 
-                object.scale(width.value as f64, height.value as f64)?;
+                object.scale(width.value, height.value)?;
             }
             (None, Some(height)) => {
                 let aspect_ratio = image_height as f32 / image_width as f32;
 
                 let width = height / aspect_ratio;
 
-                object.scale(width.value as f64, height.value as f64)?;
+                object.scale(width.value, height.value)?;
             }
             (None, None) => {}
         }

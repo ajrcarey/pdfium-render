@@ -16,8 +16,9 @@ use crate::page_objects::PdfPageObjects;
 use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
-use crate::prelude::PdfPageAnnotations;
+use crate::prelude::{PdfMatrix, PdfMatrixValue, PdfPageAnnotations};
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
+use crate::transform::WriteTransforms;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
@@ -281,6 +282,16 @@ impl PdfRect {
             && self.right > rect.left
             && self.bottom < rect.top
             && self.top > rect.bottom
+    }
+
+    #[inline]
+    pub(crate) fn as_pdfium(&self) -> FS_RECTF {
+        FS_RECTF {
+            left: self.left.value,
+            top: self.top.value,
+            right: self.right.value,
+            bottom: self.bottom.value,
+        }
     }
 }
 
@@ -928,6 +939,62 @@ impl<'a> PdfPage<'a> {
         self.render(width, height, rotation)
     }
 
+    /// Applies the given transformation, expressed as six values representing the six configurable
+    /// elements of a nine-element 3x3 PDF transformation matrix, to the objects on this [PdfPage],
+    /// restricting the effects of the transformation to the given clipping rectangle.
+    ///
+    /// To move, scale, rotate, or skew the objects on this [PdfPage], consider using one or more of
+    /// the following functions. Internally they all use [WriteTransforms::transform()], but are
+    /// probably easier to use (and certainly clearer in their intent) in most situations.
+    ///
+    /// * [WriteTransforms::translate()]: changes the position of objects on this [PdfPage].
+    /// * [WriteTransforms::scale()]: changes the size of objects on this [PdfPage].
+    /// * [WriteTransforms::rotate_clockwise_degrees()], [WriteTransforms::rotate_counter_clockwise_degrees()],
+    /// [WriteTransforms::rotate_clockwise_radians()], [WriteTransforms::rotate_counter_clockwise_radians()]:
+    /// rotates the objects on this [PdfPage] around their origins.
+    /// * [WriteTransforms::skew_degrees()], [WriteTransforms::skew_radians()]: skews the objects
+    /// on this [PdfPage] relative to their axes.
+    ///
+    /// **The order in which transformations are applied is significant.**
+    /// For example, the result of rotating _then_ translating an object may be vastly different
+    /// from translating _then_ rotating the same object.
+    ///
+    /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
+    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
+    #[inline]
+    #[allow(clippy::too_many_arguments)]
+    pub fn transform_with_clip(
+        &mut self,
+        a: PdfMatrixValue,
+        b: PdfMatrixValue,
+        c: PdfMatrixValue,
+        d: PdfMatrixValue,
+        e: PdfMatrixValue,
+        f: PdfMatrixValue,
+        clip: PdfRect,
+    ) -> Result<(), PdfiumError> {
+        self.set_matrix_with_clip(PdfMatrix::new(a, b, c, d, e, f), clip)
+    }
+
+    /// Applies the values in the given [PdfMatrix] to this [PdfPage], restricting the effects
+    /// of the transformation matrix to the given clipping rectangle.
+    pub fn set_matrix_with_clip(
+        &mut self,
+        matrix: PdfMatrix,
+        clip: PdfRect,
+    ) -> Result<(), PdfiumError> {
+        self.bindings().FPDFPage_TransFormWithClip(
+            self.handle,
+            &matrix.as_pdfium(),
+            &clip.as_pdfium(),
+        );
+
+        match self.bindings().get_pdfium_last_error() {
+            Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
+            None => Ok(()),
+        }
+    }
+
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.
     pub fn flatten(&mut self) -> Result<(), PdfiumError> {
         // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
@@ -1049,6 +1116,34 @@ impl<'a> PdfPage<'a> {
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
         }
+    }
+}
+
+impl<'a> WriteTransforms for PdfPage<'a> {
+    #[inline]
+    fn transform(
+        &mut self,
+        a: PdfMatrixValue,
+        b: PdfMatrixValue,
+        c: PdfMatrixValue,
+        d: PdfMatrixValue,
+        e: PdfMatrixValue,
+        f: PdfMatrixValue,
+    ) -> Result<(), PdfiumError> {
+        self.transform_with_clip(
+            a,
+            b,
+            c,
+            d,
+            e,
+            f,
+            PdfRect::new(
+                PdfPoints::ZERO,
+                PdfPoints::ZERO,
+                self.height(),
+                self.width(),
+            ),
+        )
     }
 }
 

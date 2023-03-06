@@ -1,3 +1,7 @@
+//! Defines the [ReadTransforms] and [WriteTransforms] traits, providing common interfaces for
+//! working with matrix transformations on a variety of PDF object types, including pages,
+//! clip paths, individual page objects, or page object groups.
+
 use crate::bindgen::FS_MATRIX;
 use crate::error::PdfiumError;
 use crate::page::PdfPoints;
@@ -8,13 +12,13 @@ pub type PdfMatrixValue = f32;
 /// Six floating-point values that represent the six configurable elements of a nine-element
 /// 3x3 PDF transformation matrix.
 ///
-/// Applying the matrix to a page, individual page object, or page object group effects a transformation
-/// to that object. Depending on the values specified in the matrix, the object can be moved,
-/// scaled, rotated, or skewed.
+/// Applying the matrix to a page, clip path, individual page object, or page object group effects
+/// a transformation to that object. Depending on the values specified in the matrix, the object
+/// can be moved, scaled, rotated, or skewed.
 ///
-/// **It is rare that a matrix needs to be used directly.** The functions in the [Transformable] trait
-/// provide convenient and expressive access to the most commonly used transformation operations
-/// without requiring a matrix.
+/// **It is rare that a matrix needs to be used directly.** The functions in the [WriteTransforms]
+/// and [ReadTransforms] traits provide convenient and expressive access to the most commonly used
+/// transformation operations without requiring a matrix.
 ///
 /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
 /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
@@ -74,12 +78,12 @@ impl PdfMatrix {
 
     /// Applies the values in this [PdfMatrix] to the given transformable object.
     #[inline]
-    pub fn apply(&self, transformable: &mut impl Transformable) -> Result<(), PdfiumError> {
+    pub fn apply<T>(&self, transformable: &mut impl WriteTransforms) -> Result<(), PdfiumError> {
         transformable.transform(self.a, self.b, self.c, self.d, self.e, self.f)
     }
 
     #[inline]
-    pub(crate) fn to_pdfium(&self) -> FS_MATRIX {
+    pub(crate) fn as_pdfium(&self) -> FS_MATRIX {
         FS_MATRIX {
             a: self.a,
             b: self.b,
@@ -121,24 +125,27 @@ impl Hash for PdfMatrix {
     }
 }
 
-/// Common transformation setter operations that can be applied to a variety of PDF objects,
-/// including pages, individual page objects, and groups of page objects.
-pub trait Transformable {
-    // TODO: AJRC - 28/1/23 - apply this trait to PdfPage, PdfPageObject, and PdfPageObjectGroup.
-
+/// Common transformation setter operations implemented by transformable PDF objects,
+/// including pages, clip paths, individual page objects, and groups of page objects.
+pub trait WriteTransforms {
     /// Applies the given transformation, expressed as six values representing the six configurable
-    /// elements of a nine-element 3x3 PDF transformation matrix, to this page or page object.
+    /// elements of a nine-element 3x3 PDF transformation matrix, to this transformable object.
     ///
-    /// To move, scale, rotate, or skew this object, consider using one or more of the following
-    /// functions. Internally they all use [Transformable::transform()], but are probably easier
-    /// to use (and certainly clearer in their intent) in most situations.
+    /// Transformable objects include pages, clip paths, individual page objects, and groups of
+    /// page objects (in which case the transformation is applied to each page object within the group).
+    /// Transforms can also be applied to render configurations, in which case they will take effect
+    /// during page rendering.
     ///
-    /// * [Transformable::translate()]: changes the position of this object.
-    /// * [Transformable::scale()]: changes the size of this object.
-    /// * [Transformable::rotate_clockwise_degrees()], [Transformable::rotate_counter_clockwise_degrees()],
-    /// [Transformable::rotate_clockwise_radians()], [Transformable::rotate_counter_clockwise_radians()]:
+    /// To move, scale, rotate, or skew this transformable object, consider using one or more of
+    /// the following functions. Internally they all use [WriteTransforms::transform()], but are
+    /// probably easier to use (and certainly clearer in their intent) in most situations.
+    ///
+    /// * [WriteTransforms::translate()]: changes the position of this object.
+    /// * [WriteTransforms::scale()]: changes the size of this object.
+    /// * [WriteTransforms::rotate_clockwise_degrees()], [WriteTransforms::rotate_counter_clockwise_degrees()],
+    /// [WriteTransforms::rotate_clockwise_radians()], [WriteTransforms::rotate_counter_clockwise_radians()]:
     /// rotates this object around its origin.
-    /// * [Transformable::skew_degrees()], [Transformable::skew_radians()]: skews this object
+    /// * [WriteTransforms::skew_degrees()], [WriteTransforms::skew_radians()]: skews this object
     /// relative to its axes.
     ///
     /// **The order in which transformations are applied is significant.**
@@ -263,12 +270,9 @@ pub trait Transformable {
     }
 }
 
-/// Common transformation getter operations that can be applied to a variety of PDF objects,
-/// including pages, individual page objects, and groups of page objects.
-pub trait TransformConfiguration {
-    // TODO: AJRC - 28/1/23 - apply this trait to PdfPage, PdfPageObject, and PdfPageObjectGroup,
-    // and come up with a better name for the trait.
-
+/// Common transformation getter operations implemented by transformable PDF objects,
+/// such as page objects.
+pub trait ReadTransforms {
     /// Returns the transformation matrix currently applied to this transformable object.
     fn matrix(&self) -> Result<PdfMatrix, PdfiumError>;
 

@@ -13,6 +13,7 @@ use crate::error::PdfiumError;
 use crate::form::PdfFormFieldType;
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation, PdfPoints};
+use crate::prelude::PdfMatrixValue;
 use std::os::raw::c_int;
 use vecmath::{mat3_det, row_mat3_mul, Matrix3};
 
@@ -614,14 +615,19 @@ impl PdfRenderConfig {
     ///
     /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
     /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
+    // AJRC - 5/3/23 - unfortunately we cannot (easily) implement the WriteTransforms trait
+    // for PdfRenderConfig, because functions in PdfRenderConfig take mut self but functions
+    // in the trait take &mut self. I'm not sure there's an elegant way around this yet, aside
+    // from having separate traits - but since only PdfRenderConfig uses the mut self function
+    // chaining pattern, a separate trait would defeat the purpose.
     pub fn transform(
         mut self,
-        a: f32,
-        b: f32,
-        c: f32,
-        d: f32,
-        e: f32,
-        f: f32,
+        a: PdfMatrixValue,
+        b: PdfMatrixValue,
+        c: PdfMatrixValue,
+        d: PdfMatrixValue,
+        e: PdfMatrixValue,
+        f: PdfMatrixValue,
     ) -> Result<Self, PdfiumError> {
         let result = row_mat3_mul(
             self.transformation_matrix,

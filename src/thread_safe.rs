@@ -726,6 +726,34 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformClipPath(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) {
+        self.bindings
+            .FPDFPageObj_TransformClipPath(page_object, a, b, c, d, e, f)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH {
+        self.bindings.FPDFPageObj_GetClipPath(page_object)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int {
+        self.bindings.FPDFClipPath_CountPaths(clip_path)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
         self.bindings
             .FPDFClipPath_CountPathSegments(clip_path, path_index)
@@ -741,6 +769,24 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     ) -> FPDF_PATHSEGMENT {
         self.bindings
             .FPDFClipPath_GetPathSegment(clip_path, path_index, segment_index)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH {
+        self.bindings.FPDF_CreateClipPath(left, bottom, right, top)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH) {
+        self.bindings.FPDF_DestroyClipPath(clipPath)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH) {
+        self.bindings.FPDFPage_InsertClipPath(page, clipPath)
     }
 
     #[inline]

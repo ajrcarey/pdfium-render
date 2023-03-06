@@ -21,6 +21,7 @@ use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_text::PdfPageText;
 use crate::page_text_chars::PdfPageTextChars;
+use crate::transform::ReadTransforms;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 
@@ -237,7 +238,7 @@ impl<'a> PdfPageTextObject<'a> {
     /// [PdfPageTextObject::unscaled_font_size()] function.
     #[inline]
     pub fn scaled_font_size(&self) -> PdfPoints {
-        PdfPoints::new(self.unscaled_font_size().value * (self.get_vertical_scale() as f32))
+        PdfPoints::new(self.unscaled_font_size().value * self.get_vertical_scale())
     }
 
     /// Returns the font size of the text specified in this [PdfPageTextObject].
@@ -464,29 +465,29 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     }
 
     #[inline]
-    fn is_cloneable_impl(&self) -> bool {
+    fn is_copyable_impl(&self) -> bool {
         true
     }
 
     #[inline]
-    fn try_clone_impl<'b>(
+    fn try_copy_impl<'b>(
         &self,
         document: &PdfDocument<'b>,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        let mut clone = PdfPageTextObject::new(
+        let mut copy = PdfPageTextObject::new(
             document,
             self.text(),
             &self.font(),
             self.unscaled_font_size(),
         )?;
 
-        clone.set_fill_color(self.fill_color()?)?;
-        clone.set_stroke_color(self.stroke_color()?)?;
-        clone.set_stroke_width(self.stroke_width()?)?;
-        clone.set_line_join(self.line_join()?)?;
-        clone.set_line_cap(self.line_cap()?)?;
-        clone.set_matrix(self.matrix()?)?;
+        copy.set_fill_color(self.fill_color()?)?;
+        copy.set_stroke_color(self.stroke_color()?)?;
+        copy.set_stroke_width(self.stroke_width()?)?;
+        copy.set_line_join(self.line_join()?)?;
+        copy.set_line_cap(self.line_cap()?)?;
+        copy.set_matrix(self.matrix()?)?;
 
-        Ok(PdfPageObject::Text(clone))
+        Ok(PdfPageObject::Text(copy))
     }
 }

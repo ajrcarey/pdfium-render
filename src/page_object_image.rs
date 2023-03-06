@@ -13,6 +13,7 @@ use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::transform::{PdfMatrixValue, ReadTransforms, WriteTransforms};
 use crate::utils::mem::create_byte_buffer;
 use std::convert::TryInto;
 use std::ops::{Range, RangeInclusive};
@@ -26,9 +27,6 @@ use crate::bitmap::PdfBitmapFormat;
 
 #[cfg(feature = "image")]
 use crate::page::PdfPoints;
-
-#[cfg(feature = "image")]
-use crate::page_object::PdfPageObjectCommon;
 
 #[cfg(feature = "image")]
 use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
@@ -80,7 +78,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// `PdfPageObjects::add_image_object()` function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
-    /// Use the [PdfPageObjectCommon::scale()] function to apply a horizontal and vertical scale
+    /// Use the [WriteTransforms::scale()] function to apply a horizontal and vertical scale
     /// to the object after it is created, or use one of the [PdfPageImageObject::new_with_width()],
     /// [PdfPageImageObject::new_with_height()], or [PdfPageImageObject::new_with_size()] functions
     /// to scale the page object to a specific width and/or height at the time the object is created.
@@ -103,7 +101,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// `PdfPageObjects::add_image_object()` function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
-    /// Use the [PdfPageObjectCommon::scale()] function to apply a horizontal and vertical scale
+    /// Use the [WriteTransforms::scale()] function to apply a horizontal and vertical scale
     /// to the object after it is created.
     #[cfg(not(feature = "image"))]
     pub fn new(document: &PdfDocument<'a>) -> Result<Self, PdfiumError> {
@@ -192,7 +190,7 @@ impl<'a> PdfPageImageObject<'a> {
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::new(document, image)?;
 
-        result.scale(width.value as f64, height.value as f64)?;
+        result.scale(width.value, height.value)?;
 
         Ok(result)
     }
@@ -424,10 +422,10 @@ impl<'a> PdfPageImageObject<'a> {
             // a bitmap matching the caller's requested dimensions.
 
             self.transform_impl(
-                width as f64 / result.width() as f64,
+                width as PdfMatrixValue / result.width() as PdfMatrixValue,
                 0.0,
                 0.0,
-                height as f64 / result.height() as f64,
+                height as PdfMatrixValue / result.height() as PdfMatrixValue,
                 0.0,
                 0.0,
             )?;
@@ -728,30 +726,30 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     }
 
     #[inline]
-    fn is_cloneable_impl(&self) -> bool {
-        // Image filters cannot be cloned.
+    fn is_copyable_impl(&self) -> bool {
+        // Image filters cannot be copied.
 
         self.filters().is_empty()
     }
 
     #[inline]
-    fn try_clone_impl<'b>(
+    fn try_copy_impl<'b>(
         &self,
         document: &PdfDocument<'b>,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
         if !self.filters().is_empty() {
-            // Image filters cannot be cloned.
+            // Image filters cannot be copied.
 
-            return Err(PdfiumError::ImageObjectFiltersNotCloneable);
+            return Err(PdfiumError::ImageObjectFiltersNotCopyable);
         }
 
-        let mut clone =
+        let mut copy =
             PdfPageImageObject::new_from_handle(*document.handle(), document.bindings())?;
 
-        clone.set_bitmap(&self.get_raw_bitmap()?)?;
-        clone.set_matrix(self.matrix()?)?;
+        copy.set_bitmap(&self.get_raw_bitmap()?)?;
+        copy.set_matrix(self.matrix()?)?;
 
-        Ok(PdfPageObject::Image(clone))
+        Ok(PdfPageObject::Image(copy))
     }
 }
 

@@ -85,6 +85,10 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For the motivation behind this change, see
 <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
+Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
+`PdfPage::set_matrix_with_clip()` functions, allowing the page objects on a page to be transformed
+in a single operation.
+
 Version 0.7.32 fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
 thanks to an excellent contribution from <https://github.com/luketpeterson>, and adds support
 for grayscale image processing to `PdfPageImageObject` thanks to an excellent contribution
@@ -346,9 +350,9 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.32, 317 (86%) have
-bindings available in `PdfiumLibraryBindings`, with the functionality of the vast majority of
-these exposed through the `pdfium-render` high-level interface.
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.33, 323 (88%) have
+bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
+available via the `pdfium-render` high-level interface.
 
 Some functions and type definitions in the high-level interface have been renamed or revised since
 their initial implementation. The initial implementations are still available but are marked as
@@ -359,6 +363,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.7.33: adds the `ReadTransforms` and `WriteTransforms` traits and implements these traits
+  for `PdfPageObject`, and `PdfPageObjectGroup`, ensuring API consistency and maximising code reuse
+  across transformable objects; adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`,
+  and `PdfPage::set_matrix_with_clip()` functions, along with an implementation of
+  `WriteTransforms` for `PdfPage`; adds bindings for remaining `FPDF_*ClipPath*()` functions.
 * 0.7.32: fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
   thanks to an excellent contribution from <https://github.com/luketpeterson>, adds support
   for grayscale image processing to `PdfPageImageObject::get_image_from_bitmap_handle()` thanks

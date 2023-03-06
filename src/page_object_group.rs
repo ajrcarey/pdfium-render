@@ -16,8 +16,8 @@ use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_objects_common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 use crate::pages::{PdfPageIndex, PdfPages};
 use crate::pdfium::Pdfium;
-use crate::prelude::PdfDocument;
-use crate::transform::PdfMatrix;
+use crate::prelude::{PdfDocument, PdfMatrixValue};
+use crate::transform::{PdfMatrix, ReadTransforms, WriteTransforms};
 use std::collections::HashMap;
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
@@ -341,7 +341,7 @@ impl<'a> PdfPageGroupObject<'a> {
         destination: &mut PdfPage<'b>,
     ) -> Result<PdfPageGroupObject<'b>, PdfiumError> {
         if !self.is_copyable() {
-            return Err(PdfiumError::GroupContainsNonCloneablePageObjects);
+            return Err(PdfiumError::GroupContainsNonCopyablePageObjects);
         }
 
         let mut group = destination.objects_mut().create_empty_group();
@@ -420,8 +420,8 @@ impl<'a> PdfPageGroupObject<'a> {
     ) -> Result<(), PdfiumError> {
         // Pdfium provides the FPDF_ImportPages() function for copying one or more pages
         // from one document into another. Using this function as a substitute for true
-        // page object cloning allows us to clone some objects (such as path objects containing
-        // Bézier curves) that PdfPageObject::try_clone() cannot.
+        // page object cloning allows us to copy some objects (such as path objects containing
+        // Bézier curves) that PdfPageObject::try_copy() cannot.
 
         // To use FPDF_ImportPages() as a cloning substitute, we take the following approach:
 
@@ -472,7 +472,7 @@ impl<'a> PdfPageGroupObject<'a> {
         }
 
         // We now have a map of objects that should be removed from the in-memory page; after
-        // we remove them, only the clones of the objects in this group will remain on the page.
+        // we remove them, only the copies of the objects in this group will remain on the page.
 
         cache
             .pages()
@@ -487,7 +487,7 @@ impl<'a> PdfPageGroupObject<'a> {
             })?
             .remove_objects_from_page()?;
 
-        // Finally, with only the clones of the objects in this group left on the in-memory page,
+        // Finally, with only the copies of the objects in this group left on the in-memory page,
         // we now copy the page back into the given destination.
 
         PdfPages::copy_page_range_between_documents(
@@ -573,94 +573,6 @@ impl<'a> PdfPageGroupObject<'a> {
         });
 
         bounds.ok_or(PdfiumError::EmptyPageObjectGroup)
-    }
-
-    /// Applies the given transformation, expressed as six values representing the six configurable
-    /// elements of a nine-element 3x3 PDF transformation matrix, to every [PdfPageObject] in this group.
-    ///
-    /// To move, scale, rotate, or skew the page objects in this group, consider using one or more of the
-    /// following functions. Internally they all use [PdfPageGroupObject::transform()], but are
-    /// probably easier to use (and certainly clearer in their intent) in most situations.
-    ///
-    /// * [PdfPageGroupObject::translate()]: changes the position of every [PdfPageObject] in this group.
-    /// * [PdfPageGroupObject::scale()]: changes the size of every [PdfPageObject] in this group.
-    /// * [PdfPageGroupObject::rotate_clockwise_degrees()], [PdfPageGroupObject::rotate_counter_clockwise_degrees()],
-    /// [PdfPageGroupObject::rotate_clockwise_radians()], [PdfPageGroupObject::rotate_counter_clockwise_radians()]:
-    /// rotates every [PdfPageObject] in this group around its origin.
-    /// * [PdfPageGroupObject::skew_degrees()], [PdfPageGroupObject::skew_radians()]: skews every
-    /// [PdfPageObject] in this group relative to its axes.
-    ///
-    /// **The order in which transformations are applied to a page object is significant.**
-    /// For example, the result of rotating _then_ translating a page object may be vastly different
-    /// from translating _then_ rotating the same page object.
-    ///
-    /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
-    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
-    #[inline]
-    pub fn transform(
-        &mut self,
-        a: f64,
-        b: f64,
-        c: f64,
-        d: f64,
-        e: f64,
-        f: f64,
-    ) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.transform(a, b, c, d, e, f))
-    }
-
-    /// Moves the origin of every [PdfPageObject] in this group by the given horizontal and vertical
-    /// delta distances.
-    #[inline]
-    pub fn translate(&mut self, delta_x: PdfPoints, delta_y: PdfPoints) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.translate(delta_x, delta_y))
-    }
-
-    /// Changes the size of every [PdfPageObject] in this group, scaling them by the given
-    /// horizontal and vertical scale factors.
-    #[inline]
-    pub fn scale(
-        &mut self,
-        horizontal_scale_factor: f64,
-        vertical_scale_factor: f64,
-    ) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.scale(horizontal_scale_factor, vertical_scale_factor))
-    }
-
-    /// Rotates every [PdfPageObject] in this group counter-clockwise by the given number of degrees.
-    #[inline]
-    pub fn rotate_counter_clockwise_degrees(&mut self, degrees: f32) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.rotate_counter_clockwise_degrees(degrees))
-    }
-
-    /// Rotates every [PdfPageObject] in this group clockwise by the given number of degrees.
-    #[inline]
-    pub fn rotate_clockwise_degrees(&mut self, degrees: f32) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.rotate_clockwise_degrees(degrees))
-    }
-
-    /// Rotates every [PdfPageObject] in this group counter-clockwise by the given number of radians.
-    #[inline]
-    pub fn rotate_counter_clockwise_radians(&mut self, radians: f32) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.rotate_counter_clockwise_radians(radians))
-    }
-
-    /// Rotates every [PdfPageObject] in this group clockwise by the given number of radians.
-    #[inline]
-    pub fn rotate_clockwise_radians(&mut self, radians: f32) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.rotate_clockwise_radians(radians))
-    }
-
-    /// Skews the axes of every [PdfPageObject] in this group by the given angles in degrees.
-    #[inline]
-    pub fn skew_degrees(&mut self, x_axis_skew: f32, y_axis_skew: f32) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.skew_degrees(x_axis_skew, y_axis_skew))
-    }
-
-    /// Skews the axes of every [PdfPageObject] in this group by the given angles in radians.
-    #[inline]
-    pub fn skew_radians(&mut self, x_axis_skew: f32, y_axis_skew: f32) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.skew_radians(x_axis_skew, y_axis_skew))
     }
 
     /// Sets the blend mode that will be applied when painting every [PdfPageObject] in this group.
@@ -771,6 +683,21 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
         PdfPageObject::from_pdfium(*handle, Some(self.page_handle), None, self.bindings)
+    }
+}
+
+impl<'a> WriteTransforms for PdfPageGroupObject<'a> {
+    #[inline]
+    fn transform(
+        &mut self,
+        a: PdfMatrixValue,
+        b: PdfMatrixValue,
+        c: PdfMatrixValue,
+        d: PdfMatrixValue,
+        e: PdfMatrixValue,
+        f: PdfMatrixValue,
+    ) -> Result<(), PdfiumError> {
+        self.apply_to_each(|object| object.transform(a, b, c, d, e, f))
     }
 }
 
