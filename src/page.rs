@@ -6,6 +6,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
+use crate::create_transform_setters;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
@@ -18,7 +19,6 @@ use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::prelude::{PdfMatrix, PdfMatrixValue, PdfPageAnnotations};
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
-use crate::transform::WriteTransforms;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
@@ -944,15 +944,15 @@ impl<'a> PdfPage<'a> {
     /// restricting the effects of the transformation to the given clipping rectangle.
     ///
     /// To move, scale, rotate, or skew the objects on this [PdfPage], consider using one or more of
-    /// the following functions. Internally they all use [WriteTransforms::transform()], but are
+    /// the following functions. Internally they all use [PdfPage::transform()], but are
     /// probably easier to use (and certainly clearer in their intent) in most situations.
     ///
-    /// * [WriteTransforms::translate()]: changes the position of objects on this [PdfPage].
-    /// * [WriteTransforms::scale()]: changes the size of objects on this [PdfPage].
-    /// * [WriteTransforms::rotate_clockwise_degrees()], [WriteTransforms::rotate_counter_clockwise_degrees()],
-    /// [WriteTransforms::rotate_clockwise_radians()], [WriteTransforms::rotate_counter_clockwise_radians()]:
+    /// * [PdfPage::translate()]: changes the position of objects on this [PdfPage].
+    /// * [PdfPage::scale()]: changes the size of objects on this [PdfPage].
+    /// * [PdfPage::rotate_clockwise_degrees()], [PdfPage::rotate_counter_clockwise_degrees()],
+    /// [PdfPage::rotate_clockwise_radians()], [PdfPage::rotate_counter_clockwise_radians()]:
     /// rotates the objects on this [PdfPage] around their origins.
-    /// * [WriteTransforms::skew_degrees()], [WriteTransforms::skew_radians()]: skews the objects
+    /// * [PdfPage::skew_degrees()], [PdfPage::skew_radians()]: skews the objects
     /// on this [PdfPage] relative to their axes.
     ///
     /// **The order in which transformations are applied is significant.**
@@ -993,6 +993,37 @@ impl<'a> PdfPage<'a> {
             Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
             None => Ok(()),
         }
+    }
+
+    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    #[inline]
+    fn transform_impl(
+        &mut self,
+        a: PdfMatrixValue,
+        b: PdfMatrixValue,
+        c: PdfMatrixValue,
+        d: PdfMatrixValue,
+        e: PdfMatrixValue,
+        f: PdfMatrixValue,
+    ) -> Result<(), PdfiumError> {
+        self.transform_with_clip(
+            a,
+            b,
+            c,
+            d,
+            e,
+            f,
+            PdfRect::new(
+                PdfPoints::ZERO,
+                PdfPoints::ZERO,
+                self.height(),
+                self.width(),
+            ),
+        )
     }
 
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.
@@ -1116,34 +1147,6 @@ impl<'a> PdfPage<'a> {
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
         }
-    }
-}
-
-impl<'a> WriteTransforms for PdfPage<'a> {
-    #[inline]
-    fn transform(
-        &mut self,
-        a: PdfMatrixValue,
-        b: PdfMatrixValue,
-        c: PdfMatrixValue,
-        d: PdfMatrixValue,
-        e: PdfMatrixValue,
-        f: PdfMatrixValue,
-    ) -> Result<(), PdfiumError> {
-        self.transform_with_clip(
-            a,
-            b,
-            c,
-            d,
-            e,
-            f,
-            PdfRect::new(
-                PdfPoints::ZERO,
-                PdfPoints::ZERO,
-                self.height(),
-                self.width(),
-            ),
-        )
     }
 }
 

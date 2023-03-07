@@ -7,16 +7,16 @@ pub(crate) mod internal {
     // Instead of making the PdfPageObjectPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_RECTF};
+    use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF};
     use crate::bindings::PdfiumLibraryBindings;
     use crate::document::PdfDocument;
     use crate::error::{PdfiumError, PdfiumInternalError};
+    use crate::matrix::PdfMatrix;
     use crate::page::PdfRect;
     use crate::page_annotation_objects::PdfPageAnnotationObjects;
     use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
     use crate::page_objects::PdfPageObjects;
     use crate::prelude::PdfMatrixValue;
-    use crate::transform::PdfMatrix;
     use std::os::raw::c_double;
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
@@ -243,6 +243,31 @@ pub(crate) mod internal {
             match self.bindings().get_pdfium_last_error() {
                 Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
                 None => Ok(()),
+            }
+        }
+
+        /// Internal implementation of [PdfPageObjectCommon::matrix()].
+        fn get_matrix_impl(&self) -> Result<PdfMatrix, PdfiumError> {
+            let mut matrix = FS_MATRIX {
+                a: 0.0,
+                b: 0.0,
+                c: 0.0,
+                d: 0.0,
+                e: 0.0,
+                f: 0.0,
+            };
+
+            if self.bindings().is_true(
+                self.bindings()
+                    .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
+            ) {
+                Ok(PdfMatrix::from_pdfium(matrix))
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    self.bindings()
+                        .get_pdfium_last_error()
+                        .unwrap_or(PdfiumInternalError::Unknown),
+                ))
             }
         }
 

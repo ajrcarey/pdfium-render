@@ -37,6 +37,7 @@ pub mod font_glyph;
 pub mod font_glyphs;
 pub mod form;
 pub mod link;
+pub mod matrix;
 pub mod metadata;
 pub mod page;
 pub mod page_annotation;
@@ -86,7 +87,7 @@ pub mod permissions;
 pub mod render_config;
 pub mod signature;
 pub mod signatures;
-pub mod transform;
+mod transform; // Keep private so that internal macros are not exposed.
 mod utils; // Keep internal utility functions private.
 
 /// A prelude for conveniently importing all public `pdfium-render` definitions at once.
@@ -99,8 +100,8 @@ pub mod prelude {
     pub use super::{
         action::*, attachment::*, attachments::*, bindings::*, bitmap::*, bookmark::*,
         bookmarks::*, clip_path::*, color::*, color_space::*, destination::*, document::*,
-        error::*, font::*, font_glyph::*, font_glyphs::*, form::*, link::*, metadata::*, page::*,
-        page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
+        error::*, font::*, font_glyph::*, font_glyphs::*, form::*, link::*, matrix::*, metadata::*,
+        page::*, page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
         page_annotation_highlight::*, page_annotation_ink::*, page_annotation_link::*,
         page_annotation_objects::*, page_annotation_popup::*, page_annotation_square::*,
         page_annotation_squiggly::*, page_annotation_stamp::*, page_annotation_strikeout::*,
@@ -111,7 +112,7 @@ pub mod prelude {
         page_object_unsupported::*, page_objects::*, page_objects_common::*, page_size::*,
         page_text::*, page_text_char::*, page_text_chars::*, page_text_segment::*,
         page_text_segments::*, pages::*, path_segment::*, path_segments::*, pdfium::*,
-        permissions::*, render_config::*, signature::*, signatures::*, transform::*,
+        permissions::*, render_config::*, signature::*, signatures::*,
     };
 }
 

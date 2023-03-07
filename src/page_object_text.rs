@@ -16,14 +16,15 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
+use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page::PdfPoints;
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_text::PdfPageText;
 use crate::page_text_chars::PdfPageTextChars;
-use crate::transform::ReadTransforms;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+use crate::{create_transform_getters, create_transform_setters};
 
 /// The text rendering modes supported by the PDF standard, as listed in table 5.3
 /// on page 402 in the PDF Reference manual version 1.7.
@@ -421,6 +422,16 @@ impl<'a> PdfPageTextObject<'a> {
 
         Ok(maximum_descent - object_bottom)
     }
+
+    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!();
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {

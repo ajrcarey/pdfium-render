@@ -4,12 +4,12 @@ use crate::bindgen::{
     FPDF_ANNOTATION, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
     FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING,
-    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN, FS_MATRIX,
+    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::document::PdfDocument;
-use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::error::PdfiumError;
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_object_form_fragment::PdfPageFormFragmentObject;
@@ -21,7 +21,7 @@ use crate::page_object_text::PdfPageTextObject;
 use crate::page_object_unsupported::PdfPageUnsupportedObject;
 use crate::page_objects::PdfPageObjects;
 use crate::prelude::{PdfMatrix, PdfMatrixValue};
-use crate::transform::{ReadTransforms, WriteTransforms};
+use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
@@ -476,6 +476,16 @@ impl<'a> PdfPageObject<'a> {
             _ => None,
         }
     }
+
+    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!();
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 /// Functionality common to all [PdfPageObject] objects, regardless of their [PdfPageObjectType].
@@ -625,8 +635,6 @@ pub trait PdfPageObjectCommon<'a> {
 impl<'a, T> PdfPageObjectCommon<'a> for T
 where
     T: PdfPageObjectPrivate<'a>,
-    T: ReadTransforms,
-    T: WriteTransforms,
 {
     #[inline]
     fn has_transparency(&self) -> bool {
@@ -836,54 +844,6 @@ where
     #[inline]
     fn try_copy<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
         self.try_copy_impl(document)
-    }
-}
-
-impl<'a, T> WriteTransforms for T
-where
-    T: PdfPageObjectPrivate<'a>,
-{
-    #[inline]
-    fn transform(
-        &mut self,
-        a: PdfMatrixValue,
-        b: PdfMatrixValue,
-        c: PdfMatrixValue,
-        d: PdfMatrixValue,
-        e: PdfMatrixValue,
-        f: PdfMatrixValue,
-    ) -> Result<(), PdfiumError> {
-        self.transform_impl(a, b, c, d, e, f)
-    }
-}
-
-impl<'a, T> ReadTransforms for T
-where
-    T: PdfPageObjectPrivate<'a>,
-{
-    #[inline]
-    fn matrix(&self) -> Result<PdfMatrix, PdfiumError> {
-        let mut matrix = FS_MATRIX {
-            a: 0.0,
-            b: 0.0,
-            c: 0.0,
-            d: 0.0,
-            e: 0.0,
-            f: 0.0,
-        };
-
-        if self.bindings().is_true(
-            self.bindings()
-                .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
-        ) {
-            Ok(PdfMatrix::from_pdfium(matrix))
-        } else {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings()
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
-            ))
-        }
     }
 }
 

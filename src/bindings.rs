@@ -571,6 +571,7 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
     fn FPDFPageObj_TransformClipPath(
         &self,
         page_object: FPDF_PAGEOBJECT,

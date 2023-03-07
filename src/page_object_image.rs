@@ -11,9 +11,9 @@ use crate::bitmap::Pixels;
 use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::transform::{PdfMatrixValue, ReadTransforms, WriteTransforms};
 use crate::utils::mem::create_byte_buffer;
 use std::convert::TryInto;
 use std::ops::{Range, RangeInclusive};
@@ -31,6 +31,7 @@ use crate::page::PdfPoints;
 #[cfg(feature = "image")]
 use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
 
+use crate::{create_transform_getters, create_transform_setters};
 #[cfg(feature = "image")]
 use image::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
 
@@ -78,7 +79,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// `PdfPageObjects::add_image_object()` function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
-    /// Use the [WriteTransforms::scale()] function to apply a horizontal and vertical scale
+    /// Use the [PdfPageImageObject::scale()] function to apply a horizontal and vertical scale
     /// to the object after it is created, or use one of the [PdfPageImageObject::new_with_width()],
     /// [PdfPageImageObject::new_with_height()], or [PdfPageImageObject::new_with_size()] functions
     /// to scale the page object to a specific width and/or height at the time the object is created.
@@ -682,6 +683,16 @@ impl<'a> PdfPageImageObject<'a> {
     pub fn filters(&self) -> PdfPageImageObjectFilters {
         PdfPageImageObjectFilters::new(self)
     }
+
+    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!();
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {

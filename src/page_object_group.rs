@@ -4,7 +4,9 @@
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
+use crate::create_transform_setters;
 use crate::error::PdfiumError;
+use crate::matrix::PdfMatrix;
 use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints, PdfRect};
 use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_object::{
@@ -17,7 +19,6 @@ use crate::page_objects_common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 use crate::pages::{PdfPageIndex, PdfPages};
 use crate::pdfium::Pdfium;
 use crate::prelude::{PdfDocument, PdfMatrixValue};
-use crate::transform::{PdfMatrix, ReadTransforms, WriteTransforms};
 use std::collections::HashMap;
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
@@ -684,11 +685,11 @@ impl<'a> PdfPageGroupObject<'a> {
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
         PdfPageObject::from_pdfium(*handle, Some(self.page_handle), None, self.bindings)
     }
-}
 
-impl<'a> WriteTransforms for PdfPageGroupObject<'a> {
-    #[inline]
-    fn transform(
+    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+
+    // The internal implementation of the transform() function used by the create_transform_setters!() macro.
+    fn transform_impl(
         &mut self,
         a: PdfMatrixValue,
         b: PdfMatrixValue,

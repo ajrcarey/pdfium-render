@@ -8,13 +8,14 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::path_segment::{PdfPathSegment, PdfPathSegmentType};
 use crate::path_segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use crate::prelude::PdfDocument;
-use crate::transform::ReadTransforms;
+use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
@@ -903,6 +904,16 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn segments(&self) -> PdfPagePathObjectSegments {
         PdfPagePathObjectSegments::from_pdfium(self.object_handle, self.bindings())
     }
+
+    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!();
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
