@@ -477,12 +477,22 @@ impl<'a> PdfPageObject<'a> {
         }
     }
 
-    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "this [PdfPageObject]",
+        "this [PdfPageObject].",
+        "this [PdfPageObject],"
+    );
 
     // The transform_impl() function required by the create_transform_setters!() macro
     // is provided by the PdfPageObjectPrivate trait.
 
-    create_transform_getters!();
+    create_transform_getters!(
+        "this [PdfPageObject]",
+        "this [PdfPageObject].",
+        "this [PdfPageObject],"
+    );
 
     // The get_matrix_impl() function required by the create_transform_getters!() macro
     // is provided by the PdfPageObjectPrivate trait.

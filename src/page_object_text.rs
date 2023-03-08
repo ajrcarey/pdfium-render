@@ -423,12 +423,22 @@ impl<'a> PdfPageTextObject<'a> {
         Ok(maximum_descent - object_bottom)
     }
 
-    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "this [PdfPageTextObject]",
+        "this [PdfPageTextObject].",
+        "this [PdfPageTextObject],"
+    );
 
     // The transform_impl() function required by the create_transform_setters!() macro
     // is provided by the PdfPageObjectPrivate trait.
 
-    create_transform_getters!();
+    create_transform_getters!(
+        "this [PdfPageTextObject]",
+        "this [PdfPageTextObject].",
+        "this [PdfPageTextObject],"
+    );
 
     // The get_matrix_impl() function required by the create_transform_getters!() macro
     // is provided by the PdfPageObjectPrivate trait.

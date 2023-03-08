@@ -686,7 +686,13 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPageObject::from_pdfium(*handle, Some(self.page_handle), None, self.bindings)
     }
 
-    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "every [PdfPageObject] in this group",
+        "every [PdfPageObject] in this group.",
+        "every [PdfPageObject] in this group,"
+    );
 
     // The internal implementation of the transform() function used by the create_transform_setters!() macro.
     fn transform_impl(

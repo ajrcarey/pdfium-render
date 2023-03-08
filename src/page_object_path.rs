@@ -905,12 +905,22 @@ impl<'a> PdfPagePathObject<'a> {
         PdfPagePathObjectSegments::from_pdfium(self.object_handle, self.bindings())
     }
 
-    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "this [PdfPagePathObject]",
+        "this [PdfPagePathObject].",
+        "this [PdfPagePathObject],"
+    );
 
     // The transform_impl() function required by the create_transform_setters!() macro
     // is provided by the PdfPageObjectPrivate trait.
 
-    create_transform_getters!();
+    create_transform_getters!(
+        "this [PdfPagePathObject]",
+        "this [PdfPagePathObject].",
+        "this [PdfPagePathObject],"
+    );
 
     // The get_matrix_impl() function required by the create_transform_getters!() macro
     // is provided by the PdfPageObjectPrivate trait.

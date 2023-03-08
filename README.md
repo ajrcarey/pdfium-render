@@ -363,11 +363,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.7.33: adds the `ReadTransforms` and `WriteTransforms` traits and implements these traits
-  for `PdfPageObject`, and `PdfPageObjectGroup`, ensuring API consistency and maximising code reuse
-  across transformable objects; adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`,
-  and `PdfPage::set_matrix_with_clip()` functions, along with an implementation of
-  `WriteTransforms` for `PdfPage`; adds bindings for remaining `FPDF_*ClipPath*()` functions.
+* 0.7.33: adds the `create_transform_setters!()` and `create_transform_getters!()` private macros,
+  ensuring API consistency and maximising code reuse across all transformable objects;
+  adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and `PdfPage::set_matrix_with_clip()`
+  functions; adds bindings for remaining `FPDF_*ClipPath*()` functions.
 * 0.7.32: fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
   thanks to an excellent contribution from <https://github.com/luketpeterson>, adds support
   for grayscale image processing to `PdfPageImageObject::get_image_from_bitmap_handle()` thanks

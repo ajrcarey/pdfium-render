@@ -947,13 +947,13 @@ impl<'a> PdfPage<'a> {
     /// the following functions. Internally they all use [PdfPage::transform()], but are
     /// probably easier to use (and certainly clearer in their intent) in most situations.
     ///
-    /// * [PdfPage::translate()]: changes the position of objects on this [PdfPage].
-    /// * [PdfPage::scale()]: changes the size of objects on this [PdfPage].
+    /// * [PdfPage::translate()]: changes the position of each object on this [PdfPage].
+    /// * [PdfPage::scale()]: changes the size of each object on this [PdfPage].
     /// * [PdfPage::rotate_clockwise_degrees()], [PdfPage::rotate_counter_clockwise_degrees()],
     /// [PdfPage::rotate_clockwise_radians()], [PdfPage::rotate_counter_clockwise_radians()]:
-    /// rotates the objects on this [PdfPage] around their origins.
-    /// * [PdfPage::skew_degrees()], [PdfPage::skew_radians()]: skews the objects
-    /// on this [PdfPage] relative to their axes.
+    /// rotates each object on this [PdfPage] around its origin.
+    /// * [PdfPage::skew_degrees()], [PdfPage::skew_radians()]: skews each object
+    /// on this [PdfPage] relative to its axes.
     ///
     /// **The order in which transformations are applied is significant.**
     /// For example, the result of rotating _then_ translating an object may be vastly different
@@ -995,7 +995,13 @@ impl<'a> PdfPage<'a> {
         }
     }
 
-    create_transform_setters!(&mut Self, Result<(), PdfiumError>);
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "each object on this [PdfPage]",
+        "each object on this [PdfPage].",
+        "each object on this [PdfPage],"
+    );
 
     // The transform_impl() function required by the create_transform_setters!() macro
     // is provided by the PdfPageObjectPrivate trait.

@@ -2,9 +2,9 @@
 //! the six configurable elements of a nine-element 3x3 PDF transformation matrix.
 
 use crate::bindgen::FS_MATRIX;
-use crate::create_transform_setters;
 use crate::error::PdfiumError;
 use crate::page::PdfPoints;
+use crate::{create_transform_getters, create_transform_setters};
 use std::hash::{Hash, Hasher};
 use vecmath::{mat3_det, row_mat3_mul};
 
@@ -93,7 +93,13 @@ impl PdfMatrix {
         }
     }
 
-    create_transform_setters!(Self, Result<Self, PdfiumError>);
+    create_transform_setters!(
+        Self,
+        Result<Self, PdfiumError>,
+        "this [PdfMatrix]",
+        "this [PdfMatrix].",
+        "this [PdfMatrix],"
+    );
 
     // The internal implementation of the transform() function used by the create_transform_setters!() macro.
     fn transform_impl(
@@ -126,6 +132,14 @@ impl PdfMatrix {
 
             Ok(self)
         }
+    }
+
+    create_transform_getters!("this [PdfMatrix]", "this [PdfMatrix].", "this [PdfMatrix],");
+
+    // The internal implementation of the get_matrix_impl() function used by the create_transform_getters!() macro.
+    #[inline]
+    fn get_matrix_impl(&self) -> Result<PdfMatrix, PdfiumError> {
+        Ok(*self)
     }
 }
 
