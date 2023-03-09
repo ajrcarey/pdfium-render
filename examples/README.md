@@ -19,6 +19,7 @@ Each example can run via `cargo run --example <example_name>`.
 * `image.rs`: generates a new document by placing image objects onto a blank page, saving the new document to `test/image-test.pdf`.
 * `image_extract.rs`: extracts and outputs the images on each page in `test/image-test.pdf` to files.
 * `links.rs`: iterates over every link on every page in `test/links-test.pdf`, displaying information about each link.
+* `matrix.rs`: uses a single `PdfMatrix` object to effect a consistent transformation to a variety of transformable PDF objects, saving its output to `test/matrix-test.pdf`.
 * `objects.rs`: iterates over every page object on every page in `test/export-test.pdf`, displaying information about each page object.
 * `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`.
 * `segments.rs`: iterates over every path object in `test/segments.pdf`, displaying information on each path segment in the path object.

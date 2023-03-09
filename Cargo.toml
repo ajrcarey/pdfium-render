@@ -46,7 +46,7 @@ bindgen = { version = "^0" }
 [dev-dependencies]
 # Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
 # are specified separately in examples/Cargo.toml.
-rand = "^0" # Used by examples/create.rs
+rand = "^0" # Used by examples/create.rs, examples/matrix.rs
 rayon = "^1" # Used by examples/thread_safe.rs
 
 [features]

@@ -87,7 +87,9 @@ an owned `PdfPages` instance. For the motivation behind this change, see
 
 Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
 `PdfPage::set_matrix_with_clip()` functions, allowing the page objects on a page to be transformed
-in a single operation.
+in a single operation, and adds transformation functions to `PdfMatrix`, making it easy to
+"queue up" a set of transformations that can be applied to any transformable object via the
+object's `set_matrix()` function. `examples/matrix.rs` demonstrates the new functionality.
 
 Version 0.7.32 fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
 thanks to an excellent contribution from <https://github.com/luketpeterson>, and adds support
@@ -366,7 +368,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 * 0.7.33: adds the `create_transform_setters!()` and `create_transform_getters!()` private macros,
   ensuring API consistency and maximising code reuse across all transformable objects;
   adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and `PdfPage::set_matrix_with_clip()`
-  functions; adds bindings for remaining `FPDF_*ClipPath*()` functions.
+  functions; adds `examples/matrix.rs` example; adds bindings for remaining `FPDF_*ClipPath*()` functions.
 * 0.7.32: fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
   thanks to an excellent contribution from <https://github.com/luketpeterson>, adds support
   for grayscale image processing to `PdfPageImageObject::get_image_from_bitmap_handle()` thanks

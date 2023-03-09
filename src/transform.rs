@@ -190,11 +190,7 @@ macro_rules! create_transform_setters {
             x_axis_skew: PdfMatrixValue,
             y_axis_skew: PdfMatrixValue,
         ) -> $ret_ {
-            let tan_alpha = x_axis_skew.tan();
-
-            let tan_beta = y_axis_skew.tan();
-
-            self.transform(1.0, tan_alpha, tan_beta, 1.0, 0.0, 0.0)
+            self.transform(1.0, x_axis_skew.tan(), y_axis_skew.tan(), 1.0, 0.0, 0.0)
         }
     };
     ($self_:ty, $ret_:ty, $doc_ref_:literal, $doc_ref_period_:literal, $doc_ref_comma_:literal) => {
