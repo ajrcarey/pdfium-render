@@ -17,10 +17,15 @@ pub fn main() -> Result<(), PdfiumError> {
     // configuring a transformation matrix. Then, we create a variety of PDF objects, transforming
     // each in turn by applying the matrix.
 
-    let matrix = PdfMatrix::identity()
+    let matrix = PdfMatrix::IDENTITY
         .scale(1.5, 1.2)? // Uneven horizontal and vertical scale factors will "squish" the object
-        //.rotate_clockwise_degrees(30.0)?
-        .skew_degrees(0.0, 10.0)?;
+        .skew_degrees(0.0, 10.0)? // "Lean" the object to the right
+        // PdfMatrix uses the builder pattern with function chaining, so we could
+        // "queue up" any number of operations here if we wished, e.g.
+        // .rotate_clockwise_degrees()?
+        // .flip_vertically()?.translate()?
+        // .translate(..., ...)?
+        ;
 
     // Our transformation matrix is now ready. Let's create an empty page in a new document...
 

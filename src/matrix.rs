@@ -65,17 +65,16 @@ impl PdfMatrix {
 
     /// Creates a new [PdfMatrix] object with all matrix values set to 0.0.
     ///
-    /// Consider using the compile-time constant value [PdfMatrix::ZERO]
-    /// rather than calling this function directly.
+    /// The return value of this function is identical to the constant [PdfMatrix::ZERO].
     #[inline]
     pub const fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 
-    /// Creates a new [PdfMatrix] object with all matrix values set to 0.0.
+    /// Creates a new [PdfMatrix] object with matrix values a and d set to 1.0
+    /// and all other values set to 0.0.
     ///
-    /// Consider using the compile-time constant value [PdfMatrix::ZERO]
-    /// rather than calling this function directly.
+    /// The return value of this function is identical to the constant [PdfMatrix::IDENTITY].
     #[inline]
     pub const fn identity() -> Self {
         Self::new(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
