@@ -71,6 +71,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Page link introspection.
 * Creation of new documents and new pages.
 * Creation of page objects for text, paths, and bitmaps.
+* Page object transformation.
 * Multi-page tiled output.
 * Watermarking.
 * Thread safety.
@@ -84,6 +85,9 @@ an immutable `&PdfPages` reference instead. A new `PdfDocument::pages_mut()` fun
 will return a mutable `&mut PdfPages` reference. It will no longer be possible to retrieve
 an owned `PdfPages` instance. For the motivation behind this change, see
 <https://github.com/ajrcarey/pdfium-render/issues/47>.
+
+Version 0.7.34 improves performance when working with `PdfPageLinks` collections that contain
+a large number of page links.
 
 Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
 `PdfPage::set_matrix_with_clip()` functions, allowing the page objects on a page to be transformed
@@ -352,7 +356,7 @@ functions specific to interactive scripting, user interaction, and printing.
 By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
 use cases, whether rendering existing documents or creating new ones.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.33, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.34, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -365,6 +369,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.7.34: reimplements functions using linear traversal in `PdfPageLinks` using binary search traversal.
 * 0.7.33: adds the `create_transform_setters!()` and `create_transform_getters!()` private macros,
   ensuring API consistency and maximising code reuse across all transformable objects;
   adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and `PdfPage::set_matrix_with_clip()`

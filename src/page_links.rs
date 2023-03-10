@@ -41,11 +41,59 @@ impl<'a> PdfPageLinks<'a> {
     /// Returns the number of links in this [PdfPageLinks] collection.
     #[inline]
     pub fn len(&self) -> PdfPageLinkIndex {
-        // TODO: AJRC - 18/2/23 - since there is no FPDF_* function to return the number of
-        // links in a page, we currently iterate over the entire collection. This is the least
-        // efficient way possible we could do this; revise this to use a binary search approach.
+        // Since there is no FPDF_* function to return the number of links contained in a page,
+        // we must explore the entire collection. One option would be to simply iterate over
+        // all possible links, like so:
 
-        self.iter().count() as PdfPageLinkIndex
+        // self.iter().count() as PdfPageLinkIndex
+
+        // This works perfectly, but is inefficient for very large collections of links as it
+        // is O(n). Instead, we use a sliding interval search technique, conceptually similar
+        // to binary search, that should be closer to O(log n).
+
+        // Early exit if there are zero or one links.
+
+        if self.get(0).is_err() {
+            return 0;
+        }
+
+        if self.get(1).is_err() {
+            return 1;
+        }
+
+        // Establish a maximal upper bound for the range (0..len).
+
+        let mut range_start = 0;
+        let mut range_end = 50;
+
+        loop {
+            if self.get(range_end).is_err() {
+                break;
+            } else {
+                range_start = range_end;
+                range_end *= 2;
+            }
+        }
+
+        // Now probe the range between (range_start..range_end).
+
+        loop {
+            let midpoint = range_start + (range_end - range_start) / 2;
+
+            if midpoint == range_start {
+                // range_start and range_end now differ by a maximum of 1.
+
+                break;
+            }
+
+            if self.get(midpoint).is_err() {
+                range_end = midpoint;
+            } else {
+                range_start = midpoint;
+            }
+        }
+
+        range_end
     }
 
     /// Returns `true` if this [PdfPageLinks] collection is empty.
@@ -72,17 +120,24 @@ impl<'a> PdfPageLinks<'a> {
 
     /// Returns a single [PdfLink] from this [PdfPageLinks] collection.
     pub fn get(&'a self, index: PdfPageLinkIndex) -> Result<PdfLink<'a>, PdfiumError> {
-        // TODO: AJRC - 18/2/23 - since we cannot retrieve links in random access order,
-        // we iterate over the entire collection. A linear traversal is the least efficient
-        // way possible we could do this; revise this to use a binary search approach.
+        let mut start_pos = index as c_int;
 
-        for (link_index, link) in self.iter().enumerate() {
-            if link_index == index {
-                return Ok(link);
-            }
+        let mut handle = null_mut();
+
+        if self.bindings.is_true(self.bindings.FPDFLink_Enumerate(
+            self.page_handle,
+            &mut start_pos,
+            &mut handle,
+        )) && !handle.is_null()
+        {
+            Ok(PdfLink::from_pdfium(
+                handle,
+                self.document_handle,
+                self.bindings,
+            ))
+        } else {
+            Err(PdfiumError::LinkIndexOutOfBounds)
         }
-
-        Err(PdfiumError::LinkIndexOutOfBounds)
     }
 
     /// Returns the first [PdfLink] object in this [PdfPageLinks] collection.
@@ -132,7 +187,7 @@ impl<'a> PdfPageLinks<'a> {
 /// An iterator over all the [PdfLink] objects in a [PdfPageLinksIterator] collection.
 pub struct PdfPageLinksIterator<'a> {
     links: &'a PdfPageLinks<'a>,
-    start_pos: c_int,
+    next_index: PdfPageLinkIndex,
 }
 
 impl<'a> PdfPageLinksIterator<'a> {
@@ -140,7 +195,7 @@ impl<'a> PdfPageLinksIterator<'a> {
     pub(crate) fn new(links: &'a PdfPageLinks<'a>) -> Self {
         PdfPageLinksIterator {
             links,
-            start_pos: 0,
+            next_index: 0,
         }
     }
 }
@@ -149,25 +204,10 @@ impl<'a> Iterator for PdfPageLinksIterator<'a> {
     type Item = PdfLink<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut handle = null_mut();
+        let next = self.links.get(self.next_index);
 
-        if self
-            .links
-            .bindings
-            .is_true(self.links.bindings.FPDFLink_Enumerate(
-                self.links.page_handle,
-                &mut self.start_pos,
-                &mut handle,
-            ))
-            && !handle.is_null()
-        {
-            Some(PdfLink::from_pdfium(
-                handle,
-                self.links.document_handle,
-                self.links.bindings,
-            ))
-        } else {
-            None
-        }
+        self.next_index += 1;
+
+        next.ok()
     }
 }
