@@ -72,6 +72,7 @@ pub enum PdfiumError {
     UnknownPathSegmentType,
     NoPagesInDocument,
     NoPageObjectsInCollection,
+    NoPageLinksInCollection,
     PageObjectNotCopyable,
     ImageObjectFiltersNotCopyable,
     PathObjectBezierControlPointsNotCopyable,

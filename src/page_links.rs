@@ -143,21 +143,15 @@ impl<'a> PdfPageLinks<'a> {
     /// Returns the first [PdfLink] object in this [PdfPageLinks] collection.
     #[inline]
     pub fn first(&'a self) -> Result<PdfLink<'a>, PdfiumError> {
-        if !self.is_empty() {
-            self.get(0)
-        } else {
-            Err(PdfiumError::NoPageObjectsInCollection)
-        }
+        self.get(0)
+            .map_err(|_| PdfiumError::NoPageLinksInCollection)
     }
 
     /// Returns the last [PdfLink] object in this [PdfPageLinks] collection.
     #[inline]
     pub fn last(&'a self) -> Result<PdfLink<'a>, PdfiumError> {
-        if !self.is_empty() {
-            self.get(self.len() - 1)
-        } else {
-            Err(PdfiumError::NoPageObjectsInCollection)
-        }
+        self.get(self.len() - 1)
+            .map_err(|_| PdfiumError::NoPageLinksInCollection)
     }
 
     /// Returns the [PdfLink] object at the given position on the containing page, if any.

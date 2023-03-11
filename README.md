@@ -86,8 +86,8 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For the motivation behind this change, see
 <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
-Version 0.7.34 improves performance when working with `PdfPageLinks` collections that contain
-a large number of page links.
+Version 0.7.34 improves performance when working with `PdfPageLinks` collections containing
+large numbers of page links.
 
 Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
 `PdfPage::set_matrix_with_clip()` functions, allowing the page objects on a page to be transformed
@@ -110,22 +110,6 @@ the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` funct
 the new `PdfPage::delete()` function. (Previously, it was possible to hold a `PdfPage` reference
 after deleting the page from the containing `PdfPages` collection.) Deprecated items will be removed
 in release 0.9.0.
-
-Version 0.7.29 removes the `sync` crate feature from the list of default crate features.
-`sync` is still available as an optional crate feature. For the motivation behind this change,
-see <https://github.com/ajrcarey/pdfium-render/issues/66>.
-
-Version 0.7.28 removes the `PdfPageObjects::take_*()` functions; bugs in Pdfium's memory handling
-make them too unreliable to be useful. Instead, new functions `PdfPageObject::is_copyable()` and
-`PdfPageObject::try_copy()` are introduced, allowing most path, text, and image page objects to be copied.
-New functions `PdfPageObjectGroup::retain()`, `PdfPageObjectGroup::retain_if_copyable()`,
-`PdfPageObjectGroup::is_copyable()`, `PdfPageObjectGroup::try_copy_onto_existing_page()`,
-`PdfPageObjectGroup::copy_onto_new_page_at_start()`, `PdfPageObjectGroup::copy_onto_new_page_at_end()`,
-and `PdfPageObjectGroup::copy_onto_new_page_at_index()` allow a group of page objects to be copied
-onto a destination page. The new `examples/copy_objects.rs` example demonstrates this functionality.
-This release also fixes a bug in the propagation of a page's content regeneration strategy from
-the page to its collection of page objects collection and to any `PdfPageObjectGroup` objects
-created from that page objects collection.
 
 ## Binding to Pdfium
 
