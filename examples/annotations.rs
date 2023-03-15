@@ -8,7 +8,7 @@ pub fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.load_pdf_from_file("test/annotations-test.pdf", None)?;
+    let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
 
     for (page_index, page) in document.pages().iter().enumerate() {
         // For each page in the document, iterate over the annotations attached to that page.
@@ -24,8 +24,9 @@ pub fn main() -> Result<(), PdfiumError> {
             );
 
             println!(
-                "{}",
-                page.text().unwrap().for_annotation(&annotation).unwrap()
+                "Annotation {} text: {:?}",
+                annotation_index,
+                page.text().unwrap().for_annotation(&annotation).ok()
             );
 
             println!(

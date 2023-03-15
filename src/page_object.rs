@@ -1,4 +1,4 @@
-//! Defines the [PdfPageObject] enum, exposing functionality related to a single page object.
+//! Defines the [PdfPageObject] enum, exposing functionality related to a single renderable page object.
 
 use crate::bindgen::{
     FPDF_ANNOTATION, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
@@ -12,33 +12,50 @@ use crate::document::PdfDocument;
 use crate::error::PdfiumError;
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
-use crate::page_object_form_fragment::PdfPageFormFragmentObject;
 use crate::page_object_image::PdfPageImageObject;
 use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_shading::PdfPageShadingObject;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_object_unsupported::PdfPageUnsupportedObject;
+use crate::page_object_x_object_form::PdfPageXObjectFormObject;
 use crate::page_objects::PdfPageObjects;
 use crate::prelude::{PdfMatrix, PdfMatrixValue};
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
-/// The type of a single [PdfPageObject].
+/// The type of a single renderable [PdfPageObject].
 ///
 /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
-/// Pdfium does not currently support or recognize the External Object ("XObject") page object
-/// type supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium
-/// will return [PdfPageObjectType::Unsupported].
+/// Pdfium does not currently support or recognize all types of External Object ("XObject")
+/// page object types supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases,
+/// Pdfium will return [PdfPageObjectType::Unsupported].
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq, Eq, Hash)]
 pub enum PdfPageObjectType {
+    /// Any External Object ("XObject") page object type not directly supported by Pdfium.
     Unsupported = FPDF_PAGEOBJ_UNKNOWN as isize,
+
+    /// A page object containing renderable text.
     Text = FPDF_PAGEOBJ_TEXT as isize,
+
+    /// A page object containing a renderable vector path.
     Path = FPDF_PAGEOBJ_PATH as isize,
+
+    /// A page object containing a renderable bitmapped image.
     Image = FPDF_PAGEOBJ_IMAGE as isize,
+
+    /// A page object containing a renderable geometric shape whose color is an arbitrary
+    /// function of position within the shape.
     Shading = FPDF_PAGEOBJ_SHADING as isize,
-    FormFragment = FPDF_PAGEOBJ_FORM as isize,
+
+    /// A page object containing a content stream that itself may consist of multiple other page
+    /// objects. When this page object is rendered, it renders all its constituent page objects,
+    /// effectively serving as a template or stamping object.
+    ///
+    /// Despite the page object name including "form", this page object type bears no relation
+    /// to an interactive form containing form fields.
+    XObjectForm = FPDF_PAGEOBJ_FORM as isize,
 }
 
 impl PdfPageObjectType {
@@ -49,7 +66,7 @@ impl PdfPageObjectType {
             FPDF_PAGEOBJ_PATH => Ok(PdfPageObjectType::Path),
             FPDF_PAGEOBJ_IMAGE => Ok(PdfPageObjectType::Image),
             FPDF_PAGEOBJ_SHADING => Ok(PdfPageObjectType::Shading),
-            FPDF_PAGEOBJ_FORM => Ok(PdfPageObjectType::FormFragment),
+            FPDF_PAGEOBJ_FORM => Ok(PdfPageObjectType::XObjectForm),
             _ => Err(PdfiumError::UnknownPdfPageObjectType),
         }
     }
@@ -58,7 +75,7 @@ impl PdfPageObjectType {
 /// The method used to combine overlapping colors when painting one [PdfPageObject] on top of
 /// another.
 ///
-/// The color being newly painted is the source color;the existing color being painted onto is the
+/// The color being newly painted is the source color; the existing color being painted onto is the
 /// backdrop color.
 ///
 /// A formal definition of these blend modes can be found in Section 7.2.4 of
@@ -244,14 +261,31 @@ impl PdfPageObjectLineCap {
     }
 }
 
-/// A single object on a `PdfPage`.
+/// A single renderable object on a `PdfPage`.
 pub enum PdfPageObject<'a> {
+    /// A page object containing renderable text.
     Text(PdfPageTextObject<'a>),
-    Path(PdfPagePathObject<'a>),
-    Image(PdfPageImageObject<'a>),
-    Shading(PdfPageShadingObject<'a>),
-    FormFragment(PdfPageFormFragmentObject<'a>),
 
+    /// A page object containing a renderable vector path.
+    Path(PdfPagePathObject<'a>),
+
+    /// A page object containing a renderable bitmapped image.
+    Image(PdfPageImageObject<'a>),
+
+    /// A page object containing a renderable geometric shape whose color is an arbitrary
+    /// function of position within the shape.
+    Shading(PdfPageShadingObject<'a>),
+
+    /// A page object containing a content stream that itself may consist of multiple other page
+    /// objects. When this page object is rendered, it renders all its constituent page objects,
+    /// effectively serving as a template or stamping object.
+    ///
+    /// Despite the page object name including "form", this page object type bears no relation
+    /// to an interactive form containing form fields.
+    XObjectForm(PdfPageXObjectFormObject<'a>),
+
+    /// Any External Object ("XObject") page object type not directly supported by Pdfium.
+    ///
     /// Common properties shared by all [PdfPageObject] types can still be accessed for
     /// page objects not recognized by Pdfium, but object-specific functionality
     /// will be unavailable.
@@ -304,8 +338,8 @@ impl<'a> PdfPageObject<'a> {
                     bindings,
                 ))
             }
-            PdfPageObjectType::FormFragment => {
-                PdfPageObject::FormFragment(PdfPageFormFragmentObject::from_pdfium(
+            PdfPageObjectType::XObjectForm => {
+                PdfPageObject::XObjectForm(PdfPageXObjectFormObject::from_pdfium(
                     object_handle,
                     page_handle,
                     annotation_handle,
@@ -322,7 +356,7 @@ impl<'a> PdfPageObject<'a> {
             PdfPageObject::Path(object) => object,
             PdfPageObject::Image(object) => object,
             PdfPageObject::Shading(object) => object,
-            PdfPageObject::FormFragment(object) => object,
+            PdfPageObject::XObjectForm(object) => object,
             PdfPageObject::Unsupported(object) => object,
         }
     }
@@ -334,7 +368,7 @@ impl<'a> PdfPageObject<'a> {
             PdfPageObject::Path(object) => object,
             PdfPageObject::Image(object) => object,
             PdfPageObject::Shading(object) => object,
-            PdfPageObject::FormFragment(object) => object,
+            PdfPageObject::XObjectForm(object) => object,
             PdfPageObject::Unsupported(object) => object,
         }
     }
@@ -352,7 +386,7 @@ impl<'a> PdfPageObject<'a> {
             PdfPageObject::Path(_) => PdfPageObjectType::Path,
             PdfPageObject::Image(_) => PdfPageObjectType::Image,
             PdfPageObject::Shading(_) => PdfPageObjectType::Shading,
-            PdfPageObject::FormFragment(_) => PdfPageObjectType::FormFragment,
+            PdfPageObject::XObjectForm(_) => PdfPageObjectType::XObjectForm,
             PdfPageObject::Unsupported(_) => PdfPageObjectType::Unsupported,
         }
     }
@@ -360,7 +394,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns `true` if this [PdfPageObject] has an object type other than [PdfPageObjectType::Unsupported].
     ///
     /// The [PdfPageObject::as_text_object()], [PdfPageObject::as_path_object()], [PdfPageObject::as_image_object()],
-    /// [PdfPageObject::as_shading_object()], and [PdfPageObject::as_form_fragment_object()] functions
+    /// [PdfPageObject::as_shading_object()], and [PdfPageObject::as_x_object_form_object()] functions
     /// can be used to access properties and functions pertaining to a specific page object type.
     #[inline]
     pub fn is_supported(&self) -> bool {
@@ -457,22 +491,22 @@ impl<'a> PdfPageObject<'a> {
         }
     }
 
-    /// Returns an immutable reference to the underlying [PdfPageFormFragmentObject] for this [PdfPageObject],
-    /// if this page object has an object type of [PdfPageObjectType::FormFragment].
+    /// Returns an immutable reference to the underlying [PdfPageXObjectFormObject] for this [PdfPageObject],
+    /// if this page object has an object type of [PdfPageObjectType::XObjectForm].
     #[inline]
-    pub fn as_form_fragment_object(&self) -> Option<&PdfPageFormFragmentObject> {
+    pub fn as_x_object_form_object(&self) -> Option<&PdfPageXObjectFormObject> {
         match self {
-            PdfPageObject::FormFragment(object) => Some(object),
+            PdfPageObject::XObjectForm(object) => Some(object),
             _ => None,
         }
     }
 
-    /// Returns a mutable reference to the underlying [PdfPageFormFragmentObject] for this [PdfPageObject],
-    /// if this page object has an object type of [PdfPageObjectType::FormFragment].
+    /// Returns a mutable reference to the underlying [PdfPageXObjectFormObject] for this [PdfPageObject],
+    /// if this page object has an object type of [PdfPageObjectType::XObjectForm].
     #[inline]
-    pub fn as_form_fragment_object_mut(&mut self) -> Option<&mut PdfPageFormFragmentObject<'a>> {
+    pub fn as_x_object_form_object_mut(&mut self) -> Option<&mut PdfPageXObjectFormObject<'a>> {
         match self {
-            PdfPageObject::FormFragment(object) => Some(object),
+            PdfPageObject::XObjectForm(object) => Some(object),
             _ => None,
         }
     }
@@ -941,10 +975,10 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 }
 
-impl<'a> From<PdfPageFormFragmentObject<'a>> for PdfPageObject<'a> {
+impl<'a> From<PdfPageXObjectFormObject<'a>> for PdfPageObject<'a> {
     #[inline]
-    fn from(object: PdfPageFormFragmentObject<'a>) -> Self {
-        Self::FormFragment(object)
+    fn from(object: PdfPageXObjectFormObject<'a>) -> Self {
+        Self::XObjectForm(object)
     }
 }
 

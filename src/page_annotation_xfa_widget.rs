@@ -1,26 +1,28 @@
-//! Defines the [PdfPageUnderlineAnnotation] struct, exposing functionality related to a single
-//! user annotation of type `PdfPageAnnotationType::Underline`.
+//! Defines the [PdfPageXfaWidgetAnnotation] struct, exposing functionality related to a single
+//! user annotation of type `PdfPageAnnotationType::XfaWidget`.
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
+use crate::form_field::PdfFormField;
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 
-pub struct PdfPageUnderlineAnnotation<'a> {
-    handle: FPDF_ANNOTATION,
+pub struct PdfPageXfaWidgetAnnotation<'a> {
+    annotation_handle: FPDF_ANNOTATION,
     bindings: &'a dyn PdfiumLibraryBindings,
     objects: PdfPageAnnotationObjects<'a>,
+    form_field: Option<PdfFormField<'a>>,
 }
 
-impl<'a> PdfPageUnderlineAnnotation<'a> {
+impl<'a> PdfPageXfaWidgetAnnotation<'a> {
     pub(crate) fn from_pdfium(
         annotation_handle: FPDF_ANNOTATION,
         page_handle: FPDF_PAGE,
         document: &'a PdfDocument<'a>,
     ) -> Self {
-        PdfPageUnderlineAnnotation {
-            handle: annotation_handle,
+        PdfPageXfaWidgetAnnotation {
+            annotation_handle,
             bindings: document.bindings(),
             objects: PdfPageAnnotationObjects::from_pdfium(
                 *document.handle(),
@@ -28,14 +30,23 @@ impl<'a> PdfPageUnderlineAnnotation<'a> {
                 annotation_handle,
                 document.bindings(),
             ),
+            form_field: document.form().and_then(|form| {
+                PdfFormField::from_pdfium(*form.handle(), annotation_handle, document.bindings())
+            }),
         }
+    }
+
+    /// Returns the [PdfFormField] wrapped by this [PdfPageXfaWidgetAnnotation], if any.
+    #[inline]
+    pub fn form_field(&self) -> Option<&PdfFormField> {
+        self.form_field.as_ref()
     }
 }
 
-impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnderlineAnnotation<'a> {
+impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageXfaWidgetAnnotation<'a> {
     #[inline]
     fn handle(&self) -> &FPDF_ANNOTATION {
-        &self.handle
+        &self.annotation_handle
     }
 
     #[inline]

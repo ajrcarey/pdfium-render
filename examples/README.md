@@ -16,6 +16,7 @@ Each example can run via `cargo run --example <example_name>`.
 * `export.rs`: exports the individual pages in `test/export-test.pdf` to JPGs in the working directory. The example will attempt to bind to a copy of Pdfium in the working directory, falling back to the system-bundled library if local loading fails.
 * `fonts.rs`: displays information about the 14 built-in PDF fonts retrieved from Pdfium.
 * `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered.
+* `form_fields.rs`: iterates over the form fields in `test/form-test.pdf`, displaying information about each form field.
 * `image.rs`: generates a new document by placing image objects onto a blank page, saving the new document to `test/image-test.pdf`.
 * `image_extract.rs`: extracts and outputs the images on each page in `test/image-test.pdf` to files.
 * `links.rs`: iterates over every link on every page in `test/links-test.pdf`, displaying information about each link.

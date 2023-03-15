@@ -3,9 +3,9 @@
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::document::PdfDocument;
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
-use crate::prelude::PdfDocument;
 
 pub struct PdfPageStrikeoutAnnotation<'a> {
     handle: FPDF_ANNOTATION,

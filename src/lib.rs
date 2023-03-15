@@ -1,7 +1,5 @@
 #![doc = include_str!("../README.md")]
 
-extern crate core;
-
 mod bindgen {
     #![allow(non_upper_case_globals)]
     #![allow(non_camel_case_types)]
@@ -36,6 +34,18 @@ pub mod font;
 pub mod font_glyph;
 pub mod font_glyphs;
 pub mod form;
+pub mod form_field;
+pub mod form_field_button;
+pub mod form_field_checkbox;
+pub mod form_field_combo;
+pub mod form_field_list;
+pub mod form_field_option;
+pub mod form_field_options;
+mod form_field_private; // Keep private so that the PdfFormFieldPrivate trait is not exposed.
+pub mod form_field_radio;
+pub mod form_field_signature;
+pub mod form_field_text;
+pub mod form_field_unknown;
 pub mod link;
 pub mod matrix;
 pub mod metadata;
@@ -56,12 +66,13 @@ pub mod page_annotation_strikeout;
 pub mod page_annotation_text;
 pub mod page_annotation_underline;
 pub mod page_annotation_unsupported;
+pub mod page_annotation_widget;
+pub mod page_annotation_xfa_widget;
 pub mod page_annotations;
 pub mod page_boundaries;
-mod page_index_cache; // Keep private since not part of the public API.
+mod page_index_cache; // Keep private since PdfPageIndexCache is not part of the public API.
 pub mod page_links;
 pub mod page_object;
-pub mod page_object_form_fragment;
 pub mod page_object_group;
 pub mod page_object_image;
 pub mod page_object_path;
@@ -69,6 +80,7 @@ mod page_object_private; // Keep private so that the PdfPageObjectPrivate trait 
 pub mod page_object_shading;
 pub mod page_object_text;
 pub mod page_object_unsupported;
+pub mod page_object_x_object_form;
 pub mod page_objects;
 pub mod page_objects_common;
 mod page_objects_private; // Keep private so that the PdfPageObjectsPrivate trait is not exposed.
@@ -100,19 +112,22 @@ pub mod prelude {
     pub use super::{
         action::*, attachment::*, attachments::*, bindings::*, bitmap::*, bookmark::*,
         bookmarks::*, clip_path::*, color::*, color_space::*, destination::*, document::*,
-        error::*, font::*, font_glyph::*, font_glyphs::*, form::*, link::*, matrix::*, metadata::*,
-        page::*, page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
+        error::*, font::*, font_glyph::*, font_glyphs::*, form::*, form_field::*,
+        form_field_button::*, form_field_checkbox::*, form_field_combo::*, form_field_list::*,
+        form_field_option::*, form_field_options::*, form_field_radio::*, form_field_signature::*,
+        form_field_text::*, form_field_unknown::*, link::*, matrix::*, metadata::*, page::*,
+        page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
         page_annotation_highlight::*, page_annotation_ink::*, page_annotation_link::*,
         page_annotation_objects::*, page_annotation_popup::*, page_annotation_square::*,
         page_annotation_squiggly::*, page_annotation_stamp::*, page_annotation_strikeout::*,
         page_annotation_text::*, page_annotation_underline::*, page_annotation_unsupported::*,
-        page_annotations::*, page_boundaries::*, page_links::*, page_object::*,
-        page_object_form_fragment::*, page_object_group::*, page_object_image::*,
-        page_object_path::*, page_object_shading::*, page_object_text::*,
-        page_object_unsupported::*, page_objects::*, page_objects_common::*, page_size::*,
-        page_text::*, page_text_char::*, page_text_chars::*, page_text_segment::*,
-        page_text_segments::*, pages::*, path_segment::*, path_segments::*, pdfium::*,
-        permissions::*, render_config::*, signature::*, signatures::*,
+        page_annotation_widget::*, page_annotation_xfa_widget::*, page_annotations::*,
+        page_boundaries::*, page_links::*, page_object::*, page_object_group::*,
+        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
+        page_object_unsupported::*, page_object_x_object_form::*, page_objects::*,
+        page_objects_common::*, page_size::*, page_text::*, page_text_char::*, page_text_chars::*,
+        page_text_segment::*, page_text_segments::*, pages::*, path_segment::*, path_segments::*,
+        pdfium::*, permissions::*, render_config::*, signature::*, signatures::*,
     };
 }
 

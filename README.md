@@ -63,6 +63,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 * Rendering pages to bitmaps.
 * Text and image extraction.
+* Form field introspection.
 * Document signature introspection.
 * Document attachment creation and introspection.
 * Document concatenation.
@@ -86,8 +87,11 @@ will return a mutable `&mut PdfPages` reference. It will no longer be possible t
 an owned `PdfPages` instance. For the motivation behind this change, see
 <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
-Version 0.7.34 improves performance when working with `PdfPageLinks` collections containing
-large numbers of page links.
+Version 0.7.34 adds support for reading values from form fields wrapped inside the newly added
+`PdfPageWidgetAnnotation` and `PdfPageXfaWidgetAnnotation` annotation objects. Also added are
+the `PdfFormField` enum and its variants, and various supporting structs for handling form
+field values. A map containing all form field names and values can be retrieved via the new
+`PdfForm::field_values()` function. `examples/form_fields.rs` demonstrates the new functionality.
 
 Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
 `PdfPage::set_matrix_with_clip()` functions, allowing the page objects on a page to be transformed
@@ -353,7 +357,16 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.7.34: reimplements functions using linear traversal in `PdfPageLinks` using binary search traversal.
+* 0.7.34: replaces functions in `PdfPageLinks` using linear traversal with binary search traversal;
+  adds new `PdfFormField` enum; renames `PdfPageObjectFormFragment` to `PdfPageXObjectFormObject`
+  to disambiguate it from `PdfForm` and `PdfFormField`, and `PdfFormFields`; adds
+  `PdfPageAnnotationCommon::as_form_field()` accessor function; adds form field structs
+  `PdfFormPushButtonField`, `PdfFormCheckboxField`, `PdfFormComboBoxField`, `PdfFormListBoxField`,
+  `PdfFormRadioButtonField`, `PdfFormSignatureField`, `PdfFormTextField`, and
+  `PdfFormUnknownField`; adds `PdfFormFieldOption` struct and `PdfFormFieldOptions` collection,
+  for retrieving the options displayed within a list box or combo box field; adds `PdfFormFieldCommon`
+  and `PdfFormFieldPrivate` traits and associated implementations; adds the `PdfForm::field_values()`
+  convenience function; adds `examples/form_fields.rs` example.
 * 0.7.33: adds the `create_transform_setters!()` and `create_transform_getters!()` private macros,
   ensuring API consistency and maximising code reuse across all transformable objects;
   adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and `PdfPage::set_matrix_with_clip()`

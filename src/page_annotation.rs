@@ -29,6 +29,9 @@ use crate::page_annotation_strikeout::PdfPageStrikeoutAnnotation;
 use crate::page_annotation_text::PdfPageTextAnnotation;
 use crate::page_annotation_underline::PdfPageUnderlineAnnotation;
 use crate::page_annotation_unsupported::PdfPageUnsupportedAnnotation;
+use crate::page_annotation_widget::PdfPageWidgetAnnotation;
+use crate::page_annotation_xfa_widget::PdfPageXfaWidgetAnnotation;
+use crate::prelude::PdfFormField;
 
 /// The type of a single [PdfPageAnnotation], as defined in table 8.20 of the PDF Reference,
 /// version 1.7, on page 615.
@@ -51,6 +54,8 @@ use crate::page_annotation_unsupported::PdfPageUnsupportedAnnotation;
 /// * [PdfPageAnnotationType::Strikeout]
 /// * [PdfPageAnnotationType::Text]
 /// * [PdfPageAnnotationType::Underline]
+/// * [PdfPageAnnotationType::Widget]
+/// * [PdfPageAnnotationType::XfaWidget]
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub enum PdfPageAnnotationType {
     Unknown = FPDF_ANNOT_UNKNOWN as isize,
@@ -173,6 +178,8 @@ pub enum PdfPageAnnotation<'a> {
     Strikeout(PdfPageStrikeoutAnnotation<'a>),
     Text(PdfPageTextAnnotation<'a>),
     Underline(PdfPageUnderlineAnnotation<'a>),
+    Widget(PdfPageWidgetAnnotation<'a>),
+    XfaWidget(PdfPageXfaWidgetAnnotation<'a>),
 
     /// Common properties shared by all [PdfPageAnnotation] types can still be accessed for
     /// annotations not supported by Pdfium, but annotation-specific functionality
@@ -181,7 +188,6 @@ pub enum PdfPageAnnotation<'a> {
 }
 
 impl<'a> PdfPageAnnotation<'a> {
-    #[inline]
     pub(crate) fn from_pdfium(
         annotation_handle: FPDF_ANNOTATION,
         page_handle: FPDF_PAGE,
@@ -229,6 +235,12 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotationType::Underline => PdfPageAnnotation::Underline(
                 PdfPageUnderlineAnnotation::from_pdfium(annotation_handle, page_handle, document),
             ),
+            PdfPageAnnotationType::Widget => PdfPageAnnotation::Widget(
+                PdfPageWidgetAnnotation::from_pdfium(annotation_handle, page_handle, document),
+            ),
+            PdfPageAnnotationType::XfaWidget => PdfPageAnnotation::XfaWidget(
+                PdfPageXfaWidgetAnnotation::from_pdfium(annotation_handle, page_handle, document),
+            ),
             _ => PdfPageAnnotation::Unsupported(PdfPageUnsupportedAnnotation::from_pdfium(
                 annotation_type,
                 annotation_handle,
@@ -253,6 +265,8 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotation::Strikeout(annotation) => annotation,
             PdfPageAnnotation::Text(annotation) => annotation,
             PdfPageAnnotation::Underline(annotation) => annotation,
+            PdfPageAnnotation::Widget(annotation) => annotation,
+            PdfPageAnnotation::XfaWidget(annotation) => annotation,
             PdfPageAnnotation::Unsupported(annotation) => annotation,
         }
     }
@@ -272,6 +286,8 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotation::Strikeout(annotation) => annotation,
             PdfPageAnnotation::Text(annotation) => annotation,
             PdfPageAnnotation::Underline(annotation) => annotation,
+            PdfPageAnnotation::Widget(annotation) => annotation,
+            PdfPageAnnotation::XfaWidget(annotation) => annotation,
             PdfPageAnnotation::Unsupported(annotation) => annotation,
         }
     }
@@ -296,6 +312,8 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Strikeout]
     /// * [PdfPageAnnotationType::Text]
     /// * [PdfPageAnnotationType::Underline]
+    /// * [PdfPageAnnotationType::Widget]
+    /// * [PdfPageAnnotationType::XfaWidget]
     #[inline]
     pub fn annotation_type(&self) -> PdfPageAnnotationType {
         match self {
@@ -311,6 +329,8 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotation::Strikeout(_) => PdfPageAnnotationType::Strikeout,
             PdfPageAnnotation::Text(_) => PdfPageAnnotationType::Text,
             PdfPageAnnotation::Underline(_) => PdfPageAnnotationType::Underline,
+            PdfPageAnnotation::Widget(_) => PdfPageAnnotationType::Widget,
+            PdfPageAnnotation::XfaWidget(_) => PdfPageAnnotationType::XfaWidget,
             PdfPageAnnotation::Unsupported(annotation) => annotation.get_type(),
         }
     }
@@ -336,6 +356,8 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Strikeout]
     /// * [PdfPageAnnotationType::Text]
     /// * [PdfPageAnnotationType::Underline]
+    /// * [PdfPageAnnotationType::Widget]
+    /// * [PdfPageAnnotationType::XfaWidget]
     #[inline]
     pub fn is_supported(&self) -> bool {
         !self.is_unsupported()
@@ -362,6 +384,8 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Strikeout]
     /// * [PdfPageAnnotationType::Text]
     /// * [PdfPageAnnotationType::Underline]
+    /// * [PdfPageAnnotationType::Widget]
+    /// * [PdfPageAnnotationType::XfaWidget]
     #[inline]
     pub fn is_unsupported(&self) -> bool {
         matches!(self, PdfPageAnnotation::Unsupported(_))
@@ -483,6 +507,39 @@ impl<'a> PdfPageAnnotation<'a> {
     pub fn as_underline_annotation(&self) -> Option<&PdfPageUnderlineAnnotation> {
         match self {
             PdfPageAnnotation::Underline(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns the underlying [PdfPageWidgetAnnotation] for this [PdfPageAnnotation],
+    /// if this annotation has an annotation type of [PdfPageAnnotationType::Widget].
+    #[inline]
+    pub fn as_widget_annotation(&self) -> Option<&PdfPageWidgetAnnotation> {
+        match self {
+            PdfPageAnnotation::Widget(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns the underlying [PdfPageXfaWidgetAnnotation] for this [PdfPageAnnotation],
+    /// if this annotation has an annotation type of [PdfPageAnnotationType::XfaWidget].
+    #[inline]
+    pub fn as_xfa_widget_annotation(&self) -> Option<&PdfPageXfaWidgetAnnotation> {
+        match self {
+            PdfPageAnnotation::XfaWidget(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns the [PdfFormField] wrapped by this [PdfPageAnnotation], if any.
+    ///
+    /// Only annotations of type [PdfPageAnnotationType::Widget] and [PdfPageAnnotationType::XfaWidget]
+    /// wrap form fields.
+    #[inline]
+    pub fn as_form_field(&self) -> Option<&PdfFormField> {
+        match self {
+            PdfPageAnnotation::Widget(annotation) => annotation.form_field(),
+            PdfPageAnnotation::XfaWidget(annotation) => annotation.form_field(),
             _ => None,
         }
     }

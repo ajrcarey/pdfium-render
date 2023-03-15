@@ -236,7 +236,7 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns an immutable reference to the [PdfForm] embedded in this [PdfDocument], if any.
     #[inline]
-    pub fn form(&self) -> Option<&PdfForm<'a>> {
+    pub fn form(&self) -> Option<&PdfForm> {
         self.form.as_ref()
     }
 

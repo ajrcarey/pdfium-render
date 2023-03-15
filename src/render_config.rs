@@ -11,7 +11,7 @@ use crate::bitmap::{PdfBitmapFormat, PdfBitmapRotation, Pixels};
 use crate::color::PdfColor;
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
-use crate::form::PdfFormFieldType;
+use crate::form_field::PdfFormFieldType;
 use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation, PdfPoints};
@@ -553,7 +553,7 @@ impl PdfRenderConfig {
     /// Note that specifying a solid color with no opacity will overprint any user data in the field.
     #[inline]
     pub fn highlight_text_form_fields(self, color: PdfColor) -> Self {
-        self.highlight_form_fields_of_type(PdfFormFieldType::TextField, color)
+        self.highlight_form_fields_of_type(PdfFormFieldType::Text, color)
     }
 
     /// Highlights all rendered signature form fields with the given color.
