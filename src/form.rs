@@ -174,8 +174,8 @@ impl<'a> PdfForm<'a> {
 
     /// Returns the internal `FPDF_FORMHANDLE` handle for this [PdfForm].
     #[inline]
-    pub(crate) fn handle(&self) -> &FPDF_FORMHANDLE {
-        &self.form_handle
+    pub(crate) fn handle(&self) -> FPDF_FORMHANDLE {
+        self.form_handle
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfForm].

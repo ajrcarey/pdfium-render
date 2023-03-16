@@ -2,12 +2,12 @@
 //! `PdfPages` collection.
 
 use crate::bindgen::{
-    FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_BOOL, FPDF_PAGE, FS_RECTF,
+    FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_BOOL, FPDF_DOCUMENT,
+    FPDF_FORMHANDLE, FPDF_PAGE, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
 use crate::create_transform_setters;
-use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
 use crate::page_boundaries::PdfPageBoundaries;
@@ -24,7 +24,7 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 use std::os::raw::c_int;
 
-/// The internal coordinate system inside a [PdfDocument] is measured in Points, a
+/// The internal coordinate system inside a `PdfDocument` is measured in Points, a
 /// device-independent unit equal to 1/72 inches, roughly 0.358 mm. Points are converted to pixels
 /// when a [PdfPage] is rendered to a [PdfBitmap].
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
@@ -342,7 +342,7 @@ impl PdfPageOrientation {
 /// Content regeneration strategies that instruct `pdfium-render` when, if ever, it should
 /// automatically regenerate the content of a [PdfPage].
 ///
-/// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
+/// Updates to a [PdfPage] are not committed to the underlying `PdfDocument` until the page's
 /// content is regenerated. If a page is reloaded or closed without regenerating the page's
 /// content, any changes not applied are lost.
 ///
@@ -369,7 +369,7 @@ pub enum PdfPageContentRegenerationStrategy {
     Manual,
 }
 
-/// A single page in a [PdfDocument].
+/// A single page in a `PdfDocument`.
 ///
 /// In addition to its own intrinsic properties, a [PdfPage] serves as the entry point
 /// to all object collections related to a single page in a document. These collections include:
@@ -382,15 +382,17 @@ pub enum PdfPageContentRegenerationStrategy {
 /// * [PdfPage::objects()], an immutable collection of all the displayable objects on the [PdfPage].
 /// * [PdfPage::objects_mut()], a mutable collection of all the displayable objects on the [PdfPage].
 pub struct PdfPage<'a> {
-    handle: FPDF_PAGE,
+    document_handle: FPDF_DOCUMENT,
+    page_handle: FPDF_PAGE,
+    form_handle: Option<FPDF_FORMHANDLE>,
     label: Option<String>,
-    document: &'a PdfDocument<'a>,
     regeneration_strategy: PdfPageContentRegenerationStrategy,
     is_content_regeneration_required: bool,
     annotations: PdfPageAnnotations<'a>,
     boundaries: PdfPageBoundaries<'a>,
     links: PdfPageLinks<'a>,
     objects: PdfPageObjects<'a>,
+    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPage<'a> {
@@ -401,20 +403,29 @@ impl<'a> PdfPage<'a> {
 
     #[inline]
     pub(crate) fn from_pdfium(
-        handle: FPDF_PAGE,
+        document_handle: FPDF_DOCUMENT,
+        page_handle: FPDF_PAGE,
+        form_handle: Option<FPDF_FORMHANDLE>,
         label: Option<String>,
-        document: &'a PdfDocument<'a>,
+        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         let mut result = PdfPage {
-            handle,
+            document_handle,
+            page_handle,
+            form_handle,
             label,
-            document,
             regeneration_strategy: PdfPageContentRegenerationStrategy::Manual,
             is_content_regeneration_required: false,
-            annotations: PdfPageAnnotations::from_pdfium(handle, document),
-            boundaries: PdfPageBoundaries::from_pdfium(handle, document.bindings()),
-            links: PdfPageLinks::from_pdfium(handle, *document.handle(), document.bindings()),
-            objects: PdfPageObjects::from_pdfium(handle, *document.handle(), document.bindings()),
+            annotations: PdfPageAnnotations::from_pdfium(
+                document_handle,
+                page_handle,
+                form_handle,
+                bindings,
+            ),
+            boundaries: PdfPageBoundaries::from_pdfium(page_handle, bindings),
+            links: PdfPageLinks::from_pdfium(page_handle, document_handle, bindings),
+            objects: PdfPageObjects::from_pdfium(page_handle, document_handle, bindings),
+            bindings,
         };
 
         // Make sure the default content regeneration strategy is applied to child containers.
@@ -426,20 +437,20 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the internal `FPDF_PAGE` handle for this [PdfPage].
     #[inline]
-    pub(crate) fn handle(&self) -> &FPDF_PAGE {
-        &self.handle
+    pub(crate) fn page_handle(&self) -> FPDF_PAGE {
+        self.page_handle
     }
 
-    /// Returns the [PdfDocument] containing this [PdfPage].
+    /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfPage].
     #[inline]
-    pub fn document(&self) -> &'a PdfDocument<'a> {
-        self.document
+    pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by the [PdfDocument] containing this [PdfPage].
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfPage].
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.document().bindings()
+        self.bindings
     }
 
     /// Returns the label assigned to this [PdfPage], if any.
@@ -452,14 +463,14 @@ impl<'a> PdfPage<'a> {
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn width(&self) -> PdfPoints {
-        PdfPoints::new(self.bindings().FPDF_GetPageWidthF(self.handle))
+        PdfPoints::new(self.bindings.FPDF_GetPageWidthF(self.page_handle))
     }
 
     /// Returns the height of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn height(&self) -> PdfPoints {
-        PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.handle))
+        PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.page_handle))
     }
 
     /// Returns the width and height of this [PdfPage] expressed as a [PdfRect].
@@ -496,21 +507,21 @@ impl<'a> PdfPage<'a> {
     /// should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn rotation(&self) -> Result<PdfBitmapRotation, PdfiumError> {
-        PdfBitmapRotation::from_pdfium(self.bindings().FPDFPage_GetRotation(self.handle))
+        PdfBitmapRotation::from_pdfium(self.bindings.FPDFPage_GetRotation(self.page_handle))
     }
 
     /// Sets the intrinsic rotation that should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn set_rotation(&mut self, rotation: PdfBitmapRotation) {
-        self.bindings()
-            .FPDFPage_SetRotation(self.handle, rotation.as_pdfium());
+        self.bindings
+            .FPDFPage_SetRotation(self.page_handle, rotation.as_pdfium());
     }
 
     /// Returns `true` if any object on the page contains transparency.
     #[inline]
     pub fn has_transparency(&self) -> bool {
-        self.bindings()
-            .is_true(self.bindings().FPDFPage_HasTransparency(self.handle))
+        self.bindings
+            .is_true(self.bindings.FPDFPage_HasTransparency(self.page_handle))
     }
 
     /// Returns the paper size of this [PdfPage].
@@ -538,8 +549,8 @@ impl<'a> PdfPage<'a> {
         // To determine whether the page includes a thumbnail, we ask Pdfium to return the
         // size of the thumbnail data. A non-zero value indicates a thumbnail exists.
 
-        self.bindings()
-            .FPDFPage_GetRawThumbnailData(self.handle, std::ptr::null_mut(), 0)
+        self.bindings
+            .FPDFPage_GetRawThumbnailData(self.page_handle, std::ptr::null_mut(), 0)
             > 0
     }
 
@@ -558,14 +569,16 @@ impl<'a> PdfPage<'a> {
     ///     )?; // Renders a 128 x 128 thumbnail of the page
     /// ```
     pub fn embedded_thumbnail(&self) -> Result<PdfBitmap, PdfiumError> {
-        let thumbnail_handle = self.bindings().FPDFPage_GetThumbnailAsBitmap(self.handle);
+        let thumbnail_handle = self
+            .bindings()
+            .FPDFPage_GetThumbnailAsBitmap(self.page_handle);
 
         if thumbnail_handle.is_null() {
             // No thumbnail is available for this page.
 
             Err(PdfiumError::PageMissingEmbeddedThumbnail)
         } else {
-            Ok(PdfBitmap::from_pdfium(thumbnail_handle, self.bindings()))
+            Ok(PdfBitmap::from_pdfium(thumbnail_handle, self.bindings))
         }
     }
 
@@ -577,7 +590,7 @@ impl<'a> PdfPage<'a> {
             self.regenerate_content_immut()?;
         }
 
-        let text_handle = self.bindings().FPDFText_LoadPage(self.handle);
+        let text_handle = self.bindings().FPDFText_LoadPage(self.page_handle);
 
         if text_handle.is_null() {
             if let Some(error) = self.bindings().get_pdfium_last_error() {
@@ -591,7 +604,7 @@ impl<'a> PdfPage<'a> {
                 ))
             }
         } else {
-            Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings()))
+            Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings))
         }
     }
 
@@ -693,16 +706,16 @@ impl<'a> PdfPage<'a> {
             if let Some(object) = object.as_text_object() {
                 let font = object.font();
 
-                if !distinct_font_handles.contains_key(font.handle()) {
-                    distinct_font_handles.insert(*font.handle(), true);
-                    result.push(*font.handle());
+                if !distinct_font_handles.contains_key(&font.handle()) {
+                    distinct_font_handles.insert(font.handle(), true);
+                    result.push(font.handle());
                 }
             }
         }
 
         result
             .into_iter()
-            .map(|handle| PdfFont::from_pdfium(handle, self.bindings()))
+            .map(|handle| PdfFont::from_pdfium(handle, self.bindings))
             .collect()
     }
 
@@ -724,7 +737,7 @@ impl<'a> PdfPage<'a> {
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
         let mut bitmap =
-            PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings())?;
+            PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
 
         let mut config = PdfRenderConfig::new()
             .set_target_width(width)
@@ -754,7 +767,7 @@ impl<'a> PdfPage<'a> {
             settings.height as u16,
             PdfBitmapFormat::from_pdfium(settings.format as u32)
                 .unwrap_or_else(|_| PdfBitmapFormat::default()),
-            self.bindings(),
+            self.bindings,
         )?;
 
         self.render_into_bitmap_with_settings(&mut bitmap, settings)?;
@@ -834,9 +847,9 @@ impl<'a> PdfPage<'a> {
             // Render the PDF page into the bitmap buffer, ignoring any custom transformation matrix.
             // (Custom transforms cannot be applied to the rendering of form fields.)
 
-            self.bindings().FPDF_RenderPageBitmap(
+            self.bindings.FPDF_RenderPageBitmap(
                 bitmap_handle,
-                self.handle,
+                self.page_handle,
                 0,
                 0,
                 settings.width,
@@ -845,30 +858,30 @@ impl<'a> PdfPage<'a> {
                 settings.render_flags,
             );
 
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
                 return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
 
-            if let Some(form) = self.document().form() {
+            if let Some(form_handle) = self.form_handle {
                 // Render user-supplied form data, if any, as an overlay on top of the page.
 
                 if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
                     for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
-                        self.bindings().FPDF_SetFormFieldHighlightColor(
-                            *form.handle(),
+                        self.bindings.FPDF_SetFormFieldHighlightColor(
+                            form_handle,
                             *form_field_type,
                             *color,
                         );
 
-                        self.bindings()
-                            .FPDF_SetFormFieldHighlightAlpha(*form.handle(), *alpha);
+                        self.bindings
+                            .FPDF_SetFormFieldHighlightAlpha(form_handle, *alpha);
                     }
                 }
 
-                self.bindings().FPDF_FFLDraw(
-                    *form.handle(),
+                self.bindings.FPDF_FFLDraw(
+                    form_handle,
                     bitmap_handle,
-                    self.handle,
+                    self.page_handle,
                     0,
                     0,
                     settings.width,
@@ -877,22 +890,22 @@ impl<'a> PdfPage<'a> {
                     settings.render_flags,
                 );
 
-                if let Some(error) = self.bindings().get_pdfium_last_error() {
+                if let Some(error) = self.bindings.get_pdfium_last_error() {
                     return Err(PdfiumError::PdfiumLibraryInternalError(error));
                 }
             }
         } else {
             // Render the PDF page into the bitmap buffer, applying any custom transformation matrix.
 
-            self.bindings().FPDF_RenderPageBitmapWithMatrix(
+            self.bindings.FPDF_RenderPageBitmapWithMatrix(
                 bitmap_handle,
-                self.handle,
+                self.page_handle,
                 &settings.matrix,
                 &settings.clipping,
                 settings.render_flags,
             );
 
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
+            if let Some(error) = self.bindings.get_pdfium_last_error() {
                 return Err(PdfiumError::PdfiumLibraryInternalError(error));
             }
         }
@@ -984,7 +997,7 @@ impl<'a> PdfPage<'a> {
         clip: PdfRect,
     ) -> Result<(), PdfiumError> {
         self.bindings().FPDFPage_TransFormWithClip(
-            self.handle,
+            self.page_handle,
             &matrix.as_pdfium(),
             &clip.as_pdfium(),
         );
@@ -1037,7 +1050,10 @@ impl<'a> PdfPage<'a> {
         // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
         let flag = FLAT_PRINT;
 
-        match self.bindings().FPDFPage_Flatten(self.handle, flag as c_int) as u32 {
+        match self
+            .bindings()
+            .FPDFPage_Flatten(self.page_handle, flag as c_int) as u32
+        {
             FLATTEN_SUCCESS => {
                 self.is_content_regeneration_required = true;
 
@@ -1051,16 +1067,16 @@ impl<'a> PdfPage<'a> {
 
     /// Deletes this [PdfPage] from its containing `PdfPages` collection, consuming this [PdfPage].
     pub fn delete(self) -> Result<(), PdfiumError> {
-        let index = PdfPageIndexCache::get_index_for_page(*self.document.handle(), self.handle)
+        let index = PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
             .ok_or(PdfiumError::SourcePageIndexNotInCache)?;
 
-        self.bindings()
-            .FPDFPage_Delete(*self.document().handle(), index as c_int);
+        self.bindings
+            .FPDFPage_Delete(self.document_handle, index as c_int);
 
-        if let Some(error) = self.bindings().get_pdfium_last_error() {
+        if let Some(error) = self.bindings.get_pdfium_last_error() {
             Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
-            PdfPageIndexCache::delete_pages_at_index(*self.document.handle(), index, 1);
+            PdfPageIndexCache::delete_pages_at_index(self.document_handle, index, 1);
 
             Ok(())
         }
@@ -1068,7 +1084,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
     ///
-    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
+    /// Updates to a [PdfPage] are not committed to the underlying `PdfDocument` until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
     /// content, all uncommitted changes will be lost.
     ///
@@ -1087,7 +1103,7 @@ impl<'a> PdfPage<'a> {
 
     /// Sets the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
     ///
-    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
+    /// Updates to a [PdfPage] are not committed to the underlying `PdfDocument` until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
     /// content, all uncommitted changes will be lost.
     ///
@@ -1111,9 +1127,9 @@ impl<'a> PdfPage<'a> {
         );
     }
 
-    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying `PdfDocument`.
     ///
-    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
+    /// Updates to a [PdfPage] are not committed to the underlying `PdfDocument` until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
     /// content, all uncommitted changes will be lost.
     ///
@@ -1133,13 +1149,13 @@ impl<'a> PdfPage<'a> {
         self.regenerate_content_immut()
     }
 
-    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying `PdfDocument`.
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
-        Self::regenerate_content_immut_for_handle(self.handle, self.bindings())
+        Self::regenerate_content_immut_for_handle(self.page_handle, self.bindings)
     }
 
     /// Commits any staged but unsaved changes to the page identified by the given internal
-    /// `FPDF_PAGE` handle to the underlying [PdfDocument] containing that page.
+    /// `FPDF_PAGE` handle to the underlying `PdfDocument` containing that page.
     pub(crate) fn regenerate_content_immut_for_handle(
         page: FPDF_PAGE,
         bindings: &dyn PdfiumLibraryBindings,
@@ -1170,9 +1186,9 @@ impl<'a> Drop for PdfPage<'a> {
             debug_assert!(result.is_ok());
         }
 
-        self.bindings().FPDF_ClosePage(self.handle);
+        self.bindings.FPDF_ClosePage(self.page_handle);
 
-        PdfPageIndexCache::remove_index_for_page(*self.document.handle(), self.handle);
+        PdfPageIndexCache::remove_index_for_page(self.document_handle, self.page_handle);
     }
 }
 

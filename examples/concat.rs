@@ -32,44 +32,50 @@ fn main() -> Result<(), PdfiumError> {
 
     // Create a new blank document...
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     // ... append all pages from a test file using PdfDocument::append() ...
 
     document
-        .pages()
+        .pages_mut()
         .append(&pdfium.load_pdf_from_file("test/text-test.pdf", None)?)?;
 
     // ... import some more pages from another test file, this time
     // using PdfPages::import_pages_from_document() ...
 
-    document.pages().copy_pages_from_document(
+    let destination_page_index = document.pages().len();
+
+    document.pages_mut().copy_pages_from_document(
         &pdfium.load_pdf_from_file("test/export-test.pdf", None)?,
         "3-6", // Note: 1-indexed, not 0-indexed
-        document.pages().len(),
+        destination_page_index,
     )?;
 
     // ... import some more pages from yet another test file, this time
     // using PdfPages::import_page_range_from_document() ...
 
-    document.pages().copy_page_range_from_document(
+    let destination_page_index = document.pages().len();
+
+    document.pages_mut().copy_page_range_from_document(
         &pdfium.load_pdf_from_file("test/form-test.pdf", None)?,
         0..=2, // Note: 0-indexed, inclusive range
-        document.pages().len(),
+        destination_page_index,
     )?;
 
     // ... insert front and back cover pages, this time using PdfPages::import_page_from_document() ...
 
-    document.pages().copy_page_from_document(
+    document.pages_mut().copy_page_from_document(
         &pdfium.load_pdf_from_file("test/export-test.pdf", None)?,
         0, // First page, i.e. front cover; note: 0-indexed
         0,
     )?;
 
-    document.pages().copy_page_from_document(
+    let destination_page_index = document.pages().len();
+
+    document.pages_mut().copy_page_from_document(
         &pdfium.load_pdf_from_file("test/export-test.pdf", None)?,
         6, // Last page, i.e. back cover; note: 0-indexed
-        document.pages().len(),
+        destination_page_index,
     )?;
 
     // ... remove the sixth page ...

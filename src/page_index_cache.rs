@@ -235,7 +235,7 @@ mod test {
     fn test_cache_instantiation() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         assert!(PdfPageIndexCache::lock().pages_by_index.is_empty());
 
@@ -243,7 +243,7 @@ mod test {
             // Now let's create a blank page and get a handle to it...
 
             let _page = document
-                .pages()
+                .pages_mut()
                 .create_page_at_start(PdfPagePaperSize::a4())?;
 
             // ... and confirm the cache updated.
@@ -270,14 +270,14 @@ mod test {
     fn test_get_and_set_index_for_page() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
-        let document_0 = pdfium.create_new_pdf()?;
+        let mut document_0 = pdfium.create_new_pdf()?;
 
         {
             // Create three blank pages.
 
             for _ in 1..=3 {
                 document_0
-                    .pages()
+                    .pages_mut()
                     .create_page_at_end(PdfPagePaperSize::a4())?;
             }
 
@@ -303,43 +303,43 @@ mod test {
             // Check the cached indices are correct.
 
             assert!(PdfPageIndexCache::lock()
-                .get(*document_0.handle(), *document_0_page_0.handle())
+                .get(document_0.handle(), document_0_page_0.page_handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
-                    .get(*document_0.handle(), *document_0_page_0.handle())
+                    .get(document_0.handle(), document_0_page_0.page_handle())
                     .unwrap(),
                 0
             );
 
             assert!(PdfPageIndexCache::lock()
-                .get(*document_0.handle(), *document_0_page_1.handle())
+                .get(document_0.handle(), document_0_page_1.page_handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
-                    .get(*document_0.handle(), *document_0_page_1.handle())
+                    .get(document_0.handle(), document_0_page_1.page_handle())
                     .unwrap(),
                 1
             );
 
             assert!(PdfPageIndexCache::lock()
-                .get(*document_0.handle(), *document_0_page_2.handle())
+                .get(document_0.handle(), document_0_page_2.page_handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
-                    .get(*document_0.handle(), *document_0_page_2.handle())
+                    .get(document_0.handle(), document_0_page_2.page_handle())
                     .unwrap(),
                 2
             );
 
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document_0.handle())
+                .get(&document_0.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document_0.handle())
+                    .get(&document_0.handle())
                     .copied()
                     .unwrap(),
                 2
@@ -348,14 +348,14 @@ mod test {
             // Now, while we still have references to those pages, let's create a second document
             // and make sure that references to the second document are also stored correctly.
 
-            let document_1 = pdfium.create_new_pdf()?;
+            let mut document_1 = pdfium.create_new_pdf()?;
 
             {
                 // Create four blank pages.
 
                 for _ in 1..=4 {
                     document_1
-                        .pages()
+                        .pages_mut()
                         .create_page_at_end(PdfPagePaperSize::a4())?;
                 }
 
@@ -385,53 +385,53 @@ mod test {
                 // Check the cached indices are correct.
 
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document_1.handle(), *document_1_page_0.handle())
+                    .get(document_1.handle(), document_1_page_0.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document_1.handle(), *document_1_page_0.handle())
+                        .get(document_1.handle(), document_1_page_0.page_handle())
                         .unwrap(),
                     0
                 );
 
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document_1.handle(), *document_1_page_1.handle())
+                    .get(document_1.handle(), document_1_page_1.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document_1.handle(), *document_1_page_1.handle())
+                        .get(document_1.handle(), document_1_page_1.page_handle())
                         .unwrap(),
                     1
                 );
 
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document_1.handle(), *document_1_page_2.handle())
+                    .get(document_1.handle(), document_1_page_2.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document_1.handle(), *document_1_page_2.handle())
+                        .get(document_1.handle(), document_1_page_2.page_handle())
                         .unwrap(),
                     2
                 );
 
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document_1.handle(), *document_1_page_3.handle())
+                    .get(document_1.handle(), document_1_page_3.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document_1.handle(), *document_1_page_3.handle())
+                        .get(document_1.handle(), document_1_page_3.page_handle())
                         .unwrap(),
                     3
                 );
 
                 assert!(PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document_1.handle())
+                    .get(&document_1.handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .documents_by_maximum_index
-                        .get(document_1.handle())
+                        .get(&document_1.handle())
                         .copied()
                         .unwrap(),
                     3
@@ -456,37 +456,37 @@ mod test {
     fn test_get_invalid_page() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let page_handle = {
             // Create a new page...
 
             let page = document
-                .pages()
+                .pages_mut()
                 .create_page_at_start(PdfPagePaperSize::a4())?;
 
             // ... confirm the index of the page is cached...
 
             assert!(PdfPageIndexCache::lock()
-                .get(*document.handle(), *page.handle())
+                .get(document.handle(), page.page_handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
-                    .get(*document.handle(), *page.handle())
+                    .get(document.handle(), page.page_handle())
                     .unwrap(),
                 0
             );
 
             // ... and return the handle of the page.
 
-            *page.handle()
+            page.page_handle()
         };
 
         // At this point, the page itself has been dropped, so the page handle is no longer valid.
         // Attempting to retrieve the cached index for the page should return None.
 
         assert!(PdfPageIndexCache::lock()
-            .get(*document.handle(), page_handle)
+            .get(document.handle(), page_handle)
             .is_none());
 
         Ok(())
@@ -498,7 +498,7 @@ mod test {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         // To cache the index position of each page, we have to hold a reference to each page.
         // We use a Vec to do this. Create the Vec inside a sub-scope, to ensure its lifetime
@@ -510,7 +510,7 @@ mod test {
             for _ in 1..=100 {
                 pages.push(
                     document
-                        .pages()
+                        .pages_mut()
                         .create_page_at_end(PdfPagePaperSize::a4())?,
                 );
             }
@@ -518,12 +518,12 @@ mod test {
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 100);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 99
@@ -531,11 +531,11 @@ mod test {
 
             for (index, page) in pages.iter().enumerate() {
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document.handle(), *page.handle())
+                    .get(document.handle(), page.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
+                        .get(document.handle(), page.page_handle())
                         .unwrap(),
                     index as PdfPageIndex
                 );
@@ -544,29 +544,29 @@ mod test {
             // Our cache now holds 100 index positions. Insert a new page at the start of the document...
 
             let inserted = document
-                .pages()
+                .pages_mut()
                 .create_page_at_start(PdfPagePaperSize::a4())?;
 
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 101);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 100
             );
 
             assert!(PdfPageIndexCache::lock()
-                .get(*document.handle(), *inserted.handle())
+                .get(document.handle(), inserted.page_handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
-                    .get(*document.handle(), *inserted.handle())
+                    .get(document.handle(), inserted.page_handle())
                     .unwrap(),
                 0
             );
@@ -575,11 +575,11 @@ mod test {
 
             for (index, page) in pages.iter().enumerate() {
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document.handle(), *page.handle())
+                    .get(document.handle(), page.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
+                        .get(document.handle(), page.page_handle())
                         .unwrap(),
                     index as PdfPageIndex + 1
                 );
@@ -588,29 +588,29 @@ mod test {
             // Our cache now holds 101 index positions. Insert a new page at position 50...
 
             let inserted = document
-                .pages()
+                .pages_mut()
                 .create_page_at_index(PdfPagePaperSize::a4(), 50)?;
 
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 102);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 101
             );
 
             assert!(PdfPageIndexCache::lock()
-                .get(*document.handle(), *inserted.handle())
+                .get(document.handle(), inserted.page_handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
-                    .get(*document.handle(), *inserted.handle())
+                    .get(document.handle(), inserted.page_handle())
                     .unwrap(),
                 50
             );
@@ -625,11 +625,11 @@ mod test {
 
                 if index < 49 {
                     assert!(PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
+                        .get(document.handle(), page.page_handle())
                         .is_some());
                     assert_eq!(
                         PdfPageIndexCache::lock()
-                            .get(*document.handle(), *page.handle())
+                            .get(document.handle(), page.page_handle())
                             .unwrap(),
                         index as PdfPageIndex + 1
                     );
@@ -637,11 +637,11 @@ mod test {
 
                 if index > 49 {
                     assert!(PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
+                        .get(document.handle(), page.page_handle())
                         .is_some());
                     assert_eq!(
                         PdfPageIndexCache::lock()
-                            .get(*document.handle(), *page.handle())
+                            .get(document.handle(), page.page_handle())
                             .unwrap(),
                         index as PdfPageIndex + 2
                     );
@@ -658,7 +658,7 @@ mod test {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         // To cache the index position of each page, we have to hold a reference to each page.
         // We use a Vec to do this. Create the Vec inside a sub-scope, to ensure its lifetime
@@ -670,7 +670,7 @@ mod test {
             for _ in 1..=100 {
                 pages.push(Some(
                     document
-                        .pages()
+                        .pages_mut()
                         .create_page_at_end(PdfPagePaperSize::a4())?,
                 ));
             }
@@ -678,12 +678,12 @@ mod test {
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 100);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 99
@@ -692,8 +692,8 @@ mod test {
             for (index, page) in pages.iter().enumerate() {
                 assert!(page.is_some());
 
-                let document = *document.handle();
-                let page = *(page.as_ref().unwrap().handle());
+                let document = document.handle();
+                let page = page.as_ref().unwrap().page_handle();
 
                 assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                 assert_eq!(
@@ -709,12 +709,12 @@ mod test {
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 99);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 98
@@ -730,8 +730,8 @@ mod test {
                 } else {
                     assert!(page.is_some());
 
-                    let document = *document.handle();
-                    let page = *(page.as_ref().unwrap().handle());
+                    let document = document.handle();
+                    let page = page.as_ref().unwrap().page_handle();
 
                     assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
@@ -748,12 +748,12 @@ mod test {
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 98);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 97
@@ -774,8 +774,8 @@ mod test {
 
                     assert!(page.is_some());
 
-                    let document = *document.handle();
-                    let page = *(page.as_ref().unwrap().handle());
+                    let document = document.handle();
+                    let page = page.as_ref().unwrap().page_handle();
 
                     assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
@@ -787,8 +787,8 @@ mod test {
 
                     assert!(page.is_some());
 
-                    let document = *document.handle();
-                    let page = *(page.as_ref().unwrap().handle());
+                    let document = document.handle();
+                    let page = page.as_ref().unwrap().page_handle();
 
                     assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
@@ -810,7 +810,7 @@ mod test {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         // To cache the index position of each page, we have to hold a reference to each page.
         // We use a Vec to do this. Create the Vec inside a sub-scope, to ensure its lifetime
@@ -822,7 +822,7 @@ mod test {
             for _ in 1..=100 {
                 pages.push(
                     document
-                        .pages()
+                        .pages_mut()
                         .create_page_at_end(PdfPagePaperSize::a4())?,
                 );
             }
@@ -830,12 +830,12 @@ mod test {
             assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 100);
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_some());
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .copied()
                     .unwrap(),
                 99
@@ -843,11 +843,11 @@ mod test {
 
             for (index, page) in pages.iter().enumerate() {
                 assert!(PdfPageIndexCache::lock()
-                    .get(*document.handle(), *page.handle())
+                    .get(document.handle(), page.page_handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
-                        .get(*document.handle(), *page.handle())
+                        .get(document.handle(), page.page_handle())
                         .unwrap(),
                     index as PdfPageIndex
                 );
@@ -858,28 +858,28 @@ mod test {
             for index in (0..100).rev() {
                 assert!(PdfPageIndexCache::lock()
                     .documents_by_maximum_index
-                    .get(document.handle())
+                    .get(&document.handle())
                     .is_some());
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .documents_by_maximum_index
-                        .get(document.handle())
+                        .get(&document.handle())
                         .copied()
                         .unwrap(),
                     index
                 );
 
-                PdfPageIndexCache::lock().delete(*document.handle(), index, 1);
+                PdfPageIndexCache::lock().delete(document.handle(), index, 1);
 
                 if index > 0 {
                     assert!(PdfPageIndexCache::lock()
                         .documents_by_maximum_index
-                        .get(document.handle())
+                        .get(&document.handle())
                         .is_some());
                     assert_eq!(
                         PdfPageIndexCache::lock()
                             .documents_by_maximum_index
-                            .get(document.handle())
+                            .get(&document.handle())
                             .copied()
                             .unwrap(),
                         index - 1
@@ -892,7 +892,7 @@ mod test {
             assert!(PdfPageIndexCache::lock().pages_by_index.is_empty());
             assert!(PdfPageIndexCache::lock()
                 .documents_by_maximum_index
-                .get(document.handle())
+                .get(&document.handle())
                 .is_none());
         }
 

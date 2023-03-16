@@ -2,8 +2,8 @@
 //! page object defining a path.
 
 use crate::bindgen::{
-    FPDF_ANNOTATION, FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING,
-    FPDF_PAGE, FPDF_PAGEOBJECT,
+    FPDF_ANNOTATION, FPDF_BOOL, FPDF_DOCUMENT, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE,
+    FPDF_FILLMODE_WINDING, FPDF_PAGE, FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
@@ -823,20 +823,17 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn fill_mode(&self) -> Result<PdfPathFillMode, PdfiumError> {
         let mut raw_fill_mode: c_int = 0;
 
-        let mut _raw_stroke: FPDF_BOOL = self.bindings().FALSE();
+        let mut _raw_stroke: FPDF_BOOL = self.bindings.FALSE();
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPath_GetDrawMode(
-                *self.get_object_handle(),
-                &mut raw_fill_mode,
-                &mut _raw_stroke,
-            ))
-        {
+        if self.bindings.is_true(self.bindings.FPDFPath_GetDrawMode(
+            self.get_object_handle(),
+            &mut raw_fill_mode,
+            &mut _raw_stroke,
+        )) {
             PdfPathFillMode::from_pdfium(raw_fill_mode)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings()
+                self.bindings
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
@@ -851,20 +848,17 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn is_stroked(&self) -> Result<bool, PdfiumError> {
         let mut _raw_fill_mode: c_int = 0;
 
-        let mut raw_stroke: FPDF_BOOL = self.bindings().FALSE();
+        let mut raw_stroke: FPDF_BOOL = self.bindings.FALSE();
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPath_GetDrawMode(
-                *self.get_object_handle(),
-                &mut _raw_fill_mode,
-                &mut raw_stroke,
-            ))
-        {
-            Ok(self.bindings().is_true(raw_stroke))
+        if self.bindings.is_true(self.bindings.FPDFPath_GetDrawMode(
+            self.get_object_handle(),
+            &mut _raw_fill_mode,
+            &mut raw_stroke,
+        )) {
+            Ok(self.bindings.is_true(raw_stroke))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings()
+                self.bindings
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
@@ -881,18 +875,15 @@ impl<'a> PdfPagePathObject<'a> {
         fill_mode: PdfPathFillMode,
         do_stroke: bool,
     ) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPath_SetDrawMode(
-                *self.get_object_handle(),
-                fill_mode.as_pdfium() as c_int,
-                self.bindings().bool_to_pdfium(do_stroke),
-            ))
-        {
+        if self.bindings.is_true(self.bindings.FPDFPath_SetDrawMode(
+            self.get_object_handle(),
+            fill_mode.as_pdfium() as c_int,
+            self.bindings.bool_to_pdfium(do_stroke),
+        )) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings()
+                self.bindings
                     .get_pdfium_last_error()
                     .unwrap_or(PdfiumInternalError::Unknown),
             ))
@@ -928,13 +919,13 @@ impl<'a> PdfPagePathObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
-        &self.object_handle
+    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
+        self.object_handle
     }
 
     #[inline]
-    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
-        &self.page_handle
+    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
+        self.page_handle
     }
 
     #[inline]
@@ -948,8 +939,8 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     }
 
     #[inline]
-    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
-        &self.annotation_handle
+    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
+        self.annotation_handle
     }
 
     #[inline]
@@ -981,10 +972,17 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
 
     fn try_copy_impl<'b>(
         &self,
-        document: &PdfDocument<'b>,
+        _: FPDF_DOCUMENT,
+        bindings: &'b dyn PdfiumLibraryBindings,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        let mut copy =
-            PdfPagePathObject::new(document, PdfPoints::ZERO, PdfPoints::ZERO, None, None, None)?;
+        let mut copy = PdfPagePathObject::new_from_bindings(
+            bindings,
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            None,
+            None,
+            None,
+        )?;
 
         copy.set_fill_and_stroke_mode(self.fill_mode()?, self.is_stroked()?)?;
         copy.set_fill_color(self.fill_color()?)?;

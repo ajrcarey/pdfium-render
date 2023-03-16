@@ -13,7 +13,7 @@ pub fn main() -> Result<(), PdfiumError> {
     let mut document = pdfium.create_new_pdf()?;
 
     document
-        .pages()
+        .pages_mut()
         .create_page_at_start(PdfPagePaperSize::a4())?
         .objects_mut()
         .create_text_object(

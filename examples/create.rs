@@ -11,13 +11,13 @@ fn main() -> Result<(), PdfiumError> {
 
     // Create a new blank document...
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     // ... add a new page...
 
-    let mut pages = document.pages();
-
-    let mut page = pages.create_page_at_start(PdfPagePaperSize::a4())?;
+    let mut page = document
+        .pages_mut()
+        .create_page_at_start(PdfPagePaperSize::a4())?;
 
     // ... add some text objects to the page...
 

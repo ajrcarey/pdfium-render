@@ -80,17 +80,17 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-_Note: Upcoming release 0.8.0 will include a breaking change._ The `PdfDocument::pages()` function,
-which currently returns an owned `PdfPages` instance, will be changed so that it returns
-an immutable `&PdfPages` reference instead. A new `PdfDocument::pages_mut()` function
-will return a mutable `&mut PdfPages` reference. It will no longer be possible to retrieve
-an owned `PdfPages` instance. For the motivation behind this change, see
-<https://github.com/ajrcarey/pdfium-render/issues/47>.
+Version 0.8.0 reworks the `PdfDocument::pages()` function. Previously, this function
+returned an owned `PdfPages` instance; it now returns an immutable `&PdfPages` reference instead.
+A new `PdfDocument::pages_mut()` function returns a mutable `&mut PdfPages` reference.
+It is no longer possible to retrieve an owned `PdfPages` instance. For the motivation behind
+this change, see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
 Version 0.7.34 adds support for reading values from form fields wrapped inside the newly added
 `PdfPageWidgetAnnotation` and `PdfPageXfaWidgetAnnotation` annotation objects. Also added are
 the `PdfFormField` enum and its variants, and various supporting structs for handling form
-field values. A map containing all form field names and values can be retrieved via the new
+field values. Widget annotations can be iterated over to retrieve individual form fields, or
+a map of all form field names and values in a document can be quickly retrieved via the new
 `PdfForm::field_values()` function. `examples/form_fields.rs` demonstrates the new functionality.
 
 Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
@@ -248,7 +248,7 @@ This has the effect of sequencing all calls to Pdfium as if they were single-thr
 even when using `pdfium-render` from multiple threads. This approach offers no performance benefit,
 but it ensures that Pdfium will not crash when running as part of a multi-threaded application.
 
-An example of safely using `pdfium-render` as part of a multithreaded parallel iterator is
+An example of safely using `pdfium-render` as part of a multi-threaded parallel iterator is
 available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>.
 
 ## Crate features
@@ -337,14 +337,11 @@ functions specific to interactive scripting, user interaction, and printing.
 
 * Releases numbered 0.4.x added support for all page rendering Pdfium functions to `pdfium-render`.
 * Releases numbered 0.5.x-0.6.x added support for most read-only Pdfium functions to `pdfium-render`.
-* Releases numbered 0.7.x aim to progressively add support for all Pdfium page object creation and editing functions to `pdfium-render`. 
-* Releases numbered 0.8.x aim to progressively add support for all other Pdfium editing functions to `pdfium-render`.
+* Releases numbered 0.7.x added support for most Pdfium page object creation and editing functions to `pdfium-render`. 
+* Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-By version 0.8.0, `pdfium-render` should provide useful coverage for the vast majority of common
-use cases, whether rendering existing documents or creating new ones.
-
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.7.34, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.0, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -357,16 +354,19 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.0: removes the ability to acquire an owned `PdfPages` instance from `PdfDocument::pages()`
+  as per <https://github.com/ajrcarey/pdfium-render/issues/47>; adds new `PdfDocument::pages_mut()`
+  function to match reworked `PdfDocument::pages()` function.
 * 0.7.34: replaces functions in `PdfPageLinks` using linear traversal with binary search traversal;
   adds new `PdfFormField` enum; renames `PdfPageObjectFormFragment` to `PdfPageXObjectFormObject`
-  to disambiguate it from `PdfForm` and `PdfFormField`, and `PdfFormFields`; adds
-  `PdfPageAnnotationCommon::as_form_field()` accessor function; adds form field structs
-  `PdfFormPushButtonField`, `PdfFormCheckboxField`, `PdfFormComboBoxField`, `PdfFormListBoxField`,
-  `PdfFormRadioButtonField`, `PdfFormSignatureField`, `PdfFormTextField`, and
-  `PdfFormUnknownField`; adds `PdfFormFieldOption` struct and `PdfFormFieldOptions` collection,
-  for retrieving the options displayed within a list box or combo box field; adds `PdfFormFieldCommon`
-  and `PdfFormFieldPrivate` traits and associated implementations; adds the `PdfForm::field_values()`
-  convenience function; adds `examples/form_fields.rs` example.
+  to disambiguate it from `PdfForm` and `PdfFormField`; adds `PdfPageAnnotationCommon::as_form_field()`
+  accessor function; adds form field structs `PdfFormPushButtonField`, `PdfFormCheckboxField`,
+  `PdfFormComboBoxField`, `PdfFormListBoxField`, `PdfFormRadioButtonField`, `PdfFormSignatureField`,
+  `PdfFormTextField`, and `PdfFormUnknownField`; adds `PdfFormFieldOption` struct and
+  `PdfFormFieldOptions` collection for retrieving the options displayed within a list box or
+  combo box field; adds `PdfFormFieldCommon` and `PdfFormFieldPrivate` traits and associated
+  implementations for all `PdfFormField` field types; adds the `PdfForm::field_values()` convenience
+  function; adds `examples/form_fields.rs` example.
 * 0.7.33: adds the `create_transform_setters!()` and `create_transform_getters!()` private macros,
   ensuring API consistency and maximising code reuse across all transformable objects;
   adds `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and `PdfPage::set_matrix_with_clip()`

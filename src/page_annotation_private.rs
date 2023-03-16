@@ -19,7 +19,7 @@ pub(crate) mod internal {
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
     pub trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
         /// Returns the internal `FPDF_ANNOTATION` handle for this [PdfPageAnnotation].
-        fn handle(&self) -> &FPDF_ANNOTATION;
+        fn handle(&self) -> FPDF_ANNOTATION;
 
         /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotation].
         fn bindings(&self) -> &dyn PdfiumLibraryBindings;
@@ -29,14 +29,14 @@ pub(crate) mod internal {
         fn get_string_value(&self, key: &str) -> Option<String> {
             if !self
                 .bindings()
-                .is_true(self.bindings().FPDFAnnot_HasKey(*self.handle(), key))
+                .is_true(self.bindings().FPDFAnnot_HasKey(self.handle(), key))
             {
                 // The key does not exist.
 
                 return None;
             }
 
-            if self.bindings().FPDFAnnot_GetValueType(*self.handle(), key) as u32
+            if self.bindings().FPDFAnnot_GetValueType(self.handle(), key) as u32
                 != FPDF_OBJECT_STRING
             {
                 // The key exists, but the value associated with the key is not a string.
@@ -54,7 +54,7 @@ pub(crate) mod internal {
             // this will write the string value into the buffer.
 
             let buffer_length = self.bindings().FPDFAnnot_GetStringValue(
-                *self.handle(),
+                self.handle(),
                 key,
                 std::ptr::null_mut(),
                 0,
@@ -70,7 +70,7 @@ pub(crate) mod internal {
             let mut buffer = create_byte_buffer(buffer_length as usize);
 
             let result = self.bindings().FPDFAnnot_GetStringValue(
-                *self.handle(),
+                self.handle(),
                 key,
                 buffer.as_mut_ptr() as *mut FPDF_WCHAR,
                 buffer_length,
@@ -97,7 +97,7 @@ pub(crate) mod internal {
                 top: 0_f32,
             };
 
-            let result = self.bindings().FPDFAnnot_GetRect(*self.handle(), &mut rect);
+            let result = self.bindings().FPDFAnnot_GetRect(self.handle(), &mut rect);
 
             PdfRect::from_pdfium_as_result(result, rect, self.bindings())
         }

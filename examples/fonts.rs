@@ -8,7 +8,7 @@ fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.create_new_pdf().unwrap();
+    let document = pdfium.create_new_pdf()?;
 
     // Log characteristics of the 14 built-in PDF fonts to the console.
 

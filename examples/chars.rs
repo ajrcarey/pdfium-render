@@ -8,10 +8,10 @@ fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     let mut page = document
-        .pages()
+        .pages_mut()
         .create_page_at_end(PdfPagePaperSize::a4())?;
 
     // Create a new text object.
@@ -45,33 +45,30 @@ fn main() -> Result<(), PdfiumError> {
 
                 start_of_word = Some(char.loose_bounds()?);
                 word += &str;
-            } else {
+            } else if str == " " {
+                if let Some(start) = start_of_word {
+                    // We found the end of the current word.
 
-                if str == " " {
-                    if let Some(start) = start_of_word {
-                        // We found the end of the current word.
-    
-                        println!(
-                            "{}: ({}, {}) - ({}, {})",
-                            word,
-                            start.left.value,
-                            start.bottom.value,
-                            char.loose_bounds()?.left.value, // The word ends at the space's leading (left) edge
-                            char.loose_bounds()?.top.value
-                        );
-    
-                        // Prepare for the next word.
-    
-                        start_of_word = None;
-                        word = String::new();
-                    }
-                } else {
-                    // We're progressing through the middle of a word.
-    
-                    word += &str;
+                    println!(
+                        "{}: ({}, {}) - ({}, {})",
+                        word,
+                        start.left.value,
+                        start.bottom.value,
+                        char.loose_bounds()?.left.value, // The word ends at the space's leading (left) edge
+                        char.loose_bounds()?.top.value
+                    );
+
+                    // Prepare for the next word.
+
+                    start_of_word = None;
+                    word = String::new();
                 }
+            } else {
+                // We're progressing through the middle of a word.
+
+                word += &str;
             }
-                
+
             if index == chars.len() - 1 {
                 // We're at the end of the text string. Output the final word.
 
@@ -85,7 +82,7 @@ fn main() -> Result<(), PdfiumError> {
                         char.loose_bounds()?.top.value
                     );
                 }
-            }    
+            }
         }
     }
 

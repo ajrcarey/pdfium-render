@@ -30,9 +30,9 @@ use std::collections::HashMap;
 /// To create a populated group, use one of the [PdfPageGroupObject::new()],
 /// [PdfPageGroupObject::from_vec()], or [PdfPageGroupObject::from_slice()] functions.
 pub struct PdfPageGroupObject<'a> {
-    object_handles: Vec<FPDF_PAGEOBJECT>,
-    page_handle: FPDF_PAGE,
     document_handle: FPDF_DOCUMENT,
+    page_handle: FPDF_PAGE,
+    object_handles: Vec<FPDF_PAGEOBJECT>,
     bindings: &'a dyn PdfiumLibraryBindings,
     do_regenerate_page_content_after_each_change: bool,
 }
@@ -40,15 +40,15 @@ pub struct PdfPageGroupObject<'a> {
 impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
-        page_handle: FPDF_PAGE,
         document_handle: FPDF_DOCUMENT,
+        page_handle: FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
         do_regenerate_page_content_after_each_change: bool,
     ) -> Self {
         PdfPageGroupObject {
-            object_handles: Vec::new(),
             page_handle,
             document_handle,
+            object_handles: Vec::new(),
             bindings,
             do_regenerate_page_content_after_each_change,
         }
@@ -58,8 +58,8 @@ impl<'a> PdfPageGroupObject<'a> {
     /// on the given [PdfPage].
     pub fn empty(page: &'a PdfPage) -> Self {
         Self::from_pdfium(
-            *page.handle(),
-            *page.document().handle(),
+            page.document_handle(),
+            page.page_handle(),
             page.bindings(),
             page.content_regeneration_strategy()
                 == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
@@ -73,8 +73,8 @@ impl<'a> PdfPageGroupObject<'a> {
         F: FnMut(&PdfPageObject) -> bool,
     {
         let mut result = Self::from_pdfium(
-            *page.handle(),
-            *page.document().handle(),
+            page.document_handle(),
+            page.page_handle(),
             page.bindings(),
             page.content_regeneration_strategy()
                 == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
@@ -104,8 +104,8 @@ impl<'a> PdfPageGroupObject<'a> {
         objects: &mut [PdfPageObject<'a>],
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::from_pdfium(
-            *page.handle(),
-            *page.document().handle(),
+            page.document_handle(),
+            page.page_handle(),
             page.bindings(),
             page.content_regeneration_strategy()
                 == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
@@ -133,14 +133,14 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Returns `true` if this group already contains the given page object.
     #[inline]
     pub fn contains(&self, object: &PdfPageObject) -> bool {
-        self.object_handles.contains(object.get_object_handle())
+        self.object_handles.contains(&object.get_object_handle())
     }
 
     /// Adds a single [PdfPageObject] to this group.
     pub fn push(&mut self, object: &mut PdfPageObject<'a>) -> Result<(), PdfiumError> {
         let was_object_already_attached_to_group_page =
             if let Some(page_handle) = object.get_page_handle() {
-                if *page_handle != self.page_handle {
+                if page_handle != self.page_handle {
                     // The object is attached to a different page.
 
                     // In theory, transferring ownership of the page object from its current
@@ -167,7 +167,7 @@ impl<'a> PdfPageGroupObject<'a> {
                 false
             };
 
-        self.object_handles.push(*object.get_object_handle());
+        self.object_handles.push(object.get_object_handle());
 
         if !was_object_already_attached_to_group_page
             && self.do_regenerate_page_content_after_each_change
@@ -330,7 +330,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// onto the given existing destination [PdfPage].
     ///
     /// This function can only copy page objects supported by the [PdfPageObjectCommon::try_copy()]
-    /// method. For a different approach that supports more page object types but is more limited
+    /// function. For a different approach that supports more page object types but is more limited
     /// in where the copied objects can be placed, see the [PdfPageGroupObject::copy_onto_new_page_at_start()],
     /// [PdfPageGroupObject::copy_onto_new_page_at_end()], and
     /// [PdfPageGroupObject::copy_onto_new_page_at_index()] functions.
@@ -350,7 +350,8 @@ impl<'a> PdfPageGroupObject<'a> {
         for handle in self.object_handles.iter() {
             let source = self.get_object_from_handle(handle);
 
-            let clone = source.try_copy(destination.document())?;
+            let clone =
+                source.try_copy_impl(destination.document_handle(), destination.bindings())?;
 
             group.push(&mut destination.objects_mut().add_object(clone)?)?;
         }
@@ -440,7 +441,7 @@ impl<'a> PdfPageGroupObject<'a> {
             PdfPages::copy_page_range_between_documents(
                 self.document_handle,
                 source_page_index..=source_page_index,
-                *cache.handle(),
+                cache.handle(),
                 0,
                 self.bindings,
             )?;
@@ -492,9 +493,9 @@ impl<'a> PdfPageGroupObject<'a> {
         // we now copy the page back into the given destination.
 
         PdfPages::copy_page_range_between_documents(
-            *cache.handle(),
+            cache.handle(),
             0..=0,
-            *destination.handle(),
+            destination.handle(),
             index,
             self.bindings,
         )?;
@@ -814,10 +815,10 @@ mod test {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let mut page = document
-            .pages()
+            .pages_mut()
             .create_page_at_start(PdfPagePaperSize::a4())?;
 
         page.objects_mut().create_path_object_rect(

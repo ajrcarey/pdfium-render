@@ -13,11 +13,11 @@ fn main() -> Result<(), PdfiumError> {
 
     // Create a new blank document...
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     // ... append the pages from three test files...
 
-    let mut pages = document.pages();
+    let pages = document.pages_mut();
 
     pages.append(&pdfium.load_pdf_from_file("test/text-test.pdf", None)?)?;
     pages.append(&pdfium.load_pdf_from_file("test/export-test.pdf", None)?)?;

@@ -159,7 +159,7 @@ impl<'a> PdfFont<'a> {
         let mut result = Self::from_pdfium(
             document
                 .bindings()
-                .FPDFText_LoadStandardFont(*document.handle(), font.to_pdf_font_name()),
+                .FPDFText_LoadStandardFont(document.handle(), font.to_pdf_font_name()),
             document.bindings(),
         );
 
@@ -538,18 +538,16 @@ impl<'a> PdfFont<'a> {
         font_type: c_uint,
         is_cid_font: bool,
     ) -> Result<Self, PdfiumError> {
-        let bindings = document.bindings();
-
-        let handle = bindings.FPDFText_LoadFont(
-            *document.handle(),
+        let handle = document.bindings().FPDFText_LoadFont(
+            document.handle(),
             font_data.as_ptr(),
             font_data.len() as c_uint,
             font_type as c_int,
-            bindings.bool_to_pdfium(is_cid_font),
+            document.bindings().bool_to_pdfium(is_cid_font),
         );
 
         if handle.is_null() {
-            if let Some(error) = bindings.get_pdfium_last_error() {
+            if let Some(error) = document.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
             } else {
                 // This would be an unusual situation; a null handle indicating failure,
@@ -560,7 +558,7 @@ impl<'a> PdfFont<'a> {
                 ))
             }
         } else {
-            let mut result = PdfFont::from_pdfium(handle, bindings);
+            let mut result = PdfFont::from_pdfium(handle, document.bindings());
 
             result.is_font_memory_loaded = true;
 
@@ -570,8 +568,8 @@ impl<'a> PdfFont<'a> {
 
     /// Returns the internal `FPDF_FONT` handle for this [PdfFont].
     #[inline]
-    pub(crate) fn handle(&self) -> &FPDF_FONT {
-        &self.handle
+    pub(crate) fn handle(&self) -> FPDF_FONT {
+        self.handle
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfFont].

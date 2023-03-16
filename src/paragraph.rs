@@ -95,8 +95,8 @@ impl<'a> PdfStyledString<'a> {
             "does_match_object_styling()? {} ==? {}, {:?} ==? {:?}, {} ==? {}, {} ==? {}, {} ==? {}",
             self.font_size().value,
             other_font_size.value,
-            *self.font().handle(),
-            *other_font.handle(),
+            self.font().handle(),
+            other_font.handle(),
             self.font().is_all_caps(),
             other_font.is_all_caps(),
             self.font().is_small_caps(),
@@ -111,7 +111,7 @@ impl<'a> PdfStyledString<'a> {
 
         let this_font = self.font();
 
-        if *this_font.handle() != *other_font.handle() {
+        if this_font.handle() != other_font.handle() {
             return false;
         }
 
@@ -146,7 +146,7 @@ impl<'a> PdfStyledString<'a> {
 enum PdfParagraphFragment<'a> {
     StyledString(PdfStyledString<'a>),
     LineBreak(PdfLineAlignment),
-    NonTextObject(&'a FPDF_PAGEOBJECT),
+    NonTextObject(FPDF_PAGEOBJECT),
 }
 
 /// Controls the overflow behaviour of a [PdfPageParagraphObject] that, due to changes in its content,

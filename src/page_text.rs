@@ -217,7 +217,7 @@ impl<'a> PdfPageText<'a> {
         // this will write the text for the page object into the buffer.
 
         let buffer_length = self.bindings.FPDFTextObj_GetText(
-            *object.get_object_handle(),
+            object.get_object_handle(),
             self.handle,
             null_mut(),
             0,
@@ -232,7 +232,7 @@ impl<'a> PdfPageText<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = self.bindings.FPDFTextObj_GetText(
-            *object.get_object_handle(),
+            object.get_object_handle(),
             self.handle,
             buffer.as_mut_ptr() as *mut FPDF_WCHAR,
             buffer_length,

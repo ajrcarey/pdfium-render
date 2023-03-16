@@ -358,7 +358,7 @@ where
         let mut object = PdfPageTextObject::new_from_handles(
             self.document_handle(),
             text,
-            *font.handle(),
+            font.handle(),
             font_size,
             self.bindings(),
         )?;

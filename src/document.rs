@@ -130,7 +130,8 @@ impl PdfDocumentVersion {
 /// * [PdfDocument::bookmarks()], an immutable collection of all the [PdfBookmarks] in the document.
 /// * [PdfDocument::form()], an immutable reference to the [PdfForm] embedded in the document, if any.
 /// * [PdfDocument::metadata()], an immutable collection of all the [PdfMetadata] tags in the document.
-/// * [PdfDocument::pages()], a collection of all the [PdfPages] in the document.
+/// * [PdfDocument::pages()], an immutable collection of all the [PdfPages] in the document.
+/// * [PdfDocument::pages_mut()], a mutable collection of all the [PdfPages] in the document.
 /// * [PdfDocument::permissions()], settings relating to security handlers and document permissions
 /// for the document.
 /// * [PdfDocument::signatures()], an immutable collection of all the [PdfSignatures] in the document.
@@ -141,6 +142,7 @@ pub struct PdfDocument<'a> {
     bookmarks: PdfBookmarks<'a>,
     form: Option<PdfForm<'a>>,
     metadata: PdfMetadata<'a>,
+    pages: PdfPages<'a>,
     permissions: PdfPermissions<'a>,
     signatures: PdfSignatures<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -157,13 +159,19 @@ impl<'a> PdfDocument<'a> {
         handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        Self {
+        let form = PdfForm::from_pdfium(handle, bindings);
+
+        let pages =
+            PdfPages::from_pdfium(handle, form.as_ref().map(|form| form.handle()), bindings);
+
+        PdfDocument {
             handle,
             output_version: None,
             attachments: PdfAttachments::from_pdfium(handle, bindings),
             bookmarks: PdfBookmarks::from_pdfium(handle, bindings),
-            form: PdfForm::from_pdfium(handle, bindings),
+            form,
             metadata: PdfMetadata::from_pdfium(handle, bindings),
+            pages,
             permissions: PdfPermissions::from_pdfium(handle, bindings),
             signatures: PdfSignatures::from_pdfium(handle, bindings),
             bindings,
@@ -174,8 +182,8 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfDocument].
     #[inline]
-    pub(crate) fn handle(&self) -> &FPDF_DOCUMENT {
-        &self.handle
+    pub(crate) fn handle(&self) -> FPDF_DOCUMENT {
+        self.handle
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfDocument].
@@ -246,12 +254,16 @@ impl<'a> PdfDocument<'a> {
         &self.metadata
     }
 
-    /// Returns a collection of all the [PdfPages] in this [PdfDocument].
-    // TODO: AJRC - 26/9/22 - distinguish between immutable and mutable access to PdfPages.
-    // Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/47.
+    /// Returns an immutable collection of all the [PdfPages] in this [PdfDocument].
     #[inline]
-    pub fn pages(&'a self) -> PdfPages<'a> {
-        PdfPages::new(self)
+    pub fn pages(&self) -> &PdfPages {
+        &self.pages
+    }
+
+    /// Returns a mutable collection of all the [PdfPages] in this [PdfDocument].
+    #[inline]
+    pub fn pages_mut(&mut self) -> &mut PdfPages<'a> {
+        &mut self.pages
     }
 
     /// Returns an immutable collection of all the [PdfPermissions] applied to this [PdfDocument].

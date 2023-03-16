@@ -8,7 +8,7 @@ pub fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.load_pdf_from_file("test/text-test.pdf", None)?; // Load the sample file...
+    let mut document = pdfium.load_pdf_from_file("test/text-test.pdf", None)?; // Load the sample file...
 
     // Delete all pages in the document except the first.
 
@@ -16,9 +16,15 @@ pub fn main() -> Result<(), PdfiumError> {
         document.pages().get(index)?.delete()?;
     }
 
-    // Move all the page objects on the bottom half of the first page to a new page.
+    // Create a new page that will serve as the destination for our moved page objects.
 
-    let source_page = document.pages().get(0)?;
+    document
+        .pages_mut()
+        .create_page_at_end(PdfPagePaperSize::a4())?;
+
+    // Move all the page objects on the bottom half of the first page to the destination page.
+
+    let source_page = document.pages().first()?;
 
     let mut source_objects = source_page.objects().create_group(|object| {
         object
@@ -43,9 +49,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     println!("{} objects to copy", source_objects.len());
 
-    let mut destination_page = document
-        .pages()
-        .create_page_at_end(PdfPagePaperSize::a4())?;
+    let mut destination_page = document.pages().last()?;
 
     let destination_objects = source_objects.try_copy_onto_existing_page(&mut destination_page)?;
 

@@ -8,10 +8,9 @@ use crate::bindgen::{
     FPDF_ANNOT_SCREEN, FPDF_ANNOT_SOUND, FPDF_ANNOT_SQUARE, FPDF_ANNOT_SQUIGGLY, FPDF_ANNOT_STAMP,
     FPDF_ANNOT_STRIKEOUT, FPDF_ANNOT_TEXT, FPDF_ANNOT_THREED, FPDF_ANNOT_TRAPNET,
     FPDF_ANNOT_UNDERLINE, FPDF_ANNOT_UNKNOWN, FPDF_ANNOT_WATERMARK, FPDF_ANNOT_WIDGET,
-    FPDF_ANNOT_XFAWIDGET, FPDF_PAGE,
+    FPDF_ANNOT_XFAWIDGET, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::error::PdfiumError;
 use crate::page::PdfRect;
 use crate::page_annotation_circle::PdfPageCircleAnnotation;
@@ -189,63 +188,137 @@ pub enum PdfPageAnnotation<'a> {
 
 impl<'a> PdfPageAnnotation<'a> {
     pub(crate) fn from_pdfium(
-        annotation_handle: FPDF_ANNOTATION,
+        document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
-        document: &'a PdfDocument,
+        annotation_handle: FPDF_ANNOTATION,
+        form_handle: Option<FPDF_FORMHANDLE>,
+        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        let annotation_type = PdfPageAnnotationType::from_pdfium(
-            document.bindings().FPDFAnnot_GetSubtype(annotation_handle),
-        )
-        .unwrap_or(PdfPageAnnotationType::Unknown);
+        let annotation_type =
+            PdfPageAnnotationType::from_pdfium(bindings.FPDFAnnot_GetSubtype(annotation_handle))
+                .unwrap_or(PdfPageAnnotationType::Unknown);
 
         match annotation_type {
-            PdfPageAnnotationType::Circle => PdfPageAnnotation::Circle(
-                PdfPageCircleAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::FreeText => PdfPageAnnotation::FreeText(
-                PdfPageFreeTextAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Highlight => PdfPageAnnotation::Highlight(
-                PdfPageHighlightAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Ink => PdfPageAnnotation::Ink(
-                PdfPageInkAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Link => PdfPageAnnotation::Link(
-                PdfPageLinkAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Popup => PdfPageAnnotation::Popup(
-                PdfPagePopupAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Square => PdfPageAnnotation::Square(
-                PdfPageSquareAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Squiggly => PdfPageAnnotation::Squiggly(
-                PdfPageSquigglyAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Stamp => PdfPageAnnotation::Stamp(
-                PdfPageStampAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Strikeout => PdfPageAnnotation::Strikeout(
-                PdfPageStrikeoutAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Text => PdfPageAnnotation::Text(
-                PdfPageTextAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Underline => PdfPageAnnotation::Underline(
-                PdfPageUnderlineAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::Widget => PdfPageAnnotation::Widget(
-                PdfPageWidgetAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
-            PdfPageAnnotationType::XfaWidget => PdfPageAnnotation::XfaWidget(
-                PdfPageXfaWidgetAnnotation::from_pdfium(annotation_handle, page_handle, document),
-            ),
+            PdfPageAnnotationType::Circle => {
+                PdfPageAnnotation::Circle(PdfPageCircleAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::FreeText => {
+                PdfPageAnnotation::FreeText(PdfPageFreeTextAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Highlight => {
+                PdfPageAnnotation::Highlight(PdfPageHighlightAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Ink => {
+                PdfPageAnnotation::Ink(PdfPageInkAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Link => {
+                PdfPageAnnotation::Link(PdfPageLinkAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Popup => {
+                PdfPageAnnotation::Popup(PdfPagePopupAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Square => {
+                PdfPageAnnotation::Square(PdfPageSquareAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Squiggly => {
+                PdfPageAnnotation::Squiggly(PdfPageSquigglyAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Stamp => {
+                PdfPageAnnotation::Stamp(PdfPageStampAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Strikeout => {
+                PdfPageAnnotation::Strikeout(PdfPageStrikeoutAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Text => {
+                PdfPageAnnotation::Text(PdfPageTextAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Underline => {
+                PdfPageAnnotation::Underline(PdfPageUnderlineAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::Widget => {
+                PdfPageAnnotation::Widget(PdfPageWidgetAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    form_handle,
+                    bindings,
+                ))
+            }
+            PdfPageAnnotationType::XfaWidget => {
+                PdfPageAnnotation::XfaWidget(PdfPageXfaWidgetAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    form_handle,
+                    bindings,
+                ))
+            }
             _ => PdfPageAnnotation::Unsupported(PdfPageUnsupportedAnnotation::from_pdfium(
-                annotation_type,
-                annotation_handle,
+                document_handle,
                 page_handle,
-                document,
+                annotation_handle,
+                annotation_type,
+                bindings,
             )),
         }
     }
@@ -628,7 +701,7 @@ where
 
 impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageAnnotation<'a> {
     #[inline]
-    fn handle(&self) -> &FPDF_ANNOTATION {
+    fn handle(&self) -> FPDF_ANNOTATION {
         self.unwrap_as_trait().handle()
     }
 
@@ -652,6 +725,6 @@ impl<'a> Drop for PdfPageAnnotation<'a> {
     /// Closes this [PdfPageAnnotation], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings().FPDFPage_CloseAnnot(*self.handle());
+        self.bindings().FPDFPage_CloseAnnot(self.handle());
     }
 }

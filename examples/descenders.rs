@@ -8,10 +8,10 @@ fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     let mut page = document
-        .pages()
+        .pages_mut()
         .create_page_at_end(PdfPagePaperSize::a4())?;
 
     let object = page.objects_mut().create_text_object(

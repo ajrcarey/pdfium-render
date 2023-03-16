@@ -1,33 +1,34 @@
 //! Defines the [PdfPageStampAnnotation] struct, exposing functionality related to a single
 //! user annotation of type `PdfPageAnnotationType::Stamp`.
 
-use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE};
+use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 
+/// A single `PdfPageAnnotation` of type `PdfPageAnnotationType::Stamp`.
 pub struct PdfPageStampAnnotation<'a> {
     handle: FPDF_ANNOTATION,
-    bindings: &'a dyn PdfiumLibraryBindings,
     objects: PdfPageAnnotationObjects<'a>,
+    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageStampAnnotation<'a> {
     pub(crate) fn from_pdfium(
-        annotation_handle: FPDF_ANNOTATION,
+        document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
-        document: &'a PdfDocument<'a>,
+        annotation_handle: FPDF_ANNOTATION,
+        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageStampAnnotation {
             handle: annotation_handle,
-            bindings: document.bindings(),
             objects: PdfPageAnnotationObjects::from_pdfium(
-                *document.handle(),
+                document_handle,
                 page_handle,
                 annotation_handle,
-                document.bindings(),
+                bindings,
             ),
+            bindings,
         }
     }
 
@@ -40,8 +41,8 @@ impl<'a> PdfPageStampAnnotation<'a> {
 
 impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageStampAnnotation<'a> {
     #[inline]
-    fn handle(&self) -> &FPDF_ANNOTATION {
-        &self.handle
+    fn handle(&self) -> FPDF_ANNOTATION {
+        self.handle
     }
 
     #[inline]

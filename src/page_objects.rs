@@ -46,8 +46,8 @@ impl<'a> PdfPageObjects<'a> {
 
     /// Returns the internal `FPDF_PAGE` handle for the [PdfPage] containing this [PdfPageObjects] collection.
     #[inline]
-    pub(crate) fn get_page_handle(&self) -> &FPDF_PAGE {
-        &self.page_handle
+    pub(crate) fn get_page_handle(&self) -> FPDF_PAGE {
+        self.page_handle
     }
 
     /// Sets whether or not this [PdfPageObjects] collection should trigger content regeneration
@@ -82,8 +82,8 @@ impl<'a> PdfPageObjects<'a> {
     #[inline]
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
         PdfPageGroupObject::from_pdfium(
-            self.page_handle,
             self.document_handle,
+            self.page_handle,
             self.bindings,
             self.do_regenerate_page_content_after_each_change,
         )

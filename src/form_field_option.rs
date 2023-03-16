@@ -3,7 +3,7 @@
 
 use crate::form_field_options::PdfFormFieldOptionIndex;
 
-/// A single selectable option in a listbox or checkbox form field.
+/// A single selectable option in a list box or check box form field widget.
 pub struct PdfFormFieldOption {
     index: PdfFormFieldOptionIndex,
     is_set: bool,

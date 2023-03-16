@@ -3,7 +3,6 @@
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
@@ -106,13 +105,13 @@ impl<'a> PdfPageXObjectFormObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageXObjectFormObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
-        &self.object_handle
+    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
+        self.object_handle
     }
 
     #[inline]
-    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
-        &self.page_handle
+    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
+        self.page_handle
     }
 
     #[inline]
@@ -126,8 +125,8 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageXObjectFormObject<'a> {
     }
 
     #[inline]
-    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
-        &self.annotation_handle
+    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
+        self.annotation_handle
     }
 
     #[inline]
@@ -151,7 +150,11 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageXObjectFormObject<'a> {
     }
 
     #[inline]
-    fn try_copy_impl<'b>(&self, _: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
+    fn try_copy_impl<'b>(
+        &self,
+        _: FPDF_DOCUMENT,
+        _: &'b dyn PdfiumLibraryBindings,
+    ) -> Result<PdfPageObject<'b>, PdfiumError> {
         Err(PdfiumError::PageObjectNotCopyable)
     }
 }

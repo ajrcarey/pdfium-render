@@ -1,10 +1,10 @@
 //! Defines the [PdfPageObject] enum, exposing functionality related to a single renderable page object.
 
 use crate::bindgen::{
-    FPDF_ANNOTATION, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
-    FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING,
-    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
+    FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE,
+    FPDF_LINECAP_ROUND, FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE,
+    FPDF_PAGEOBJECT, FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH,
+    FPDF_PAGEOBJ_SHADING, FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
@@ -671,7 +671,8 @@ pub trait PdfPageObjectCommon<'a> {
     ///
     /// The returned page object will be detached from any existing `PdfPage`. Its lifetime
     /// will be bound to the lifetime of the given destination [PdfDocument].
-    fn try_copy<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError>;
+    fn try_copy<'b>(&self, document: &'b PdfDocument<'b>)
+        -> Result<PdfPageObject<'b>, PdfiumError>;
 }
 
 // Blanket implementation for all PdfPageObject types.
@@ -698,7 +699,7 @@ where
     #[inline]
     fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) -> Result<(), PdfiumError> {
         self.bindings()
-            .FPDFPageObj_SetBlendMode(*self.get_object_handle(), blend_mode.as_pdfium());
+            .FPDFPageObj_SetBlendMode(self.get_object_handle(), blend_mode.as_pdfium());
 
         match self.bindings().get_pdfium_last_error() {
             Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
@@ -719,7 +720,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_GetFillColor(
-                *self.get_object_handle(),
+                self.get_object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
@@ -746,7 +747,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_SetFillColor(
-                *self.get_object_handle(),
+                self.get_object_handle(),
                 fill_color.red() as c_uint,
                 fill_color.green() as c_uint,
                 fill_color.blue() as c_uint,
@@ -772,7 +773,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_GetStrokeColor(
-                *self.get_object_handle(),
+                self.get_object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
@@ -799,7 +800,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_SetStrokeColor(
-                *self.get_object_handle(),
+                self.get_object_handle(),
                 stroke_color.red() as c_uint,
                 stroke_color.green() as c_uint,
                 stroke_color.blue() as c_uint,
@@ -818,7 +819,7 @@ where
 
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_GetStrokeWidth(*self.get_object_handle(), &mut width),
+                .FPDFPageObj_GetStrokeWidth(self.get_object_handle(), &mut width),
         ) {
             Ok(PdfPoints::new(width))
         } else {
@@ -830,7 +831,7 @@ where
     fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetStrokeWidth(*self.get_object_handle(), stroke_width.value),
+                .FPDFPageObj_SetStrokeWidth(self.get_object_handle(), stroke_width.value),
         ) {
             Ok(())
         } else {
@@ -842,7 +843,7 @@ where
     fn line_join(&self) -> Result<PdfPageObjectLineJoin, PdfiumError> {
         PdfPageObjectLineJoin::from_pdfium(
             self.bindings()
-                .FPDFPageObj_GetLineJoin(*self.get_object_handle()),
+                .FPDFPageObj_GetLineJoin(self.get_object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
@@ -851,7 +852,7 @@ where
     fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetLineJoin(*self.get_object_handle(), line_join.as_pdfium() as c_int),
+                .FPDFPageObj_SetLineJoin(self.get_object_handle(), line_join.as_pdfium() as c_int),
         ) {
             Ok(())
         } else {
@@ -863,7 +864,7 @@ where
     fn line_cap(&self) -> Result<PdfPageObjectLineCap, PdfiumError> {
         PdfPageObjectLineCap::from_pdfium(
             self.bindings()
-                .FPDFPageObj_GetLineCap(*self.get_object_handle()),
+                .FPDFPageObj_GetLineCap(self.get_object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
@@ -872,7 +873,7 @@ where
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetLineCap(*self.get_object_handle(), line_cap.as_pdfium() as c_int),
+                .FPDFPageObj_SetLineCap(self.get_object_handle(), line_cap.as_pdfium() as c_int),
         ) {
             Ok(())
         } else {
@@ -886,19 +887,22 @@ where
     }
 
     #[inline]
-    fn try_copy<'b>(&self, document: &PdfDocument<'b>) -> Result<PdfPageObject<'b>, PdfiumError> {
-        self.try_copy_impl(document)
+    fn try_copy<'b>(
+        &self,
+        document: &'b PdfDocument<'b>,
+    ) -> Result<PdfPageObject<'b>, PdfiumError> {
+        self.try_copy_impl(document.handle(), document.bindings())
     }
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
+    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
         self.unwrap_as_trait().get_object_handle()
     }
 
     #[inline]
-    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
+    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
         self.unwrap_as_trait().get_page_handle()
     }
 
@@ -913,7 +917,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 
     #[inline]
-    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
+    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
         self.unwrap_as_trait().get_annotation_handle()
     }
 
@@ -969,9 +973,10 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
     fn try_copy_impl<'b>(
         &self,
-        document: &PdfDocument<'b>,
+        document: FPDF_DOCUMENT,
+        bindings: &'b dyn PdfiumLibraryBindings,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        self.unwrap_as_trait().try_copy(document)
+        self.unwrap_as_trait().try_copy_impl(document, bindings)
     }
 }
 
@@ -1033,7 +1038,7 @@ impl<'a> Drop for PdfPageObject<'a> {
 
         if !self.is_object_memory_owned_by_container() {
             self.bindings()
-                .FPDFPageObj_Destroy(*self.get_object_handle());
+                .FPDFPageObj_Destroy(self.get_object_handle());
         }
     }
 }

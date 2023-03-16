@@ -178,9 +178,9 @@ impl<'a> PdfPageTextObject<'a> {
         font_size: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         Self::new_from_handles(
-            *document.handle(),
+            document.handle(),
             text,
-            *font.handle(),
+            font.handle(),
             font_size,
             document.bindings(),
         )
@@ -446,13 +446,13 @@ impl<'a> PdfPageTextObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
-        &self.object_handle
+    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
+        self.object_handle
     }
 
     #[inline]
-    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
-        &self.page_handle
+    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
+        self.page_handle
     }
 
     #[inline]
@@ -466,8 +466,8 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     }
 
     #[inline]
-    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
-        &self.annotation_handle
+    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
+        self.annotation_handle
     }
 
     #[inline]
@@ -493,13 +493,15 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     #[inline]
     fn try_copy_impl<'b>(
         &self,
-        document: &PdfDocument<'b>,
+        document: FPDF_DOCUMENT,
+        bindings: &'b dyn PdfiumLibraryBindings,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        let mut copy = PdfPageTextObject::new(
+        let mut copy = PdfPageTextObject::new_from_handles(
             document,
             self.text(),
-            &self.font(),
+            self.font().handle(),
             self.unscaled_font_size(),
+            bindings,
         )?;
 
         copy.set_fill_color(self.fill_color()?)?;

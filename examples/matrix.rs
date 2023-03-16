@@ -21,18 +21,21 @@ pub fn main() -> Result<(), PdfiumError> {
         .scale(1.5, 1.2)? // Uneven horizontal and vertical scale factors will "squish" the object
         .skew_degrees(0.0, 10.0)? // "Lean" the object to the right
         // PdfMatrix uses the builder pattern with function chaining, so we could
-        // "queue up" any number of operations here if we wished, e.g.
+        // "queue up" any number of operations here if we wished, e.g.:
+        //
         // .rotate_clockwise_degrees()?
-        // .flip_vertically()?.translate()?
+        // .flip_vertically()?
         // .translate(..., ...)?
+        //
+        // ... and so on.
         ;
 
     // Our transformation matrix is now ready. Let's create an empty page in a new document...
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     let mut page = document
-        .pages()
+        .pages_mut()
         .create_page_at_start(PdfPagePaperSize::a4())?;
 
     // ... and now place some random objects on the page, transforming each using our matrix.

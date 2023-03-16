@@ -7,9 +7,10 @@ pub(crate) mod internal {
     // Instead of making the PdfPageObjectPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::{FPDF_ANNOTATION, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF};
+    use crate::bindgen::{
+        FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF,
+    };
     use crate::bindings::PdfiumLibraryBindings;
-    use crate::document::PdfDocument;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::matrix::PdfMatrix;
     use crate::page::PdfRect;
@@ -22,10 +23,10 @@ pub(crate) mod internal {
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
     pub(crate) trait PdfPageObjectPrivate<'a>: PdfPageObjectCommon<'a> {
         /// Returns the internal `FPDF_PAGEOBJECT` handle for this [PdfPageObject].
-        fn get_object_handle(&self) -> &FPDF_PAGEOBJECT;
+        fn get_object_handle(&self) -> FPDF_PAGEOBJECT;
 
         /// Returns the internal `FPDF_PAGE` handle for the page containing this [PdfPageObject], if any.
-        fn get_page_handle(&self) -> &Option<FPDF_PAGE>;
+        fn get_page_handle(&self) -> Option<FPDF_PAGE>;
 
         /// Sets the internal `FPDF_PAGE` handle for the page containing this [PdfPageObject].
         fn set_page_handle(&mut self, page: FPDF_PAGE);
@@ -36,7 +37,7 @@ pub(crate) mod internal {
 
         /// Returns the internal `FPDF_ANNOTATION` handle for the annotation containing
         /// this [PdfPageObject], if any.
-        fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION>;
+        fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION>;
 
         /// Sets the internal `FPDF_ANNOTATION` handle for the annotation containing this [PdfPageObject].
         fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION);
@@ -66,12 +67,12 @@ pub(crate) mod internal {
         // the page object being added is a single object or a group.
         #[inline]
         fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
-            self.add_object_to_page_handle(*page_objects.get_page_handle())
+            self.add_object_to_page_handle(page_objects.get_page_handle())
         }
 
         fn add_object_to_page_handle(&mut self, page_handle: FPDF_PAGE) -> Result<(), PdfiumError> {
             self.bindings()
-                .FPDFPage_InsertObject(page_handle, *self.get_object_handle());
+                .FPDFPage_InsertObject(page_handle, self.get_object_handle());
 
             if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
@@ -89,7 +90,7 @@ pub(crate) mod internal {
             if let Some(page_handle) = self.get_page_handle() {
                 if self.bindings().is_true(
                     self.bindings()
-                        .FPDFPage_RemoveObject(*page_handle, *self.get_object_handle()),
+                        .FPDFPage_RemoveObject(page_handle, self.get_object_handle()),
                 ) {
                     self.clear_page_handle();
 
@@ -122,7 +123,7 @@ pub(crate) mod internal {
             annotation_handle: FPDF_ANNOTATION,
         ) -> Result<(), PdfiumError> {
             self.bindings()
-                .FPDFAnnot_AppendObject(annotation_handle, *self.get_object_handle());
+                .FPDFAnnot_AppendObject(annotation_handle, self.get_object_handle());
 
             if let Some(error) = self.bindings().get_pdfium_last_error() {
                 Err(PdfiumError::PdfiumLibraryInternalError(error))
@@ -144,9 +145,9 @@ pub(crate) mod internal {
                 let index = {
                     let mut result = None;
 
-                    for i in 0..self.bindings().FPDFAnnot_GetObjectCount(*annotation_handle) {
-                        if *self.get_object_handle()
-                            == self.bindings().FPDFAnnot_GetObject(*annotation_handle, i)
+                    for i in 0..self.bindings().FPDFAnnot_GetObjectCount(annotation_handle) {
+                        if self.get_object_handle()
+                            == self.bindings().FPDFAnnot_GetObject(annotation_handle, i)
                         {
                             result = Some(i);
 
@@ -160,7 +161,7 @@ pub(crate) mod internal {
                 if let Some(index) = index {
                     if self.bindings().is_true(
                         self.bindings()
-                            .FPDFAnnot_RemoveObject(*annotation_handle, index),
+                            .FPDFAnnot_RemoveObject(annotation_handle, index),
                     ) {
                         self.clear_page_handle();
 
@@ -185,7 +186,7 @@ pub(crate) mod internal {
         fn has_transparency_impl(&self) -> bool {
             let bindings = self.bindings();
 
-            bindings.is_true(bindings.FPDFPageObj_HasTransparency(*self.get_object_handle()))
+            bindings.is_true(bindings.FPDFPageObj_HasTransparency(self.get_object_handle()))
         }
 
         /// Internal implementation of [PdfPageObjectCommon::bounds()].
@@ -200,7 +201,7 @@ pub(crate) mod internal {
             let mut top = 0.0;
 
             let result = self.bindings().FPDFPageObj_GetBounds(
-                *self.get_object_handle(),
+                self.get_object_handle(),
                 &mut left,
                 &mut bottom,
                 &mut right,
@@ -231,7 +232,7 @@ pub(crate) mod internal {
             f: PdfMatrixValue,
         ) -> Result<(), PdfiumError> {
             self.bindings().FPDFPageObj_Transform(
-                *self.get_object_handle(),
+                self.get_object_handle(),
                 a as c_double,
                 b as c_double,
                 c as c_double,
@@ -259,7 +260,7 @@ pub(crate) mod internal {
 
             if self.bindings().is_true(
                 self.bindings()
-                    .FPDFPageObj_GetMatrix(*self.get_object_handle(), &mut matrix),
+                    .FPDFPageObj_GetMatrix(self.get_object_handle(), &mut matrix),
             ) {
                 Ok(PdfMatrix::from_pdfium(matrix))
             } else {
@@ -275,7 +276,7 @@ pub(crate) mod internal {
         fn set_matrix(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
             if self.bindings().is_true(
                 self.bindings()
-                    .FPDFPageObj_SetMatrix(*self.get_object_handle(), &matrix.as_pdfium()),
+                    .FPDFPageObj_SetMatrix(self.get_object_handle(), &matrix.as_pdfium()),
             ) {
                 Ok(())
             } else {
@@ -295,7 +296,8 @@ pub(crate) mod internal {
         /// all the properties of this [PdfPageObject] to the new page object.
         fn try_copy_impl<'b>(
             &self,
-            document: &PdfDocument<'b>,
+            document_handle: FPDF_DOCUMENT,
+            bindings: &'b dyn PdfiumLibraryBindings,
         ) -> Result<PdfPageObject<'b>, PdfiumError>;
     }
 }
@@ -312,10 +314,10 @@ pub mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let mut page = document
-            .pages()
+            .pages_mut()
             .create_page_at_start(PdfPagePaperSize::a4())?;
 
         let mut object = PdfPagePathObject::new_rect(
@@ -346,10 +348,10 @@ pub mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let mut page = document
-            .pages()
+            .pages_mut()
             .create_page_at_start(PdfPagePaperSize::a4())?;
 
         let mut object = PdfPagePathObject::new_rect(
@@ -380,10 +382,10 @@ pub mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let mut page = document
-            .pages()
+            .pages_mut()
             .create_page_at_start(PdfPagePaperSize::a4())?;
 
         let mut object = PdfPagePathObject::new_rect(
@@ -414,10 +416,10 @@ pub mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let mut page = document
-            .pages()
+            .pages_mut()
             .create_page_at_start(PdfPagePaperSize::a4())?;
 
         let mut object = PdfPagePathObject::new_rect(

@@ -12,6 +12,7 @@ use std::os::raw::c_int;
 
 pub type PdfFormFieldOptionIndex = usize;
 
+/// A collection of all selectable options in a list box or check box form field widget.
 pub struct PdfFormFieldOptions<'a> {
     form_handle: FPDF_FORMHANDLE,
     annotation_handle: FPDF_ANNOTATION,

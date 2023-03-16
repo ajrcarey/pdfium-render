@@ -127,19 +127,19 @@ pub trait PdfiumLibraryBindings {
     /// Returns Pdfium's internal `FPDF_DOCUMENT` handle for the given [PdfDocument].
     #[inline]
     fn get_handle_from_document(&self, document: &PdfDocument) -> FPDF_DOCUMENT {
-        *document.handle()
+        document.handle()
     }
 
     /// Returns Pdfium's internal `FPDF_PAGE` handle for the given [PdfPage].
     #[inline]
     fn get_handle_from_page(&self, page: &PdfPage) -> FPDF_PAGE {
-        *page.handle()
+        page.page_handle()
     }
 
     /// Returns Pdfium's internal `FPDF_PAGEOBJECT` handle for the given [PdfPageObject].
     #[inline]
     fn get_handle_from_object(&self, object: &PdfPageObject) -> FPDF_PAGEOBJECT {
-        *object.get_object_handle()
+        object.get_object_handle()
     }
 
     #[allow(non_snake_case)]

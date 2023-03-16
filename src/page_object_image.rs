@@ -88,7 +88,7 @@ impl<'a> PdfPageImageObject<'a> {
     #[cfg(feature = "image")]
     #[inline]
     pub fn new(document: &PdfDocument<'a>, image: &DynamicImage) -> Result<Self, PdfiumError> {
-        let mut result = Self::new_from_handle(*document.handle(), document.bindings());
+        let mut result = Self::new_from_handle(document.handle(), document.bindings());
 
         if let Ok(result) = result.as_mut() {
             result.set_image(image)?;
@@ -106,7 +106,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// to the object after it is created.
     #[cfg(not(feature = "image"))]
     pub fn new(document: &PdfDocument<'a>) -> Result<Self, PdfiumError> {
-        Self::new_from_handle(*document.handle(), document.bindings())
+        Self::new_from_handle(document.handle(), document.bindings())
     }
 
     // Takes a raw FPDF_DOCUMENT handle to avoid cascading lifetime problems
@@ -389,12 +389,12 @@ impl<'a> PdfPageImageObject<'a> {
         let result = PdfBitmap::from_pdfium(
             match self.page_handle {
                 Some(page_handle) => self.bindings.FPDFImageObj_GetRenderedBitmap(
-                    *document.handle(),
+                    document.handle(),
                     page_handle,
                     self.object_handle,
                 ),
                 None => self.bindings.FPDFImageObj_GetRenderedBitmap(
-                    *document.handle(),
+                    document.handle(),
                     std::ptr::null_mut::<fpdf_page_t__>(),
                     self.object_handle,
                 ),
@@ -436,12 +436,12 @@ impl<'a> PdfPageImageObject<'a> {
             let result = PdfBitmap::from_pdfium(
                 match self.page_handle {
                     Some(page_handle) => self.bindings.FPDFImageObj_GetRenderedBitmap(
-                        *document.handle(),
+                        document.handle(),
                         page_handle,
                         self.object_handle,
                     ),
                     None => self.bindings.FPDFImageObj_GetRenderedBitmap(
-                        *document.handle(),
+                        document.handle(),
                         std::ptr::null_mut::<fpdf_page_t__>(),
                         self.object_handle,
                     ),
@@ -707,13 +707,13 @@ impl<'a> PdfPageImageObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> &FPDF_PAGEOBJECT {
-        &self.object_handle
+    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
+        self.object_handle
     }
 
     #[inline]
-    fn get_page_handle(&self) -> &Option<FPDF_PAGE> {
-        &self.page_handle
+    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
+        self.page_handle
     }
 
     #[inline]
@@ -727,8 +727,8 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     }
 
     #[inline]
-    fn get_annotation_handle(&self) -> &Option<FPDF_ANNOTATION> {
-        &self.annotation_handle
+    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
+        self.annotation_handle
     }
 
     #[inline]
@@ -756,7 +756,8 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
     #[inline]
     fn try_copy_impl<'b>(
         &self,
-        document: &PdfDocument<'b>,
+        document: FPDF_DOCUMENT,
+        bindings: &'b dyn PdfiumLibraryBindings,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
         if !self.filters().is_empty() {
             // Image filters cannot be copied.
@@ -764,8 +765,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageImageObject<'a> {
             return Err(PdfiumError::ImageObjectFiltersNotCopyable);
         }
 
-        let mut copy =
-            PdfPageImageObject::new_from_handle(*document.handle(), document.bindings())?;
+        let mut copy = PdfPageImageObject::new_from_handle(document, bindings)?;
 
         copy.set_bitmap(&self.get_raw_bitmap()?)?;
         copy.set_matrix(self.matrix()?)?;
@@ -790,8 +790,8 @@ impl<'a> PdfPageImageObjectFilters<'a> {
     /// Returns the number of image filters applied to the parent [PdfPageImageObject].
     pub fn len(&self) -> usize {
         self.object
-            .bindings()
-            .FPDFImageObj_GetImageFilterCount(*self.object.get_object_handle()) as usize
+            .bindings
+            .FPDFImageObj_GetImageFilterCount(self.object.get_object_handle()) as usize
     }
 
     /// Returns true if this [PdfPageImageObjectFilters] collection is empty.
@@ -834,8 +834,8 @@ impl<'a> PdfPageImageObjectFilters<'a> {
         // this will write the font name into the buffer. Unlike most text handling in
         // Pdfium, image filter names are returned in UTF-8 format.
 
-        let buffer_length = self.object.bindings().FPDFImageObj_GetImageFilter(
-            *self.object.get_object_handle(),
+        let buffer_length = self.object.bindings.FPDFImageObj_GetImageFilter(
+            self.object.get_object_handle(),
             index as c_int,
             std::ptr::null_mut(),
             0,
@@ -849,8 +849,8 @@ impl<'a> PdfPageImageObjectFilters<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.object.bindings().FPDFImageObj_GetImageFilter(
-            *self.object.get_object_handle(),
+        let result = self.object.bindings.FPDFImageObj_GetImageFilter(
+            self.object.get_object_handle(),
             index as c_int,
             buffer.as_mut_ptr() as *mut c_void,
             buffer_length,
@@ -940,10 +940,10 @@ pub mod tests {
             .render_with_config(&PdfRenderConfig::new().set_target_width(1000))?
             .as_image();
 
-        let document = pdfium.create_new_pdf()?;
+        let mut document = pdfium.create_new_pdf()?;
 
         let mut page = document
-            .pages()
+            .pages_mut()
             .create_page_at_end(PdfPagePaperSize::a4())?;
 
         let object = page.objects_mut().create_image_object(

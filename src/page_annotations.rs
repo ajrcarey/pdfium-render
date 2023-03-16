@@ -1,9 +1,8 @@
 //! Defines the [PdfPageAnnotations] struct, exposing functionality related to the
 //! annotations that have been added to a single `PdfPage`.
 
-use crate::bindgen::FPDF_PAGE;
+use crate::bindgen::{FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_annotation::PdfPageAnnotation;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
@@ -14,18 +13,27 @@ pub type PdfPageAnnotationIndex = usize;
 
 /// The annotations that have been added to a single `PdfPage`.
 pub struct PdfPageAnnotations<'a> {
+    document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
-    document: &'a PdfDocument<'a>,
+    form_handle: Option<FPDF_FORMHANDLE>,
     do_regenerate_page_content_after_each_change: bool,
+    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageAnnotations<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(page_handle: FPDF_PAGE, document: &'a PdfDocument<'a>) -> Self {
-        Self {
+    pub(crate) fn from_pdfium(
+        document_handle: FPDF_DOCUMENT,
+        page_handle: FPDF_PAGE,
+        form_handle: Option<FPDF_FORMHANDLE>,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Self {
+        PdfPageAnnotations {
+            document_handle,
             page_handle,
-            document,
+            form_handle,
             do_regenerate_page_content_after_each_change: false,
+            bindings,
         }
     }
 
@@ -51,7 +59,7 @@ impl<'a> PdfPageAnnotations<'a> {
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotations] collection.
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.document.bindings()
+        self.bindings
     }
 
     /// Returns the total number of annotations that have been added to the containing `PdfPage`.
@@ -95,9 +103,11 @@ impl<'a> PdfPageAnnotations<'a> {
             }
         } else {
             Ok(PdfPageAnnotation::from_pdfium(
-                annotation_handle,
+                self.document_handle,
                 self.page_handle,
-                self.document,
+                annotation_handle,
+                self.form_handle,
+                self.bindings,
             ))
         }
     }
