@@ -7534,7 +7534,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize;
 
         if result > 0 && result <= buffer_length {
-            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+            // The return result is the number of _characters_ returned, _not_ the number of bytes.
+
+            state.copy_struct_from_pdfium(buffer_ptr, result * size_of::<c_ushort>(), buffer);
         }
 
         state.free(buffer_ptr);

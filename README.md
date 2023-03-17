@@ -236,7 +236,7 @@ a PDF document longer than just a few pages will result in an unrecoverable out 
 The WASM builds of Pdfium at <https://github.com/paulocoutinhox/pdfium-lib/releases> are recommended
 as they do not have this problem.
 
-## Multithreading
+## Multi-threading
 
 Pdfium makes no guarantees about thread safety and should be assumed _not_ to be thread safe.
 The Pdfium authors specifically recommend that parallel processing, not multi-threading,
@@ -335,7 +335,7 @@ functions related to page rendering were prioritised. By 1.0, the functionality 
 `FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain
 functions specific to interactive scripting, user interaction, and printing.
 
-* Releases numbered 0.4.x added support for all page rendering Pdfium functions to `pdfium-render`.
+* Releases numbered 0.4.x added support for basic page rendering Pdfium functions to `pdfium-render`.
 * Releases numbered 0.5.x-0.6.x added support for most read-only Pdfium functions to `pdfium-render`.
 * Releases numbered 0.7.x added support for most Pdfium page object creation and editing functions to `pdfium-render`. 
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
@@ -356,7 +356,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 * 0.8.0: removes the ability to acquire an owned `PdfPages` instance from `PdfDocument::pages()`
   as per <https://github.com/ajrcarey/pdfium-render/issues/47>; adds new `PdfDocument::pages_mut()`
-  function to match reworked `PdfDocument::pages()` function.
+  function to match reworked `PdfDocument::pages()` function; fixes a bug in the WASM implementation
+  of `FPDFText_GetBoundedText` as detailed at <https://github.com/ajrcarey/pdfium-render/issues/77>.
 * 0.7.34: replaces functions in `PdfPageLinks` using linear traversal with binary search traversal;
   adds new `PdfFormField` enum; renames `PdfPageObjectFormFragment` to `PdfPageXObjectFormObject`
   to disambiguate it from `PdfForm` and `PdfFormField`; adds `PdfPageAnnotationCommon::as_form_field()`
