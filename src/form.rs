@@ -195,7 +195,7 @@ impl<'a> PdfForm<'a> {
     /// the given [PdfPages] collection, returning a map of (field name, field value) pairs.
     ///
     /// This function assumes that all form fields in the document have unique field names.
-    pub fn field_values(&self, pages: &PdfPages) -> HashMap<String, Option<String>> {
+    pub fn field_values(&self, pages: &'a PdfPages<'a>) -> HashMap<String, Option<String>> {
         let mut result = HashMap::new();
 
         for page in pages.iter() {

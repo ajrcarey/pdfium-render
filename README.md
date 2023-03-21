@@ -84,7 +84,7 @@ Version 0.8.0 reworks the `PdfDocument::pages()` function. Previously, this func
 returned an owned `PdfPages` instance; it now returns an immutable `&PdfPages` reference instead.
 A new `PdfDocument::pages_mut()` function returns a mutable `&mut PdfPages` reference.
 It is no longer possible to retrieve an owned `PdfPages` instance. For the motivation behind
-this change, see <https://github.com/ajrcarey/pdfium-render/issues/47>.
+this breaking change, see <https://github.com/ajrcarey/pdfium-render/issues/47>.
 
 Version 0.7.34 adds support for reading values from form fields wrapped inside the newly added
 `PdfPageWidgetAnnotation` and `PdfPageXfaWidgetAnnotation` annotation objects. Also added are
@@ -357,7 +357,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 * 0.8.0: removes the ability to acquire an owned `PdfPages` instance from `PdfDocument::pages()`
   as per <https://github.com/ajrcarey/pdfium-render/issues/47>; adds new `PdfDocument::pages_mut()`
   function to match reworked `PdfDocument::pages()` function; fixes a bug in the WASM implementation
-  of `FPDFText_GetBoundedText` as detailed at <https://github.com/ajrcarey/pdfium-render/issues/77>.
+  of `FPDFText_GetBoundedText` as detailed in <https://github.com/ajrcarey/pdfium-render/issues/77>.
 * 0.7.34: replaces functions in `PdfPageLinks` using linear traversal with binary search traversal;
   adds new `PdfFormField` enum; renames `PdfPageObjectFormFragment` to `PdfPageXObjectFormObject`
   to disambiguate it from `PdfForm` and `PdfFormField`; adds `PdfPageAnnotationCommon::as_form_field()`

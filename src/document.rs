@@ -256,7 +256,7 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns an immutable collection of all the [PdfPages] in this [PdfDocument].
     #[inline]
-    pub fn pages(&self) -> &PdfPages {
+    pub fn pages(&self) -> &PdfPages<'a> {
         &self.pages
     }
 
