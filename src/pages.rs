@@ -228,13 +228,9 @@ impl<'a> PdfPages<'a> {
         self.bindings
             .FPDFPage_Delete(self.document_handle, index as c_int);
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            PdfPageIndexCache::delete_pages_at_index(self.document_handle, index, 1);
+        PdfPageIndexCache::delete_pages_at_index(self.document_handle, index, 1);
 
-            Ok(())
-        }
+        Ok(())
     }
 
     // TODO: AJRC - 5/2/23 - remove deprecated PdfPages::delete_page_range() function in 0.9.0
@@ -325,12 +321,7 @@ impl<'a> PdfPages<'a> {
             );
 
             Ok(())
-        } else if let Some(error) = bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
-            // This would be an unusual situation; a null handle indicating failure,
-            // yet Pdfium's error code indicates success.
-
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
             ))
@@ -384,12 +375,7 @@ impl<'a> PdfPages<'a> {
             );
 
             Ok(())
-        } else if let Some(error) = bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
         } else {
-            // This would be an unusual situation; a null handle indicating failure,
-            // yet Pdfium's error code indicates success.
-
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
             ))
@@ -437,16 +423,9 @@ impl<'a> PdfPages<'a> {
         );
 
         if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfDocument::from_pdfium(handle, self.bindings))
         }
@@ -459,16 +438,9 @@ impl<'a> PdfPages<'a> {
         page_handle: FPDF_PAGE,
     ) -> Result<PdfPage<'a>, PdfiumError> {
         if page_handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             // The page's label (if any) is retrieved by index rather than by using the
             // FPDF_PAGE handle. Since the index of any particular page can change

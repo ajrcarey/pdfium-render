@@ -103,15 +103,10 @@ pub(crate) mod internal {
         /// Internal implementation of `is_checked()` function shared by checkable form field widgets
         /// such as radio buttons and checkboxes. Not exposed directly by [PdfFormFieldCommon].
         fn is_checked_impl(&self) -> Result<bool, PdfiumError> {
-            let result = self.bindings().is_true(
+            Ok(self.bindings().is_true(
                 self.bindings()
                     .FPDFAnnot_IsChecked(*self.form_handle(), *self.annotation_handle()),
-            );
-
-            match self.bindings().get_pdfium_last_error() {
-                Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
-                None => Ok(result),
-            }
+            ))
         }
     }
 }

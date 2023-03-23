@@ -132,11 +132,7 @@ impl<'a> PdfPageBoundaries<'a> {
             rect.top.value,
         );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 
     /// Returns the Art boundary box defined for the containing `PdfPage`, if any.
@@ -161,11 +157,7 @@ impl<'a> PdfPageBoundaries<'a> {
             rect.top.value,
         );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 
     /// Returns the Bleed boundary box defined for the containing `PdfPage`, if any.
@@ -190,11 +182,7 @@ impl<'a> PdfPageBoundaries<'a> {
             rect.top.value,
         );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 
     /// Returns the Trim boundary box defined for the containing `PdfPage`, if any.
@@ -219,11 +207,7 @@ impl<'a> PdfPageBoundaries<'a> {
             rect.top.value,
         );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 
     /// Returns the Crop boundary box defined for the containing `PdfPage`, if any.
@@ -247,11 +231,7 @@ impl<'a> PdfPageBoundaries<'a> {
             rect.top.value,
         );
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
 
     /// Returns the Bounding box ("BBox") defined for the containing `PdfPage`, if any.

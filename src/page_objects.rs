@@ -116,16 +116,9 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
             .FPDFPage_GetObject(self.page_handle, index as c_int);
 
         if object_handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
@@ -151,16 +144,9 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
                     .bindings
                     .is_true(self.bindings.FPDFPage_GenerateContent(self.page_handle))
                 {
-                    if let Some(error) = self.bindings.get_pdfium_last_error() {
-                        Err(PdfiumError::PdfiumLibraryInternalError(error))
-                    } else {
-                        // This would be an unusual situation; an FPDF_BOOL result indicating failure,
-                        // yet pdfium's error code indicates success.
-
-                        Err(PdfiumError::PdfiumLibraryInternalError(
-                            PdfiumInternalError::Unknown,
-                        ))
-                    }
+                    Err(PdfiumError::PdfiumLibraryInternalError(
+                        PdfiumInternalError::Unknown,
+                    ))
                 } else {
                     Ok(object)
                 }
@@ -176,12 +162,15 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         object.remove_object_from_page().and_then(|_| {
             if self.do_regenerate_page_content_after_each_change {
-                self.bindings.FPDFPage_GenerateContent(self.page_handle);
-
-                if let Some(error) = self.bindings.get_pdfium_last_error() {
-                    Err(PdfiumError::PdfiumLibraryInternalError(error))
-                } else {
+                if self
+                    .bindings
+                    .is_true(self.bindings.FPDFPage_GenerateContent(self.page_handle))
+                {
                     Ok(object)
+                } else {
+                    Err(PdfiumError::PdfiumLibraryInternalError(
+                        PdfiumInternalError::Unknown,
+                    ))
                 }
             } else {
                 Ok(object)

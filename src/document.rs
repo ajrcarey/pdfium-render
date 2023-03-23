@@ -315,9 +315,7 @@ impl<'a> PdfDocument<'a> {
                 // Pdfium's return value indicated failure.
 
                 Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.bindings
-                        .get_pdfium_last_error()
-                        .unwrap_or(PdfiumInternalError::Unknown),
+                    PdfiumInternalError::Unknown,
                 ))
             }
         }

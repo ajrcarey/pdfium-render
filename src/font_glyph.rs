@@ -62,16 +62,9 @@ impl<'a> PdfFontGlyph<'a> {
         );
 
         if handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfFontGlyphPath::from_pdfium(handle, self.bindings()))
         }
@@ -114,16 +107,9 @@ impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
             .FPDFGlyphPath_GetGlyphPathSegment(self.handle, index as c_int);
 
         if handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfPathSegment::from_pdfium(handle, self.bindings()))
         }

@@ -213,7 +213,6 @@ impl<'a> PdfPageGroupObject<'a> {
     /// If the containing [PdfPage] has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
-    #[inline]
     pub fn remove_objects_from_page(mut self) -> Result<(), PdfiumError> {
         // Hold off regenerating page content until all objects have been processed.
 
@@ -414,7 +413,6 @@ impl<'a> PdfPageGroupObject<'a> {
     ///
     /// The new page will have the same size and bounding box configuration as the page containing
     /// the objects in this group.
-    #[inline]
     pub fn copy_onto_new_page_at_index(
         &self,
         index: PdfPageIndex,

@@ -100,16 +100,9 @@ impl<'a> PdfAttachments<'a> {
             .FPDFDoc_GetAttachment(self.document_handle, index as c_int);
 
         if handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfAttachment::from_pdfium(handle, self.bindings()))
         }
@@ -131,16 +124,9 @@ impl<'a> PdfAttachments<'a> {
             .FPDFDoc_AddAttachment_str(self.document_handle, name);
 
         if handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             // With the FPDF_ATTACHMENT correctly created, we can now apply the byte data to the attachment.
 
@@ -157,16 +143,9 @@ impl<'a> PdfAttachments<'a> {
             } else {
                 // The return value from FPDFAttachment_SetFile() indicates failure.
 
-                if let Some(error) = self.bindings().get_pdfium_last_error() {
-                    Err(PdfiumError::PdfiumLibraryInternalError(error))
-                } else {
-                    // This would be an unusual situation; a return value indicating failure,
-                    // yet Pdfium's error code indicates success.
-
-                    Err(PdfiumError::PdfiumLibraryInternalError(
-                        PdfiumInternalError::Unknown,
-                    ))
-                }
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
             }
         }
     }
@@ -293,13 +272,15 @@ impl<'a> PdfAttachments<'a> {
             return Err(PdfiumError::AttachmentIndexOutOfBounds);
         }
 
-        self.bindings()
-            .FPDFDoc_DeleteAttachment(self.document_handle, index as c_int);
-
-        if let Some(error) = self.bindings().get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFDoc_DeleteAttachment(self.document_handle, index as c_int),
+        ) {
             Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         }
     }
 

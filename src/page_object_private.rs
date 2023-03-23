@@ -74,13 +74,9 @@ pub(crate) mod internal {
             self.bindings()
                 .FPDFPage_InsertObject(page_handle, self.get_object_handle());
 
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                self.set_page_handle(page_handle);
+            self.set_page_handle(page_handle);
 
-                Ok(())
-            }
+            Ok(())
         }
 
         /// Removes this [PdfPageObject] from the [PdfPageObjects] collection that contains it.
@@ -97,9 +93,7 @@ pub(crate) mod internal {
                     Ok(())
                 } else {
                     Err(PdfiumError::PdfiumLibraryInternalError(
-                        self.bindings()
-                            .get_pdfium_last_error()
-                            .unwrap_or(PdfiumInternalError::Unknown),
+                        PdfiumInternalError::Unknown,
                     ))
                 }
             } else {
@@ -122,15 +116,17 @@ pub(crate) mod internal {
             &mut self,
             annotation_handle: FPDF_ANNOTATION,
         ) -> Result<(), PdfiumError> {
-            self.bindings()
-                .FPDFAnnot_AppendObject(annotation_handle, self.get_object_handle());
-
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
+            if self.bindings().is_true(
+                self.bindings()
+                    .FPDFAnnot_AppendObject(annotation_handle, self.get_object_handle()),
+            ) {
                 self.set_annotation_handle(annotation_handle);
 
                 Ok(())
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
             }
         }
 
@@ -168,9 +164,7 @@ pub(crate) mod internal {
                         Ok(())
                     } else {
                         Err(PdfiumError::PdfiumLibraryInternalError(
-                            self.bindings()
-                                .get_pdfium_last_error()
-                                .unwrap_or(PdfiumInternalError::Unknown),
+                            PdfiumInternalError::Unknown,
                         ))
                     }
                 } else {
@@ -241,10 +235,7 @@ pub(crate) mod internal {
                 f as c_double,
             );
 
-            match self.bindings().get_pdfium_last_error() {
-                Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
-                None => Ok(()),
-            }
+            Ok(())
         }
 
         /// Internal implementation of [PdfPageObjectCommon::matrix()].
@@ -265,9 +256,7 @@ pub(crate) mod internal {
                 Ok(PdfMatrix::from_pdfium(matrix))
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.bindings()
-                        .get_pdfium_last_error()
-                        .unwrap_or(PdfiumInternalError::Unknown),
+                    PdfiumInternalError::Unknown,
                 ))
             }
         }
@@ -281,9 +270,7 @@ pub(crate) mod internal {
                 Ok(())
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
-                    self.bindings()
-                        .get_pdfium_last_error()
-                        .unwrap_or(PdfiumInternalError::Unknown),
+                    PdfiumInternalError::Unknown,
                 ))
             }
         }

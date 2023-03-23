@@ -180,17 +180,10 @@ impl PdfRect {
         rect: FS_RECTF,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<PdfRect, PdfiumError> {
-        if result == 0 {
-            if let Some(error) = bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+        if !bindings.is_true(result) {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfRect::from_pdfium(rect))
         }
@@ -593,16 +586,9 @@ impl<'a> PdfPage<'a> {
         let text_handle = self.bindings().FPDFText_LoadPage(self.page_handle);
 
         if text_handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfPageText::from_pdfium(text_handle, self, self.bindings))
         }
@@ -837,10 +823,6 @@ impl<'a> PdfPage<'a> {
                 settings.height,
                 settings.clear_color,
             );
-
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                return Err(PdfiumError::PdfiumLibraryInternalError(error));
-            }
         }
 
         if settings.do_render_form_data {
@@ -857,10 +839,6 @@ impl<'a> PdfPage<'a> {
                 settings.rotate,
                 settings.render_flags,
             );
-
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                return Err(PdfiumError::PdfiumLibraryInternalError(error));
-            }
 
             if let Some(form_handle) = self.form_handle {
                 // Render user-supplied form data, if any, as an overlay on top of the page.
@@ -889,10 +867,6 @@ impl<'a> PdfPage<'a> {
                     settings.rotate,
                     settings.render_flags,
                 );
-
-                if let Some(error) = self.bindings.get_pdfium_last_error() {
-                    return Err(PdfiumError::PdfiumLibraryInternalError(error));
-                }
             }
         } else {
             // Render the PDF page into the bitmap buffer, applying any custom transformation matrix.
@@ -904,10 +878,6 @@ impl<'a> PdfPage<'a> {
                 &settings.clipping,
                 settings.render_flags,
             );
-
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                return Err(PdfiumError::PdfiumLibraryInternalError(error));
-            }
         }
 
         Ok(())
@@ -996,15 +966,19 @@ impl<'a> PdfPage<'a> {
         matrix: PdfMatrix,
         clip: PdfRect,
     ) -> Result<(), PdfiumError> {
-        self.bindings().FPDFPage_TransFormWithClip(
-            self.page_handle,
-            &matrix.as_pdfium(),
-            &clip.as_pdfium(),
-        );
-
-        match self.bindings().get_pdfium_last_error() {
-            Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
-            None => Ok(()),
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFPage_TransFormWithClip(
+                self.page_handle,
+                &matrix.as_pdfium(),
+                &clip.as_pdfium(),
+            ))
+        {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         }
     }
 
@@ -1073,13 +1047,9 @@ impl<'a> PdfPage<'a> {
         self.bindings
             .FPDFPage_Delete(self.document_handle, index as c_int);
 
-        if let Some(error) = self.bindings.get_pdfium_last_error() {
-            Err(PdfiumError::PdfiumLibraryInternalError(error))
-        } else {
-            PdfPageIndexCache::delete_pages_at_index(self.document_handle, index, 1);
+        PdfPageIndexCache::delete_pages_at_index(self.document_handle, index, 1);
 
-            Ok(())
-        }
+        Ok(())
     }
 
     /// Returns the strategy used by `pdfium-render` to regenerate the content of a [PdfPage].
@@ -1164,9 +1134,7 @@ impl<'a> PdfPage<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }

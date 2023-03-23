@@ -260,7 +260,7 @@ This crate provides the following optional features:
   are not available then the build will fail.
 * `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page and
   page object rendering functionality. Projects that do not require page or page object rendering
-  can avoid having to include the `image` crate in their binaries.
+  can disable this feature to avoid compiling the `image` crate into their binaries.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.

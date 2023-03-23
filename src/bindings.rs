@@ -12,7 +12,6 @@ use crate::bindgen::{
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::document::PdfDocument;
-use crate::error::PdfiumInternalError;
 use crate::page::PdfPage;
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
@@ -2234,30 +2233,6 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
-
-    /// Retrieves the error code of the last error, if any, recorded by the external
-    /// Pdfium library and maps it to a [PdfiumInternalError] enum value.
-    #[inline]
-    fn get_pdfium_last_error(&self) -> Option<PdfiumInternalError> {
-        let result = self.FPDF_GetLastError() as u32;
-
-        match result {
-            crate::bindgen::FPDF_ERR_SUCCESS => None,
-            crate::bindgen::FPDF_ERR_UNKNOWN => Some(PdfiumInternalError::Unknown),
-            crate::bindgen::FPDF_ERR_FILE => Some(PdfiumInternalError::FileError),
-            crate::bindgen::FPDF_ERR_FORMAT => Some(PdfiumInternalError::FormatError),
-            crate::bindgen::FPDF_ERR_PASSWORD => Some(PdfiumInternalError::PasswordError),
-            crate::bindgen::FPDF_ERR_SECURITY => Some(PdfiumInternalError::SecurityError),
-            crate::bindgen::FPDF_ERR_PAGE => Some(PdfiumInternalError::PageError),
-            // The Pdfium documentation says "... if the previous SDK call succeeded, [then] the
-            // return value of this function is not defined". On Linux, at least, a return value
-            // of FPDF_ERR_SUCCESS seems to be consistently returned; on Windows, however, the
-            // return values are indeed unpredictable. See https://github.com/ajrcarey/pdfium-render/issues/24.
-            // Therefore, if the return value does not match one of the FPDF_ERR_* constants, we must
-            // assume success.
-            _ => None,
-        }
-    }
 }
 
 #[cfg(test)]

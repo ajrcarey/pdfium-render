@@ -592,17 +592,9 @@ where
         if let Ok(object) = self.get(index) {
             self.remove_object(object)
         } else {
-            #[allow(clippy::collapsible_else_if)] // Prefer to keep the intention clear
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         }
     }
 }

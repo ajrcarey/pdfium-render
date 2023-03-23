@@ -32,16 +32,9 @@ impl<'a> PdfActionLocalDestination<'a> {
         let handle = self.bindings.FPDFAction_GetDest(self.document, self.handle);
 
         if handle.is_null() {
-            if let Some(error) = self.bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfDestination::from_pdfium(handle, self.bindings))
         }
