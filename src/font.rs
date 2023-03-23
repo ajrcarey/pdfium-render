@@ -547,16 +547,9 @@ impl<'a> PdfFont<'a> {
         );
 
         if handle.is_null() {
-            if let Some(error) = document.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             let mut result = PdfFont::from_pdfium(handle, document.bindings());
 
@@ -620,13 +613,8 @@ impl<'a> PdfFont<'a> {
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn weight(&self) -> Result<PdfFontWeight, PdfiumError> {
-        PdfFontWeight::from_pdfium(self.bindings.FPDFFont_GetWeight(self.handle)).ok_or_else(|| {
-            PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
-            )
-        })
+        PdfFontWeight::from_pdfium(self.bindings.FPDFFont_GetWeight(self.handle))
+            .ok_or_else(|| PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown))
     }
 
     /// Returns the italic angle of this [PdfFont]. The italic angle is the angle,
@@ -645,9 +633,7 @@ impl<'a> PdfFont<'a> {
             Ok(angle)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -666,9 +652,7 @@ impl<'a> PdfFont<'a> {
             Ok(PdfPoints::new(ascent))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -687,9 +671,7 @@ impl<'a> PdfFont<'a> {
             Ok(PdfPoints::new(descent))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }

@@ -213,16 +213,9 @@ impl<'a> PdfPagePathObject<'a> {
         let handle = bindings.FPDFPageObj_CreateNewPath(x.value, y.value);
 
         if handle.is_null() {
-            if let Some(error) = bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             let mut result = PdfPagePathObject {
                 object_handle: handle,
@@ -639,9 +632,7 @@ impl<'a> PdfPagePathObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -660,9 +651,7 @@ impl<'a> PdfPagePathObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -694,9 +683,7 @@ impl<'a> PdfPagePathObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -811,9 +798,7 @@ impl<'a> PdfPagePathObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -833,9 +818,7 @@ impl<'a> PdfPagePathObject<'a> {
             PdfPathFillMode::from_pdfium(raw_fill_mode)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -858,9 +841,7 @@ impl<'a> PdfPagePathObject<'a> {
             Ok(self.bindings.is_true(raw_stroke))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -883,9 +864,7 @@ impl<'a> PdfPagePathObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -1051,16 +1030,9 @@ impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
             .FPDFPath_GetPathSegment(self.handle, index as c_int);
 
         if handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfPathSegment::from_pdfium(handle, self.bindings()))
         }

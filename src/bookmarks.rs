@@ -65,9 +65,7 @@ impl<'a> PdfBookmarks<'a> {
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         } else {
             Ok(PdfBookmark::from_pdfium(

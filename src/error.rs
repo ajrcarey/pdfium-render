@@ -11,15 +11,32 @@ use std::fmt::{Display, Formatter, Result};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
 
-/// A wrapped internal library error from Pdfium's FPDF_ERR_* constant values.
+/// A wrapped internal library error from Pdfium's `FPDF_ERR_*` constant values.
+///
+/// Pdfium only provides detailed internal error information for document loading functions.
+/// All other functions in the Pdfium API return a value indicating success or failure,
+/// but otherwise detailed error information for failed API calls is not available. In these
+/// cases, an error value of [PdfiumInternalError::Unknown] will be returned.
+// For more information, see: https://github.com/ajrcarey/pdfium-render/issues/78
 #[derive(Debug)]
 pub enum PdfiumInternalError {
-    Unknown = FPDF_ERR_UNKNOWN as isize,
+    /// The document could not be loaded due to a file system error.
     FileError = FPDF_ERR_FILE as isize,
+
+    /// The document could not be loaded due to a format parsing error.
     FormatError = FPDF_ERR_FORMAT as isize,
+
+    /// The document could not be loaded because the wrong password was supplied.
     PasswordError = FPDF_ERR_PASSWORD as isize,
+
+    /// The document could not be loaded because of the document's security settings.
     SecurityError = FPDF_ERR_SECURITY as isize,
+
+    /// The page could not be loaded due to an internal error.
     PageError = FPDF_ERR_PAGE as isize,
+
+    /// A generic error value returned in all other unhandled situations.
+    Unknown = FPDF_ERR_UNKNOWN as isize,
 }
 
 #[derive(Debug)]

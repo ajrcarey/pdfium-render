@@ -198,16 +198,9 @@ impl<'a> PdfPageTextObject<'a> {
         let handle = bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value);
 
         if handle.is_null() {
-            if let Some(error) = bindings.get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet Pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             let mut result = PdfPageTextObject {
                 object_handle: handle,
@@ -359,9 +352,7 @@ impl<'a> PdfPageTextObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings()
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -378,9 +369,7 @@ impl<'a> PdfPageTextObject<'a> {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings()
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }

@@ -91,16 +91,9 @@ impl<'a> PdfPageAnnotations<'a> {
             .FPDFPage_GetAnnot(self.page_handle, index as c_int);
 
         if annotation_handle.is_null() {
-            if let Some(error) = self.bindings().get_pdfium_last_error() {
-                Err(PdfiumError::PdfiumLibraryInternalError(error))
-            } else {
-                // This would be an unusual situation; a null handle indicating failure,
-                // yet pdfium's error code indicates success.
-
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            }
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         } else {
             Ok(PdfPageAnnotation::from_pdfium(
                 self.document_handle,

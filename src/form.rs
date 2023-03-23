@@ -145,9 +145,8 @@ impl<'a> PdfForm<'a> {
         let form_handle =
             bindings.FPDFDOC_InitFormFillEnvironment(document_handle, form_fill_info.deref_mut());
 
-        if !form_handle.is_null() && bindings.get_pdfium_last_error().is_none() {
-            // There is a form embedded in this document, and we retrieved
-            // a valid handle to it without error.
+        if !form_handle.is_null() {
+            // There is a form embedded in this document, and we retrieved a valid handle to it.
 
             let form = PdfForm {
                 form_handle,

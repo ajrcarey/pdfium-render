@@ -701,10 +701,7 @@ where
         self.bindings()
             .FPDFPageObj_SetBlendMode(self.get_object_handle(), blend_mode.as_pdfium());
 
-        match self.bindings().get_pdfium_last_error() {
-            Some(err) => Err(PdfiumError::PdfiumLibraryInternalError(err)),
-            None => Ok(()),
-        }
+        Ok(())
     }
 
     #[inline]

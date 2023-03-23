@@ -456,9 +456,7 @@ impl<'a> PdfPageTextChar<'a> {
             Ok(matrix)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
@@ -619,9 +617,7 @@ impl<'a> PdfPageTextChar<'a> {
             Ok((PdfPoints::new(x as f32), PdfPoints::new(y as f32)))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
-                self.bindings
-                    .get_pdfium_last_error()
-                    .unwrap_or(PdfiumInternalError::Unknown),
+                PdfiumInternalError::Unknown,
             ))
         }
     }
