@@ -357,7 +357,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 * 0.8.0: removes the ability to acquire an owned `PdfPages` instance from `PdfDocument::pages()`
   as per <https://github.com/ajrcarey/pdfium-render/issues/47>; adds new `PdfDocument::pages_mut()`
   function to match reworked `PdfDocument::pages()` function; fixes a bug in the WASM implementation
-  of `FPDFText_GetBoundedText` as detailed in <https://github.com/ajrcarey/pdfium-render/issues/77>.
+  of `FPDFText_GetBoundedText` as detailed in <https://github.com/ajrcarey/pdfium-render/issues/77>;
+  reworks handling of `FPDF_GetLastError()` as detailed in <https://github.com/ajrcarey/pdfium-render/issues/78>.
 * 0.7.34: replaces functions in `PdfPageLinks` using linear traversal with binary search traversal;
   adds new `PdfFormField` enum; renames `PdfPageObjectFormFragment` to `PdfPageXObjectFormObject`
   to disambiguate it from `PdfForm` and `PdfFormField`; adds `PdfPageAnnotationCommon::as_form_field()`
