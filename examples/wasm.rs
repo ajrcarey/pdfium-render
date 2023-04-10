@@ -123,8 +123,8 @@ pub async fn log_page_metrics_to_console(url: String) {
 pub async fn get_image_data_for_page(
     url: String,
     index: PdfPageIndex,
-    width: u16,
-    height: u16,
+    width: Pixels,
+    height: Pixels,
 ) -> ImageData {
     Pdfium::new(Pdfium::bind_to_system_library().unwrap())
         .load_pdf_from_fetch(url, None)

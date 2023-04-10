@@ -8,7 +8,7 @@ pub fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?; // Load the sample file...
+    let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
 
     match document.form() {
         Some(form) => println!(

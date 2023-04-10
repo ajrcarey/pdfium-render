@@ -33,6 +33,8 @@ use std::thread;
 // _not_ multi-threading.
 
 fn main() -> Result<(), PdfiumError> {
+    // For general comments about pdfium-render and binding to Pdfium, see export.rs.
+
     // Define bitmap rendering settings that will be used by all threads.
 
     let config = PdfRenderConfig::new()
@@ -61,8 +63,6 @@ fn main() -> Result<(), PdfiumError> {
 fn render(render_config: &PdfRenderConfig, path: &str) -> Result<(), PdfiumError> {
     // Render each page in the document at the given path out to a JPG file, using the
     // given bindings and rendering configuration.
-
-    // For general comments about pdfium-render and binding to Pdfium, see export.rs.
 
     let pdfium = Pdfium::new(
         Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))

@@ -544,12 +544,12 @@ impl<'a> PdfPageImageObject<'a> {
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image")]
     pub fn set_image(&mut self, image: &DynamicImage) -> Result<(), PdfiumError> {
-        let width: u16 = image
+        let width: Pixels = image
             .width()
             .try_into()
             .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
 
-        let height: u16 = image
+        let height: Pixels = image
             .height()
             .try_into()
             .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;

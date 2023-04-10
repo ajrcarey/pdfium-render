@@ -6,7 +6,7 @@ use crate::bindgen::{
     FPDF_FORMHANDLE, FPDF_PAGE, FS_RECTF,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation};
+use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation, Pixels};
 use crate::create_transform_setters;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
@@ -718,8 +718,8 @@ impl<'a> PdfPage<'a> {
     /// using [PdfBitmap::empty()] and reuse it across multiple calls to [PdfPage::render_into_bitmap()].
     pub fn render(
         &self,
-        width: u16,
-        height: u16,
+        width: Pixels,
+        height: Pixels,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
         let mut bitmap =
@@ -749,8 +749,8 @@ impl<'a> PdfPage<'a> {
         let settings = config.apply_to_page(self);
 
         let mut bitmap = PdfBitmap::empty(
-            settings.width as u16,
-            settings.height as u16,
+            settings.width as Pixels,
+            settings.height as Pixels,
             PdfBitmapFormat::from_pdfium(settings.format as u32)
                 .unwrap_or_else(|_| PdfBitmapFormat::default()),
             self.bindings,
@@ -773,8 +773,8 @@ impl<'a> PdfPage<'a> {
     pub fn render_into_bitmap(
         &self,
         bitmap: &mut PdfBitmap,
-        width: u16,
-        height: u16,
+        width: Pixels,
+        height: Pixels,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<(), PdfiumError> {
         let mut config = PdfRenderConfig::new()
@@ -915,8 +915,8 @@ impl<'a> PdfPage<'a> {
     #[doc(hidden)]
     pub fn get_bitmap(
         &self,
-        width: u16,
-        height: u16,
+        width: Pixels,
+        height: Pixels,
         rotation: Option<PdfBitmapRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
         self.render(width, height, rotation)
