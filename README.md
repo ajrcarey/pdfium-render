@@ -80,6 +80,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.8.1 adds details about the maximum `PdfBitmap` buffer size that can be created
+by Pdfium to the documentation for the `Pixels` data type, and adds the `PdfBitmap::bytes_required_for_size()`
+helper function for estimating the maximum buffer size of a `PdfBitmap` of a given width and height.
+
 Version 0.8.0 reworks the `PdfDocument::pages()` function. Previously, this function
 returned an owned `PdfPages` instance; it now returns an immutable `&PdfPages` reference instead.
 A new `PdfDocument::pages_mut()` function returns a mutable `&mut PdfPages` reference.
@@ -98,22 +102,6 @@ Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`
 in a single operation, and adds transformation functions to `PdfMatrix`, making it easy to
 "queue up" a set of transformations that can be applied to any transformable object via the
 object's `set_matrix()` function. `examples/matrix.rs` demonstrates the new functionality.
-
-Version 0.7.32 fixes off-by-one errors in `PdfPageText::chars_inside_rect()` and `examples/chars.rs`
-thanks to an excellent contribution from <https://github.com/luketpeterson>, and adds support
-for grayscale image processing to `PdfPageImageObject` thanks to an excellent contribution
-from <https://github.com/stephenjudkins>.
-
-Version 0.7.31 adds the `PdfPageLinks` collection, the `PdfPage::links()` and `PdfPage::links_mut()`
-functions, the `PdfLink` and `PdfDestination` structs, and fleshes out the implementation of
-`PdfAction`. It is now possible to retrieve the URI of an action associated with a link using the
-`PdfActionUri::uri()` function. `examples/links.rs` demonstrates the new functionality.
-
-Version 0.7.30 corrects a potential use-after-free error in the high level interface by deprecating
-the `PdfPages::delete_page_at_index()` and `PdfPages::delete_page_range()` functions in favour of
-the new `PdfPage::delete()` function. (Previously, it was possible to hold a `PdfPage` reference
-after deleting the page from the containing `PdfPages` collection.) Deprecated items will be removed
-in release 0.9.0.
 
 ## Binding to Pdfium
 
@@ -354,6 +342,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.1: changes the data type of `PdfBitmap::Pixels` from `u16` to `c_int` and adds the `PdfBitmap::bytes_required_for_size()`
+  helper function in response to <https://github.com/ajrcarey/pdfium-render/issues/80>.
 * 0.8.0: removes the ability to acquire an owned `PdfPages` instance from `PdfDocument::pages()`
   as per <https://github.com/ajrcarey/pdfium-render/issues/47>; adds new `PdfDocument::pages_mut()`
   function to match reworked `PdfDocument::pages()` function; fixes a bug in the WASM implementation

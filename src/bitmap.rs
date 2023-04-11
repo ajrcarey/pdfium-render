@@ -35,7 +35,12 @@ struct ImageData;
 struct JsValue;
 
 /// The device coordinate system when rendering or displaying an image.
-pub type Pixels = u16;
+///
+/// While Pdfium will accept pixel sizes in either dimension up to the limits of [i32],
+/// in practice the maximum size of a bitmap image is limited to approximately 2,320,723,080 bytes
+/// (a little over 2 Gb). You can use the [PdfBitmap::bytes_required_for_size()] function
+/// to estimate the maximum size of a bitmap image for a given target pixel width and height.
+pub type Pixels = c_int;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -298,6 +303,17 @@ impl<'a> PdfBitmap<'a> {
             self.width() as u32,
             self.height() as u32,
         )
+    }
+
+    /// Estimates the maximum memory buffer size required for a [PdfBitmap] of the given dimensions.
+    ///
+    /// Certain platforms, architectures, and operating systems may limit the maximum size of a
+    /// bitmap buffer that can be created by Pdfium.
+    ///
+    /// The returned value assumes four bytes of memory will be consumed for each rendered pixel.
+    #[inline]
+    pub fn bytes_required_for_size(width: Pixels, height: Pixels) -> usize {
+        4 * width as usize * height as usize
     }
 }
 
