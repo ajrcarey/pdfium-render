@@ -267,10 +267,10 @@ impl Pdfium {
     /// * Embed the bytes of the target document directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn load_pdf_from_file(
-        &self,
+    pub fn load_pdf_from_file<'a>(
+        &'a self,
         path: &(impl AsRef<Path> + ?Sized),
-        password: Option<&str>,
+        password: Option<&'a str>,
     ) -> Result<PdfDocument, PdfiumError> {
         self.load_pdf_from_reader(File::open(path).map_err(PdfiumError::IoError)?, password)
     }
@@ -303,14 +303,14 @@ impl Pdfium {
     /// * Embed the bytes of the target document directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn load_pdf_from_reader<R: Read + Seek + 'static>(
-        &self,
+    pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
+        &'a self,
         reader: R,
-        password: Option<&str>,
-    ) -> Result<PdfDocument, PdfiumError> {
+        password: Option<&'a str>,
+    ) -> Result<PdfDocument<'a>, PdfiumError> {
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
-        Self::pdfium_document_handle_to_result(
+        Pdfium::pdfium_document_handle_to_result(
             self.bindings
                 .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password),
             self.bindings(),
