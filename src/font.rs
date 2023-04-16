@@ -155,8 +155,8 @@ impl<'a> PdfFont<'a> {
 
     /// Creates a new [PdfFont] from the given given built-in font argument.
     #[inline]
-    pub fn new_built_in(document: &'a PdfDocument<'a>, font: PdfFontBuiltin) -> Self {
-        let mut result = Self::from_pdfium(
+    pub fn new_built_in(document: &PdfDocument<'a>, font: PdfFontBuiltin) -> PdfFont<'a> {
+        let mut result = PdfFont::from_pdfium(
             document
                 .bindings()
                 .FPDFText_LoadStandardFont(document.handle(), font.to_pdf_font_name()),
@@ -171,86 +171,86 @@ impl<'a> PdfFont<'a> {
 
     /// Creates a new [PdfFont] for the built-in "Times-Roman" font.
     #[inline]
-    pub fn times_roman(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::TimesRoman)
+    pub fn times_roman(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::TimesRoman)
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-Bold" font.
     #[inline]
-    pub fn times_bold(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::TimesBold)
+    pub fn times_bold(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::TimesBold)
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-Italic" font.
     #[inline]
-    pub fn times_italic(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::TimesItalic)
+    pub fn times_italic(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::TimesItalic)
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-BoldItalic" font.
     #[inline]
-    pub fn times_bold_italic(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::TimesBoldItalic)
+    pub fn times_bold_italic(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::TimesBoldItalic)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica" font.
     #[inline]
-    pub fn helvetica(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::Helvetica)
+    pub fn helvetica(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::Helvetica)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica-Bold" font.
     #[inline]
-    pub fn helvetica_bold(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::HelveticaBold)
+    pub fn helvetica_bold(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::HelveticaBold)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica-Oblique" font.
     #[inline]
-    pub fn helvetica_oblique(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::HelveticaOblique)
+    pub fn helvetica_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::HelveticaOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica-BoldOblique" font.
     #[inline]
-    pub fn helvetica_bold_oblique(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::HelveticaBoldOblique)
+    pub fn helvetica_bold_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::HelveticaBoldOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier" font.
     #[inline]
-    pub fn courier(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::Courier)
+    pub fn courier(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::Courier)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier-Bold" font.
     #[inline]
-    pub fn courier_bold(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::CourierBold)
+    pub fn courier_bold(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::CourierBold)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier-Oblique" font.
     #[inline]
-    pub fn courier_oblique(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::CourierOblique)
+    pub fn courier_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::CourierOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier-BoldOblique" font.
     #[inline]
-    pub fn courier_bold_oblique(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::CourierBoldOblique)
+    pub fn courier_bold_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::CourierBoldOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Symbol" font.
     #[inline]
-    pub fn symbol(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::Symbol)
+    pub fn symbol(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::Symbol)
     }
 
     /// Creates a new [PdfFont] for the built-in "ZapfDingbats" font.
     #[inline]
-    pub fn zapf_dingbats(document: &'a PdfDocument<'a>) -> Self {
-        Self::new_built_in(document, PdfFontBuiltin::ZapfDingbats)
+    pub fn zapf_dingbats(document: &PdfDocument<'a>) -> PdfFont<'a> {
+        PdfFont::new_built_in(document, PdfFontBuiltin::ZapfDingbats)
     }
 
     /// Attempts to load a Type 1 font file from the given file path.

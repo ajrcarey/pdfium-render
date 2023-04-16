@@ -154,9 +154,9 @@ pub(crate) mod files {
     /// the `Read` trait.
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     // This function is never used when compiling to WASM.
-    pub(crate) fn get_pdfium_file_accessor_from_reader<R: Read + Seek + 'static>(
+    pub(crate) fn get_pdfium_file_accessor_from_reader<'a, R: Read + Seek + 'a>(
         mut reader: R,
-    ) -> Box<FpdfFileAccessExt> {
+    ) -> Box<FpdfFileAccessExt<'a>> {
         let content_length = reader.seek(SeekFrom::End(0)).unwrap_or(0) as c_ulong;
 
         let mut result = Box::new(FpdfFileAccessExt {
@@ -187,7 +187,7 @@ pub(crate) mod files {
     impl<R: Read + Seek> PdfiumDocumentReader for R {}
 
     #[repr(C)]
-    pub(crate) struct FpdfFileAccessExt {
+    pub(crate) struct FpdfFileAccessExt<'a> {
         // An extension of Pdfium's FPDF_FILEACCESS struct that adds an extra field to carry the
         // user-provided Rust reader.
         content_length: c_ulong,
@@ -199,11 +199,11 @@ pub(crate) mod files {
                 size: c_ulong,
             ) -> c_int,
         >,
-        file_access_ptr: *mut FpdfFileAccessExt,
-        reader: Box<dyn PdfiumDocumentReader>, // Type-erased equivalent of <R: Read + Seek>
+        file_access_ptr: *mut FpdfFileAccessExt<'a>,
+        reader: Box<dyn PdfiumDocumentReader + 'a>, // Type-erased equivalent of <R: Read + Seek>
     }
 
-    impl FpdfFileAccessExt {
+    impl<'a> FpdfFileAccessExt<'a> {
         /// Returns an `FPDF_FILEACCESS` pointer suitable for passing to `FPDF_LoadCustomDocument()`.
         #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
         // This function is never used when compiling to WASM.

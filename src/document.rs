@@ -150,7 +150,7 @@ pub struct PdfDocument<'a> {
 
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     // This field is never used when compiling to WASM.
-    file_access_reader: Option<Box<FpdfFileAccessExt>>,
+    file_access_reader: Option<Box<FpdfFileAccessExt<'a>>>,
 }
 
 impl<'a> PdfDocument<'a> {
@@ -204,7 +204,7 @@ impl<'a> PdfDocument<'a> {
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     // This function is never used when compiling to WASM.
     #[inline]
-    pub(crate) fn set_file_access_reader(&mut self, reader: Box<FpdfFileAccessExt>) {
+    pub(crate) fn set_file_access_reader(&mut self, reader: Box<FpdfFileAccessExt<'a>>) {
         self.file_access_reader = Some(reader);
     }
 
