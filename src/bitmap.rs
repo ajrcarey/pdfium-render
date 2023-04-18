@@ -7,7 +7,7 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use std::f32::consts::{FRAC_PI_2, PI};
-use std::os::raw::c_int;
+use std::os::raw::{c_int, c_void};
 
 #[cfg(feature = "image")]
 use image::{DynamicImage, ImageBuffer};
@@ -191,6 +191,38 @@ impl<'a> PdfBitmap<'a> {
             format.as_pdfium() as c_int,
             std::ptr::null_mut(),
             0, // Not relevant because Pdfium will create the buffer itself.
+        );
+
+        if handle.is_null() {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        } else {
+            Ok(Self::from_pdfium(handle, bindings))
+        }
+    }
+
+    /// Creates a new [PdfBitmap] that wraps the given byte buffer. The buffer must be capable
+    /// of storing an image of the given pixel width and height in the given pixel format,
+    /// or a buffer overflow may occur during rendering.
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because a buffer overflow may occur during rendering if the buffer
+    /// is too small to store a rendered image of the given pixel dimensions.
+    pub unsafe fn external(
+        width: Pixels,
+        height: Pixels,
+        format: PdfBitmapFormat,
+        buffer: &'a mut [u8],
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Result<PdfBitmap<'a>, PdfiumError> {
+        let handle = bindings.FPDFBitmap_CreateEx(
+            width as c_int,
+            height as c_int,
+            format.as_pdfium() as c_int,
+            buffer.as_mut_ptr() as *mut c_void,
+            0, // Not relevant because Pdfium will compute the stride value itself.
         );
 
         if handle.is_null() {
