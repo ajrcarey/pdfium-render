@@ -259,6 +259,8 @@ impl<'a> PdfPageTextObject<'a> {
         PdfFont::from_pdfium(
             self.bindings().FPDFTextObj_GetFont(self.object_handle),
             self.bindings(),
+            None,
+            false,
         )
     }
 

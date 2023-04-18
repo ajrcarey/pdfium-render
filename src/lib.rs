@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 
+extern crate core;
+
 mod bindgen {
     #![allow(non_upper_case_globals)]
     #![allow(non_camel_case_types)]
@@ -33,6 +35,7 @@ pub mod error;
 pub mod font;
 pub mod font_glyph;
 pub mod font_glyphs;
+pub mod fonts;
 pub mod form;
 pub mod form_field;
 pub mod form_field_button;
@@ -112,7 +115,7 @@ pub mod prelude {
     pub use super::{
         action::*, attachment::*, attachments::*, bindings::*, bitmap::*, bookmark::*,
         bookmarks::*, clip_path::*, color::*, color_space::*, destination::*, document::*,
-        error::*, font::*, font_glyph::*, font_glyphs::*, form::*, form_field::*,
+        error::*, font::*, font_glyph::*, font_glyphs::*, fonts::*, form::*, form_field::*,
         form_field_button::*, form_field_checkbox::*, form_field_combo::*, form_field_list::*,
         form_field_option::*, form_field_options::*, form_field_radio::*, form_field_signature::*,
         form_field_text::*, form_field_unknown::*, link::*, matrix::*, metadata::*, page::*,
@@ -159,7 +162,9 @@ mod thread_safe;
 #[cfg(test)]
 pub mod tests {
     use crate::prelude::*;
+    use crate::utils::test::test_bind_to_pdfium;
     use image::ImageFormat;
+    use std::fs::File;
 
     #[test]
     #[cfg(not(feature = "static"))]
@@ -239,10 +244,34 @@ pub mod tests {
     #[test]
     #[cfg(feature = "static")]
     fn test_static_bindings() {
-        use crate::prelude::*;
-
         // Simply checks that the static bindings contain no compilation errors.
 
         Pdfium::bind_to_statically_linked_library().unwrap();
+    }
+
+    #[test]
+    fn test_reader_lifetime() -> Result<(), PdfiumError> {
+        // Confirms that a reader given to Pdfium::load_pdf_from_reader() does not need
+        // a lifetime longer than that of the PdfDocument it is used to create.
+
+        let pdfium = test_bind_to_pdfium();
+
+        let paths = ["test/form-test.pdf", "test/annotations-test.pdf"];
+
+        for path in paths {
+            let page_count = {
+                let reader = File::open(path).map_err(PdfiumError::IoError)?;
+
+                let document = pdfium.load_pdf_from_reader(reader, None)?;
+
+                document.pages().len()
+
+                // reader will be dropped here, immediately after document.
+            };
+
+            println!("{} has {} pages", path, page_count);
+        }
+
+        Ok(())
     }
 }

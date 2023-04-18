@@ -7,6 +7,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmarks::PdfBookmarks;
 use crate::error::PdfiumError;
 use crate::error::PdfiumInternalError;
+use crate::fonts::PdfFonts;
 use crate::form::PdfForm;
 use crate::metadata::PdfMetadata;
 use crate::pages::PdfPages;
@@ -141,6 +142,7 @@ pub struct PdfDocument<'a> {
     attachments: PdfAttachments<'a>,
     bookmarks: PdfBookmarks<'a>,
     form: Option<PdfForm<'a>>,
+    fonts: PdfFonts<'a>,
     metadata: PdfMetadata<'a>,
     pages: PdfPages<'a>,
     permissions: PdfPermissions<'a>,
@@ -170,6 +172,7 @@ impl<'a> PdfDocument<'a> {
             attachments: PdfAttachments::from_pdfium(handle, bindings),
             bookmarks: PdfBookmarks::from_pdfium(handle, bindings),
             form,
+            fonts: PdfFonts::from_pdfium(handle, bindings),
             metadata: PdfMetadata::from_pdfium(handle, bindings),
             pages,
             permissions: PdfPermissions::from_pdfium(handle, bindings),
@@ -246,6 +249,18 @@ impl<'a> PdfDocument<'a> {
     #[inline]
     pub fn form(&self) -> Option<&PdfForm> {
         self.form.as_ref()
+    }
+
+    /// Returns an immutable reference to the [PdfFonts] builder for this [PdfDocument].
+    #[inline]
+    pub fn fonts(&self) -> &PdfFonts {
+        &self.fonts
+    }
+
+    /// Returns a mutable reference to the [PdfFonts] builder for this [PdfDocument].
+    #[inline]
+    pub fn fonts_mut(&mut self) -> &mut PdfFonts<'a> {
+        &mut self.fonts
     }
 
     /// Returns an immutable collection of all the [PdfMetadata] tags in this [PdfDocument].

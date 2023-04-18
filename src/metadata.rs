@@ -98,6 +98,12 @@ impl<'a> PdfMetadata<'a> {
         result
     }
 
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfMetadata] collection.
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+
     /// Returns the number of metadata tags in this [PdfMetadata] collection.
     #[inline]
     pub fn len(&self) -> usize {

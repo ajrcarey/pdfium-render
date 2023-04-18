@@ -80,6 +80,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.8.2 improves the ergonomics of `Pdfium::load_pdf_from_reader()` by relaxing the
+lifetime requirements on the reader, thanks to an excellent contribution from
+<https://github.com/bavardage>, and adds the new `PdfBitmap::external()` function for creating a
+new bitmap from a provided byte buffer.
+
 Version 0.8.1 adds details about the maximum `PdfBitmap` buffer size that can be created
 by Pdfium to the documentation for the `Pixels` data type, and adds the `PdfBitmap::bytes_required_for_size()`
 helper function for estimating the maximum buffer size of a `PdfBitmap` of a given width and height.

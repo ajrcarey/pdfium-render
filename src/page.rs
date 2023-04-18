@@ -19,7 +19,7 @@ use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::prelude::{PdfMatrix, PdfMatrixValue, PdfPageAnnotations};
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 use std::os::raw::c_int;
@@ -692,8 +692,8 @@ impl<'a> PdfPage<'a> {
             if let Some(object) = object.as_text_object() {
                 let font = object.font();
 
-                if !distinct_font_handles.contains_key(&font.handle()) {
-                    distinct_font_handles.insert(font.handle(), true);
+                if let Entry::Vacant(entry) = distinct_font_handles.entry(font.handle()) {
+                    entry.insert(true);
                     result.push(font.handle());
                 }
             }
@@ -701,7 +701,7 @@ impl<'a> PdfPage<'a> {
 
         result
             .into_iter()
-            .map(|handle| PdfFont::from_pdfium(handle, self.bindings))
+            .map(|handle| PdfFont::from_pdfium(handle, self.bindings, None, false))
             .collect()
     }
 

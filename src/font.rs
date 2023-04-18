@@ -5,7 +5,9 @@ use crate::bindgen::{FPDF_FONT, FPDF_FONT_TRUETYPE, FPDF_FONT_TYPE1};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::font_glyphs::PdfFontGlyphs;
 use crate::page::PdfPoints;
+use crate::prelude::PdfFontBuiltin;
 use crate::utils::mem::create_byte_buffer;
 use bitflags::bitflags;
 use std::io::Read;
@@ -26,7 +28,6 @@ use wasm_bindgen_futures::JsFuture;
 #[cfg(target_arch = "wasm32")]
 use js_sys::{ArrayBuffer, Uint8Array};
 
-use crate::font_glyphs::PdfFontGlyphs;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{window, Blob, Response};
 
@@ -48,48 +49,6 @@ bitflags! {
         const ALL_CAP_BIT_17 =     0b00000000000000010000000000000000;
         const SMALL_CAP_BIT_18 =   0b00000000000000100000000000000000;
         const FORCE_BOLD_BIT_19 =  0b00000000000001000000000000000000;
-    }
-}
-
-/// The 14 built-in fonts provided as part of the PDF specification.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum PdfFontBuiltin {
-    TimesRoman,
-    TimesBold,
-    TimesItalic,
-    TimesBoldItalic,
-    Helvetica,
-    HelveticaBold,
-    HelveticaOblique,
-    HelveticaBoldOblique,
-    Courier,
-    CourierBold,
-    CourierOblique,
-    CourierBoldOblique,
-    Symbol,
-    ZapfDingbats,
-}
-
-impl PdfFontBuiltin {
-    /// Returns the PostScript name of this built-in PDF font, as listed on page 416
-    /// of the PDF 1.7 specification.
-    pub fn to_pdf_font_name(&self) -> &str {
-        match self {
-            PdfFontBuiltin::TimesRoman => "Times-Roman",
-            PdfFontBuiltin::TimesBold => "Times-Bold",
-            PdfFontBuiltin::TimesItalic => "Times-Italic",
-            PdfFontBuiltin::TimesBoldItalic => "Times-BoldItalic",
-            PdfFontBuiltin::Helvetica => "Helvetica",
-            PdfFontBuiltin::HelveticaBold => "Helvetica-Bold",
-            PdfFontBuiltin::HelveticaOblique => "Helvetica-Oblique",
-            PdfFontBuiltin::HelveticaBoldOblique => "Helvetica-BoldOblique",
-            PdfFontBuiltin::Courier => "Courier",
-            PdfFontBuiltin::CourierBold => "Courier-Bold",
-            PdfFontBuiltin::CourierOblique => "Courier-Oblique",
-            PdfFontBuiltin::CourierBoldOblique => "Courier-BoldOblique",
-            PdfFontBuiltin::Symbol => "Symbol",
-            PdfFontBuiltin::ZapfDingbats => "ZapfDingbats",
-        }
     }
 }
 
@@ -143,114 +102,250 @@ pub struct PdfFont<'a> {
 
 impl<'a> PdfFont<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(handle: FPDF_FONT, bindings: &'a dyn PdfiumLibraryBindings) -> Self {
+    pub(crate) fn from_pdfium(
+        handle: FPDF_FONT,
+        bindings: &'a dyn PdfiumLibraryBindings,
+        built_in: Option<PdfFontBuiltin>,
+        is_font_memory_loaded: bool,
+    ) -> Self {
         PdfFont {
-            built_in: None,
+            built_in,
             handle,
             bindings,
             glyphs: PdfFontGlyphs::from_pdfium(handle, bindings),
-            is_font_memory_loaded: false,
+            is_font_memory_loaded,
         }
     }
 
     /// Creates a new [PdfFont] from the given given built-in font argument.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::new_built_in()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::new_built_in() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn new_built_in(document: &PdfDocument<'a>, font: PdfFontBuiltin) -> PdfFont<'a> {
-        let mut result = PdfFont::from_pdfium(
+    pub fn new_built_in(document: &'a PdfDocument<'a>, font: PdfFontBuiltin) -> PdfFont<'a> {
+        Self::from_pdfium(
             document
                 .bindings()
                 .FPDFText_LoadStandardFont(document.handle(), font.to_pdf_font_name()),
             document.bindings(),
-        );
-
-        result.built_in = Some(font);
-        result.is_font_memory_loaded = true;
-
-        result
+            Some(font),
+            true,
+        )
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-Roman" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::times_roman()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::times_roman() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn times_roman(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::TimesRoman)
+    pub fn times_roman(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::TimesRoman)
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-Bold" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::times_bold()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::times_bold() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn times_bold(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::TimesBold)
+    pub fn times_bold(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::TimesBold)
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-Italic" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::times_italic()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::times_italic() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn times_italic(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::TimesItalic)
+    pub fn times_italic(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::TimesItalic)
     }
 
     /// Creates a new [PdfFont] for the built-in "Times-BoldItalic" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::times_bold_italic()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::times_bold_italic() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn times_bold_italic(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::TimesBoldItalic)
+    pub fn times_bold_italic(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::TimesBoldItalic)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::helvetica()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::helvetica() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn helvetica(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::Helvetica)
+    pub fn helvetica(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::Helvetica)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica-Bold" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::helvetica_bold()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::helvetica_bold() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn helvetica_bold(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::HelveticaBold)
+    pub fn helvetica_bold(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::HelveticaBold)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica-Oblique" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::helvetica_oblique()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::helvetica_oblique() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn helvetica_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::HelveticaOblique)
+    pub fn helvetica_oblique(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::HelveticaOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Helvetica-BoldOblique" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::helvetica_bold_oblique()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::helvetica_bold_oblique() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn helvetica_bold_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::HelveticaBoldOblique)
+    pub fn helvetica_bold_oblique(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::HelveticaBoldOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::courier()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::courier() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn courier(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::Courier)
+    pub fn courier(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::Courier)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier-Bold" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::courier_bold()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::courier_bold() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn courier_bold(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::CourierBold)
+    pub fn courier_bold(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::CourierBold)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier-Oblique" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::courier_oblique()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::courier_oblique() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn courier_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::CourierOblique)
+    pub fn courier_oblique(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::CourierOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Courier-BoldOblique" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::courier_bold_oblique()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::courier_bold_oblique() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn courier_bold_oblique(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::CourierBoldOblique)
+    pub fn courier_bold_oblique(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::CourierBoldOblique)
     }
 
     /// Creates a new [PdfFont] for the built-in "Symbol" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::symbol()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::symbol() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn symbol(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::Symbol)
+    pub fn symbol(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::Symbol)
     }
 
     /// Creates a new [PdfFont] for the built-in "ZapfDingbats" font.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::zapf_dingbats()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::zapf_dingbats() function instead."
+    )]
+    #[doc(hidden)]
     #[inline]
-    pub fn zapf_dingbats(document: &PdfDocument<'a>) -> PdfFont<'a> {
-        PdfFont::new_built_in(document, PdfFontBuiltin::ZapfDingbats)
+    pub fn zapf_dingbats(document: &'a PdfDocument<'a>) -> PdfFont<'a> {
+        #[allow(deprecated)]
+        Self::new_built_in(document, PdfFontBuiltin::ZapfDingbats)
     }
 
     /// Attempts to load a Type 1 font file from the given file path.
@@ -274,12 +369,21 @@ impl<'a> PdfFont<'a> {
     /// then load those bytes into Pdfium using the [PdfFont::new_type1_from_bytes()] function.
     /// * Embed the bytes of the desired font directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_type1_from_file()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_type1_from_file() function instead."
+    )]
+    #[doc(hidden)]
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_type1_from_file(
         document: &'a PdfDocument<'a>,
         path: &(impl AsRef<Path> + ?Sized),
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
+        #[allow(deprecated)]
         Self::load_type1_from_reader(
             document,
             File::open(path).map_err(PdfiumError::IoError)?,
@@ -293,17 +397,26 @@ impl<'a> PdfFont<'a> {
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_type1_from_reader()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_type1_from_reader() function instead."
+    )]
+    #[doc(hidden)]
     pub fn load_type1_from_reader(
         document: &'a PdfDocument<'a>,
         mut reader: impl Read,
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
         let mut bytes = Vec::new();
 
         reader
             .read_to_end(&mut bytes)
             .map_err(PdfiumError::IoError)?;
 
+        #[allow(deprecated)]
         Self::new_type1_from_bytes(document, bytes.as_slice(), is_cid_font)
     }
 
@@ -316,6 +429,14 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_type1_from_fetch()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_type1_from_fetch() function instead."
+    )]
+    #[doc(hidden)]
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_type1_from_fetch(
         document: &'a PdfDocument<'a>,
@@ -339,6 +460,7 @@ impl<'a> PdfFont<'a> {
                     .map_err(PdfiumError::WebSysFetchError)?
                     .into();
 
+            #[allow(deprecated)]
             Self::load_type1_from_blob(document, blob, is_cid_font).await
         } else {
             Err(PdfiumError::WebSysWindowObjectNotAvailable)
@@ -360,6 +482,14 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_type1_from_blob()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_type1_from_blob() function instead."
+    )]
+    #[doc(hidden)]
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_type1_from_blob(
         document: &'a PdfDocument<'a>,
@@ -375,6 +505,7 @@ impl<'a> PdfFont<'a> {
 
         let bytes: Vec<u8> = u8_array.to_vec();
 
+        #[allow(deprecated)]
         Self::new_type1_from_bytes(document, bytes.as_slice(), is_cid_font)
     }
 
@@ -384,11 +515,19 @@ impl<'a> PdfFont<'a> {
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_type1_from_bytes()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_type1_from_bytes() function instead."
+    )]
+    #[doc(hidden)]
     pub fn new_type1_from_bytes(
         document: &'a PdfDocument<'a>,
         font_data: &[u8],
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
         Self::new_font_from_bytes(document, font_data, FPDF_FONT_TYPE1, is_cid_font)
     }
 
@@ -413,12 +552,21 @@ impl<'a> PdfFont<'a> {
     /// then load those bytes into Pdfium using the [PdfFont::new_true_type_from_bytes()] function.
     /// * Embed the bytes of the desired font directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_true_type_from_file()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_true_type_from_file() function instead."
+    )]
+    #[doc(hidden)]
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_true_type_from_file(
         document: &'a PdfDocument<'a>,
         path: &(impl AsRef<Path> + ?Sized),
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
+        #[allow(deprecated)]
         Self::load_true_type_from_reader(
             document,
             File::open(path).map_err(PdfiumError::IoError)?,
@@ -432,17 +580,26 @@ impl<'a> PdfFont<'a> {
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_true_type_from_reader()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_true_type_from_reader() function instead."
+    )]
+    #[doc(hidden)]
     pub fn load_true_type_from_reader(
         document: &'a PdfDocument<'a>,
         mut reader: impl Read,
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
         let mut bytes = Vec::new();
 
         reader
             .read_to_end(&mut bytes)
             .map_err(PdfiumError::IoError)?;
 
+        #[allow(deprecated)]
         Self::new_true_type_from_bytes(document, bytes.as_slice(), is_cid_font)
     }
 
@@ -455,6 +612,14 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_true_type_from_fetch()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_true_type_from_fetch() function instead."
+    )]
+    #[doc(hidden)]
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_true_type_from_fetch(
         document: &'a PdfDocument<'a>,
@@ -478,6 +643,7 @@ impl<'a> PdfFont<'a> {
                     .map_err(PdfiumError::WebSysFetchError)?
                     .into();
 
+            #[allow(deprecated)]
             Self::load_true_type_from_blob(document, blob, is_cid_font).await
         } else {
             Err(PdfiumError::WebSysWindowObjectNotAvailable)
@@ -499,6 +665,14 @@ impl<'a> PdfFont<'a> {
     /// or right-to-left languages.
     ///
     /// This function is only available when compiling to WASM.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_true_type_from_blob()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_true_type_from_blob() function instead."
+    )]
+    #[doc(hidden)]
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_true_type_from_blob(
         document: &'a PdfDocument<'a>,
@@ -514,6 +688,7 @@ impl<'a> PdfFont<'a> {
 
         let bytes: Vec<u8> = u8_array.to_vec();
 
+        #[allow(deprecated)]
         Self::new_true_type_from_bytes(document, bytes.as_slice(), is_cid_font)
     }
 
@@ -523,11 +698,19 @@ impl<'a> PdfFont<'a> {
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
+    ///
+    /// This function is now deprecated and will be removed in release 0.9.0.
+    /// Use the `PdfFonts::load_true_type_from_bytes()` function instead.
+    #[deprecated(
+        since = "0.8.1",
+        note = "This function has been moved. Use the PdfFonts::load_true_type_from_bytes() function instead."
+    )]
+    #[doc(hidden)]
     pub fn new_true_type_from_bytes(
         document: &'a PdfDocument<'a>,
         font_data: &[u8],
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
         Self::new_font_from_bytes(document, font_data, FPDF_FONT_TRUETYPE, is_cid_font)
     }
 
@@ -537,7 +720,7 @@ impl<'a> PdfFont<'a> {
         font_data: &[u8],
         font_type: c_uint,
         is_cid_font: bool,
-    ) -> Result<Self, PdfiumError> {
+    ) -> Result<PdfFont<'a>, PdfiumError> {
         let handle = document.bindings().FPDFText_LoadFont(
             document.handle(),
             font_data.as_ptr(),
@@ -551,11 +734,12 @@ impl<'a> PdfFont<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            let mut result = PdfFont::from_pdfium(handle, document.bindings());
-
-            result.is_font_memory_loaded = true;
-
-            Ok(result)
+            Ok(PdfFont::from_pdfium(
+                handle,
+                document.bindings(),
+                None,
+                true,
+            ))
         }
     }
 
@@ -613,8 +797,9 @@ impl<'a> PdfFont<'a> {
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn weight(&self) -> Result<PdfFontWeight, PdfiumError> {
-        PdfFontWeight::from_pdfium(self.bindings.FPDFFont_GetWeight(self.handle))
-            .ok_or_else(|| PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown))
+        PdfFontWeight::from_pdfium(self.bindings.FPDFFont_GetWeight(self.handle)).ok_or(
+            PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown),
+        )
     }
 
     /// Returns the italic angle of this [PdfFont]. The italic angle is the angle,
@@ -800,6 +985,20 @@ impl<'a> PdfFont<'a> {
     pub fn is_bold_reenforced(&self) -> bool {
         self.get_flags_bits()
             .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
+    }
+
+    /// Returns `true` if this [PdfFont] is an instance of one of the 14 built-in fonts
+    /// provided as part of the PDF specification.
+    #[inline]
+    pub fn is_built_in(&self) -> bool {
+        self.built_in.is_some()
+    }
+
+    /// Returns the [PdfFontBuiltin] type of this built-in font, or `None` if this font is
+    /// not one of the 14 built-in fonts provided as part of the PDF specification.
+    #[inline]
+    pub fn built_in(&self) -> Option<PdfFontBuiltin> {
+        self.built_in
     }
 
     /// Returns a collection of all the [PdfFontGlyphs] defined for this [PdfFont] in the containing

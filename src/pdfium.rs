@@ -211,11 +211,11 @@ impl Pdfium {
     /// Attempts to open a [PdfDocument] from the given static byte buffer.
     ///
     /// If the document is password protected, the given password will be used to unlock it.
-    pub fn load_pdf_from_byte_slice(
-        &self,
-        bytes: &'static [u8],
+    pub fn load_pdf_from_byte_slice<'a>(
+        &'a self,
+        bytes: &'a [u8],
         password: Option<&str>,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'a>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
             self.bindings.FPDF_LoadMemDocument64(bytes, password),
             self.bindings(),
