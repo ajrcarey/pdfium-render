@@ -204,13 +204,16 @@ impl<'a> PdfBitmap<'a> {
 
     /// Creates a new [PdfBitmap] that wraps the given byte buffer. The buffer must be capable
     /// of storing an image of the given pixel width and height in the given pixel format,
-    /// or a buffer overflow may occur during rendering.
+    /// otherwise a buffer overflow may occur during rendering.
+    ///
+    /// This function is not available when compiling to WASM.
     ///
     /// # Safety
     ///
     /// This function is unsafe because a buffer overflow may occur during rendering if the buffer
     /// is too small to store a rendered image of the given pixel dimensions.
-    pub unsafe fn external(
+    #[cfg(not(target_arch = "wasm32"))]
+    pub unsafe fn from_bytes(
         width: Pixels,
         height: Pixels,
         format: PdfBitmapFormat,

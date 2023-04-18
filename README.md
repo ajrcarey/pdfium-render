@@ -80,10 +80,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
-Version 0.8.2 improves the ergonomics of `Pdfium::load_pdf_from_reader()` by relaxing the
-lifetime requirements on the reader, thanks to an excellent contribution from
-<https://github.com/bavardage>, and adds the new `PdfBitmap::external()` function for creating a
-new bitmap from a provided byte buffer.
+Version 0.8.2 adds the new `PdfBitmap::from_bytes()` function for creating a new bitmap from
+an existing byte buffer, and improves the ergonomics of `Pdfium::load_pdf_from_reader()`
+by relaxing the lifetime requirements on the reader, thanks to an excellent contribution from
+<https://github.com/bavardage>.
 
 Version 0.8.1 adds details about the maximum `PdfBitmap` buffer size that can be created
 by Pdfium to the documentation for the `Pixels` data type, and adds the `PdfBitmap::bytes_required_for_size()`
@@ -334,7 +334,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.0, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.2, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -347,6 +347,9 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.2: adds `PdfBitmap::from_bytes()` function in response to <https://github.com/ajrcarey/pdfium-render/issues/83>;
+  relaxes lifetime requirements on `Pdfium::load_pdf_from_reader()` and related functions
+  thanks to an excellent contribution from <https://github.com/bavardage>.
 * 0.8.1: changes the data type of `PdfBitmap::Pixels` from `u16` to `c_int` and adds the `PdfBitmap::bytes_required_for_size()`
   helper function in response to <https://github.com/ajrcarey/pdfium-render/issues/80>.
 * 0.8.0: removes the ability to acquire an owned `PdfPages` instance from `PdfDocument::pages()`
