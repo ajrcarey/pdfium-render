@@ -251,13 +251,13 @@ impl<'a> PdfDocument<'a> {
         self.form.as_ref()
     }
 
-    /// Returns an immutable reference to the [PdfFonts] builder for this [PdfDocument].
+    /// Returns an immutable collection of all the [PdfFonts] in this [PdfDocument].
     #[inline]
     pub fn fonts(&self) -> &PdfFonts {
         &self.fonts
     }
 
-    /// Returns a mutable reference to the [PdfFonts] builder for this [PdfDocument].
+    /// Returns a mutable collection of all the [PdfFonts] in this [PdfDocument].
     #[inline]
     pub fn fonts_mut(&mut self) -> &mut PdfFonts<'a> {
         &mut self.fonts

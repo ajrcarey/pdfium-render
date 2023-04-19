@@ -7,7 +7,10 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use std::f32::consts::{FRAC_PI_2, PI};
-use std::os::raw::{c_int, c_void};
+use std::os::raw::c_int;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::os::raw::c_void;
 
 #[cfg(feature = "image")]
 use image::{DynamicImage, ImageBuffer};

@@ -16,6 +16,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
+use crate::fonts::ToPdfFontToken;
 use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page::PdfPoints;
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
@@ -174,13 +175,13 @@ impl<'a> PdfPageTextObject<'a> {
     pub fn new(
         document: &PdfDocument<'a>,
         text: impl ToString,
-        font: &PdfFont,
+        font: impl ToPdfFontToken,
         font_size: PdfPoints,
     ) -> Result<Self, PdfiumError> {
         Self::new_from_handles(
             document.handle(),
             text,
-            font.handle(),
+            font.token().handle(),
             font_size,
             document.bindings(),
         )

@@ -7,6 +7,7 @@ use crate::bindgen::FPDF_PAGEOBJECT;
 use crate::document::PdfDocument;
 use crate::error::PdfiumError;
 use crate::font::PdfFont;
+use crate::fonts::PdfFontToken;
 use crate::page::PdfPoints;
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_group::PdfPageGroupObject;

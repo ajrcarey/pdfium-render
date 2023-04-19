@@ -1,11 +1,31 @@
-use crate::bindgen::{FPDF_DOCUMENT, FPDF_FONT_TRUETYPE, FPDF_FONT_TYPE1};
+//! Defines the [PdfFonts] struct, a collection of all the `PdfFont` objects in a
+//! `PdfDocument`.
+
+use crate::bindgen::{FPDF_DOCUMENT, FPDF_FONT, FPDF_FONT_TRUETYPE, FPDF_FONT_TYPE1};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
-use std::fs::File;
+use std::collections::HashMap;
 use std::io::Read;
 use std::os::raw::{c_int, c_uint};
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::fs::File;
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::JsCast;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_futures::JsFuture;
+
+#[cfg(target_arch = "wasm32")]
+use js_sys::{ArrayBuffer, Uint8Array};
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::{window, Blob, Response};
 
 // The following dummy declaration is used only when running cargo doc.
 // It allows documentation of WASM-specific functionality to be included
@@ -56,8 +76,58 @@ impl PdfFontBuiltin {
     }
 }
 
+/// A reusable token referencing a [PdfFont] previously added to the [PdfFonts] collection
+/// of a `PdfDocument`.
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+pub struct PdfFontToken(FPDF_FONT);
+
+impl PdfFontToken {
+    #[inline]
+    pub(crate) fn from_pdfium(handle: FPDF_FONT) -> Self {
+        Self(handle)
+    }
+
+    #[inline]
+    pub(crate) fn from_font(font: &PdfFont) -> Self {
+        Self::from_pdfium(font.handle())
+    }
+
+    #[inline]
+    pub(crate) fn handle(&self) -> FPDF_FONT {
+        self.0
+    }
+}
+
+/// Allows font-handling functions to take either a [PdfFont] owned instance, a [PdfFont] reference,
+/// or a [PdfFontToken].
+pub trait ToPdfFontToken {
+    fn token(&self) -> PdfFontToken;
+}
+
+impl ToPdfFontToken for PdfFontToken {
+    #[inline]
+    fn token(&self) -> PdfFontToken {
+        *self
+    }
+}
+
+impl<'a> ToPdfFontToken for PdfFont<'a> {
+    #[inline]
+    fn token(&self) -> PdfFontToken {
+        PdfFontToken::from_font(self)
+    }
+}
+
+impl<'a> ToPdfFontToken for &'a PdfFont<'a> {
+    #[inline]
+    fn token(&self) -> PdfFontToken {
+        PdfFontToken::from_font(self)
+    }
+}
+
 pub struct PdfFonts<'a> {
     document_handle: FPDF_DOCUMENT,
+    fonts: HashMap<PdfFontToken, PdfFont<'a>>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -69,6 +139,7 @@ impl<'a> PdfFonts<'a> {
     ) -> Self {
         PdfFonts {
             document_handle,
+            fonts: HashMap::new(),
             bindings,
         }
     }
@@ -79,99 +150,105 @@ impl<'a> PdfFonts<'a> {
         self.bindings
     }
 
-    /// Creates a new [PdfFont] instance representing the given built-in font.
+    /// Returns a reusable [PdfFontToken] for the given built-in font.
     #[inline]
-    pub fn new_built_in(&self, font: PdfFontBuiltin) -> PdfFont {
-        PdfFont::from_pdfium(
+    pub fn new_built_in(&mut self, font: PdfFontBuiltin) -> PdfFontToken {
+        let font = PdfFont::from_pdfium(
             self.bindings
                 .FPDFText_LoadStandardFont(self.document_handle, font.to_pdf_font_name()),
             self.bindings,
             Some(font),
             true,
-        )
+        );
+
+        let token = PdfFontToken(font.handle());
+
+        self.fonts.insert(token, font);
+
+        token
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Times-Roman" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Times-Roman" font.
     #[inline]
-    pub fn times_roman(&self) -> PdfFont {
+    pub fn times_roman(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::TimesRoman)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Times-Bold" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Times-Bold" font.
     #[inline]
-    pub fn times_bold(&self) -> PdfFont {
+    pub fn times_bold(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::TimesBold)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Times-Italic" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Times-Italic" font.
     #[inline]
-    pub fn times_italic(&self) -> PdfFont {
+    pub fn times_italic(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::TimesItalic)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Times-BoldItalic" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Times-BoldItalic" font.
     #[inline]
-    pub fn times_bold_italic(&self) -> PdfFont {
+    pub fn times_bold_italic(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::TimesBoldItalic)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Helvetica" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Helvetica" font.
     #[inline]
-    pub fn helvetica(&self) -> PdfFont {
+    pub fn helvetica(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::Helvetica)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Helvetica-Bold" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Helvetica-Bold" font.
     #[inline]
-    pub fn helvetica_bold(&self) -> PdfFont {
+    pub fn helvetica_bold(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::HelveticaBold)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Helvetica-Oblique" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Helvetica-Oblique" font.
     #[inline]
-    pub fn helvetica_oblique(&self) -> PdfFont {
+    pub fn helvetica_oblique(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::HelveticaOblique)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Helvetica-BoldOblique" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Helvetica-BoldOblique" font.
     #[inline]
-    pub fn helvetica_bold_oblique(&self) -> PdfFont {
+    pub fn helvetica_bold_oblique(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::HelveticaBoldOblique)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Courier" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Courier" font.
     #[inline]
-    pub fn courier(&self) -> PdfFont {
+    pub fn courier(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::Courier)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Courier-Bold" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Courier-Bold" font.
     #[inline]
-    pub fn courier_bold(&self) -> PdfFont {
+    pub fn courier_bold(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::CourierBold)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Courier-Oblique" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Courier-Oblique" font.
     #[inline]
-    pub fn courier_oblique(&self) -> PdfFont {
+    pub fn courier_oblique(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::CourierOblique)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Courier-BoldOblique" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Courier-BoldOblique" font.
     #[inline]
-    pub fn courier_bold_oblique(&self) -> PdfFont {
+    pub fn courier_bold_oblique(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::CourierBoldOblique)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "Symbol" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "Symbol" font.
     #[inline]
-    pub fn symbol(&self) -> PdfFont {
+    pub fn symbol(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::Symbol)
     }
 
-    /// Creates a new [PdfFont] instance representing the built-in "ZapfDingbats" font.
+    /// Returns a reusable [PdfFontToken] for the built-in "ZapfDingbats" font.
     #[inline]
-    pub fn zapf_dingbats(&self) -> PdfFont {
+    pub fn zapf_dingbats(&mut self) -> PdfFontToken {
         self.new_built_in(PdfFontBuiltin::ZapfDingbats)
     }
 
@@ -198,10 +275,10 @@ impl<'a> PdfFonts<'a> {
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_type1_from_file(
-        &self,
+        &mut self,
         path: &(impl AsRef<Path> + ?Sized),
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         self.load_type1_from_reader(File::open(path).map_err(PdfiumError::IoError)?, is_cid_font)
     }
 
@@ -212,10 +289,10 @@ impl<'a> PdfFonts<'a> {
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
     pub fn load_type1_from_reader(
-        &self,
+        &mut self,
         mut reader: impl Read,
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         let mut bytes = Vec::new();
 
         reader
@@ -236,10 +313,10 @@ impl<'a> PdfFonts<'a> {
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_type1_from_fetch(
-        &self,
+        &mut self,
         url: impl ToString,
         is_cid_font: bool,
-    ) -> Result<PdfFont<'a>, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         if let Some(window) = window() {
             let fetch_result = JsFuture::from(window.fetch_with_str(url.to_string().as_str()))
                 .await
@@ -280,10 +357,10 @@ impl<'a> PdfFonts<'a> {
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_type1_from_blob(
-        &self,
+        &mut self,
         blob: Blob,
         is_cid_font: bool,
-    ) -> Result<PdfFont<'a>, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
             .await
             .map_err(PdfiumError::WebSysFetchError)?
@@ -303,10 +380,10 @@ impl<'a> PdfFonts<'a> {
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
     pub fn load_type1_from_bytes(
-        &self,
+        &mut self,
         font_data: &[u8],
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         self.new_font_from_bytes(font_data, FPDF_FONT_TYPE1, is_cid_font)
     }
 
@@ -333,10 +410,10 @@ impl<'a> PdfFonts<'a> {
     /// using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_true_type_from_file(
-        &self,
+        &mut self,
         path: &(impl AsRef<Path> + ?Sized),
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         self.load_true_type_from_reader(
             File::open(path).map_err(PdfiumError::IoError)?,
             is_cid_font,
@@ -350,10 +427,10 @@ impl<'a> PdfFonts<'a> {
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
     pub fn load_true_type_from_reader(
-        &self,
+        &mut self,
         mut reader: impl Read,
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         let mut bytes = Vec::new();
 
         reader
@@ -374,10 +451,10 @@ impl<'a> PdfFonts<'a> {
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_true_type_from_fetch(
-        &self,
+        &mut self,
         url: impl ToString,
         is_cid_font: bool,
-    ) -> Result<PdfFont<'a>, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         if let Some(window) = window() {
             let fetch_result = JsFuture::from(window.fetch_with_str(url.to_string().as_str()))
                 .await
@@ -418,10 +495,10 @@ impl<'a> PdfFonts<'a> {
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_true_type_from_blob(
-        &self,
+        &mut self,
         blob: Blob,
         is_cid_font: bool,
-    ) -> Result<PdfFont<'a>, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
             .await
             .map_err(PdfiumError::WebSysFetchError)?
@@ -441,20 +518,20 @@ impl<'a> PdfFonts<'a> {
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
     pub fn load_true_type_from_bytes(
-        &self,
+        &mut self,
         font_data: &[u8],
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         self.new_font_from_bytes(font_data, FPDF_FONT_TRUETYPE, is_cid_font)
     }
 
     #[inline]
     pub(crate) fn new_font_from_bytes(
-        &self,
+        &mut self,
         font_data: &[u8],
         font_type: c_uint,
         is_cid_font: bool,
-    ) -> Result<PdfFont, PdfiumError> {
+    ) -> Result<PdfFontToken, PdfiumError> {
         let handle = self.bindings.FPDFText_LoadFont(
             self.document_handle,
             font_data.as_ptr(),
@@ -468,7 +545,19 @@ impl<'a> PdfFonts<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfFont::from_pdfium(handle, self.bindings, None, true))
+            let font = PdfFont::from_pdfium(handle, self.bindings, None, true);
+
+            let token = PdfFontToken::from_font(&font);
+
+            self.fonts.insert(token, font);
+
+            Ok(token)
         }
+    }
+
+    /// Returns a reference to the [PdfFont] associated with the given [PdfFontToken], if any.
+    #[inline]
+    pub fn get(&self, token: PdfFontToken) -> Option<&PdfFont> {
+        self.fonts.get(&token)
     }
 }
