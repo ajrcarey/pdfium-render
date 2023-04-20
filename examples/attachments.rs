@@ -20,7 +20,7 @@ pub fn main() -> Result<(), PdfiumError> {
             PdfPoints::new(100.0),
             PdfPoints::new(700.0),
             "This document contains three embedded attachments.",
-            &PdfFont::helvetica(&document),
+            document.fonts_mut().helvetica(),
             PdfPoints::new(12.0),
         )?;
 

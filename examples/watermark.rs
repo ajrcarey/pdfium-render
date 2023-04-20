@@ -8,9 +8,11 @@ fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.load_pdf_from_file("test/export-test.pdf", None)?;
+    let mut document = pdfium.load_pdf_from_file("test/export-test.pdf", None)?;
 
     // Add a page number and a large text watermark to every page in the document.
+
+    let font = document.fonts_mut().helvetica();
 
     document.pages().watermark(|group, index, width, height| {
         // Create a page number at the very top of the page.
@@ -18,7 +20,7 @@ fn main() -> Result<(), PdfiumError> {
         let mut page_number = PdfPageTextObject::new(
             &document,
             format!("Page {}", index + 1),
-            &PdfFont::helvetica(&document),
+            font,
             PdfPoints::new(14.0),
         )?;
 
@@ -33,12 +35,8 @@ fn main() -> Result<(), PdfiumError> {
 
         // Create a large text watermark in the center of the page.
 
-        let mut watermark = PdfPageTextObject::new(
-            &document,
-            "Watermark",
-            &PdfFont::helvetica(&document),
-            PdfPoints::new(150.0),
-        )?;
+        let mut watermark =
+            PdfPageTextObject::new(&document, "Watermark", font, PdfPoints::new(150.0))?;
 
         watermark.set_fill_color(PdfColor::SOLID_BLUE.with_alpha(127))?;
         watermark.rotate_counter_clockwise_degrees(45.0)?;

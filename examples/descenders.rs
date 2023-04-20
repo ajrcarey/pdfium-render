@@ -14,11 +14,13 @@ fn main() -> Result<(), PdfiumError> {
         .pages_mut()
         .create_page_at_end(PdfPagePaperSize::a4())?;
 
+    let font = document.fonts_mut().helvetica();
+
     let object = page.objects_mut().create_text_object(
         PdfPoints::new(100.0),
         PdfPoints::new(100.0),
         "This is a sentence containing several pleasing words.",
-        &PdfFont::helvetica(&document),
+        font,
         PdfPoints::new(12.0),
     )?;
 

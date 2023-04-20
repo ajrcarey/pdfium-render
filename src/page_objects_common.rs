@@ -3,7 +3,6 @@
 
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::font::PdfFont;
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::PdfPageObject;
 use crate::page_object_image::PdfPageImageObject;
@@ -12,6 +11,7 @@ use crate::page_object_text::PdfPageTextObject;
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
 use std::ops::{Range, RangeInclusive};
 
+use crate::fonts::ToPdfFontToken;
 #[cfg(feature = "image")]
 use image::DynamicImage;
 
@@ -106,7 +106,7 @@ pub trait PdfPageObjectsCommon<'a> {
         x: PdfPoints,
         y: PdfPoints,
         text: impl ToString,
-        font: &PdfFont,
+        font: impl ToPdfFontToken,
         font_size: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError>;
 
@@ -352,13 +352,13 @@ where
         x: PdfPoints,
         y: PdfPoints,
         text: impl ToString,
-        font: &PdfFont,
+        font: impl ToPdfFontToken,
         font_size: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let mut object = PdfPageTextObject::new_from_handles(
             self.document_handle(),
             text,
-            font.handle(),
+            font.token().handle(),
             font_size,
             self.bindings(),
         )?;

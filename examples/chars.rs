@@ -20,7 +20,7 @@ fn main() -> Result<(), PdfiumError> {
         PdfPoints::new(100.0),
         PdfPoints::new(100.0),
         "This is a sentence containing several pleasing words.",
-        &PdfFont::helvetica(&document),
+        document.fonts_mut().helvetica(),
         PdfPoints::new(12.0),
     )?;
 

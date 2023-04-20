@@ -8,7 +8,7 @@ fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let document = pdfium.create_new_pdf()?;
+    let mut document = pdfium.create_new_pdf()?;
 
     // Log characteristics of the 14 built-in PDF fonts to the console.
 
@@ -32,7 +32,13 @@ fn main() -> Result<(), PdfiumError> {
     let font_size = PdfPoints::new(12.0);
 
     for (index, built_in) in fonts.into_iter().enumerate() {
-        let font = PdfFont::new_built_in(&document, built_in);
+        // Adding a built-in font to the document gets us a reusable token...
+
+        let font = document.fonts_mut().new_built_in(built_in);
+
+        // ... that we can then use to retrieve a reference to the font itself.
+
+        let font = document.fonts().get(font).unwrap();
 
         // At the time of writing, Pdfium does not reliably return font weights,
         // italic angles, and certain other properties correctly for built-in fonts.

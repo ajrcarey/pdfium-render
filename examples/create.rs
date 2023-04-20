@@ -21,7 +21,7 @@ fn main() -> Result<(), PdfiumError> {
 
     // ... add some text objects to the page...
 
-    let font = PdfFont::courier_bold(&document);
+    let font = document.fonts_mut().courier_bold();
 
     let base_font_size = 10.0;
 
@@ -35,7 +35,7 @@ fn main() -> Result<(), PdfiumError> {
         let mut object = PdfPageTextObject::new(
             &document,
             "Hello world from Pdfium!",
-            &font,
+            font,
             PdfPoints::new(base_font_size + index),
         )?;
 
