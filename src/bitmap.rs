@@ -362,3 +362,48 @@ impl<'a> Drop for PdfBitmap<'a> {
         self.bindings.FPDFBitmap_Destroy(self.handle);
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    use crate::prelude::*;
+    use crate::utils::mem::create_sized_buffer;
+    use crate::utils::test::test_bind_to_pdfium;
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn test_from_bytes() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let test_width = 2000;
+        let test_height = 4000;
+
+        let buffer_size_required = PdfBitmap::bytes_required_for_size(test_width, test_height);
+
+        let mut buffer = create_sized_buffer(buffer_size_required);
+
+        let buffer_ptr = buffer.as_ptr();
+
+        let bitmap = unsafe {
+            PdfBitmap::from_bytes(
+                test_width,
+                test_height,
+                PdfBitmapFormat::BRGx,
+                buffer.as_mut_slice(),
+                pdfium.bindings(),
+            )?
+        };
+
+        assert_eq!(bitmap.width(), test_width);
+        assert_eq!(bitmap.height(), test_height);
+        assert_eq!(
+            pdfium.bindings().FPDFBitmap_GetBuffer(bitmap.handle) as usize,
+            buffer_ptr as usize
+        );
+        assert_eq!(
+            pdfium.bindings().FPDFBitmap_GetStride(bitmap.handle),
+            test_width * 4 // PdfBitmapFormat::BGRx is 4 bytes per pixel
+        );
+
+        Ok(())
+    }
+}

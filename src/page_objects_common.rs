@@ -3,6 +3,7 @@
 
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::fonts::ToPdfFontToken;
 use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::PdfPageObject;
 use crate::page_object_image::PdfPageImageObject;
@@ -11,7 +12,6 @@ use crate::page_object_text::PdfPageTextObject;
 use crate::page_objects_private::internal::PdfPageObjectsPrivate;
 use std::ops::{Range, RangeInclusive};
 
-use crate::fonts::ToPdfFontToken;
 #[cfg(feature = "image")]
 use image::DynamicImage;
 
