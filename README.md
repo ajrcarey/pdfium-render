@@ -80,6 +80,17 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.8.3 adds the `PdfFonts` collection for loading new fonts into a `PdfDocument`, the
+`PdfDocument::fonts()` and `PdfDocument::fonts_mut()` accessor functions for accessing the
+collection, and the `PdfFontToken` struct. All font constructor functions previously in
+`PdfFont` have been deprecated and moved to `PdfFonts`; using one of the font constructor
+functions in `PdfFonts` will return a `PdfFontToken` that can be passed into any function
+that previously took a `PdfFont` reference (for instance, `PdfPageTextObject::new()`).
+Previously, it was difficult to construct a `PdfFont` and hold onto it for the lifetime of
+a `PdfDocument`; this new approach solves that problem. For more details, see
+<https://github.com/ajrcarey/pdfium-render/issues/79>. Deprecated font constructor functions
+in `PdfFont` will be removed in release 0.9.0.
+
 Version 0.8.2 adds the new `PdfBitmap::from_bytes()` function for creating a new bitmap from
 an existing byte buffer, and improves the ergonomics of `Pdfium::load_pdf_from_reader()`
 by relaxing the lifetime requirements on the reader, thanks to an excellent contribution from
@@ -101,12 +112,6 @@ the `PdfFormField` enum and its variants, and various supporting structs for han
 field values. Widget annotations can be iterated over to retrieve individual form fields, or
 a map of all form field names and values in a document can be quickly retrieved via the new
 `PdfForm::field_values()` function. `examples/form_fields.rs` demonstrates the new functionality.
-
-Version 0.7.33 adds the `PdfPage::transform()`, `PdfPage::transform_with_clip()`, and
-`PdfPage::set_matrix_with_clip()` functions, allowing the page objects on a page to be transformed
-in a single operation, and adds transformation functions to `PdfMatrix`, making it easy to
-"queue up" a set of transformations that can be applied to any transformable object via the
-object's `set_matrix()` function. `examples/matrix.rs` demonstrates the new functionality.
 
 ## Binding to Pdfium
 
@@ -334,7 +339,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.2, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.3, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -347,6 +352,12 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.3: adds `PdfFonts` collection, `PdfDocument::fonts()` and `PdfDocument::fonts_mut()` accessor
+  functions, and `PdfFontToken` struct; moves font constructors from `PdfFont` into `PdfFonts`,
+  deprecating constructors in `PdfFont`; adds `ToPdfFontToken` trait, along with implementations
+  of the trait for `PdfFont`, `&PdfFont`, and `PdfFontToken`; adjusts all functions that previously
+  took a `PdfFont` or `&PdfFont` reference so that they now take a `impl ToPdfFontToken`. Deprecated
+  items in `PdfFont` will be removed in release 0.9.0.
 * 0.8.2: adds `PdfBitmap::from_bytes()` function in response to <https://github.com/ajrcarey/pdfium-render/issues/83>;
   relaxes lifetime requirements on `Pdfium::load_pdf_from_reader()` and related functions
   thanks to an excellent contribution from <https://github.com/bavardage>.

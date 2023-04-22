@@ -252,7 +252,8 @@ impl<'a> PdfFonts<'a> {
         self.new_built_in(PdfFontBuiltin::ZapfDingbats)
     }
 
-    /// Attempts to load a Type 1 font file from the given file path.
+    /// Attempts to load a Type 1 font file from the given file path, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
@@ -282,7 +283,8 @@ impl<'a> PdfFonts<'a> {
         self.load_type1_from_reader(File::open(path).map_err(PdfiumError::IoError)?, is_cid_font)
     }
 
-    /// Attempts to load a Type 1 font file from the given reader.
+    /// Attempts to load a Type 1 font file from the given reader, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
@@ -302,7 +304,9 @@ impl<'a> PdfFonts<'a> {
         self.load_type1_from_bytes(bytes.as_slice(), is_cid_font)
     }
 
-    /// Attempts to load a Type 1 font file from the given URL.
+    /// Attempts to load a Type 1 font file from the given URL, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
     /// The Javascript `fetch()` API is used to download data over the network.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
@@ -340,7 +344,9 @@ impl<'a> PdfFonts<'a> {
         }
     }
 
-    /// Attempts to load a Type 1 font from the given Blob.
+    /// Attempts to load a Type 1 font from the given Blob, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
     /// A File object returned from a FileList is a suitable Blob:
     ///
     /// ```text
@@ -373,7 +379,8 @@ impl<'a> PdfFonts<'a> {
         self.load_type1_from_bytes(bytes.as_slice(), is_cid_font)
     }
 
-    /// Attempts to load the given byte data as a Type 1 font file.
+    /// Attempts to load the given byte data as a Type 1 font file, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
@@ -387,7 +394,8 @@ impl<'a> PdfFonts<'a> {
         self.new_font_from_bytes(font_data, FPDF_FONT_TYPE1, is_cid_font)
     }
 
-    /// Attempts to load a TrueType font file from the given file path.
+    /// Attempts to load a TrueType font file from the given file path, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
@@ -420,7 +428,8 @@ impl<'a> PdfFonts<'a> {
         )
     }
 
-    /// Attempts to load a TrueType font file from the given reader.
+    /// Attempts to load a TrueType font file from the given reader, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
@@ -440,7 +449,9 @@ impl<'a> PdfFonts<'a> {
         self.load_true_type_from_bytes(bytes.as_slice(), is_cid_font)
     }
 
-    /// Attempts to load a TrueType font file from the given URL.
+    /// Attempts to load a TrueType font file from the given URL, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
     /// The Javascript `fetch()` API is used to download data over the network.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
@@ -478,7 +489,9 @@ impl<'a> PdfFonts<'a> {
         }
     }
 
-    /// Attempts to load a TrueType font from the given `Blob`.
+    /// Attempts to load a TrueType font from the given `Blob`, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
     /// A `File` object returned from a `FileList` is a suitable `Blob`:
     ///
     /// ```text
@@ -511,7 +524,8 @@ impl<'a> PdfFonts<'a> {
         self.load_true_type_from_bytes(bytes.as_slice(), is_cid_font)
     }
 
-    /// Attempts to load the given byte data as a TrueType font file.
+    /// Attempts to load the given byte data as a TrueType font file, returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
     ///
     /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
