@@ -630,6 +630,24 @@ pub trait PdfPageObjectCommon<'a> {
     /// in this [PdfPageObject].
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError>;
 
+    /// Returns the line dash pattern of this [PdfPageObject].
+    /// The dash phase specifies the distance into the dash pattern.
+    fn dash_phase(&self) -> Result<PdfPoints, PdfiumError>;
+
+    /// Sets the line dash phase of this [PdfPageObject].
+    /// The dash phase specifies the distance into the dash pattern.
+    fn set_dash_phase(&mut self, dash_phase: PdfPoints) -> Result<(), PdfiumError>;
+
+    /// Returns the line dash array of this [PdfPageObject].
+    /// The dash array's elements are numbers that specify the lengths of alternating dashes and gaps,
+    /// the numbers must be nonnegative and not all zero.
+    fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError>;
+
+    /// Sets the line dash array of this [PdfPageObject].
+    /// The dash array's elements are numbers that specify the lengths of alternating dashes and gaps,
+    /// the numbers must be nonnegative and not all zero.
+    fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError>;
+
     /// Returns `true` if this [PdfPageObject] can be successfully copied by calling its
     /// `try_copy()` function.
     ///
@@ -872,6 +890,72 @@ where
             self.bindings()
                 .FPDFPageObj_SetLineCap(self.get_object_handle(), line_cap.as_pdfium() as c_int),
         ) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
+        }
+    }
+
+    #[inline]
+    fn dash_phase(&self) -> Result<PdfPoints, PdfiumError> {
+        let mut phase = 0.0;
+
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPageObj_GetDashPhase(self.get_object_handle(), &mut phase),
+        ) {
+            Ok(PdfPoints::new(phase))
+        } else {
+            Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
+        }
+    }
+
+    #[inline]
+    fn set_dash_phase(&mut self, dash_phase: PdfPoints) -> Result<(), PdfiumError> {
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPageObj_SetDashPhase(self.get_object_handle(), dash_phase.value),
+        ) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
+        }
+    }
+
+    #[inline]
+    fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError> {
+        let dash_count =
+            self.bindings()
+                .FPDFPageObj_GetDashCount(self.get_object_handle()) as usize;
+        let mut dash_array = vec![0.0; dash_count];
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFPageObj_GetDashArray(
+                self.get_object_handle(),
+                dash_array.as_mut_ptr(),
+                dash_count,
+            ))
+        {
+            Ok(dash_array
+                .iter()
+                .map(|dash| PdfPoints::new(*dash))
+                .collect())
+        } else {
+            Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
+        }
+    }
+
+    fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError> {
+        let dash_array = array.iter().map(|dash| dash.value).collect::<Vec<_>>();
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFPageObj_SetDashArray(
+                self.get_object_handle(),
+                dash_array.as_ptr(),
+                dash_array.len(),
+                phase.value,
+            ))
+        {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
