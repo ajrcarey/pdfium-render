@@ -1162,6 +1162,7 @@ impl<'a> Drop for PdfPage<'a> {
 
 #[cfg(test)]
 mod test {
+    use image::GenericImageView;
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
 
@@ -1221,6 +1222,31 @@ mod test {
                 .ok_or(PdfiumError::ImageError)?
                 .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg)
                 .map_err(|_| PdfiumError::ImageError)?;
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_rendered_image_dimension() -> Result<(), PdfiumError> {
+        // Renders each page in the given test PDF file to a separate JPEG file
+        // by re-using the same bitmap buffer for each render.
+
+        let pdfium = test_bind_to_pdfium();
+
+        let document = pdfium.load_pdf_from_file("./test/dimensions-test.pdf", None)?;
+
+        let render_config = PdfRenderConfig::new()
+            .set_target_width(500)
+            .set_maximum_height(500);
+
+        for (_index, page) in document.pages().iter().enumerate() {
+            let rendered_page = page.render_with_config(&render_config)?
+                .as_image();
+
+            let (width, _height) = rendered_page.dimensions();
+
+            assert!(width == 500);
         }
 
         Ok(())
