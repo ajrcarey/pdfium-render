@@ -786,9 +786,9 @@ impl PdfRenderConfig {
             render_flags |= FPDF_CONVERT_FILL_TO_STROKE;
         }
 
-        let output_width = (source_width.value * width_scale) as i32;
+        let output_width = (source_width.value * width_scale).round() as i32;
 
-        let output_height = (source_height.value * height_scale) as i32;
+        let output_height = (source_height.value * height_scale).round() as i32;
 
         // Pages can be rendered either _with_ transformation matrices but _without_ form data,
         // or _with_ form data but _without_ transformation matrices. We need to be prepared
