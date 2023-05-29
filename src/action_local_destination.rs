@@ -36,7 +36,11 @@ impl<'a> PdfActionLocalDestination<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfDestination::from_pdfium(handle, self.bindings))
+            Ok(PdfDestination::from_pdfium(
+                self.document,
+                handle,
+                self.bindings,
+            ))
         }
     }
 }

@@ -98,6 +98,7 @@ pub enum PdfiumError {
     GroupContainsNonCopyablePageObjects,
     SourcePageIndexNotInCache,
     NoUriForAction,
+    DestinationPageIndexNotAvailable,
 
     /// An error occurred converting a byte stream into a CString.
     CStringConversionError(IntoStringError),

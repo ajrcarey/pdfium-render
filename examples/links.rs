@@ -30,6 +30,12 @@ pub fn main() -> Result<(), PdfiumError> {
             // For links that have URI actions, output the destination URI.
 
             if let Some(action) = link.action() {
+                if let Some(local_destination_action) = action.as_local_destination_action() {
+                    println!(
+                        "Local destination page index: {}",
+                        local_destination_action.destination()?.page_index()?
+                    )
+                }
                 if let Some(uri_action) = action.as_uri_action() {
                     println!("Link URI destination: {:#?}", uri_action.uri())
                 }

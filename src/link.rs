@@ -63,7 +63,11 @@ impl<'a> PdfLink<'a> {
         if handle.is_null() {
             None
         } else {
-            Some(PdfDestination::from_pdfium(handle, self.bindings))
+            Some(PdfDestination::from_pdfium(
+                self.document,
+                handle,
+                self.bindings,
+            ))
         }
     }
 }
