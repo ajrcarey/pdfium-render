@@ -135,6 +135,7 @@ impl PdfRenderConfig {
 
             // We ask Pdfium to reverse its bitmap byte order from BGR8 to RGB8 in order
             // to make working with Image::DynamicImage easier after version 0.24. See:
+            // https://github.com/ajrcarey/pdfium-render/issues/9
             do_set_flag_reverse_byte_order: true,
         }
     }

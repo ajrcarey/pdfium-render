@@ -1162,9 +1162,9 @@ impl<'a> Drop for PdfPage<'a> {
 
 #[cfg(test)]
 mod test {
-    use image::GenericImageView;
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
+    use image::GenericImageView;
 
     #[test]
     fn test_pdf_rect_is_inside() {
@@ -1229,8 +1229,8 @@ mod test {
 
     #[test]
     fn test_rendered_image_dimension() -> Result<(), PdfiumError> {
-        // Renders each page in the given test PDF file to a separate JPEG file
-        // by re-using the same bitmap buffer for each render.
+        // Checks that downscaled dimensions are rounded correctly during page rendering.
+        // See: https://github.com/ajrcarey/pdfium-render/pull/87
 
         let pdfium = test_bind_to_pdfium();
 
@@ -1241,12 +1241,11 @@ mod test {
             .set_maximum_height(500);
 
         for (_index, page) in document.pages().iter().enumerate() {
-            let rendered_page = page.render_with_config(&render_config)?
-                .as_image();
+            let rendered_page = page.render_with_config(&render_config)?.as_image();
 
             let (width, _height) = rendered_page.dimensions();
 
-            assert!(width == 500);
+            assert_eq!(width, 500);
         }
 
         Ok(())

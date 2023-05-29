@@ -80,6 +80,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.8.4 improves the calculation of the pixel dimensions of rendered pages, thanks to
+an excellent contribution from <https://github.com/slawekkolodziej>. This corrects a small bug
+that could sometimes result in rendered bitmaps differing by one pixel from their
+expected sizes.
+
 Version 0.8.3 adds the `PdfFonts` collection for loading new fonts into a `PdfDocument`, the
 `PdfDocument::fonts()` and `PdfDocument::fonts_mut()` accessor functions for accessing the
 collection, and the `PdfFontToken` struct. All font constructor functions previously in
