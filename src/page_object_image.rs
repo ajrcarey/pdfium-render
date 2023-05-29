@@ -12,6 +12,7 @@ use crate::color_space::PdfColorSpace;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::matrix::{PdfMatrix, PdfMatrixValue};
+use crate::page::PdfPoints;
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::utils::mem::create_byte_buffer;
@@ -25,9 +26,6 @@ use crate::bindgen::FPDF_BITMAP;
 
 #[cfg(feature = "image")]
 use crate::bitmap::PdfBitmapFormat;
-
-#[cfg(feature = "image")]
-use crate::page::PdfPoints;
 
 #[cfg(feature = "image")]
 use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};

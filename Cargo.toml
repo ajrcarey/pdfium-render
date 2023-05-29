@@ -38,7 +38,7 @@ wasm-bindgen-futures = { version = "^0.4" }
 web-sys = { version = "^0.3", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libloading = "^0.7"
+libloading = "^0.8"
 
 [build-dependencies]
 bindgen = { version = "^0" }
@@ -50,9 +50,8 @@ rand = "^0" # Used by examples/create.rs, examples/matrix.rs
 rayon = "^1" # Used by examples/thread_safe.rs
 
 [features]
-default = ["image", "thread_safe"]
+default = ["image", "thread_safe"] # The image feature is implicit because the image dependency is optional.
 bindings = []
-image = ["dep:image"] # Only include the image dependency if the "image" crate feature is enabled
 static = []
 thread_safe = []
 "libstdc++" = ["static"]
