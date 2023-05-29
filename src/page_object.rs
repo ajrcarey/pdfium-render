@@ -630,22 +630,56 @@ pub trait PdfPageObjectCommon<'a> {
     /// in this [PdfPageObject].
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError>;
 
-    /// Returns the line dash pattern of this [PdfPageObject].
-    /// The dash phase specifies the distance into the dash pattern.
+    /// Returns the line dash phase that will be used when painting stroked path segments
+    /// in this [PdfPageObject].
+    ///
+    /// A page object's line dash pattern controls the pattern of dashes and gaps used to stroke
+    /// paths, as specified by a _dash array_ and a _dash phase_. The dash array's elements are
+    /// [PdfPoints] values that specify the lengths of alternating dashes and gaps; all values
+    /// must be non-zero and non-negative. The dash phase specifies the distance into the dash pattern
+    /// at which to start the dash.
+    ///
+    /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
+    /// version 1.7, pages 217 - 218.
     fn dash_phase(&self) -> Result<PdfPoints, PdfiumError>;
 
-    /// Sets the line dash phase of this [PdfPageObject].
-    /// The dash phase specifies the distance into the dash pattern.
+    /// Sets the line dash phase that will be used when painting stroked path segments
+    /// in this [PdfPageObject].
+    ///
+    /// A page object's line dash pattern controls the pattern of dashes and gaps used to stroke
+    /// paths, as specified by a _dash array_ and a _dash phase_. The dash array's elements are
+    /// [PdfPoints] values that specify the lengths of alternating dashes and gaps; all values
+    /// must be non-zero and non-negative. The dash phase specifies the distance into the dash pattern
+    /// at which to start the dash.
+    ///
+    /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
+    /// version 1.7, pages 217 - 218.
     fn set_dash_phase(&mut self, dash_phase: PdfPoints) -> Result<(), PdfiumError>;
 
-    /// Returns the line dash array of this [PdfPageObject].
-    /// The dash array's elements are numbers that specify the lengths of alternating dashes and gaps,
-    /// the numbers must be nonnegative and not all zero.
+    /// Returns the line dash array that will be used when painting stroked path segments
+    /// in this [PdfPageObject].
+    ///
+    /// A page object's line dash pattern controls the pattern of dashes and gaps used to stroke
+    /// paths, as specified by a _dash array_ and a _dash phase_. The dash array's elements are
+    /// [PdfPoints] values that specify the lengths of alternating dashes and gaps; all values
+    /// must be non-zero and non-negative. The dash phase specifies the distance into the dash pattern
+    /// at which to start the dash.
+    ///
+    /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
+    /// version 1.7, pages 217 - 218.
     fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError>;
 
-    /// Sets the line dash array of this [PdfPageObject].
-    /// The dash array's elements are numbers that specify the lengths of alternating dashes and gaps,
-    /// the numbers must be nonnegative and not all zero.
+    /// Sets the line dash array that will be used when painting stroked path segments
+    /// in this [PdfPageObject].
+    ///
+    /// A page object's line dash pattern controls the pattern of dashes and gaps used to stroke
+    /// paths, as specified by a _dash array_ and a _dash phase_. The dash array's elements are
+    /// [PdfPoints] values that specify the lengths of alternating dashes and gaps; all values
+    /// must be non-zero and non-negative. The dash phase specifies the distance into the dash pattern
+    /// at which to start the dash.
+    ///
+    /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
+    /// version 1.7, pages 217 - 218.
     fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Returns `true` if this [PdfPageObject] can be successfully copied by calling its
@@ -924,10 +958,12 @@ where
 
     #[inline]
     fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError> {
-        let dash_count =
-            self.bindings()
-                .FPDFPageObj_GetDashCount(self.get_object_handle()) as usize;
+        let dash_count = self
+            .bindings()
+            .FPDFPageObj_GetDashCount(self.get_object_handle()) as usize;
+
         let mut dash_array = vec![0.0; dash_count];
+
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_GetDashArray(
@@ -947,6 +983,7 @@ where
 
     fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError> {
         let dash_array = array.iter().map(|dash| dash.value).collect::<Vec<_>>();
+
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_SetDashArray(

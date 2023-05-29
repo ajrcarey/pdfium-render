@@ -80,9 +80,14 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+Version 0.8.5 adds the `PdfDestination::page_index()` function for retrieving the page index of
+a destination attached to an action, link, or bookmark contained in a document, and adds support
+for setting and retrieving stroke dash patterns on page objects thanks to an excellent contribution
+from <https://github.com/DorianRudolph>.
+
 Version 0.8.4 corrects a missing import in `PdfPageImageObject` that broke compilation
 if the `image` crate feature was disabled, and improves the calculation of the pixel dimensions
-of rendered pages, thanks to an excellent contribution from <https://github.com/slawekkolodziej>.
+of rendered pages thanks to an excellent contribution from <https://github.com/slawekkolodziej>.
 This corrects a small bug that could sometimes result in rendered bitmaps differing in size by
 one pixel from their target dimensions. 
 
@@ -345,7 +350,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.4, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.5, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -358,7 +363,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.4 fixes conditional import of `PdfPoints` struct into `PdfPageImageObject` so it is no longer
+* 0.8.5: adds `PdfDestination::page_index()` function; adds `PdfPageObjectCommon::dash_phase()`
+  `PdfPageObjectCommon::set_dash_phase()`, `PdfPageObjectCommon::dash_array()`, and
+  `PdfPageObjectCommon::set_dash_array()` functions thanks to an excellent contribution
+  from <https://github.com/DorianRudolph>.
+* 0.8.4: fixes conditional import of `PdfPoints` struct into `PdfPageImageObject` so it is no longer
   dependent on the `image` crate feature being enabled; corrects a bug in the calculation of rendered
   bitmap pixel dimensions, thanks to an excellent contribution from <https://github.com/slawekkolodziej>.
 * 0.8.3: adds `PdfFonts` collection, `PdfDocument::fonts()` and `PdfDocument::fonts_mut()` accessor
