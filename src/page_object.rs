@@ -641,6 +641,10 @@ pub trait PdfPageObjectCommon<'a> {
     ///
     /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
     /// version 1.7, pages 217 - 218.
+    ///
+    /// Note that dash pattern save support in Pdfium was not fully stabilized until release
+    /// `chromium/5772` (May 2023). Versions of Pdfium older than this can load and render
+    /// dash patterns, but will not save dash patterns to PDF files.
     fn dash_phase(&self) -> Result<PdfPoints, PdfiumError>;
 
     /// Sets the line dash phase that will be used when painting stroked path segments
@@ -654,6 +658,10 @@ pub trait PdfPageObjectCommon<'a> {
     ///
     /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
     /// version 1.7, pages 217 - 218.
+    ///
+    /// Note that dash pattern save support in Pdfium was not fully stabilized until release
+    /// `chromium/5772` (May 2023). Versions of Pdfium older than this can load and render
+    /// dash patterns, but will not save dash patterns to PDF files.
     fn set_dash_phase(&mut self, dash_phase: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Returns the line dash array that will be used when painting stroked path segments
@@ -667,6 +675,10 @@ pub trait PdfPageObjectCommon<'a> {
     ///
     /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
     /// version 1.7, pages 217 - 218.
+    ///
+    /// Note that dash pattern save support in Pdfium was not fully stabilized until release
+    /// `chromium/5772` (May 2023). Versions of Pdfium older than this can load and render
+    /// dash patterns, but will not save dash patterns to PDF files.
     fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError>;
 
     /// Sets the line dash array that will be used when painting stroked path segments
@@ -680,6 +692,10 @@ pub trait PdfPageObjectCommon<'a> {
     ///
     /// For more information on stroked dash patterns, refer to the PDF Reference Manual,
     /// version 1.7, pages 217 - 218.
+    ///
+    /// Note that dash pattern save support in Pdfium was not fully stabilized until release
+    /// `chromium/5772` (May 2023). Versions of Pdfium older than this can load and render
+    /// dash patterns, but will not save dash patterns to PDF files.
     fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Returns `true` if this [PdfPageObject] can be successfully copied by calling its

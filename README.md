@@ -82,8 +82,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 Version 0.8.5 adds the `PdfDestination::page_index()` function for retrieving the page index of
 a destination attached to an action, link, or bookmark contained in a document, and adds support
-for setting and retrieving stroke dash patterns on page objects thanks to an excellent contribution
-from <https://github.com/DorianRudolph>.
+for setting and retrieving dash patterns on stroked page objects thanks to an excellent contribution
+from <https://github.com/DorianRudolph>. Note that dash pattern save support in Pdfium was not
+fully stabilized until release `chromium/5772` (May 2023); versions of Pdfium older than this can
+load and render dash patterns, but will not save dash patterns to PDF files.
 
 Version 0.8.4 corrects a missing import in `PdfPageImageObject` that broke compilation
 if the `image` crate feature was disabled, and improves the calculation of the pixel dimensions
