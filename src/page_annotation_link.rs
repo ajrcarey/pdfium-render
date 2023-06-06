@@ -51,6 +51,20 @@ impl<'a> PdfPageLinkAnnotation<'a> {
             ))
         }
     }
+
+    /// Sets the [PdfLink] associated with this [PdfPageLinkAnnotation] to the given URI.
+    pub fn set_link(&mut self, uri: &str) -> Result<(), PdfiumError> {
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFAnnot_SetURI(self.handle, uri))
+        {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
 }
 
 impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageLinkAnnotation<'a> {

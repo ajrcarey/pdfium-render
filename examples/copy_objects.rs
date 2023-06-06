@@ -57,7 +57,5 @@ pub fn main() -> Result<(), PdfiumError> {
 
     source_objects.remove_objects_from_page()?;
 
-    document.save_to_file("test/copy-test.pdf")?;
-
-    Ok(())
+    document.save_to_file("test/copy-test.pdf")
 }

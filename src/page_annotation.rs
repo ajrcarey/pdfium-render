@@ -55,6 +55,10 @@ use crate::prelude::PdfFormField;
 /// * [PdfPageAnnotationType::Underline]
 /// * [PdfPageAnnotationType::Widget]
 /// * [PdfPageAnnotationType::XfaWidget]
+///
+/// Note that a `FreeText` annotation is rendered directly on the page, whereas a `Text` annotation
+/// floats over the page inside its own enclosed area. Adobe often uses the term "sticky note"
+/// in reference to `Text` annotations to distinguish them from `FreeText` annotations.
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub enum PdfPageAnnotationType {
     Unknown = FPDF_ANNOT_UNKNOWN as isize,

@@ -129,7 +129,5 @@ pub fn main() -> Result<(), PdfiumError> {
 
     // Save the result.
 
-    document.save_to_file("test/matrix-test.pdf")?;
-
-    Ok(())
+    document.save_to_file("test/matrix-test.pdf")
 }

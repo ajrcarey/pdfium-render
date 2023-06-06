@@ -91,6 +91,7 @@ pub enum PdfiumError {
     NoPagesInDocument,
     NoPageObjectsInCollection,
     NoPageLinksInCollection,
+    NoAnnotationsInCollection,
     PageObjectNotCopyable,
     ImageObjectFiltersNotCopyable,
     PathObjectBezierControlPointsNotCopyable,

@@ -87,7 +87,5 @@ fn main() -> Result<(), PdfiumError> {
 
     // ... and save the final result.
 
-    document.save_to_file("test/concat-test.pdf")?;
-
-    Ok(())
+    document.save_to_file("test/concat-test.pdf")
 }

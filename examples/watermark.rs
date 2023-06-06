@@ -50,7 +50,5 @@ fn main() -> Result<(), PdfiumError> {
         Ok(())
     })?;
 
-    document.save_to_file("test/watermark-test.pdf")?;
-
-    Ok(())
+    document.save_to_file("test/watermark-test.pdf")
 }

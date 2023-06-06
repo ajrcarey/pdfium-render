@@ -210,7 +210,5 @@ fn main() -> Result<(), PdfiumError> {
 
     // ... and save the result to a file.
 
-    document.save_to_file("test/path-test.pdf")?;
-
-    Ok(())
+    document.save_to_file("test/path-test.pdf")
 }
