@@ -34,6 +34,28 @@ pub(crate) mod pixels {
     }
 }
 
+pub(crate) mod dates {
+    use chrono::prelude::*;
+    use std::fmt::Display;
+
+    /// Converts a [DateTime] to a formatted PDF date string, as defined in The PDF Reference
+    /// Manual, sixth edition, section 3.8.3, on page 160.
+    #[inline]
+    pub(crate) fn date_time_to_pdf_string<T, O>(date: DateTime<T>) -> String
+    where
+        T: TimeZone<Offset = O>,
+        O: Display,
+    {
+        let date_part = date.format("%Y%m%d%H%M%S");
+
+        let timezone_part = format!("{}'", date.format("%:z"))
+            .replace("+00:00'", "Z00'00'")
+            .replace(':', "'");
+
+        format!("D:{}{}", date_part, timezone_part)
+    }
+}
+
 pub(crate) mod mem {
     /// Creates an empty byte buffer of the given length.
     #[inline]
@@ -316,7 +338,9 @@ pub(crate) mod test {
     // depending on selected crate features.
 
     use crate::pdfium::Pdfium;
+    use crate::utils::dates::*;
     use crate::utils::pixels::*;
+    use chrono::prelude::*;
 
     #[inline]
     #[cfg(feature = "static")]
@@ -382,5 +406,28 @@ pub(crate) mod test {
             result,
             [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15]
         );
+    }
+
+    #[test]
+    fn test_date_time_to_pdf_date_string() {
+        assert_eq!(
+            date_time_to_pdf_string(Utc.with_ymd_and_hms(1998, 12, 23, 19, 52, 00).unwrap()),
+            "D:19981223195200Z00'00'"
+        );
+
+        assert_eq!(
+            date_time_to_pdf_string(
+                FixedOffset::west_opt(8 * 3600)
+                    .unwrap()
+                    .from_local_datetime(
+                        &NaiveDate::from_ymd_opt(1998, 12, 23)
+                            .unwrap()
+                            .and_hms_opt(19, 52, 00)
+                            .unwrap()
+                    )
+                    .unwrap()
+            ),
+            "D:19981223195200-08'00'"
+        )
     }
 }

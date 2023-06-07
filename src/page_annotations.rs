@@ -4,10 +4,12 @@
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page_annotation::{PdfPageAnnotation, PdfPageAnnotationType};
+use crate::page_annotation::{PdfPageAnnotation, PdfPageAnnotationCommon, PdfPageAnnotationType};
+use crate::page_annotation_free_text::PdfPageFreeTextAnnotation;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 use crate::page_annotation_text::PdfPageTextAnnotation;
 use crate::prelude::{PdfPageInkAnnotation, PdfPageLinkAnnotation};
+use chrono::prelude::*;
 use std::ops::Range;
 use std::os::raw::c_int;
 
@@ -158,7 +160,7 @@ impl<'a> PdfPageAnnotations<'a> {
     /// If the containing `PdfPage` has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
-    pub(crate) fn create_annotation<T>(
+    pub(crate) fn create_annotation<T: PdfPageAnnotationCommon>(
         &mut self,
         annotation_type: PdfPageAnnotationType,
         constructor: fn(
@@ -177,14 +179,17 @@ impl<'a> PdfPageAnnotations<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            let annotation = constructor(
+            let mut annotation = constructor(
                 self.document_handle,
                 self.page_handle,
                 handle,
                 self.bindings(),
             );
 
-            self.regenerate_content().map(|()| annotation)
+            annotation
+                .set_creation_date(Utc::now())
+                .and_then(|()| self.regenerate_content())
+                .map(|()| annotation)
         }
     }
 
@@ -218,7 +223,7 @@ impl<'a> PdfPageAnnotations<'a> {
             PdfPageTextAnnotation::from_pdfium,
         )?;
 
-        annotation.set_text(text)?;
+        annotation.set_contents(text)?;
 
         Ok(annotation)
     }
@@ -239,6 +244,27 @@ impl<'a> PdfPageAnnotations<'a> {
         )?;
 
         annotation.set_link(uri)?;
+
+        Ok(annotation)
+    }
+
+    /// Creates a new [PdfPageFreeTextAnnotation] containing the given text in this
+    /// [PdfPageAnnotations] collection, returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_free_text_annotation(
+        &mut self,
+        text: &str,
+    ) -> Result<PdfPageFreeTextAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_annotation(
+            PdfPageAnnotationType::FreeText,
+            PdfPageFreeTextAnnotation::from_pdfium,
+        )?;
+
+        annotation.set_contents(text)?;
 
         Ok(annotation)
     }

@@ -12,7 +12,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page::PdfRect;
+use crate::page::{PdfPoints, PdfRect};
 use crate::page_annotation_circle::PdfPageCircleAnnotation;
 use crate::page_annotation_free_text::PdfPageFreeTextAnnotation;
 use crate::page_annotation_highlight::PdfPageHighlightAnnotation;
@@ -31,6 +31,7 @@ use crate::page_annotation_unsupported::PdfPageUnsupportedAnnotation;
 use crate::page_annotation_widget::PdfPageWidgetAnnotation;
 use crate::page_annotation_xfa_widget::PdfPageXfaWidgetAnnotation;
 use crate::prelude::PdfFormField;
+use chrono::prelude::*;
 
 /// The type of a single [PdfPageAnnotation], as defined in table 8.20 of the PDF Reference,
 /// version 1.7, on page 615.
@@ -631,11 +632,41 @@ pub trait PdfPageAnnotationCommon {
     /// Returns the bounding box of this [PdfPageAnnotation].
     fn bounds(&self) -> Result<PdfRect, PdfiumError>;
 
+    /// Sets the bounding box of this [PdfPageAnnotation].
+    ///
+    /// This sets the position, the width, and the height of the annotation in a single operation.
+    /// To set these properties separately, use the [PdfPageAnnotation::set_position()],
+    /// [PdfPageAnnotation::set_width()], and [PdfPageAnnotation::set_height()] functions.
+    fn set_bounds(&mut self, bounds: PdfRect) -> Result<(), PdfiumError>;
+
+    /// Sets the bottom right corner of this [PdfPageAnnotation] to the given values.
+    ///
+    /// To set the position, the width, and the height of the annotation in a single operation,
+    /// use the [PdfPageAnnotation::set_bounds()] function.
+    fn set_position(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError>;
+
+    /// Sets the width of this [PdfPageAnnotation] to the given value.
+    ///
+    /// To set the position, the width, and the height of the annotation in a single operation,
+    /// use the [PdfPageAnnotation::set_bounds()] function.
+    fn set_width(&mut self, width: PdfPoints) -> Result<(), PdfiumError>;
+
+    /// Sets the height of this [PdfPageAnnotation] to the given value.
+    ///
+    /// To set the position, the width, and the height of the annotation in a single operation,
+    /// use the [PdfPageAnnotation::set_bounds()] function.
+    fn set_height(&mut self, width: PdfPoints) -> Result<(), PdfiumError>;
+
     /// Returns the text to be displayed for this [PdfPageAnnotation], or, if this type of annotation
     /// does not display text, an alternate description of the annotation's contents in human-readable
     /// form. In either case this text is useful when extracting the document's contents in support
     /// of accessibility to users with disabilities or for other purposes.
     fn contents(&self) -> Option<String>;
+
+    /// Sets the text to be displayed for this [PdfPageAnnotation], or, if this type of annotation
+    /// does not display text, an alternate description of the annotation's contents in human-readable
+    /// form for providing accessibility to users with disabilities or for other purposes.
+    fn set_contents(&mut self, contents: &str) -> Result<(), PdfiumError>;
 
     /// Returns the name of the creator of this [PdfPageAnnotation], if any.
     fn creator(&self) -> Option<String>;
@@ -643,8 +674,14 @@ pub trait PdfPageAnnotationCommon {
     /// Returns the date and time when this [PdfPageAnnotation] was originally created, if any.
     fn creation_date(&self) -> Option<String>;
 
+    /// Sets the date and time when this [PdfPageAnnotation] was originally created.
+    fn set_creation_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
+
     /// Returns the date and time when this [PdfPageAnnotation] was last modified, if any.
     fn modification_date(&self) -> Option<String>;
+
+    /// Sets the date and time when this [PdfPageAnnotation] was last modified.
+    fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
 
     /// Returns an immutable collection of all the page objects in this [PdfPageAnnotation].
     ///
@@ -678,8 +715,33 @@ where
     }
 
     #[inline]
+    fn set_bounds(&mut self, bounds: PdfRect) -> Result<(), PdfiumError> {
+        self.set_bounds_impl(bounds)
+    }
+
+    #[inline]
+    fn set_position(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
+        self.set_position_impl(x, y)
+    }
+
+    #[inline]
+    fn set_width(&mut self, width: PdfPoints) -> Result<(), PdfiumError> {
+        self.set_width_impl(width)
+    }
+
+    #[inline]
+    fn set_height(&mut self, height: PdfPoints) -> Result<(), PdfiumError> {
+        self.set_height_impl(height)
+    }
+
+    #[inline]
     fn contents(&self) -> Option<String> {
         self.contents_impl()
+    }
+
+    #[inline]
+    fn set_contents(&mut self, contents: &str) -> Result<(), PdfiumError> {
+        self.set_contents_impl(contents)
     }
 
     #[inline]
@@ -693,8 +755,18 @@ where
     }
 
     #[inline]
+    fn set_creation_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
+        self.set_creation_date_impl(date)
+    }
+
+    #[inline]
     fn modification_date(&self) -> Option<String> {
         self.modification_date_impl()
+    }
+
+    #[inline]
+    fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
+        self.set_modification_date_impl(date)
     }
 
     #[inline]

@@ -9,12 +9,14 @@ pub(crate) mod internal {
 
     use crate::bindgen::{FPDF_ANNOTATION, FPDF_OBJECT_STRING, FPDF_WCHAR, FS_RECTF};
     use crate::bindings::PdfiumLibraryBindings;
-    use crate::error::PdfiumError;
-    use crate::page::PdfRect;
+    use crate::error::{PdfiumError, PdfiumInternalError};
+    use crate::page::{PdfPoints, PdfRect};
     use crate::page_annotation::PdfPageAnnotationCommon;
     use crate::page_annotation_objects::PdfPageAnnotationObjects;
+    use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+    use chrono::prelude::*;
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
     pub trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
@@ -81,6 +83,38 @@ pub(crate) mod internal {
             Some(get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default())
         }
 
+        /// Sets the string value associated with the given key in the annotation dictionary
+        /// of this [PdfPageAnnotation].
+        fn set_string_value(&mut self, key: &str, value: &str) -> Result<(), PdfiumError> {
+            // Attempt to update the modification date first, before we apply the given value update.
+            // That way, if updating the date fails, we can fail early.
+
+            #[allow(clippy::collapsible_if)] // Prefer to keep the intent clear
+            if key != "M"
+            // Don't update the modification date if the key we have been given to update
+            // is itself the modification date!
+            {
+                self.set_string_value("M", &date_time_to_pdf_string(Utc::now()))?;
+            }
+
+            // With the modification date updated, we can now update the key and value
+            // we were given.
+
+            if self
+                .bindings()
+                .is_true(
+                    self.bindings()
+                        .FPDFAnnot_SetStringValue_str(self.handle(), key, value),
+                )
+            {
+                Ok(())
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        }
+
         /// Internal implementation of [PdfPageAnnotationCommon::name()].
         #[inline]
         fn name_impl(&self) -> Option<String> {
@@ -102,10 +136,76 @@ pub(crate) mod internal {
             PdfRect::from_pdfium_as_result(result, rect, self.bindings())
         }
 
+        /// Internal implementation of [PdfPageAnnotationCommon::set_bounds()].
+        #[inline]
+        fn set_bounds_impl(&mut self, bounds: PdfRect) -> Result<(), PdfiumError> {
+            if self.bindings().is_true(
+                self.bindings()
+                    .FPDFAnnot_SetRect(self.handle(), &bounds.as_pdfium()),
+            ) {
+                self.set_string_value("M", &date_time_to_pdf_string(Utc::now()))
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_position()].
+        fn set_position_impl(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
+            let bounds = self
+                .bounds()
+                .unwrap_or(PdfRect::new_from_values(0.0, 0.0, 1.0, 1.0));
+
+            let width = bounds.width();
+
+            let height = bounds.height();
+
+            self.set_bounds(PdfRect::new(y, x, y + height, x + width))
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_width()].
+        fn set_width_impl(&mut self, width: PdfPoints) -> Result<(), PdfiumError> {
+            let bounds = self
+                .bounds()
+                .unwrap_or(PdfRect::new_from_values(0.0, 0.0, 1.0, 1.0));
+
+            let height = bounds.height();
+
+            self.set_bounds(PdfRect::new(
+                bounds.bottom,
+                bounds.left,
+                bounds.bottom + height,
+                bounds.left + width,
+            ))
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_height()].
+        fn set_height_impl(&mut self, height: PdfPoints) -> Result<(), PdfiumError> {
+            let bounds = self
+                .bounds()
+                .unwrap_or(PdfRect::new_from_values(0.0, 0.0, 1.0, 1.0));
+
+            let width = bounds.width();
+
+            self.set_bounds(PdfRect::new(
+                bounds.bottom,
+                bounds.left,
+                bounds.bottom + height,
+                bounds.left + width,
+            ))
+        }
+
         /// Internal implementation of [PdfPageAnnotationCommon::contents()].
         #[inline]
         fn contents_impl(&self) -> Option<String> {
             self.get_string_value("Contents")
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_contents()].
+        #[inline]
+        fn set_contents_impl(&mut self, contents: &str) -> Result<(), PdfiumError> {
+            self.set_string_value("Contents", contents)
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::creator()].
@@ -114,16 +214,34 @@ pub(crate) mod internal {
             self.get_string_value("T")
         }
 
+        /// Internal implementation of [PdfPageAnnotationCommon::set_creator()].
+        #[inline]
+        fn set_creator(&mut self, creator: &str) -> Result<(), PdfiumError> {
+            self.set_string_value("T", creator)
+        }
+
         /// Internal implementation of [PdfPageAnnotationCommon::creation_date()].
         #[inline]
         fn creation_date_impl(&self) -> Option<String> {
             self.get_string_value("CreationDate")
         }
 
+        /// Internal implementation of [PdfPageAnnotationCommon::set_creation_date()].
+        #[inline]
+        fn set_creation_date_impl(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
+            self.set_string_value("CreationDate", &date_time_to_pdf_string(date))
+        }
+
         /// Internal implementation of [PdfPageAnnotationCommon::modification_date()].
         #[inline]
         fn modification_date_impl(&self) -> Option<String> {
             self.get_string_value("M")
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_modification_date()].
+        #[inline]
+        fn set_modification_date_impl(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
+            self.set_string_value("M", &date_time_to_pdf_string(date))
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::objects()].

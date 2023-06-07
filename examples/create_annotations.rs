@@ -53,9 +53,41 @@ pub fn main() -> Result<(), PdfiumError> {
 
     // ... and attach a variety of annotations to those objects.
 
-    let text_annotation = page
+    let mut text_annotation = page
         .annotations_mut()
-        .create_text_annotation("A comment on this pretty picture")?;
+        .create_text_annotation("A pop-up comment on this pretty picture")?;
+
+    println!(
+        "Text annotation creation date: {:?}",
+        text_annotation.creation_date()
+    );
+
+    text_annotation.set_position(PdfPoints::new(150.0), PdfPoints::new(400.0))?;
+    text_annotation.set_width(PdfPoints::new(75.0))?;
+    text_annotation.set_height(PdfPoints::new(30.0))?;
+
+    println!(
+        "Text annotation modification date after positioning: {:?}",
+        text_annotation.modification_date()
+    );
+
+    let mut free_text_annotation = page
+        .annotations_mut()
+        .create_free_text_annotation("An inline comment on this pretty picture")?;
+
+    println!(
+        "Free text annotation creation date: {:?}",
+        free_text_annotation.creation_date()
+    );
+
+    free_text_annotation.set_position(PdfPoints::new(150.0), PdfPoints::new(450.0))?;
+    free_text_annotation.set_width(PdfPoints::new(100.0))?;
+    free_text_annotation.set_height(PdfPoints::new(50.0))?;
+
+    println!(
+        "Free text annotation modification date after positioning: {:?}",
+        free_text_annotation.modification_date()
+    );
 
     document.save_to_file("test/create-annotations-test.pdf")
 }
