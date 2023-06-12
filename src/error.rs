@@ -100,6 +100,8 @@ pub enum PdfiumError {
     SourcePageIndexNotInCache,
     NoUriForAction,
     DestinationPageIndexNotAvailable,
+    PageAnnotationAttachmentPointIndexOutOfBounds,
+    NoAttachmentPointsInPageAnnotation,
 
     /// An error occurred converting a byte stream into a CString.
     CStringConversionError(IntoStringError),

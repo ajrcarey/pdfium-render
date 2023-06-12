@@ -5,9 +5,9 @@ use crate::bindgen::{FPDF_FONT, FPDF_GLYPHPATH};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font_glyphs::PdfFontGlyphIndex;
-use crate::page::PdfPoints;
 use crate::path_segment::PdfPathSegment;
 use crate::path_segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
+use crate::points::PdfPoints;
 use std::convert::TryInto;
 use std::os::raw::{c_float, c_int, c_uint};
 

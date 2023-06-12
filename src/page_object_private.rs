@@ -12,12 +12,11 @@ pub(crate) mod internal {
     };
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
-    use crate::matrix::PdfMatrix;
-    use crate::page::PdfRect;
+    use crate::matrix::{PdfMatrix, PdfMatrixValue};
     use crate::page_annotation_objects::PdfPageAnnotationObjects;
     use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
     use crate::page_objects::PdfPageObjects;
-    use crate::prelude::PdfMatrixValue;
+    use crate::rect::PdfRect;
     use std::os::raw::c_double;
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.

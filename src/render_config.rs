@@ -14,7 +14,8 @@ use crate::error::PdfiumError;
 use crate::form_field::PdfFormFieldType;
 use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
-use crate::page::{PdfPage, PdfPageOrientation, PdfPoints};
+use crate::page::{PdfPage, PdfPageOrientation};
+use crate::points::PdfPoints;
 use std::os::raw::c_int;
 use vecmath::{mat3_det, row_mat3_mul, Matrix3};
 

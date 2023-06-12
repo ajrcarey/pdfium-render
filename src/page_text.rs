@@ -3,7 +3,7 @@
 
 use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR};
 use crate::bindings::PdfiumLibraryBindings;
-use crate::page::{PdfPage, PdfRect};
+use crate::page::PdfPage;
 use crate::page_annotation::PdfPageAnnotation;
 use crate::page_annotation::PdfPageAnnotationCommon;
 use crate::page_object::PdfPageObjectCommon;
@@ -12,6 +12,7 @@ use crate::page_object_text::PdfPageTextObject;
 use crate::page_text_chars::PdfPageTextChars;
 use crate::page_text_segments::PdfPageTextSegments;
 use crate::prelude::PdfiumError;
+use crate::rect::PdfRect;
 use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use bytemuck::cast_slice;

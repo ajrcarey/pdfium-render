@@ -4,7 +4,7 @@
 use crate::bindgen::{FPDF_BOOL, FPDF_PAGE, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page::PdfRect;
+use crate::rect::PdfRect;
 use std::os::raw::c_float;
 
 /// The box type of a single boundary box in a `PdfPage`.

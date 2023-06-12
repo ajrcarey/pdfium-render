@@ -5,7 +5,7 @@ use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::link::PdfLink;
-use crate::page::PdfPoints;
+use crate::points::PdfPoints;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 use std::ptr::null_mut;

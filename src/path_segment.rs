@@ -7,7 +7,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page::PdfPoints;
+use crate::points::PdfPoints;
 use std::os::raw::c_float;
 
 /// The type of a single [PdfPathSegment].

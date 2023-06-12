@@ -30,21 +30,21 @@ impl<'a> PdfDestination<'a> {
         }
     }
 
-    /// Returns the internal `FPDF_DEST` handle for this [PdfPage].
+    /// Returns the internal `FPDF_DEST` handle for this [PdfDestination].
     #[inline]
     #[allow(unused)]
     pub(crate) fn destination_handle(&self) -> FPDF_DEST {
         self.destination_handle
     }
 
-    /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfPage].
+    /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfDestination].
     #[inline]
     #[allow(unused)]
     pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
         self.document_handle
     }
 
-    /// Returns the zero-based index of the [PdfPage] containing this [PdfDestination].
+    /// Returns the zero-based index of the `PdfPage` containing this [PdfDestination].
     #[inline]
     pub fn page_index(&self) -> Result<PdfPageIndex, PdfiumError> {
         match self

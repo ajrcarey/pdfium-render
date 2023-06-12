@@ -1,8 +1,9 @@
 //! Defines the [PdfPageTextSegment] struct, exposing functionality related to a single rectangular
 //! text segment in a `PdfPageTextSegments` collection.
 
-use crate::page::{PdfPoints, PdfRect};
 use crate::page_text::PdfPageText;
+use crate::points::PdfPoints;
+use crate::rect::PdfRect;
 
 /// A single rectangular text segment in a `PdfPageTextSegments` collection.
 ///

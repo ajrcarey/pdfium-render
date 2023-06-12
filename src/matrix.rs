@@ -3,7 +3,7 @@
 
 use crate::bindgen::FS_MATRIX;
 use crate::error::PdfiumError;
-use crate::page::PdfPoints;
+use crate::points::PdfPoints;
 use crate::{create_transform_getters, create_transform_setters};
 use std::hash::{Hash, Hasher};
 use vecmath::{mat3_det, row_mat3_mul};

@@ -4,9 +4,9 @@
 use crate::bindgen::FS_RECTF;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page::PdfRect;
 use crate::page_text::PdfPageText;
-use crate::prelude::PdfPageTextSegment;
+use crate::page_text_segment::PdfPageTextSegment;
+use crate::rect::PdfRect;
 use std::os::raw::c_int;
 
 pub type PdfPageTextSegmentIndex = usize;

@@ -1,6 +1,6 @@
 //! Defines the [PdfPagePaperSize] enum, a set of common ANSI and ISO paper sizes.
 
-use crate::page::PdfPoints;
+use crate::points::PdfPoints;
 
 /// A standardized paper size.
 #[derive(Debug, Copy, Clone, PartialEq)]

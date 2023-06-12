@@ -3,9 +3,9 @@
 
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page::PdfPoints;
 use crate::page_text::PdfPageText;
 use crate::page_text_char::PdfPageTextChar;
+use crate::points::PdfPoints;
 use std::ops::Range;
 use std::os::raw::c_double;
 

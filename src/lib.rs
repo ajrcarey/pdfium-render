@@ -52,6 +52,7 @@ pub mod matrix;
 pub mod metadata;
 pub mod page;
 pub mod page_annotation;
+pub mod page_annotation_attachment_points;
 pub mod page_annotation_circle;
 pub mod page_annotation_free_text;
 pub mod page_annotation_highlight;
@@ -97,6 +98,9 @@ pub mod path_segment;
 pub mod path_segments;
 pub mod pdfium;
 pub mod permissions;
+pub mod points;
+pub mod quad_points;
+pub mod rect;
 pub mod render_config;
 pub mod signature;
 pub mod signatures;
@@ -117,18 +121,19 @@ pub mod prelude {
         form_field_button::*, form_field_checkbox::*, form_field_combo::*, form_field_list::*,
         form_field_option::*, form_field_options::*, form_field_radio::*, form_field_signature::*,
         form_field_text::*, form_field_unknown::*, link::*, matrix::*, metadata::*, page::*,
-        page_annotation::*, page_annotation_circle::*, page_annotation_free_text::*,
-        page_annotation_highlight::*, page_annotation_ink::*, page_annotation_link::*,
-        page_annotation_objects::*, page_annotation_popup::*, page_annotation_square::*,
-        page_annotation_squiggly::*, page_annotation_stamp::*, page_annotation_strikeout::*,
-        page_annotation_text::*, page_annotation_underline::*, page_annotation_unsupported::*,
-        page_annotation_widget::*, page_annotation_xfa_widget::*, page_annotations::*,
-        page_boundaries::*, page_links::*, page_object::*, page_object_group::*,
-        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
-        page_object_unsupported::*, page_object_x_object_form::*, page_objects::*,
-        page_objects_common::*, page_size::*, page_text::*, page_text_char::*, page_text_chars::*,
-        page_text_segment::*, page_text_segments::*, pages::*, path_segment::*, path_segments::*,
-        pdfium::*, permissions::*, render_config::*, signature::*, signatures::*,
+        page_annotation::*, page_annotation_attachment_points::*, page_annotation_circle::*,
+        page_annotation_free_text::*, page_annotation_highlight::*, page_annotation_ink::*,
+        page_annotation_link::*, page_annotation_objects::*, page_annotation_popup::*,
+        page_annotation_square::*, page_annotation_squiggly::*, page_annotation_stamp::*,
+        page_annotation_strikeout::*, page_annotation_text::*, page_annotation_underline::*,
+        page_annotation_unsupported::*, page_annotation_widget::*, page_annotation_xfa_widget::*,
+        page_annotations::*, page_boundaries::*, page_links::*, page_object::*,
+        page_object_group::*, page_object_image::*, page_object_path::*, page_object_shading::*,
+        page_object_text::*, page_object_unsupported::*, page_object_x_object_form::*,
+        page_objects::*, page_objects_common::*, page_size::*, page_text::*, page_text_char::*,
+        page_text_chars::*, page_text_segment::*, page_text_segments::*, pages::*, path_segment::*,
+        path_segments::*, pdfium::*, permissions::*, points::*, quad_points::*, rect::*,
+        render_config::*, signature::*, signatures::*,
     };
 }
 

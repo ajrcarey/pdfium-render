@@ -6,9 +6,15 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_annotation::{PdfPageAnnotation, PdfPageAnnotationCommon, PdfPageAnnotationType};
 use crate::page_annotation_free_text::PdfPageFreeTextAnnotation;
+use crate::page_annotation_popup::PdfPagePopupAnnotation;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
+use crate::page_annotation_square::PdfPageSquareAnnotation;
+use crate::page_annotation_squiggly::PdfPageSquigglyAnnotation;
+use crate::page_annotation_stamp::PdfPageStampAnnotation;
+use crate::page_annotation_strikeout::PdfPageStrikeoutAnnotation;
 use crate::page_annotation_text::PdfPageTextAnnotation;
-use crate::prelude::{PdfPageInkAnnotation, PdfPageLinkAnnotation};
+use crate::page_annotation_underline::PdfPageUnderlineAnnotation;
+use crate::prelude::{PdfPageHighlightAnnotation, PdfPageInkAnnotation, PdfPageLinkAnnotation};
 use chrono::prelude::*;
 use std::ops::Range;
 use std::os::raw::c_int;
@@ -193,6 +199,43 @@ impl<'a> PdfPageAnnotations<'a> {
         }
     }
 
+    /// Creates a new [PdfPageFreeTextAnnotation] containing the given text in this
+    /// [PdfPageAnnotations] collection, returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_free_text_annotation(
+        &mut self,
+        text: &str,
+    ) -> Result<PdfPageFreeTextAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_annotation(
+            PdfPageAnnotationType::FreeText,
+            PdfPageFreeTextAnnotation::from_pdfium,
+        )?;
+
+        annotation.set_contents(text)?;
+
+        Ok(annotation)
+    }
+
+    /// Creates a new [PdfPageHighlightAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_highlight_annotation(
+        &mut self,
+    ) -> Result<PdfPageHighlightAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Highlight,
+            PdfPageHighlightAnnotation::from_pdfium,
+        )
+    }
+
     /// Creates a new [PdfPageInkAnnotation] in this [PdfPageAnnotations] collection,
     /// returning the newly created annotation.
     ///
@@ -204,6 +247,100 @@ impl<'a> PdfPageAnnotations<'a> {
         self.create_annotation(
             PdfPageAnnotationType::Ink,
             PdfPageInkAnnotation::from_pdfium,
+        )
+    }
+
+    /// Creates a new [PdfPageLinkAnnotation] with the given URI in this [PdfPageAnnotations]
+    /// collection, returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    pub fn create_link_annotation(
+        &mut self,
+        uri: &str,
+    ) -> Result<PdfPageLinkAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_annotation(
+            PdfPageAnnotationType::Link,
+            PdfPageLinkAnnotation::from_pdfium,
+        )?;
+
+        annotation.set_link(uri)?;
+
+        Ok(annotation)
+    }
+
+    /// Creates a new [PdfPagePopupAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_popup_annotation(&mut self) -> Result<PdfPagePopupAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Popup,
+            PdfPagePopupAnnotation::from_pdfium,
+        )
+    }
+
+    /// Creates a new [PdfPageSquareAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_square_annotation(&mut self) -> Result<PdfPageSquareAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Square,
+            PdfPageSquareAnnotation::from_pdfium,
+        )
+    }
+
+    /// Creates a new [PdfPageSquigglyAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_squiggly_annotation(
+        &mut self,
+    ) -> Result<PdfPageSquigglyAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Squiggly,
+            PdfPageSquigglyAnnotation::from_pdfium,
+        )
+    }
+
+    /// Creates a new [PdfPageStampAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_stamp_annotation(&mut self) -> Result<PdfPageStampAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Stamp,
+            PdfPageStampAnnotation::from_pdfium,
+        )
+    }
+
+    /// Creates a new [PdfPageStrikeoutAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_strikeout_annotation(
+        &mut self,
+    ) -> Result<PdfPageStrikeoutAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Strikeout,
+            PdfPageStrikeoutAnnotation::from_pdfium,
         )
     }
 
@@ -228,45 +365,20 @@ impl<'a> PdfPageAnnotations<'a> {
         Ok(annotation)
     }
 
-    /// Creates a new [PdfPageLinkAnnotation] with the given URI in this [PdfPageAnnotations]
-    /// collection, returning the newly created annotation.
-    ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    pub fn create_link_annotation(
-        &mut self,
-        uri: &str,
-    ) -> Result<PdfPageLinkAnnotation<'a>, PdfiumError> {
-        let mut annotation = self.create_annotation(
-            PdfPageAnnotationType::Link,
-            PdfPageLinkAnnotation::from_pdfium,
-        )?;
-
-        annotation.set_link(uri)?;
-
-        Ok(annotation)
-    }
-
-    /// Creates a new [PdfPageFreeTextAnnotation] containing the given text in this
-    /// [PdfPageAnnotations] collection, returning the newly created annotation.
+    /// Creates a new [PdfPageUnderlineAnnotation] annotation in this [PdfPageAnnotations] collection,
+    /// returning the newly created annotation.
     ///
     /// If the containing `PdfPage` has a content regeneration strategy of
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     #[inline]
-    pub fn create_free_text_annotation(
+    pub fn create_underline_annotation(
         &mut self,
-        text: &str,
-    ) -> Result<PdfPageFreeTextAnnotation<'a>, PdfiumError> {
-        let mut annotation = self.create_annotation(
-            PdfPageAnnotationType::FreeText,
-            PdfPageFreeTextAnnotation::from_pdfium,
-        )?;
-
-        annotation.set_contents(text)?;
-
-        Ok(annotation)
+    ) -> Result<PdfPageUnderlineAnnotation<'a>, PdfiumError> {
+        self.create_annotation(
+            PdfPageAnnotationType::Underline,
+            PdfPageUnderlineAnnotation::from_pdfium,
+        )
     }
 
     /// Removes the given [PdfPageAnnotation] from this [PdfPageAnnotations] collection,

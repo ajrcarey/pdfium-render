@@ -9,10 +9,11 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints};
+use crate::page::{PdfPage, PdfPageContentRegenerationStrategy};
 use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_object_group::PdfPageGroupObject;
 use crate::page_size::PdfPagePaperSize;
+use crate::points::PdfPoints;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ops::{Range, RangeInclusive};

@@ -18,7 +18,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     // Create three page objects of contrasting types on the page...
 
-    let text_object = page.objects_mut().create_text_object(
+    let _text_object = page.objects_mut().create_text_object(
         PdfPoints::new(75.0),
         PdfPoints::new(150.0),
         "A text object",
@@ -26,7 +26,7 @@ pub fn main() -> Result<(), PdfiumError> {
         PdfPoints::new(32.0),
     )?;
 
-    let path_object = page.objects_mut().create_path_object_circle_at(
+    let _path_object = page.objects_mut().create_path_object_circle_at(
         PdfPoints::new(300.0),
         PdfPoints::new(350.0),
         PdfPoints::new(75.0),
@@ -43,7 +43,7 @@ pub fn main() -> Result<(), PdfiumError> {
         .render(300, 450, None)?
         .as_image();
 
-    let image_object = page.objects_mut().create_image_object(
+    let _image_object = page.objects_mut().create_image_object(
         PdfPoints::new(400.0),
         PdfPoints::new(500.0),
         &image,
@@ -87,6 +87,57 @@ pub fn main() -> Result<(), PdfiumError> {
     println!(
         "Free text annotation modification date after positioning: {:?}",
         free_text_annotation.modification_date()
+    );
+
+    let mut link_annotation = page
+        .annotations_mut()
+        .create_link_annotation("https://www.google.com")?;
+
+    println!(
+        "Link annotation creation date: {:?}",
+        link_annotation.creation_date()
+    );
+
+    link_annotation.set_position(PdfPoints::new(250.0), PdfPoints::new(550.0))?;
+    link_annotation.set_width(PdfPoints::new(100.0))?;
+    link_annotation.set_height(PdfPoints::new(50.0))?;
+    link_annotation
+        .attachment_points_mut()
+        .create_attachment_point_at_end(PdfQuadPoints::from_rect(PdfRect::new_from_values(
+            100.0, 100.0, 150.0, 150.0,
+        )))?;
+
+    for attachment_point in link_annotation.attachment_points().iter() {
+        println!(
+            "Attachment point in link annotation: {:#?}",
+            attachment_point
+        );
+    }
+
+    println!(
+        "Link annotation modification date after positioning: {:?}",
+        link_annotation.modification_date()
+    );
+
+    let mut squiggly_annotation = page.annotations_mut().create_squiggly_annotation()?;
+
+    println!(
+        "Squiggly annotation creation date: {:?}",
+        squiggly_annotation.creation_date()
+    );
+
+    squiggly_annotation.set_position(PdfPoints::new(75.0), PdfPoints::new(100.0))?;
+    squiggly_annotation.set_width(PdfPoints::new(200.0))?;
+    squiggly_annotation.set_height(PdfPoints::new(10.0))?;
+    squiggly_annotation
+        .attachment_points_mut()
+        .create_attachment_point_at_end(PdfQuadPoints::from_rect(PdfRect::new_from_values(
+            100.0, 75.0, 160.0, 250.0,
+        )))?;
+
+    println!(
+        "Squiggly annotation modification date after positioning: {:?}",
+        squiggly_annotation.modification_date()
     );
 
     document.save_to_file("test/create-annotations-test.pdf")

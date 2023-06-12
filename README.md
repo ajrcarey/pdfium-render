@@ -80,6 +80,14 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 ## What's new
 
+_Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
+items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
+
+Version 0.8.6 adds support for creating new annotations, positioning those annotations,
+associating them with page objects, and retrieving and setting more annotation properties
+for each annotation type. The new `examples/create_annotations.rs` example demonstrates the
+new functionality.
+
 Version 0.8.5 adds the `PdfDestination::page_index()` function for retrieving the page index of
 a destination attached to an action, link, or bookmark contained in a document, and adds support
 for setting and retrieving dash patterns on stroked page objects thanks to an excellent contribution
@@ -108,23 +116,6 @@ Version 0.8.2 adds the new `PdfBitmap::from_bytes()` function for creating a new
 an existing byte buffer, and improves the ergonomics of `Pdfium::load_pdf_from_reader()`
 by relaxing the lifetime requirements on the reader, thanks to an excellent contribution from
 <https://github.com/bavardage>.
-
-Version 0.8.1 adds details about the maximum `PdfBitmap` buffer size that can be created
-by Pdfium to the documentation for the `Pixels` data type, and adds the `PdfBitmap::bytes_required_for_size()`
-helper function for estimating the maximum buffer size of a `PdfBitmap` of a given width and height.
-
-Version 0.8.0 reworks the `PdfDocument::pages()` function. Previously, this function
-returned an owned `PdfPages` instance; it now returns an immutable `&PdfPages` reference instead.
-A new `PdfDocument::pages_mut()` function returns a mutable `&mut PdfPages` reference.
-It is no longer possible to retrieve an owned `PdfPages` instance. For the motivation behind
-this breaking change, see <https://github.com/ajrcarey/pdfium-render/issues/47>.
-
-Version 0.7.34 adds support for reading values from form fields wrapped inside the newly added
-`PdfPageWidgetAnnotation` and `PdfPageXfaWidgetAnnotation` annotation objects. Also added are
-the `PdfFormField` enum and its variants, and various supporting structs for handling form
-field values. Widget annotations can be iterated over to retrieve individual form fields, or
-a map of all form field names and values in a document can be quickly retrieved via the new
-`PdfForm::field_values()` function. `examples/form_fields.rs` demonstrates the new functionality.
 
 ## Binding to Pdfium
 
@@ -352,7 +343,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.5, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.6, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -365,6 +356,15 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.6: moves `PdfPoints` and `PdfRect` structs out into new files; adds `PdfQuadPoints` struct;
+  adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+  to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
+  including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
+  `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
+  `PdfPageAnnotationCommon::set_creation_date()`, `PdfPageAnnotationCommon::set_modification_date()`;
+  adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
+  `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability to `PdfPageAnnotations`
+  collection.
 * 0.8.5: adds `PdfDestination::page_index()` function; adds `PdfPageObjectCommon::dash_phase()`
   `PdfPageObjectCommon::set_dash_phase()`, `PdfPageObjectCommon::dash_array()`, and
   `PdfPageObjectCommon::set_dash_array()` functions thanks to an excellent contribution

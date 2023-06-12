@@ -3,6 +3,7 @@
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::page_annotation_attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 
@@ -10,6 +11,7 @@ use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
 pub struct PdfPageHighlightAnnotation<'a> {
     handle: FPDF_ANNOTATION,
     objects: PdfPageAnnotationObjects<'a>,
+    attachment_points: PdfPageAnnotationAttachmentPoints<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -28,8 +30,18 @@ impl<'a> PdfPageHighlightAnnotation<'a> {
                 annotation_handle,
                 bindings,
             ),
+            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(
+                annotation_handle,
+                bindings,
+            ),
             bindings,
         }
+    }
+
+    /// Returns a mutable collection of all the attachment points in this [PdfPageHighlightAnnotation].
+    #[inline]
+    pub fn attachment_points_mut(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a> {
+        &mut self.attachment_points
     }
 }
 
@@ -52,5 +64,15 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageHighlightAnnotation<'a> {
     #[inline]
     fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a> {
         &mut self.objects
+    }
+
+    #[inline]
+    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
+        &self.attachment_points
+    }
+
+    #[inline]
+    fn attachment_points_mut_impl(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a> {
+        &mut self.attachment_points
     }
 }

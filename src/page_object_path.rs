@@ -7,14 +7,15 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
+use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::matrix::{PdfMatrix, PdfMatrixValue};
-use crate::page::{PdfPoints, PdfRect};
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::path_segment::{PdfPathSegment, PdfPathSegmentType};
 use crate::path_segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
-use crate::prelude::PdfDocument;
+use crate::points::PdfPoints;
+use crate::rect::PdfRect;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};

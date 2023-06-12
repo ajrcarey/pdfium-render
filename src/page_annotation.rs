@@ -12,7 +12,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page::{PdfPoints, PdfRect};
+use crate::page_annotation_attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::page_annotation_circle::PdfPageCircleAnnotation;
 use crate::page_annotation_free_text::PdfPageFreeTextAnnotation;
 use crate::page_annotation_highlight::PdfPageHighlightAnnotation;
@@ -30,7 +30,9 @@ use crate::page_annotation_underline::PdfPageUnderlineAnnotation;
 use crate::page_annotation_unsupported::PdfPageUnsupportedAnnotation;
 use crate::page_annotation_widget::PdfPageWidgetAnnotation;
 use crate::page_annotation_xfa_widget::PdfPageXfaWidgetAnnotation;
+use crate::points::PdfPoints;
 use crate::prelude::PdfFormField;
+use crate::rect::PdfRect;
 use chrono::prelude::*;
 
 /// The type of a single [PdfPageAnnotation], as defined in table 8.20 of the PDF Reference,
@@ -629,32 +631,41 @@ pub trait PdfPageAnnotationCommon {
     /// this annotation among all the annotations attached to the containing page.
     fn name(&self) -> Option<String>;
 
+    /// Returns `true` if this [PdfPageAnnotation] supports applying text markup to the page
+    /// by setting the annotation contents using the [PdfPageAnnotationCommon::set_contents()]
+    /// function.
+    fn is_markup_annotation(&self) -> bool;
+
+    /// Returns `true` if this [PdfPageAnnotation] supports setting attachment points that
+    /// visually associate it with a `PdfPageObject`.
+    fn has_attachment_points(&self) -> bool;
+
     /// Returns the bounding box of this [PdfPageAnnotation].
     fn bounds(&self) -> Result<PdfRect, PdfiumError>;
 
     /// Sets the bounding box of this [PdfPageAnnotation].
     ///
     /// This sets the position, the width, and the height of the annotation in a single operation.
-    /// To set these properties separately, use the [PdfPageAnnotation::set_position()],
-    /// [PdfPageAnnotation::set_width()], and [PdfPageAnnotation::set_height()] functions.
+    /// To set these properties separately, use the [PdfPageAnnotationCommon::set_position()],
+    /// [PdfPageAnnotationCommon::set_width()], and [PdfPageAnnotationCommon::set_height()] functions.
     fn set_bounds(&mut self, bounds: PdfRect) -> Result<(), PdfiumError>;
 
     /// Sets the bottom right corner of this [PdfPageAnnotation] to the given values.
     ///
     /// To set the position, the width, and the height of the annotation in a single operation,
-    /// use the [PdfPageAnnotation::set_bounds()] function.
+    /// use the [PdfPageAnnotationCommon::set_bounds()] function.
     fn set_position(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Sets the width of this [PdfPageAnnotation] to the given value.
     ///
     /// To set the position, the width, and the height of the annotation in a single operation,
-    /// use the [PdfPageAnnotation::set_bounds()] function.
+    /// use the [PdfPageAnnotationCommon::set_bounds()] function.
     fn set_width(&mut self, width: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Sets the height of this [PdfPageAnnotation] to the given value.
     ///
     /// To set the position, the width, and the height of the annotation in a single operation,
-    /// use the [PdfPageAnnotation::set_bounds()] function.
+    /// use the [PdfPageAnnotationCommon::set_bounds()] function.
     fn set_height(&mut self, width: PdfPoints) -> Result<(), PdfiumError>;
 
     /// Returns the text to be displayed for this [PdfPageAnnotation], or, if this type of annotation
@@ -696,6 +707,22 @@ pub trait PdfPageAnnotationCommon {
     /// annotation.as_stamp_annotation().unwrap().objects_mut();
     /// ```
     fn objects(&self) -> &PdfPageAnnotationObjects;
+
+    /// Returns an immutable collection of the attachment points that visually associate
+    /// this [PdfPageAnnotation] with one or more `PdfPageObject` objects on this `PdfPage`.
+    ///
+    /// This collection is provided for all annotation types, but it will always be empty
+    /// if the annotation does not support attachment points. Pdfium supports attachment points
+    /// for all markup annotations and the Link annotation, but not for any other annotation type.
+    /// The [PdfPageAnnotationCommon::has_attachment_points()] function will return `true`
+    /// if the annotation supports attachment points.
+    ///
+    /// To gain access to the mutable collection of attachment points inside a supported
+    /// annotation, you must first unwrap the annotation, like so:
+    /// ```
+    /// annotation.as_link_annotation().unwrap().attachment_points_mut();
+    /// ```
+    fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints;
 }
 
 // Blanket implementation for all PdfPageAnnotation types.
@@ -707,6 +734,16 @@ where
     #[inline]
     fn name(&self) -> Option<String> {
         self.name_impl()
+    }
+
+    #[inline]
+    fn is_markup_annotation(&self) -> bool {
+        self.is_markup_annotation_impl()
+    }
+
+    #[inline]
+    fn has_attachment_points(&self) -> bool {
+        self.has_attachment_points_impl()
     }
 
     #[inline]
@@ -773,6 +810,11 @@ where
     fn objects(&self) -> &PdfPageAnnotationObjects {
         self.objects_impl()
     }
+
+    #[inline]
+    fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints {
+        self.attachment_points_impl()
+    }
 }
 
 impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageAnnotation<'a> {
@@ -794,6 +836,16 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageAnnotation<'a> {
     #[inline]
     fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a> {
         self.unwrap_as_trait_mut().objects_mut_impl()
+    }
+
+    #[inline]
+    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
+        self.unwrap_as_trait().attachment_points_impl()
+    }
+
+    #[inline]
+    fn attachment_points_mut_impl(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a> {
+        self.unwrap_as_trait_mut().attachment_points_mut_impl()
     }
 }
 

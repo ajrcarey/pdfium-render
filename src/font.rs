@@ -6,7 +6,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font_glyphs::PdfFontGlyphs;
-use crate::page::PdfPoints;
+use crate::points::PdfPoints;
 use crate::prelude::PdfFontBuiltin;
 use crate::utils::mem::create_byte_buffer;
 use bitflags::bitflags;

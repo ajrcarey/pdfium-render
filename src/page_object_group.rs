@@ -7,7 +7,7 @@ use crate::color::PdfColor;
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
 use crate::matrix::PdfMatrix;
-use crate::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPoints, PdfRect};
+use crate::page::{PdfPage, PdfPageContentRegenerationStrategy};
 use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_object::{
     PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectCommon, PdfPageObjectLineCap,
@@ -18,7 +18,9 @@ use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_objects_common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 use crate::pages::{PdfPageIndex, PdfPages};
 use crate::pdfium::Pdfium;
+use crate::points::PdfPoints;
 use crate::prelude::{PdfDocument, PdfMatrixValue};
+use crate::rect::PdfRect;
 use std::collections::HashMap;
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
