@@ -27,7 +27,7 @@ and extract text and images from existing PDF files, and create new PDF files fr
         let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
-            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+            .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
         // ... then render each page to a bitmap image, saving each image to a JPEG file.
 
@@ -83,10 +83,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.6 adds support for creating new annotations, positioning those annotations,
-associating them with page objects, and retrieving and setting more annotation properties
-for each annotation type. The new `examples/create_annotations.rs` example demonstrates the
-new functionality.
+Version 0.8.6 fixes a small bug in `pdfium-render`'s color handling, making it possible to render
+to a bitmap with a transparent background, and adds support for creating new annotations,
+positioning those annotations, associating them with page objects, and retrieving and setting
+more annotation properties for each annotation type. The new `examples/create_annotations.rs`
+example demonstrates the new functionality.
 
 Version 0.8.5 adds the `PdfDestination::page_index()` function for retrieving the page index of
 a destination attached to an action, link, or bookmark contained in a document, and adds support
@@ -364,7 +365,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `PdfPageAnnotationCommon::set_creation_date()`, `PdfPageAnnotationCommon::set_modification_date()`;
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability to `PdfPageAnnotations`
-  collection.
+  collection; fixes a bug in `PdfColor::as_pdfium_color()` that resulted in the alpha value being
+  ignored when composing the `FPDF_DWORD` representation of the color value.
 * 0.8.5: adds `PdfDestination::page_index()` function; adds `PdfPageObjectCommon::dash_phase()`
   `PdfPageObjectCommon::set_dash_phase()`, `PdfPageObjectCommon::dash_array()`, and
   `PdfPageObjectCommon::set_dash_array()` functions thanks to an excellent contribution

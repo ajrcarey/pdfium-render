@@ -45,19 +45,6 @@ impl PdfColor {
         )
     }
 
-    /// Returns this color encoded as a 32-bit value, suitable for passing to Pdfium.
-    #[inline]
-    pub(crate) fn as_pdfium_color(&self) -> FPDF_DWORD {
-        self.color()
-    }
-
-    /// Returns a tuple comprising this color encoded as a 32-bit value and this alpha
-    /// encoded as an 8-bit value, suitable for passing to Pdfium.
-    #[inline]
-    pub(crate) fn as_pdfium_color_with_alpha(&self) -> (FPDF_DWORD, u8) {
-        (self.color(), self.alpha() as u8)
-    }
-
     /// Constructs a new [PdfColor] object from the given arguments.
     #[inline]
     pub const fn new(red: u8, green: u8, blue: u8, alpha: u8) -> Self {
@@ -81,6 +68,13 @@ impl PdfColor {
         }
     }
 
+    /// Returns the alpha (opacity) component of this color, with 0 = completely transparent
+    /// and 255 = completely opaque (solid).
+    #[inline]
+    pub fn alpha(&self) -> u8 {
+        self.a
+    }
+
     /// Returns the red component of this color.
     #[inline]
     pub fn red(&self) -> u8 {
@@ -99,30 +93,35 @@ impl PdfColor {
         self.b
     }
 
-    /// Returns this color as a decimal value equivalent to 32-bit hexadecimal 0xFFRRGGBB.
+    /// Returns this color as a decimal value equivalent to 32-bit hexadecimal 0xAARRGGBB value,
+    /// suitable for passing to Pdfium
     #[inline]
-    pub(crate) fn color(&self) -> FPDF_DWORD {
-        let (f, r, g, b) = self.color_components();
+    pub(crate) fn as_pdfium_color(&self) -> FPDF_DWORD {
+        let (alpha, r, g, b) = self.color_components();
 
-        ((f << 24) | (b << 16) | (g << 8) | r) as FPDF_DWORD
+        ((alpha << 24) | (b << 16) | (g << 8) | r) as FPDF_DWORD
     }
 
-    /// Returns the raw color components of this [PdfColor].
+    /// Returns a tuple comprising this color encoded as a 32-bit hexadecimal 0xFFRRGGBB value
+    /// and this alpha encoded as an 8-bit value, suitable for passing to Pdfium.
     #[inline]
-    #[allow(clippy::unnecessary_cast)]
+    pub(crate) fn as_pdfium_color_with_alpha(&self) -> (FPDF_DWORD, u8) {
+        let (alpha, r, g, b) = self.color_components();
+
+        (
+            ((0xFF << 24) | (b << 16) | (g << 8) | r) as FPDF_DWORD,
+            alpha as u8,
+        )
+    }
+
+    /// Returns the raw color components of this [PdfColor] in the order (alpha, R, G, B).
+    #[inline]
     fn color_components(&self) -> (FPDF_DWORD, FPDF_DWORD, FPDF_DWORD, FPDF_DWORD) {
         (
-            0xFF as FPDF_DWORD,
+            self.a as FPDF_DWORD,
             self.r as FPDF_DWORD,
             self.g as FPDF_DWORD,
             self.b as FPDF_DWORD,
         )
-    }
-
-    /// Returns the alpha (opacity) component of this color, with 0 = completely transparent
-    /// and 255 = completely opaque (solid).
-    #[inline]
-    pub fn alpha(&self) -> u8 {
-        self.a
     }
 }

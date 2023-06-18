@@ -40,7 +40,7 @@ fn main() -> Result<(), PdfiumError> {
     let config = PdfRenderConfig::new()
         .set_target_width(2000)
         .set_maximum_height(2000)
-        .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+        .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
     // Launch separate, simultaneous rendering tasks on different threads using rayon::par_iter().
     // In theory, all tasks should execute concurrently; in practice, pdfium-render will force

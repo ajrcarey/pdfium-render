@@ -46,7 +46,7 @@ pub fn main() -> Result<(), PdfiumError> {
         }
 
         if let Ok(rotation) = page.rotation() {
-            if rotation != PdfBitmapRotation::None {
+            if rotation != PdfPageRenderRotation::None {
                 println!(
                     "Page {} has embedded rotation of type {:#?}",
                     index, rotation

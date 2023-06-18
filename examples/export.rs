@@ -26,7 +26,7 @@ pub fn main() -> Result<(), PdfiumError> {
     let render_config = PdfRenderConfig::new()
         .set_target_width(2000)
         .set_maximum_height(2000)
-        .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+        .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
     for (index, page) in Pdfium::new(bindings)
         .load_pdf_from_file("test/export-test.pdf", None)? // Load the sample file...

@@ -194,7 +194,7 @@ pub mod tests {
             let render_config = PdfRenderConfig::new()
                 .set_target_width(2000)
                 .set_maximum_height(2000)
-                .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+                .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
             // ... then render each page to a bitmap image, saving each image to a JPEG file.
 
@@ -226,7 +226,7 @@ pub mod tests {
         let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
-            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true)
+            .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true)
             .render_form_data(true)
             .render_annotations(true);
 

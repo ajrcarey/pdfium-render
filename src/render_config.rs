@@ -7,14 +7,14 @@ use crate::bindgen::{
     FPDF_RENDER_NO_SMOOTHIMAGE, FPDF_RENDER_NO_SMOOTHPATH, FPDF_RENDER_NO_SMOOTHTEXT,
     FPDF_REVERSE_BYTE_ORDER, FS_MATRIX, FS_RECTF,
 };
-use crate::bitmap::{PdfBitmapFormat, PdfBitmapRotation, Pixels};
+use crate::bitmap::{PdfBitmapFormat, Pixels};
 use crate::color::PdfColor;
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
 use crate::form_field::PdfFormFieldType;
 use crate::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::page::PdfPageOrientation::{Landscape, Portrait};
-use crate::page::{PdfPage, PdfPageOrientation};
+use crate::page::{PdfPage, PdfPageOrientation, PdfPageRenderRotation};
 use crate::points::PdfPoints;
 use std::os::raw::c_int;
 use vecmath::{mat3_det, row_mat3_mul, Matrix3};
@@ -73,9 +73,9 @@ pub struct PdfRenderConfig {
     scale_height_factor: Option<f32>,
     maximum_width: Option<Pixels>,
     maximum_height: Option<Pixels>,
-    portrait_rotation: PdfBitmapRotation,
+    portrait_rotation: PdfPageRenderRotation,
     portrait_rotation_do_rotate_constraints: bool,
-    landscape_rotation: PdfBitmapRotation,
+    landscape_rotation: PdfPageRenderRotation,
     landscape_rotation_do_rotate_constraints: bool,
     format: PdfBitmapFormat,
     do_clear_bitmap_before_rendering: bool,
@@ -111,9 +111,9 @@ impl PdfRenderConfig {
             scale_height_factor: None,
             maximum_width: None,
             maximum_height: None,
-            portrait_rotation: PdfBitmapRotation::None,
+            portrait_rotation: PdfPageRenderRotation::None,
             portrait_rotation_do_rotate_constraints: false,
-            landscape_rotation: PdfBitmapRotation::None,
+            landscape_rotation: PdfPageRenderRotation::None,
             landscape_rotation_do_rotate_constraints: false,
             format: PdfBitmapFormat::default(),
             do_clear_bitmap_before_rendering: true,
@@ -158,7 +158,7 @@ impl PdfRenderConfig {
         self.set_target_size(size, size)
             .set_maximum_width(size)
             .set_maximum_height(size)
-            .rotate(PdfBitmapRotation::None, false)
+            .rotate(PdfPageRenderRotation::None, false)
             .use_print_quality(false)
             .set_image_smoothing(false)
             .render_annotations(false)
@@ -210,7 +210,7 @@ impl PdfRenderConfig {
         self.set_target_width(width)
             .set_maximum_width(width)
             .set_maximum_height(height)
-            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true)
+            .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true)
     }
 
     /// Converts the width and height of a [PdfPage] from points to pixels by applying
@@ -271,7 +271,7 @@ impl PdfRenderConfig {
     /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
     /// will be rotated so it becomes a constraint on the final pixel width.
     #[inline]
-    pub fn rotate(self, rotation: PdfBitmapRotation, do_rotate_constraints: bool) -> Self {
+    pub fn rotate(self, rotation: PdfPageRenderRotation, do_rotate_constraints: bool) -> Self {
         self.rotate_if_portrait(rotation, do_rotate_constraints)
             .rotate_if_landscape(rotation, do_rotate_constraints)
     }
@@ -293,7 +293,7 @@ impl PdfRenderConfig {
     #[inline]
     pub fn rotate_if_portait(
         self,
-        rotation: PdfBitmapRotation,
+        rotation: PdfPageRenderRotation,
         do_rotate_constraints: bool,
     ) -> Self {
         self.rotate_if_portrait(rotation, do_rotate_constraints)
@@ -309,12 +309,14 @@ impl PdfRenderConfig {
     #[inline]
     pub fn rotate_if_portrait(
         mut self,
-        rotation: PdfBitmapRotation,
+        rotation: PdfPageRenderRotation,
         do_rotate_constraints: bool,
     ) -> Self {
         self.portrait_rotation = rotation;
 
-        if rotation == PdfBitmapRotation::Degrees90 || rotation == PdfBitmapRotation::Degrees270 {
+        if rotation == PdfPageRenderRotation::Degrees90
+            || rotation == PdfPageRenderRotation::Degrees270
+        {
             self.portrait_rotation_do_rotate_constraints = do_rotate_constraints;
         }
 
@@ -331,12 +333,14 @@ impl PdfRenderConfig {
     #[inline]
     pub fn rotate_if_landscape(
         mut self,
-        rotation: PdfBitmapRotation,
+        rotation: PdfPageRenderRotation,
         do_rotate_constraints: bool,
     ) -> Self {
         self.landscape_rotation = rotation;
 
-        if rotation == PdfBitmapRotation::Degrees90 || rotation == PdfBitmapRotation::Degrees270 {
+        if rotation == PdfPageRenderRotation::Degrees90
+            || rotation == PdfPageRenderRotation::Degrees270
+        {
             self.landscape_rotation_do_rotate_constraints = do_rotate_constraints;
         }
 
@@ -642,21 +646,21 @@ impl PdfRenderConfig {
         // Do we need to apply any rotation?
 
         let (target_rotation, do_rotate_constraints) = if source_orientation == Portrait
-            && self.portrait_rotation != PdfBitmapRotation::None
+            && self.portrait_rotation != PdfPageRenderRotation::None
         {
             (
                 self.portrait_rotation,
                 self.portrait_rotation_do_rotate_constraints,
             )
         } else if source_orientation == Landscape
-            && self.landscape_rotation != PdfBitmapRotation::None
+            && self.landscape_rotation != PdfPageRenderRotation::None
         {
             (
                 self.landscape_rotation,
                 self.landscape_rotation_do_rotate_constraints,
             )
         } else {
-            (PdfBitmapRotation::None, false)
+            (PdfPageRenderRotation::None, false)
         };
 
         let width_scale = if let Some(scale) = self.scale_width_factor {
@@ -799,14 +803,16 @@ impl PdfRenderConfig {
         // transformation matrix now.
 
         let transformation_matrix = if !self.do_render_form_data {
-            let result = if target_rotation != PdfBitmapRotation::None {
+            let result = if target_rotation != PdfPageRenderRotation::None {
                 // Translate the origin to the center of the page before rotating.
 
                 let (delta_x, delta_y) = match target_rotation {
-                    PdfBitmapRotation::None => unreachable!(),
-                    PdfBitmapRotation::Degrees90 => (0.0, -source_width.value),
-                    PdfBitmapRotation::Degrees180 => (-source_width.value, -source_height.value),
-                    PdfBitmapRotation::Degrees270 => (-source_height.value, 0.0),
+                    PdfPageRenderRotation::None => unreachable!(),
+                    PdfPageRenderRotation::Degrees90 => (0.0, -source_width.value),
+                    PdfPageRenderRotation::Degrees180 => {
+                        (-source_width.value, -source_height.value)
+                    }
+                    PdfPageRenderRotation::Degrees270 => (-source_height.value, 0.0),
                 };
 
                 let result = row_mat3_mul(

@@ -6,7 +6,6 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::c_int;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -83,85 +82,6 @@ impl Default for PdfBitmapFormat {
     #[inline]
     fn default() -> Self {
         PdfBitmapFormat::BGRA
-    }
-}
-
-/// A rotation transformation that should be applied to a `PdfPage` when it is rendered
-/// into a [PdfBitmap].
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum PdfBitmapRotation {
-    None,
-    Degrees90,
-    Degrees180,
-    Degrees270,
-}
-
-impl PdfBitmapRotation {
-    #[inline]
-    pub(crate) fn from_pdfium(rotate: i32) -> Result<Self, PdfiumError> {
-        match rotate {
-            0 => Ok(PdfBitmapRotation::None),
-            1 => Ok(PdfBitmapRotation::Degrees90),
-            2 => Ok(PdfBitmapRotation::Degrees180),
-            3 => Ok(PdfBitmapRotation::Degrees270),
-            _ => Err(PdfiumError::UnknownBitmapRotation),
-        }
-    }
-
-    #[inline]
-    pub(crate) fn as_pdfium(&self) -> i32 {
-        match self {
-            PdfBitmapRotation::None => 0,
-            PdfBitmapRotation::Degrees90 => 1,
-            PdfBitmapRotation::Degrees180 => 2,
-            PdfBitmapRotation::Degrees270 => 3,
-        }
-    }
-
-    #[inline]
-    pub const fn as_degrees(&self) -> f32 {
-        match self {
-            PdfBitmapRotation::None => 0.0,
-            PdfBitmapRotation::Degrees90 => 90.0,
-            PdfBitmapRotation::Degrees180 => 180.0,
-            PdfBitmapRotation::Degrees270 => 270.0,
-        }
-    }
-
-    pub const DEGREES_90_AS_RADIANS: f32 = FRAC_PI_2;
-
-    pub const DEGREES_180_AS_RADIANS: f32 = PI;
-
-    pub const DEGREES_270_AS_RADIANS: f32 = FRAC_PI_2 + PI;
-
-    #[inline]
-    pub const fn as_radians(&self) -> f32 {
-        match self {
-            PdfBitmapRotation::None => 0.0,
-            PdfBitmapRotation::Degrees90 => Self::DEGREES_90_AS_RADIANS,
-            PdfBitmapRotation::Degrees180 => Self::DEGREES_180_AS_RADIANS,
-            PdfBitmapRotation::Degrees270 => Self::DEGREES_270_AS_RADIANS,
-        }
-    }
-
-    #[inline]
-    pub const fn as_radians_cos(&self) -> f32 {
-        match self {
-            PdfBitmapRotation::None => 1.0,
-            PdfBitmapRotation::Degrees90 => 0.0,
-            PdfBitmapRotation::Degrees180 => -1.0,
-            PdfBitmapRotation::Degrees270 => 0.0,
-        }
-    }
-
-    #[inline]
-    pub const fn as_radians_sin(&self) -> f32 {
-        match self {
-            PdfBitmapRotation::None => 0.0,
-            PdfBitmapRotation::Degrees90 => 1.0,
-            PdfBitmapRotation::Degrees180 => 0.0,
-            PdfBitmapRotation::Degrees270 => -1.0,
-        }
     }
 }
 

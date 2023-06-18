@@ -6,7 +6,7 @@ use crate::bindgen::{
     FPDF_PAGE,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::bitmap::{PdfBitmap, PdfBitmapFormat, PdfBitmapRotation, Pixels};
+use crate::bitmap::{PdfBitmap, PdfBitmapFormat, Pixels};
 use crate::create_transform_setters;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
@@ -22,6 +22,7 @@ use crate::prelude::{PdfMatrix, PdfMatrixValue, PdfPageAnnotations};
 use crate::rect::PdfRect;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
 use std::collections::{hash_map::Entry, HashMap};
+use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::c_int;
 
 /// The orientation of a [PdfPage].
@@ -41,6 +42,94 @@ impl PdfPageOrientation {
         }
     }
 }
+
+/// A rotation transformation that should be applied to a `PdfPage` when it is rendered
+/// into a [PdfBitmap].
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum PdfPageRenderRotation {
+    None,
+    Degrees90,
+    Degrees180,
+    Degrees270,
+}
+
+impl PdfPageRenderRotation {
+    #[inline]
+    pub(crate) fn from_pdfium(rotate: i32) -> Result<Self, PdfiumError> {
+        match rotate {
+            0 => Ok(PdfPageRenderRotation::None),
+            1 => Ok(PdfPageRenderRotation::Degrees90),
+            2 => Ok(PdfPageRenderRotation::Degrees180),
+            3 => Ok(PdfPageRenderRotation::Degrees270),
+            _ => Err(PdfiumError::UnknownBitmapRotation),
+        }
+    }
+
+    #[inline]
+    pub(crate) fn as_pdfium(&self) -> i32 {
+        match self {
+            PdfPageRenderRotation::None => 0,
+            PdfPageRenderRotation::Degrees90 => 1,
+            PdfPageRenderRotation::Degrees180 => 2,
+            PdfPageRenderRotation::Degrees270 => 3,
+        }
+    }
+
+    #[inline]
+    pub const fn as_degrees(&self) -> f32 {
+        match self {
+            PdfPageRenderRotation::None => 0.0,
+            PdfPageRenderRotation::Degrees90 => 90.0,
+            PdfPageRenderRotation::Degrees180 => 180.0,
+            PdfPageRenderRotation::Degrees270 => 270.0,
+        }
+    }
+
+    pub const DEGREES_90_AS_RADIANS: f32 = FRAC_PI_2;
+
+    pub const DEGREES_180_AS_RADIANS: f32 = PI;
+
+    pub const DEGREES_270_AS_RADIANS: f32 = FRAC_PI_2 + PI;
+
+    #[inline]
+    pub const fn as_radians(&self) -> f32 {
+        match self {
+            PdfPageRenderRotation::None => 0.0,
+            PdfPageRenderRotation::Degrees90 => Self::DEGREES_90_AS_RADIANS,
+            PdfPageRenderRotation::Degrees180 => Self::DEGREES_180_AS_RADIANS,
+            PdfPageRenderRotation::Degrees270 => Self::DEGREES_270_AS_RADIANS,
+        }
+    }
+
+    #[inline]
+    pub const fn as_radians_cos(&self) -> f32 {
+        match self {
+            PdfPageRenderRotation::None => 1.0,
+            PdfPageRenderRotation::Degrees90 => 0.0,
+            PdfPageRenderRotation::Degrees180 => -1.0,
+            PdfPageRenderRotation::Degrees270 => 0.0,
+        }
+    }
+
+    #[inline]
+    pub const fn as_radians_sin(&self) -> f32 {
+        match self {
+            PdfPageRenderRotation::None => 0.0,
+            PdfPageRenderRotation::Degrees90 => 1.0,
+            PdfPageRenderRotation::Degrees180 => 0.0,
+            PdfPageRenderRotation::Degrees270 => -1.0,
+        }
+    }
+}
+
+// TODO: AJRC - 19/6/23 - remove deprecated PdfBitmapRotation type in 0.9.0
+// as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+#[deprecated(
+    since = "0.8.6",
+    note = "This enum has been renamed to better reflect its purpose. Use the PdfPageRenderRotation enum instead."
+)]
+#[doc(hidden)]
+pub type PdfBitmapRotation = PdfPageRenderRotation;
 
 /// Content regeneration strategies that instruct `pdfium-render` when, if ever, it should
 /// automatically regenerate the content of a [PdfPage].
@@ -209,13 +298,13 @@ impl<'a> PdfPage<'a> {
     /// Returns any intrinsic rotation encoded into this document indicating a rotation
     /// should be applied to this [PdfPage] during rendering.
     #[inline]
-    pub fn rotation(&self) -> Result<PdfBitmapRotation, PdfiumError> {
-        PdfBitmapRotation::from_pdfium(self.bindings.FPDFPage_GetRotation(self.page_handle))
+    pub fn rotation(&self) -> Result<PdfPageRenderRotation, PdfiumError> {
+        PdfPageRenderRotation::from_pdfium(self.bindings.FPDFPage_GetRotation(self.page_handle))
     }
 
     /// Sets the intrinsic rotation that should be applied to this [PdfPage] during rendering.
     #[inline]
-    pub fn set_rotation(&mut self, rotation: PdfBitmapRotation) {
+    pub fn set_rotation(&mut self, rotation: PdfPageRenderRotation) {
         self.bindings
             .FPDFPage_SetRotation(self.page_handle, rotation.as_pdfium());
     }
@@ -430,7 +519,7 @@ impl<'a> PdfPage<'a> {
         &self,
         width: Pixels,
         height: Pixels,
-        rotation: Option<PdfBitmapRotation>,
+        rotation: Option<PdfPageRenderRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
         let mut bitmap =
             PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
@@ -485,7 +574,7 @@ impl<'a> PdfPage<'a> {
         bitmap: &mut PdfBitmap,
         width: Pixels,
         height: Pixels,
-        rotation: Option<PdfBitmapRotation>,
+        rotation: Option<PdfPageRenderRotation>,
     ) -> Result<(), PdfiumError> {
         let mut config = PdfRenderConfig::new()
             .set_target_width(width)
@@ -627,7 +716,7 @@ impl<'a> PdfPage<'a> {
         &self,
         width: Pixels,
         height: Pixels,
-        rotation: Option<PdfBitmapRotation>,
+        rotation: Option<PdfPageRenderRotation>,
     ) -> Result<PdfBitmap, PdfiumError> {
         self.render(width, height, rotation)
     }
@@ -918,7 +1007,7 @@ mod test {
         let render_config = PdfRenderConfig::new()
             .set_target_width(2000)
             .set_maximum_height(2000)
-            .rotate_if_landscape(PdfBitmapRotation::Degrees90, true);
+            .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
         let mut bitmap =
             PdfBitmap::empty(2500, 2500, PdfBitmapFormat::default(), pdfium.bindings())?;
