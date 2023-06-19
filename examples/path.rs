@@ -30,7 +30,7 @@ fn main() -> Result<(), PdfiumError> {
         PdfPoints::new(0.0),
         PdfPoints::new(100.0),
         PdfPoints::new(100.0),
-        PdfColor::SOLID_BLUE,
+        PdfColor::BLUE,
         PdfPoints::new(5.0),
     )?;
 
@@ -39,7 +39,7 @@ fn main() -> Result<(), PdfiumError> {
         PdfPoints::new(0.0),
         page_width - PdfPoints::new(100.0),
         PdfPoints::new(100.0),
-        PdfColor::SOLID_GREEN,
+        PdfColor::GREEN,
         PdfPoints::new(5.0),
     )?;
 
@@ -48,7 +48,7 @@ fn main() -> Result<(), PdfiumError> {
         page_height,
         PdfPoints::new(100.0),
         page_height - PdfPoints::new(100.0),
-        PdfColor::SOLID_RED,
+        PdfColor::RED,
         PdfPoints::new(5.0),
     )?;
 
@@ -57,7 +57,7 @@ fn main() -> Result<(), PdfiumError> {
         page_height,
         page_width - PdfPoints::new(100.0),
         page_height - PdfPoints::new(100.0),
-        PdfColor::SOLID_YELLOW,
+        PdfColor::YELLOW,
         PdfPoints::new(5.0),
     )?;
 
@@ -70,18 +70,18 @@ fn main() -> Result<(), PdfiumError> {
             PdfPoints::new(400.0),
             PdfPoints::new(400.0),
         ),
-        Some(PdfColor::SOLID_MAGENTA),
+        Some(PdfColor::MAGENTA),
         Some(PdfPoints::new(7.0)),
-        Some(PdfColor::SOLID_YELLOW),
+        Some(PdfColor::YELLOW),
     )?;
 
     page.objects_mut().create_path_object_circle_at(
         PdfPoints::new(400.0),
         PdfPoints::new(450.0),
         PdfPoints::new(150.0),
-        Some(PdfColor::SOLID_CYAN),
+        Some(PdfColor::CYAN),
         Some(PdfPoints::new(4.0)),
-        Some(PdfColor::SOLID_RED.with_alpha(127)),
+        Some(PdfColor::RED.with_alpha(127)),
     )?;
 
     page.objects_mut().create_path_object_ellipse_at(
@@ -89,9 +89,9 @@ fn main() -> Result<(), PdfiumError> {
         page_height - PdfPoints::new(200.0),
         page_width / 2.0 * 0.75,
         PdfPoints::new(75.0),
-        Some(PdfColor::SOLID_GREEN.with_alpha(127)),
+        Some(PdfColor::GREEN.with_alpha(127)),
         Some(PdfPoints::new(4.0)),
-        Some(PdfColor::SOLID_BLUE.with_alpha(127)),
+        Some(PdfColor::BLUE.with_alpha(127)),
     )?;
 
     // ... some randomly-generated unfilled shapes...

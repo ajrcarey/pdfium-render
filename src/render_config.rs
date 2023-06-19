@@ -117,7 +117,7 @@ impl PdfRenderConfig {
             landscape_rotation_do_rotate_constraints: false,
             format: PdfBitmapFormat::default(),
             do_clear_bitmap_before_rendering: true,
-            clear_color: PdfColor::SOLID_WHITE,
+            clear_color: PdfColor::WHITE,
             do_render_form_data: true,
             form_field_highlight: None,
             transformation_matrix: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
@@ -367,7 +367,7 @@ impl PdfRenderConfig {
     }
 
     /// Sets the color applied to every pixel in the destination bitmap when clearing the bitmap
-    /// before rendering the [PdfPage]. The default is [PdfColor::SOLID_WHITE]. This setting
+    /// before rendering the [PdfPage]. The default is [PdfColor::WHITE]. This setting
     /// has no effect if [PdfRenderConfig::clear_before_rendering()] is set to `false`.
     #[inline]
     pub fn set_clear_color(mut self, color: PdfColor) -> Self {

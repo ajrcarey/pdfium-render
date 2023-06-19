@@ -309,7 +309,7 @@ pub mod tests {
         let mut object = PdfPagePathObject::new_rect(
             &document,
             PdfRect::new_from_values(100.0, 100.0, 400.0, 400.0),
-            Some(PdfColor::SOLID_RED),
+            Some(PdfColor::RED),
             Some(PdfPoints::new(1.0)),
             None,
         )?;
@@ -343,7 +343,7 @@ pub mod tests {
         let mut object = PdfPagePathObject::new_rect(
             &document,
             PdfRect::new_from_values(100.0, 100.0, 400.0, 400.0),
-            Some(PdfColor::SOLID_RED),
+            Some(PdfColor::RED),
             Some(PdfPoints::new(1.0)),
             None,
         )?;
@@ -377,7 +377,7 @@ pub mod tests {
         let mut object = PdfPagePathObject::new_rect(
             &document,
             PdfRect::new_from_values(100.0, 100.0, 400.0, 400.0),
-            Some(PdfColor::SOLID_RED),
+            Some(PdfColor::RED),
             Some(PdfPoints::new(1.0)),
             None,
         )?;
@@ -411,7 +411,7 @@ pub mod tests {
         let mut object = PdfPagePathObject::new_rect(
             &document,
             PdfRect::new_from_values(100.0, 100.0, 400.0, 400.0),
-            Some(PdfColor::SOLID_RED),
+            Some(PdfColor::RED),
             Some(PdfPoints::new(1.0)),
             None,
         )?;

@@ -7,6 +7,7 @@ use crate::bindgen::{
 use std::error::Error;
 use std::ffi::IntoStringError;
 use std::fmt::{Display, Formatter, Result};
+use std::num::ParseIntError;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
@@ -102,6 +103,18 @@ pub enum PdfiumError {
     DestinationPageIndexNotAvailable,
     PageAnnotationAttachmentPointIndexOutOfBounds,
     NoAttachmentPointsInPageAnnotation,
+
+    /// A [ParseIntError] occurred while attempting to parse a `PdfColor` from a hexadecimal string
+    /// in `PdfColor::from_hex()`.
+    ParseHexadecimalColorError(ParseIntError),
+
+    /// The hexadecimal string given to `PdfColor::from_hex()` was not either exactly 7 or 9
+    /// characters long.
+    ParseHexadecimalColorUnexpectedLength,
+
+    /// The leading `#` character was not found while attempting to parse a `PdfColor` from
+    /// a hexidecimal string in `PdfColor::from_hex()`.
+    ParseHexadecimalColorMissingLeadingHash,
 
     /// An error occurred converting a byte stream into a CString.
     CStringConversionError(IntoStringError),

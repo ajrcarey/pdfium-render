@@ -37,8 +37,8 @@ pub fn main() -> Result<(), PdfiumError> {
         .scale_page_by_factor(dpi as f32 / 72.0)
         .render_form_data(true) // Rendering of form data and annotations is the default...
         .render_annotations(true) // ... but for the sake of demonstration we are explicit here.
-        .highlight_text_form_fields(PdfColor::SOLID_YELLOW.with_alpha(128))
-        .highlight_checkbox_form_fields(PdfColor::SOLID_BLUE.with_alpha(128));
+        .highlight_text_form_fields(PdfColor::YELLOW.with_alpha(128))
+        .highlight_checkbox_form_fields(PdfColor::BLUE.with_alpha(128));
 
     for (index, page) in document.pages().iter().enumerate() {
         if let Some(label) = page.label() {

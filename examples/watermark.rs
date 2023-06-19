@@ -24,7 +24,7 @@ fn main() -> Result<(), PdfiumError> {
             PdfPoints::new(14.0),
         )?;
 
-        page_number.set_fill_color(PdfColor::SOLID_GREEN)?;
+        page_number.set_fill_color(PdfColor::GREEN)?;
 
         page_number.translate(
             (width - page_number.width()?) / 2.0, // Horizontally center the page number...
@@ -38,7 +38,7 @@ fn main() -> Result<(), PdfiumError> {
         let mut watermark =
             PdfPageTextObject::new(&document, "Watermark", font, PdfPoints::new(150.0))?;
 
-        watermark.set_fill_color(PdfColor::SOLID_BLUE.with_alpha(127))?;
+        watermark.set_fill_color(PdfColor::BLUE.with_alpha(128))?;
         watermark.rotate_counter_clockwise_degrees(45.0)?;
         watermark.translate(
             (width - watermark.width()?) / 2.0 + PdfPoints::new(75.0),

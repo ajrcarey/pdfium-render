@@ -30,9 +30,9 @@ pub fn main() -> Result<(), PdfiumError> {
         PdfPoints::new(300.0),
         PdfPoints::new(350.0),
         PdfPoints::new(75.0),
-        Some(PdfColor::SOLID_RED),
+        Some(PdfColor::RED),
         Some(PdfPoints::new(10.0)),
-        Some(PdfColor::SOLID_GREEN),
+        Some(PdfColor::GREEN),
     )?;
 
     let render_target = pdfium.load_pdf_from_file("test/signatures-test.pdf", None)?;

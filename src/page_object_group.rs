@@ -825,21 +825,21 @@ mod test {
             PdfRect::new_from_values(100.0, 100.0, 200.0, 200.0),
             None,
             None,
-            Some(PdfColor::SOLID_RED),
+            Some(PdfColor::RED),
         )?;
 
         page.objects_mut().create_path_object_rect(
             PdfRect::new_from_values(150.0, 150.0, 250.0, 250.0),
             None,
             None,
-            Some(PdfColor::SOLID_GREEN),
+            Some(PdfColor::GREEN),
         )?;
 
         page.objects_mut().create_path_object_rect(
             PdfRect::new_from_values(200.0, 200.0, 300.0, 300.0),
             None,
             None,
-            Some(PdfColor::SOLID_BLUE),
+            Some(PdfColor::BLUE),
         )?;
 
         let mut group = PdfPageGroupObject::new(&page, |_| true)?;
