@@ -7,8 +7,13 @@ pub(crate) mod internal {
     // Instead of making the PdfPageAnnotationPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::{FPDF_ANNOTATION, FPDF_OBJECT_STRING, FPDF_WCHAR, FS_RECTF};
+    use crate::bindgen::{
+        FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
+        FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor, FPDF_ANNOTATION, FPDF_OBJECT_STRING,
+        FPDF_PAGEOBJECT, FPDF_WCHAR, FS_RECTF,
+    };
     use crate::bindings::PdfiumLibraryBindings;
+    use crate::color::PdfColor;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::page_annotation::{PdfPageAnnotationCommon, PdfPageAnnotationType};
     use crate::page_annotation_attachment_points::PdfPageAnnotationAttachmentPoints;
@@ -19,6 +24,7 @@ pub(crate) mod internal {
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
     use chrono::prelude::*;
+    use std::os::raw::c_uint;
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
     pub trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
@@ -268,6 +274,170 @@ pub(crate) mod internal {
         fn has_attachment_points_impl(&self) -> bool {
             self.bindings()
                 .is_true(self.bindings().FPDFAnnot_HasAttachmentPoints(self.handle()))
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::fill_color()].
+        #[inline]
+        fn fill_color_impl(&self) -> Result<PdfColor, PdfiumError> {
+            let mut r: c_uint = 0;
+
+            let mut g: c_uint = 0;
+
+            let mut b: c_uint = 0;
+
+            let mut a: c_uint = 0;
+
+            if self.bindings().is_true(self.bindings().FPDFAnnot_GetColor(
+                self.handle(),
+                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor,
+                &mut r,
+                &mut g,
+                &mut b,
+                &mut a,
+            )) {
+                Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
+            } else {
+                // The FPDFAnnot_GetColor() function returns false if the annotation
+                // is using appearance streams. In this case, the Pdfium documentation
+                // states that we must use FPDFPath_GetFillColor() instead; that function
+                // is deprecated, and says to use FPDFPageObj_GetFillColor().
+
+                if self
+                    .bindings()
+                    .is_true(self.bindings().FPDFPageObj_GetFillColor(
+                        self.handle() as FPDF_PAGEOBJECT,
+                        &mut r,
+                        &mut g,
+                        &mut b,
+                        &mut a,
+                    ))
+                {
+                    Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
+                } else {
+                    Err(PdfiumError::PdfiumLibraryInternalError(
+                        PdfiumInternalError::Unknown,
+                    ))
+                }
+            }
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_fill_color()].
+        #[inline]
+        fn set_fill_color_impl(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
+            if self.bindings().is_true(self.bindings().FPDFAnnot_SetColor(
+                self.handle(),
+                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor,
+                fill_color.red() as c_uint,
+                fill_color.green() as c_uint,
+                fill_color.blue() as c_uint,
+                fill_color.alpha() as c_uint,
+            )) {
+                Ok(())
+            } else {
+                // The FPDFAnnot_SetColor() function returns false if the annotation
+                // is using appearance streams. In this case, the Pdfium documentation
+                // states that we must use FPDFPath_SetFillColor() instead; that function
+                // is deprecated, and says to use FPDFPageObj_SetFillColor().
+
+                if self
+                    .bindings()
+                    .is_true(self.bindings().FPDFPageObj_SetFillColor(
+                        self.handle() as FPDF_PAGEOBJECT,
+                        fill_color.red() as c_uint,
+                        fill_color.green() as c_uint,
+                        fill_color.blue() as c_uint,
+                        fill_color.alpha() as c_uint,
+                    ))
+                {
+                    Ok(())
+                } else {
+                    Err(PdfiumError::PdfiumLibraryInternalError(
+                        PdfiumInternalError::Unknown,
+                    ))
+                }
+            }
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::stroke_color()].
+        #[inline]
+        fn stroke_color_impl(&self) -> Result<PdfColor, PdfiumError> {
+            let mut r: c_uint = 0;
+
+            let mut g: c_uint = 0;
+
+            let mut b: c_uint = 0;
+
+            let mut a: c_uint = 0;
+
+            if self.bindings().is_true(self.bindings().FPDFAnnot_GetColor(
+                self.handle(),
+                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
+                &mut r,
+                &mut g,
+                &mut b,
+                &mut a,
+            )) {
+                Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
+            } else {
+                // The FPDFAnnot_GetColor() function returns false if the annotation
+                // is using appearance streams. In this case, the Pdfium documentation
+                // states that we must use FPDFPath_GetStrokeColor() instead; that function
+                // is deprecated, and says to use FPDFPageObj_GetStrokeColor().
+
+                if self
+                    .bindings()
+                    .is_true(self.bindings().FPDFPageObj_GetStrokeColor(
+                        self.handle() as FPDF_PAGEOBJECT,
+                        &mut r,
+                        &mut g,
+                        &mut b,
+                        &mut a,
+                    ))
+                {
+                    Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
+                } else {
+                    Err(PdfiumError::PdfiumLibraryInternalError(
+                        PdfiumInternalError::Unknown,
+                    ))
+                }
+            }
+        }
+
+        /// Internal implementation of [PdfPageAnnotationCommon::set_stroke_color()].
+        #[inline]
+        fn set_stroke_color_impl(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
+            if self.bindings().is_true(self.bindings().FPDFAnnot_SetColor(
+                self.handle(),
+                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
+                stroke_color.red() as c_uint,
+                stroke_color.green() as c_uint,
+                stroke_color.blue() as c_uint,
+                stroke_color.alpha() as c_uint,
+            )) {
+                Ok(())
+            } else {
+                // The FPDFAnnot_SetColor() function returns false if the annotation
+                // is using appearance streams. In this case, the Pdfium documentation
+                // states that we must use FPDFPath_SetStrokeColor() instead; that function
+                // is deprecated, and says to use FPDFPageObj_SetStrokeColor().
+
+                if self
+                    .bindings()
+                    .is_true(self.bindings().FPDFPageObj_SetStrokeColor(
+                        self.handle() as FPDF_PAGEOBJECT,
+                        stroke_color.red() as c_uint,
+                        stroke_color.green() as c_uint,
+                        stroke_color.blue() as c_uint,
+                        stroke_color.alpha() as c_uint,
+                    ))
+                {
+                    Ok(())
+                } else {
+                    Err(PdfiumError::PdfiumLibraryInternalError(
+                        PdfiumInternalError::Unknown,
+                    ))
+                }
+            }
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::objects()].

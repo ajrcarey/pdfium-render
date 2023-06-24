@@ -1,6 +1,7 @@
 //! Defines the [PdfPoints] struct, the basic unit of measurement within the internal
 //! coordinate system inside a `PdfDocument`.
 
+use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 
 /// The internal coordinate system inside a `PdfDocument` is measured in Points, a
@@ -123,5 +124,12 @@ impl Neg for PdfPoints {
     #[inline]
     fn neg(self) -> Self::Output {
         PdfPoints::new(-self.value)
+    }
+}
+
+impl Display for PdfPoints {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("PdfPoints({})", self.value))
     }
 }

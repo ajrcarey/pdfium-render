@@ -301,7 +301,7 @@ impl PdfRenderConfig {
 
     /// Applies the given clockwise rotation settings to the [PdfPage] during rendering, if the page
     /// is in portrait orientation. If the given flag is set to `true` and the given
-    /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
+    /// rotation setting is [PdfPageRenderRotation::Degrees90] or [PdfPageRenderRotation::Degrees270]
     /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
     /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
@@ -325,7 +325,7 @@ impl PdfRenderConfig {
 
     /// Applies the given rotation settings to the [PdfPage] during rendering, if the page
     /// is in landscape orientation. If the given flag is set to `true` and the given
-    /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
+    /// rotation setting is [PdfPageRenderRotation::Degrees90] or [PdfPageRenderRotation::Degrees270]
     /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
     /// will be rotated so it becomes a constraint on the final pixel height and any
     /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]

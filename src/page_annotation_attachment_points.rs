@@ -82,7 +82,7 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
             return Err(PdfiumError::PageAnnotationAttachmentPointIndexOutOfBounds);
         }
 
-        let mut result = PdfQuadPoints::from_rect(PdfRect::ZERO).to_pdfium();
+        let mut result = PdfQuadPoints::from_rect(PdfRect::ZERO).as_pdfium();
 
         if self
             .bindings
@@ -133,7 +133,7 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
             .bindings
             .is_true(self.bindings.FPDFAnnot_AppendAttachmentPoints(
                 self.annotation_handle,
-                &attachment_point.to_pdfium(),
+                &attachment_point.as_pdfium(),
             ))
         {
             Ok(())
@@ -156,7 +156,7 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
             .is_true(self.bindings.FPDFAnnot_SetAttachmentPoints(
                 self.annotation_handle,
                 index,
-                &attachment_point.to_pdfium(),
+                &attachment_point.as_pdfium(),
             ))
         {
             Ok(())

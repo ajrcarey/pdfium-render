@@ -119,26 +119,65 @@ pub fn main() -> Result<(), PdfiumError> {
         link_annotation.modification_date()
     );
 
-    let mut squiggly_annotation = page.annotations_mut().create_squiggly_annotation()?;
+    let squiggly_annotation = page
+        .annotations_mut()
+        .create_squiggly_annotation_under_object(
+            &_text_object,
+            PdfColor::DARK_RED,
+            Some("This is a squiggly annotation"),
+        )?;
 
     println!(
         "Squiggly annotation creation date: {:?}",
         squiggly_annotation.creation_date()
     );
 
-    squiggly_annotation.set_position(PdfPoints::new(75.0), PdfPoints::new(100.0))?;
-    squiggly_annotation.set_width(PdfPoints::new(200.0))?;
-    squiggly_annotation.set_height(PdfPoints::new(10.0))?;
-    squiggly_annotation
-        .attachment_points_mut()
-        .create_attachment_point_at_end(PdfQuadPoints::from_rect(PdfRect::new_from_values(
-            100.0, 75.0, 160.0, 250.0,
-        )))?;
+    for attachment_point in squiggly_annotation.attachment_points().iter() {
+        println!(
+            "Attachment point in squiggly annotation: {:#?}",
+            attachment_point
+        );
+    }
+
+    let strikeout_annotation = page
+        .annotations_mut()
+        .create_strikeout_annotation_through_object(
+            &_text_object,
+            PdfColor::ORANGE_RED,
+            Some("This is a strikeout annotation"),
+        )?;
 
     println!(
-        "Squiggly annotation modification date after positioning: {:?}",
-        squiggly_annotation.modification_date()
+        "Strikeout annotation creation date: {:?}",
+        strikeout_annotation.creation_date()
     );
+
+    for attachment_point in strikeout_annotation.attachment_points().iter() {
+        println!(
+            "Attachment point in strikeout annotation: {:#?}",
+            attachment_point
+        );
+    }
+
+    let highlight_annotation = page
+        .annotations_mut()
+        .create_highlight_annotation_over_object(
+            &_text_object,
+            PdfColor::YELLOW,
+            Some("This is a highlight annotation"),
+        )?;
+
+    println!(
+        "Highlight annotation creation date: {:?}",
+        highlight_annotation.creation_date()
+    );
+
+    for attachment_point in highlight_annotation.attachment_points().iter() {
+        println!(
+            "Attachment point in highlight annotation: {:#?}",
+            attachment_point
+        );
+    }
 
     document.save_to_file("test/create-annotations-test.pdf")
 }

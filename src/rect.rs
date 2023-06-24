@@ -4,6 +4,7 @@ use crate::bindgen::{FPDF_BOOL, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::points::PdfPoints;
+use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 /// A rectangle measured in [PdfPoints].
@@ -170,5 +171,15 @@ impl Hash for PdfRect {
         state.write_u32(self.left.value.to_bits());
         state.write_u32(self.top.value.to_bits());
         state.write_u32(self.right.value.to_bits());
+    }
+}
+
+impl Display for PdfRect {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "PdfRect(bottom: {}, left: {}, top: {}, right: {}",
+            self.bottom.value, self.left.value, self.top.value, self.right.value
+        ))
     }
 }

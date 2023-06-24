@@ -363,15 +363,18 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
   `PdfPageAnnotationCommon::set_creation_date()`, `PdfPageAnnotationCommon::set_modification_date()`;
+  `PdfPageAnnotationCommon::stroke_color()`, `PdfPageAnnotationCommon::set_stroke_color()`,
+  `PdfPageAnnotationCommon::fill_color()`, `PdfPageAnnotationCommon::set_fill_color()` functions
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
-  `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability to `PdfPageAnnotations`
-  collection; fixes a bug in `PdfColor::as_pdfium_color()` that resulted in the alpha value being
-  ignored when composing the `FPDF_DWORD` representation of the color value; renames
-  `PdfBitmapRotation` enum to `PdfPageRenderRotation`, deprecating the old enum; adds convenience
-  functions `PdfColor::mix()`, `PdfColor::mix_with()`, `PdfColor::from_hex()`, `PdfColor::to_hex()`,
-  and `PdfColor::to_hex_with_alpha()`. Adds a wide variety of new color consts. Deprecates all
-  existing `PdfColor::SOLID_*` consts in favour of renamed consts with the superfluous `SOLID_`
-  prefix removed. Deprecated items will be removed in release 0.9.0.
+  `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
+  creation functions to `PdfPageAnnotations` collection; fixes a bug in `PdfColor::as_pdfium_color()`
+  that resulted in the alpha value being ignored when composing the `FPDF_DWORD` representation of
+  the color value; renames `PdfBitmapRotation` enum to `PdfPageRenderRotation`, deprecating the old enum;
+  adds convenience functions `PdfColor::mix()`, `PdfColor::mix_with()`, `PdfColor::from_hex()`,
+  `PdfColor::to_hex()`, and `PdfColor::to_hex_with_alpha()`; adds a wide variety of new color constants
+  to `PdfColor`, deprecating all existing `PdfColor::SOLID_*` consts in favour of renamed consts with the
+  `SOLID_` prefix removed; adds implementations of `Display` to `PdfPoints`, `PdfRect`, and
+  `PdfQuadPoints`. Deprecated items will be removed in release 0.9.0.
 * 0.8.5: adds `PdfDestination::page_index()` function; adds `PdfPageObjectCommon::dash_phase()`
   `PdfPageObjectCommon::set_dash_phase()`, `PdfPageObjectCommon::dash_array()`, and
   `PdfPageObjectCommon::set_dash_array()` functions thanks to an excellent contribution

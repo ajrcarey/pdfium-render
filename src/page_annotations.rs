@@ -3,6 +3,7 @@
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page_annotation::{PdfPageAnnotation, PdfPageAnnotationCommon, PdfPageAnnotationType};
 use crate::page_annotation_free_text::PdfPageFreeTextAnnotation;
@@ -14,7 +15,9 @@ use crate::page_annotation_stamp::PdfPageStampAnnotation;
 use crate::page_annotation_strikeout::PdfPageStrikeoutAnnotation;
 use crate::page_annotation_text::PdfPageTextAnnotation;
 use crate::page_annotation_underline::PdfPageUnderlineAnnotation;
+use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::prelude::{PdfPageHighlightAnnotation, PdfPageInkAnnotation, PdfPageLinkAnnotation};
+use crate::quad_points::PdfQuadPoints;
 use chrono::prelude::*;
 use std::ops::Range;
 use std::os::raw::c_int;
@@ -379,6 +382,176 @@ impl<'a> PdfPageAnnotations<'a> {
             PdfPageAnnotationType::Underline,
             PdfPageUnderlineAnnotation::from_pdfium,
         )
+    }
+
+    // Convenience functions for creating and positioning markup annotations
+    // in a single function call.
+
+    /// Creates a new [PdfPageSquigglyAnnotation] annotation and positions it underneath the given
+    /// [PdfPageObject], coloring it with the given [PdfColor].
+    ///
+    /// If the given contents string is supplied, the annotation will be additionally configured
+    /// so that when the given [PdfPageObject] is clicked in a conforming PDF viewer, the given
+    /// contents string will be displayed in a popup window.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_squiggly_annotation_under_object(
+        &mut self,
+        object: &PdfPageObject,
+        color: PdfColor,
+        contents: Option<&str>,
+    ) -> Result<PdfPageSquigglyAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_squiggly_annotation()?;
+
+        // The annotation will not display if it is not positioned.
+
+        let bounds = object.bounds()?;
+
+        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_stroke_color(color)?;
+
+        const SQUIGGLY_HEIGHT: f32 = 12.0;
+
+        let annotation_top = bounds.bottom.value - 5.0;
+        let annotation_bottom = annotation_top - SQUIGGLY_HEIGHT;
+
+        annotation
+            .attachment_points_mut()
+            .create_attachment_point_at_end(PdfQuadPoints::new_from_values(
+                bounds.left.value,
+                annotation_bottom,
+                bounds.right.value,
+                annotation_bottom,
+                bounds.right.value,
+                annotation_top,
+                bounds.left.value,
+                annotation_top,
+            ))?;
+
+        if let Some(contents) = contents {
+            annotation.set_width(bounds.width())?;
+            annotation.set_height(bounds.height())?;
+            annotation.set_contents(contents)?;
+        }
+
+        Ok(annotation)
+    }
+
+    /// Creates a new [PdfPageUnderlineAnnotation] annotation and positions it underneath the given
+    /// [PdfPageObject], coloring it with the given [PdfColor].
+    ///
+    /// If the given contents string is supplied, the annotation will be additionally configured
+    /// so that when the given [PdfPageObject] is clicked in a conforming PDF viewer, the given
+    /// contents string will be displayed in a popup window.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_underline_annotation_under_object(
+        &mut self,
+        object: &PdfPageObject,
+        color: PdfColor,
+        contents: Option<&str>,
+    ) -> Result<PdfPageUnderlineAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_underline_annotation()?;
+
+        // The annotation will not display if it is not positioned.
+
+        let bounds = object.bounds()?;
+
+        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_stroke_color(color)?;
+        annotation
+            .attachment_points_mut()
+            .create_attachment_point_at_end(PdfQuadPoints::from_rect(bounds))?;
+
+        if let Some(contents) = contents {
+            annotation.set_width(bounds.width())?;
+            annotation.set_height(bounds.height())?;
+            annotation.set_contents(contents)?;
+        }
+
+        Ok(annotation)
+    }
+
+    /// Creates a new [PdfPageStrikeoutAnnotation] annotation and vertically positions it in the
+    /// center the given [PdfPageObject], coloring it with the given [PdfColor].
+    ///
+    /// If the given contents string is supplied, the annotation will be additionally configured
+    /// so that when the given [PdfPageObject] is clicked in a conforming PDF viewer, the given
+    /// contents string will be displayed in a popup window.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_strikeout_annotation_through_object(
+        &mut self,
+        object: &PdfPageObject,
+        color: PdfColor,
+        contents: Option<&str>,
+    ) -> Result<PdfPageStrikeoutAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_strikeout_annotation()?;
+
+        // The annotation will not display if it is not positioned.
+
+        let bounds = object.bounds()?;
+
+        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_stroke_color(color)?;
+        annotation
+            .attachment_points_mut()
+            .create_attachment_point_at_end(PdfQuadPoints::from_rect(bounds))?;
+
+        if let Some(contents) = contents {
+            annotation.set_width(bounds.width())?;
+            annotation.set_height(bounds.height())?;
+            annotation.set_contents(contents)?;
+        }
+
+        Ok(annotation)
+    }
+
+    /// Creates a new [PdfPageHighlightAnnotation] annotation and positions it so as to cover
+    /// the given [PdfPageObject], coloring it with the given [PdfColor].
+    ///
+    /// If the given contents string is supplied, the annotation will be additionally configured
+    /// so that when the given [PdfPageObject] is clicked in a conforming PDF viewer, the given
+    /// contents string will be displayed in a popup window.
+    ///
+    /// If the containing `PdfPage` has a content regeneration strategy of
+    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn create_highlight_annotation_over_object(
+        &mut self,
+        object: &PdfPageObject,
+        color: PdfColor,
+        contents: Option<&str>,
+    ) -> Result<PdfPageHighlightAnnotation<'a>, PdfiumError> {
+        let mut annotation = self.create_highlight_annotation()?;
+
+        // The annotation will not display if it is not positioned.
+
+        let bounds = object.bounds()?;
+
+        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_stroke_color(color)?;
+        annotation
+            .attachment_points_mut()
+            .create_attachment_point_at_end(PdfQuadPoints::from_rect(bounds))?;
+
+        if let Some(contents) = contents {
+            annotation.set_width(bounds.width())?;
+            annotation.set_height(bounds.height())?;
+            annotation.set_contents(contents)?;
+        }
+
+        Ok(annotation)
     }
 
     /// Removes the given [PdfPageAnnotation] from this [PdfPageAnnotations] collection,

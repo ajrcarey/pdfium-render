@@ -592,10 +592,10 @@ pub trait PdfPageObjectCommon<'a> {
     /// Sets the color of any filled paths in this [PdfPageObject].
     fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError>;
 
-    /// Returns the color of any stroked lines in this [PdfPageObject].
+    /// Returns the color of any stroked paths in this [PdfPageObject].
     fn stroke_color(&self) -> Result<PdfColor, PdfiumError>;
 
-    /// Sets the color of any stroked lines in this [PdfPageObject].
+    /// Sets the color of any stroked paths in this [PdfPageObject].
     ///
     /// Even if this object's path is set with a visible color and a non-zero stroke width,
     /// the object's stroke mode must be set in order for strokes to actually be visible.

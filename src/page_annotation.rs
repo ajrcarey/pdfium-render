@@ -11,6 +11,7 @@ use crate::bindgen::{
     FPDF_ANNOT_XFAWIDGET, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE,
 };
 use crate::bindings::PdfiumLibraryBindings;
+use crate::color::PdfColor;
 use crate::error::PdfiumError;
 use crate::page_annotation_attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::page_annotation_circle::PdfPageCircleAnnotation;
@@ -694,6 +695,18 @@ pub trait PdfPageAnnotationCommon {
     /// Sets the date and time when this [PdfPageAnnotation] was last modified.
     fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
 
+    /// Returns the color of any filled paths in this [PdfPageAnnotation].
+    fn fill_color(&self) -> Result<PdfColor, PdfiumError>;
+
+    /// Sets the color of any filled paths in this [PdfPageAnnotation].
+    fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError>;
+
+    /// Returns the color of any stroked paths in this [PdfPageAnnotation].
+    fn stroke_color(&self) -> Result<PdfColor, PdfiumError>;
+
+    /// Sets the color of any stroked paths in this [PdfPageAnnotation].
+    fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError>;
+
     /// Returns an immutable collection of all the page objects in this [PdfPageAnnotation].
     ///
     /// Page objects can be retrieved from any type of [PdfPageAnnotation], but Pdfium currently
@@ -804,6 +817,26 @@ where
     #[inline]
     fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
         self.set_modification_date_impl(date)
+    }
+
+    #[inline]
+    fn fill_color(&self) -> Result<PdfColor, PdfiumError> {
+        self.fill_color_impl()
+    }
+
+    #[inline]
+    fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
+        self.set_fill_color_impl(fill_color)
+    }
+
+    #[inline]
+    fn stroke_color(&self) -> Result<PdfColor, PdfiumError> {
+        self.stroke_color_impl()
+    }
+
+    #[inline]
+    fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
+        self.set_stroke_color_impl(stroke_color)
     }
 
     #[inline]
