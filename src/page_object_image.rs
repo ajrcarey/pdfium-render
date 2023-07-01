@@ -22,9 +22,6 @@ use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_void};
 
 #[cfg(feature = "image")]
-use crate::bindgen::FPDF_BITMAP;
-
-#[cfg(feature = "image")]
 use crate::bitmap::PdfBitmapFormat;
 
 #[cfg(feature = "image")]
@@ -205,7 +202,7 @@ impl<'a> PdfPageImageObject<'a> {
     #[cfg(feature = "image")]
     #[inline]
     pub fn get_raw_image(&self) -> Result<DynamicImage, PdfiumError> {
-        self.get_image_from_bitmap_handle(*self.get_raw_bitmap()?.handle())
+        self.get_image_from_bitmap(&self.get_raw_bitmap()?)
     }
 
     /// Returns a new [PdfBitmap] created from the bitmap buffer backing
@@ -466,54 +463,48 @@ impl<'a> PdfPageImageObject<'a> {
         height: Pixels,
     ) -> Result<DynamicImage, PdfiumError> {
         self.get_processed_bitmap_with_size(document, width, height)
-            .and_then(|bitmap| self.get_image_from_bitmap_handle(*bitmap.handle()))
+            .and_then(|bitmap| self.get_image_from_bitmap(&bitmap))
     }
 
     #[cfg(feature = "image")]
-    pub(crate) fn get_image_from_bitmap_handle(
+    pub(crate) fn get_image_from_bitmap(
         &self,
-        bitmap: FPDF_BITMAP,
+        bitmap: &PdfBitmap,
     ) -> Result<DynamicImage, PdfiumError> {
-        if bitmap.is_null() {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                PdfiumInternalError::Unknown,
-            ))
-        } else {
-            let width = self.bindings.FPDFBitmap_GetWidth(bitmap);
+        let handle = *bitmap.handle();
 
-            let height = self.bindings.FPDFBitmap_GetHeight(bitmap);
+        let width = self.bindings.FPDFBitmap_GetWidth(handle);
 
-            let buffer_length = self.bindings.FPDFBitmap_GetStride(bitmap) * height;
+        let height = self.bindings.FPDFBitmap_GetHeight(handle);
 
-            let buffer_start = self.bindings.FPDFBitmap_GetBuffer(bitmap);
+        let buffer_length = self.bindings.FPDFBitmap_GetStride(handle) * height;
 
-            let format =
-                PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(bitmap) as u32)?;
+        let buffer_start = self.bindings.FPDFBitmap_GetBuffer(handle);
 
-            let buffer = unsafe {
-                std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
-            };
+        let format =
+            PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(handle) as u32)?;
 
-            let result = match format {
-                PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx => {
-                    RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
-                        .map(DynamicImage::ImageRgba8)
-                }
-                PdfBitmapFormat::BGR => {
-                    RgbaImage::from_raw(width as u32, height as u32, bgr_to_rgba(buffer))
-                        .map(DynamicImage::ImageRgba8)
-                }
-                PdfBitmapFormat::Gray => {
-                    GrayImage::from_raw(width as u32, height as u32, buffer.to_vec())
-                        .map(DynamicImage::ImageLuma8)
-                }
+        let buffer = unsafe {
+            std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
+        };
+
+        let result = match format {
+            PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx => {
+                RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
+                    .map(DynamicImage::ImageRgba8)
             }
-            .ok_or(PdfiumError::ImageError);
-
-            self.bindings.FPDFBitmap_Destroy(bitmap);
-
-            result
+            PdfBitmapFormat::BGR => {
+                RgbaImage::from_raw(width as u32, height as u32, bgr_to_rgba(buffer))
+                    .map(DynamicImage::ImageRgba8)
+            }
+            PdfBitmapFormat::Gray => {
+                GrayImage::from_raw(width as u32, height as u32, buffer.to_vec())
+                    .map(DynamicImage::ImageLuma8)
+            }
         }
+        .ok_or(PdfiumError::ImageError);
+
+        result
     }
 
     /// Return the expected pixel width and height of the processed image from Pdfium's metadata.

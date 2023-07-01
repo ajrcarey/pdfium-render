@@ -84,10 +84,9 @@ _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete l
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
 Version 0.8.6 fixes a small bug in `pdfium-render`'s color handling, making it possible to render
-to a bitmap with a transparent background, and adds support for creating new annotations,
-positioning those annotations, associating them with page objects, and retrieving and setting
-more annotation properties for each annotation type. A new `examples/create_annotations.rs`
-example demonstrates the extended functionality.
+to a bitmap with a transparent background, adds new utility functions and many more built-in
+color definitions to `PdfColor`, and fixes a double-free bug in `PdfPageObjectImage` that could
+be triggered on macOS when extracting images from existing page image objects.
 
 Version 0.8.5 adds the `PdfDestination::page_index()` function for retrieving the page index of
 a destination attached to an action, link, or bookmark contained in a document, and adds support
@@ -357,24 +356,16 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.6: moves `PdfPoints` and `PdfRect` structs out into new files; adds `PdfQuadPoints` struct;
-  adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
-  to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
-  including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
-  `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
-  `PdfPageAnnotationCommon::set_creation_date()`, `PdfPageAnnotationCommon::set_modification_date()`;
-  `PdfPageAnnotationCommon::stroke_color()`, `PdfPageAnnotationCommon::set_stroke_color()`,
-  `PdfPageAnnotationCommon::fill_color()`, `PdfPageAnnotationCommon::set_fill_color()` functions
-  adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
-  `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
-  creation functions to `PdfPageAnnotations` collection; fixes a bug in `PdfColor::as_pdfium_color()`
-  that resulted in the alpha value being ignored when composing the `FPDF_DWORD` representation of
-  the color value; renames `PdfBitmapRotation` enum to `PdfPageRenderRotation`, deprecating the old enum;
-  adds convenience functions `PdfColor::mix()`, `PdfColor::mix_with()`, `PdfColor::from_hex()`,
-  `PdfColor::to_hex()`, and `PdfColor::to_hex_with_alpha()`; adds a wide variety of new color constants
-  to `PdfColor`, deprecating all existing `PdfColor::SOLID_*` consts in favour of renamed consts with the
-  `SOLID_` prefix removed; adds implementations of `Display` to `PdfPoints`, `PdfRect`, and
-  `PdfQuadPoints`. Deprecated items will be removed in release 0.9.0.
+* 0.8.6: fixes a bug in `PdfColor::as_pdfium_color()` that resulted in the alpha value being ignored
+  when composing the `FPDF_DWORD` representation of the color value; renames `PdfBitmapRotation` enum
+  to `PdfPageRenderRotation`, deprecating the old enum; adds convenience functions `PdfColor::mix()`,
+  `PdfColor::mix_with()`, `PdfColor::from_hex()`, `PdfColor::to_hex()`, and `PdfColor::to_hex_with_alpha()`;
+  adds a wide variety of new color constants to `PdfColor`, deprecating all existing `PdfColor::SOLID_*`
+  consts in favour of renamed consts with the `SOLID_` prefix removed; moves `PdfPoints` and `PdfRect`
+  structs out into new files; adds `PdfQuadPoints` struct; adds implementations of `Display` to
+  `PdfPoints`, `PdfRect`, and `PdfQuadPoints`; fixes a double-free bug in
+  `PdfPageImageObject::get_image_from_bitmap_handle()`. Deprecated items will be removed in
+  release 0.9.0.
 * 0.8.5: adds `PdfDestination::page_index()` function; adds `PdfPageObjectCommon::dash_phase()`
   `PdfPageObjectCommon::set_dash_phase()`, `PdfPageObjectCommon::dash_array()`, and
   `PdfPageObjectCommon::set_dash_array()` functions thanks to an excellent contribution
