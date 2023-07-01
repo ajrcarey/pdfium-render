@@ -53,6 +53,8 @@ pub fn main() -> Result<(), PdfiumError> {
 
     // ... and attach a variety of annotations to those objects.
 
+    // Annotations can be created and positioned manually. This allows for maximum flexibility.
+
     let mut text_annotation = page
         .annotations_mut()
         .create_text_annotation("A pop-up comment on this pretty picture")?;
@@ -118,6 +120,12 @@ pub fn main() -> Result<(), PdfiumError> {
         "Link annotation modification date after positioning: {:?}",
         link_annotation.modification_date()
     );
+
+    // PdfPageAnnotations also includes convenience functions for creating, positioning,
+    // and configuring markup annotations relative to a page object in a single function call.
+    // This doesn't offer the same flexibility as creating and configuring the annotation
+    // manually, but for the most common scenarios it is the easiest and most convenient
+    // way of creating an annotation.
 
     let squiggly_annotation = page
         .annotations_mut()
