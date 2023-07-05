@@ -330,7 +330,7 @@ impl<'a> PdfPageImageObject<'a> {
         )
     }
 
-    /// Returns a new [PdfBitmap created from the bitmap buffer backing
+    /// Returns a new [PdfBitmap] created from the bitmap buffer backing
     /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
     ///

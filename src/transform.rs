@@ -23,6 +23,14 @@ macro_rules! create_transform_setters {
         #[doc = $doc_ref_period_ ]
         /// * [Self::scale()]: changes the size of
         #[doc = $doc_ref_period_ ]
+        /// * [Self::flip_horizontally()]:
+        /// flips
+        #[doc = $doc_ref_ ]
+        /// horizontally around its origin.
+        /// * [Self::flip_vertically()]:
+        /// flips
+        #[doc = $doc_ref_ ]
+        /// vertically around its origin.
         /// * [Self::rotate_clockwise_degrees()], [Self::rotate_counter_clockwise_degrees()],
         /// [Self::rotate_clockwise_radians()], [Self::rotate_counter_clockwise_radians()]:
         /// rotates

@@ -731,6 +731,10 @@ impl<'a> PdfPage<'a> {
     ///
     /// * [PdfPage::translate()]: changes the position of each object on this [PdfPage].
     /// * [PdfPage::scale()]: changes the size of each object on this [PdfPage].
+    /// * [PdfPage::flip_horizontally()]: flips each object on this [PdfPage] horizontally around
+    /// the page origin point.
+    /// * [PdfPage::flip_vertically()]: flips each object on this [PdfPage] vertically around
+    /// the page origin point.
     /// * [PdfPage::rotate_clockwise_degrees()], [PdfPage::rotate_counter_clockwise_degrees()],
     /// [PdfPage::rotate_clockwise_radians()], [PdfPage::rotate_counter_clockwise_radians()]:
     /// rotates each object on this [PdfPage] around its origin.
@@ -773,6 +777,26 @@ impl<'a> PdfPage<'a> {
                 &clip.as_pdfium(),
             ))
         {
+            // A probable bug in Pdfium means we must reload the page in order for the
+            // transformation to take effect. For more information, see:
+            // https://github.com/ajrcarey/pdfium-render/issues/93
+
+            if let Some(page_index) =
+                PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
+            {
+                self.drop_impl();
+
+                self.page_handle = self
+                    .bindings
+                    .FPDF_LoadPage(self.document_handle, page_index as c_int);
+
+                PdfPageIndexCache::set_index_for_page(
+                    self.document_handle,
+                    self.page_handle,
+                    page_index,
+                );
+            }
+
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -937,12 +961,8 @@ impl<'a> PdfPage<'a> {
             ))
         }
     }
-}
 
-impl<'a> Drop for PdfPage<'a> {
-    /// Closes this [PdfPage], releasing held memory.
-    #[inline]
-    fn drop(&mut self) {
+    fn drop_impl(&mut self) {
         if self.regeneration_strategy != PdfPageContentRegenerationStrategy::Manual
             && self.is_content_regeneration_required
         {
@@ -956,6 +976,14 @@ impl<'a> Drop for PdfPage<'a> {
         self.bindings.FPDF_ClosePage(self.page_handle);
 
         PdfPageIndexCache::remove_index_for_page(self.document_handle, self.page_handle);
+    }
+}
+
+impl<'a> Drop for PdfPage<'a> {
+    /// Closes this [PdfPage], releasing held memory.
+    #[inline]
+    fn drop(&mut self) {
+        self.drop_impl();
     }
 }
 
