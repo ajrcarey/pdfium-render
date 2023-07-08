@@ -833,12 +833,7 @@ impl<'a> PdfPage<'a> {
             d,
             e,
             f,
-            PdfRect::new(
-                PdfPoints::ZERO,
-                PdfPoints::ZERO,
-                self.height(),
-                self.width(),
-            ),
+            PdfRect::new(-self.height(), -self.width(), self.height(), self.width()),
         )
     }
 

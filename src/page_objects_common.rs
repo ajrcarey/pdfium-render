@@ -4,7 +4,7 @@
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::fonts::ToPdfFontToken;
-use crate::page_object::PdfPageObject;
+use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_image::PdfPageImageObject;
 use crate::page_object_path::PdfPagePathObject;
 use crate::page_object_text::PdfPageTextObject;
@@ -71,6 +71,26 @@ pub trait PdfPageObjectsCommon<'a> {
 
     /// Returns an iterator over all the [PdfPageObject] objects in this page objects collection.
     fn iter(&'a self) -> PdfPageObjectsIterator<'a>;
+
+    /// Returns the smallest bounding box that contains all the [PdfPageObject] objects in this
+    /// page objects collection.
+    fn bounds(&'a self) -> PdfRect {
+        let mut bottom: f32 = 0.0;
+        let mut top: f32 = 0.0;
+        let mut left: f32 = 0.0;
+        let mut right: f32 = 0.0;
+
+        for object in self.iter() {
+            if let Ok(bounds) = object.bounds() {
+                bottom = bottom.min(bounds.bottom.value);
+                top = top.max(bounds.top.value);
+                left = left.min(bounds.left.value);
+                right = right.max(bounds.right.value);
+            }
+        }
+
+        PdfRect::new_from_values(bottom, left, top, right)
+    }
 
     /// Adds the given [PdfPageObject] to this page objects collection. The object's
     /// memory ownership will be transferred to the `PdfPage` containing this page objects
