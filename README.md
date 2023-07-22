@@ -83,9 +83,8 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.7 adds support for creating new annotations, positioning those annotations,
-associating them with page objects, and retrieving and setting more annotation properties for each
-annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+Version 0.8.7 corrects a misspelling in the `PdfBitmapFormat` enum, and adds implementations of
+`Send` and `Sync` for `PdfDocument` when using the `sync` crate feature.
 
 Version 0.8.6 fixes a small bug in `pdfium-render`'s color handling, making it possible to render
 to a bitmap with a transparent background, adds new utility functions and many more built-in
@@ -355,7 +354,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.7: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.8: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -365,6 +364,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
+* 0.8.7: renames `PdfBitmapFormat::BRGx` to `PdfBitmapFormat::BGRx`, deprecating the misspelled
+  variant; adds `Send` and `Sync` implementations for `PdfDocument` struct when using the `sync`
+  crate feature; adds `Debug` trait implementation to `Pdfium` for better `once_cell` compatibility.
+  Deprecated items will be removed in release 0.9.0.
 * 0.8.6: fixes a bug in `PdfColor::as_pdfium_color()` that resulted in the alpha value being ignored
   when composing the `FPDF_DWORD` representation of the color value; renames `PdfBitmapRotation` enum
   to `PdfPageRenderRotation`, deprecating the old enum; adds convenience functions `PdfColor::mix()`,

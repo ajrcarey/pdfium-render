@@ -49,8 +49,17 @@ pub type Pixels = c_int;
 pub enum PdfBitmapFormat {
     Gray = FPDFBitmap_Gray as isize,
     BGR = FPDFBitmap_BGR as isize,
-    BRGx = FPDFBitmap_BGRx as isize,
+    BGRx = FPDFBitmap_BGRx as isize,
     BGRA = FPDFBitmap_BGRA as isize,
+
+    // TODO: AJRC - 22/7/23 - remove deprecated variant in 0.9.0
+    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    #[deprecated(
+        since = "0.8.7",
+        note = "This variant has been renamed to correct a misspelling. Use the BGRx variant instead."
+    )]
+    #[doc(hidden)]
+    BRGx = 999,
 }
 
 impl PdfBitmapFormat {
@@ -61,7 +70,7 @@ impl PdfBitmapFormat {
             FPDFBitmap_Unknown => Err(PdfiumError::UnknownBitmapFormat),
             FPDFBitmap_Gray => Ok(PdfBitmapFormat::Gray),
             FPDFBitmap_BGR => Ok(PdfBitmapFormat::BGR),
-            FPDFBitmap_BGRx => Ok(PdfBitmapFormat::BRGx),
+            FPDFBitmap_BGRx => Ok(PdfBitmapFormat::BGRx),
             FPDFBitmap_BGRA => Ok(PdfBitmapFormat::BGRA),
             _ => Err(PdfiumError::UnknownBitmapFormat),
         }
@@ -72,7 +81,8 @@ impl PdfBitmapFormat {
         match self {
             PdfBitmapFormat::Gray => FPDFBitmap_Gray,
             PdfBitmapFormat::BGR => FPDFBitmap_BGR,
-            PdfBitmapFormat::BRGx => FPDFBitmap_BGRx,
+            #[allow(deprecated)]
+            PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => FPDFBitmap_BGRx,
             PdfBitmapFormat::BGRA => FPDFBitmap_BGRA,
         }
     }
@@ -307,7 +317,7 @@ pub mod tests {
             PdfBitmap::from_bytes(
                 test_width,
                 test_height,
-                PdfBitmapFormat::BRGx,
+                PdfBitmapFormat::BGRx,
                 buffer.as_mut_slice(),
                 pdfium.bindings(),
             )?

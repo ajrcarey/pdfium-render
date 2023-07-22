@@ -489,7 +489,8 @@ impl<'a> PdfPageImageObject<'a> {
         };
 
         let result = match format {
-            PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx => {
+            #[allow(deprecated)]
+            PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
                 RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
                     .map(DynamicImage::ImageRgba8)
             }
