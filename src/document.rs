@@ -15,6 +15,7 @@ use crate::permissions::PdfPermissions;
 use crate::signatures::PdfSignatures;
 use crate::utils::files::get_pdfium_file_writer_from_writer;
 use crate::utils::files::FpdfFileAccessExt;
+use std::fmt::{Debug, Formatter};
 use std::io::Cursor;
 use std::io::Write;
 
@@ -385,3 +386,18 @@ impl<'a> Drop for PdfDocument<'a> {
         self.bindings.FPDF_CloseDocument(self.handle);
     }
 }
+
+impl<'a> Debug for PdfDocument<'a> {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PdfDocument")
+            .field("FPDF_DOCUMENT", &format!("{:?}", self.handle))
+            .finish()
+    }
+}
+
+#[cfg(feature = "sync")]
+unsafe impl<'a> Sync for PdfDocument<'a> {}
+
+#[cfg(feature = "sync")]
+unsafe impl<'a> Send for PdfDocument<'a> {}

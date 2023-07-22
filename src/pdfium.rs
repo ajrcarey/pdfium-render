@@ -3,6 +3,7 @@
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::{PdfDocument, PdfDocumentVersion};
 use crate::error::{PdfiumError, PdfiumInternalError};
+use std::fmt::{Debug, Formatter};
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use std::ffi::OsString;
@@ -467,6 +468,13 @@ impl Default for Pdfium {
     #[inline]
     fn default() -> Self {
         Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+    }
+}
+
+impl Debug for Pdfium {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Pdfium").finish()
     }
 }
 
