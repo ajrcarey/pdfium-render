@@ -13,8 +13,14 @@ pub struct PdfPoints {
 }
 
 impl PdfPoints {
-    /// A [PdfPoints] object with the identity value 0.0.
+    /// A [PdfPoints] object with identity value 0.0.
     pub const ZERO: PdfPoints = PdfPoints::zero();
+
+    /// A [PdfPoints] object with the largest addressable finite positive value.
+    pub const MAX: PdfPoints = PdfPoints::max();
+
+    /// A [PdfPoints] object with the smallest addressable finite negative value.
+    pub const MIN: PdfPoints = PdfPoints::min();
 
     /// Creates a new [PdfPoints] object with the given value.
     #[inline]
@@ -29,6 +35,28 @@ impl PdfPoints {
     #[inline]
     pub const fn zero() -> Self {
         Self::new(0.0)
+    }
+
+    /// A [PdfPoints] object with the largest addressable finite positive value.
+    ///
+    /// In theory, this should be [f32::MAX]; in practice, values approaching [f32::MAX]
+    /// are handled inconsistently by Pdfium, so this value is set to an arbitrarily large
+    /// positive value that does not approach [f32::MAX] but should more than suffice
+    /// for every use case.
+    #[inline]
+    pub const fn max() -> Self {
+        Self::new(2_000_000_000.0)
+    }
+
+    /// A [PdfPoints] object with the smallest addressable finite negative value.
+    ///
+    /// In theory, this should be [f32::MIN]; in practice, values approaching [f32::MIN]
+    /// are handled inconsistently by Pdfium, so this value is set to an arbitrarily large
+    /// negative value that does not approach [f32::MIN] but should more than suffice
+    /// for every use case.
+    #[inline]
+    pub const fn min() -> Self {
+        Self::new(-2_000_000_000.0)
     }
 
     /// Creates a new [PdfPoints] object from the given measurement in inches.

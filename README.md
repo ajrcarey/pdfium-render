@@ -83,8 +83,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.7 corrects a misspelling in the `PdfBitmapFormat` enum, and adds implementations of
-`Send` and `Sync` for `PdfDocument` when using the `sync` crate feature.
+Version 0.8.7 corrects a misspelling in the `PdfBitmapFormat` enum, adds implementations of
+`Send` and `Sync` for `PdfDocument` when using the `sync` crate feature, and corrects a clipping bug
+in `PdfPage::transform()` and `PdfPage::set_matrix()` that could create unexpected results when
+flipping page objects when using the `PdfPage::flip_horizontally()` or `PdfPage::flip_vertically()`
+functions.
 
 Version 0.8.6 fixes a small bug in `pdfium-render`'s color handling, making it possible to render
 to a bitmap with a transparent background, adds new utility functions and many more built-in
@@ -366,8 +369,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
 * 0.8.7: renames `PdfBitmapFormat::BRGx` to `PdfBitmapFormat::BGRx`, deprecating the misspelled
   variant; adds `Send` and `Sync` implementations for `PdfDocument` struct when using the `sync`
-  crate feature; adds `Debug` trait implementation to `Pdfium` for better `once_cell` compatibility.
-  Deprecated items will be removed in release 0.9.0.
+  crate feature; adds `Debug` trait implementation to `Pdfium` for better `once_cell` compatibility;
+  adds new constants `PdfPoints::MAX`, `PdfPoints::MIN`, and `PdfRect::MAX`; corrects a clipping bug
+  in `PdfPage::transform()` and `PdfPage::set_matrix()` by setting the default clipping area to
+  `PdfRect::MAX` rather than `PdfPage::size()`. Deprecated items will be removed in release 0.9.0.
 * 0.8.6: fixes a bug in `PdfColor::as_pdfium_color()` that resulted in the alpha value being ignored
   when composing the `FPDF_DWORD` representation of the color value; renames `PdfBitmapRotation` enum
   to `PdfPageRenderRotation`, deprecating the old enum; adds convenience functions `PdfColor::mix()`,

@@ -826,15 +826,7 @@ impl<'a> PdfPage<'a> {
         e: PdfMatrixValue,
         f: PdfMatrixValue,
     ) -> Result<(), PdfiumError> {
-        self.transform_with_clip(
-            a,
-            b,
-            c,
-            d,
-            e,
-            f,
-            PdfRect::new(-self.height(), -self.width(), self.height(), self.width()),
-        )
+        self.transform_with_clip(a, b, c, d, e, f, PdfRect::MAX)
     }
 
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.

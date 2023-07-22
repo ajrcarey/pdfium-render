@@ -24,6 +24,15 @@ impl PdfRect {
     /// A [PdfRect] object with the identity value (0.0, 0.0, 0.0, 0.0).
     pub const ZERO: PdfRect = PdfRect::zero();
 
+    /// A [PdfRect] object that encloses the entire addressable `PdfPage` coordinate space of
+    /// ([-PdfPoints::MAX], [-PdfPoints::MAX], [PdfPoints::MAX], [PdfPoints::MAX]).
+    pub const MAX: PdfRect = PdfRect::new(
+        PdfPoints::MIN,
+        PdfPoints::MIN,
+        PdfPoints::MAX,
+        PdfPoints::MAX,
+    );
+
     #[inline]
     pub(crate) fn from_pdfium(rect: FS_RECTF) -> Self {
         Self {
