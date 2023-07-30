@@ -89,19 +89,19 @@ The following additional functions are provided during rendering:
   This function avoids a memory allocation and copy required by both `PdfBitmap::as_bytes()`
   and `PdfBitmap::as_image_data()`, making it preferable for situations where performance is paramount.
 
-### Interface changes in the `PdfFont` struct
+### Interface changes in the `PdfFonts` struct
 
-The `PdfFont::load_type1_from_file()` and `PdfFont::load_true_type_from_file()` functions are
+The `PdfFonts::load_type1_from_file()` and `PdfFonts::load_true_type_from_file()` functions are
 not available when running in the browser. The following additional functions are provided:
 
-* The `PdfFont::load_type1_from_fetch()` function uses the browser's built-in `fetch()` API
+* The `PdfFonts::load_type1_from_fetch()` function uses the browser's built-in `fetch()` API
   to download a URL over the network and load it as a Type 1 font.
-* The `PdfFont::load_true_type_from_fetch()` function uses the browser's built-in `fetch()` API
+* The `PdfFonts::load_true_type_from_fetch()` function uses the browser's built-in `fetch()` API
   to download a URL over the network and load it as a TrueType font.
-* The `PdfFont::load_type1_from_blob()` function loads a Type 1 font from the byte data in a
+* The `PdfFonts::load_type1_from_blob()` function loads a Type 1 font from the byte data in a
   Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
   element.
-* The `PdfFont::load_true_type_from_blob()` function loads a TrueType font from the byte data in a
+* The `PdfFonts::load_true_type_from_blob()` function loads a TrueType font from the byte data in a
   Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
   element.
 
