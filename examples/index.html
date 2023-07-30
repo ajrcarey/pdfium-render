@@ -21,11 +21,16 @@
             // For Pdfium WASM modules downloaded from https://github.com/paulocoutinhox/pdfium-lib/releases
             // _before_ version V5407, the Pdfium WASM module can be initialized like this:
 
-            // Module.onRuntimeInitialized = async _ => {
+            // Module.onRuntimeInitialized = (async _ => {
             //    pdfiumModule = Module;
 
             // For Pdfium WASM modules downloaded from https://github.com/paulocoutinhox/pdfium-lib/releases
             // _after or including_ version V5407, the Pdfium WASM module can be initialized like this:
+
+            // PDFiumModule().then(async pdfiumModule => {
+
+            // No other changes are required. The remainder of this example assumes we are using
+            // V5407 or later.
 
             PDFiumModule().then(async pdfiumModule => {
                 // Pdfium's WASM module has now been loaded and initialized. We need to tell

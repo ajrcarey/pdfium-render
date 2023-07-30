@@ -114,13 +114,31 @@ impl PdfiumRenderWasmState {
 
         self.malloc_js_fn = Some(Function::from(
             self.get_value_from_pdfium_wasm_module("_malloc")
-                .map_err(|_| "Module._malloc() not defined")?,
-        ));
+                .or_else(|_| {
+                    // The _malloc function is not defined. Try the asm.malloc function in the
+                    // Pdfium WASM module instead. For more information, see:
+                    // https://github.com/ajrcarey/pdfium-render/issues/95
+
+                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _malloc function export not defined, falling back to Module.asm.malloc");
+
+                    self.get_value_from_pdfium_wasm_module("asm")
+                        .and_then(|asm| self.get_value_from_browser_object(&asm, "malloc"))
+                        .map_err(|_| "Module._malloc() not defined")
+                })?));
 
         self.free_js_fn = Some(Function::from(
             self.get_value_from_pdfium_wasm_module("_free")
-                .map_err(|_| "Module._free() not defined")?,
-        ));
+                .or_else(|_| {
+                    // The _malloc function is not defined. Try the asm.free function in the
+                    // Pdfium WASM module instead. For more information, see:
+                    // https://github.com/ajrcarey/pdfium-render/issues/95
+
+                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _free function export not defined, falling back to Module.asm.free");
+
+                    self.get_value_from_pdfium_wasm_module("asm")
+                        .and_then(|asm| self.get_value_from_browser_object(&asm, "free"))
+                        .map_err(|_| "Module._free() not defined")
+                })?));
 
         self.call_js_fn = Some(Function::from(
             self.get_value_from_pdfium_wasm_module("ccall")
@@ -1349,7 +1367,20 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     fn FPDF_InitLibrary(&self) {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_InitLibrary()");
 
-        PdfiumRenderWasmState::lock().call("PDFium_Init", JsFunctionArgumentType::Void, None, None);
+        // Different Pdfium WASM builds have different ways of initializing the library.
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let init = if state
+            .get_value_from_pdfium_wasm_module("FPDF_InitLibrary")
+            .is_ok()
+        {
+            "PDF_InitLibrary"
+        } else {
+            "PDFium_Init"
+        };
+
+        state.call(init, JsFunctionArgumentType::Void, None, None);
     }
 
     #[allow(non_snake_case)]

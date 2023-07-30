@@ -83,6 +83,13 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
+Version 0.8.9 adds support for creating new annotations, positioning those annotations,
+associating them with page objects, and retrieving and setting more annotation properties for each
+annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+
+Version 0.8.8 adjust the WASM implementation of `pdfium-render` to account for some small packaging
+changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>.
+
 Version 0.8.7 corrects a misspelling in the `PdfBitmapFormat` enum, adds implementations of
 `Send` and `Sync` for `PdfDocument` when using the `sync` crate feature, and corrects a clipping bug
 in `PdfPage::transform()` and `PdfPage::set_matrix()` that could create unexpected results when
@@ -344,7 +351,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.7, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.8, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -357,7 +364,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.8: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.9: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -367,6 +374,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
+* 0.8.8: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to `Module[asm][malloc]`
+  and `Module[asm][free]` if `Module[_malloc]` and `Module[_free]` are not available, in response to
+  upstream packaging changes at <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details,
+  see <https://github.com/ajrcarey/pdfium-render/issues/95>.
 * 0.8.7: renames `PdfBitmapFormat::BRGx` to `PdfBitmapFormat::BGRx`, deprecating the misspelled
   variant; adds `Send` and `Sync` implementations for `PdfDocument` struct when using the `sync`
   crate feature; adds `Debug` trait implementation to `Pdfium` for better `once_cell` compatibility;
