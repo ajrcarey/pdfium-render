@@ -137,8 +137,8 @@ pub async fn get_image_data_for_page(
             &PdfRenderConfig::new()
                 .set_target_size(width, height)
                 .render_form_data(true)
-                .highlight_text_form_fields(PdfColor::SOLID_YELLOW.with_alpha(128))
-                .highlight_checkbox_form_fields(PdfColor::SOLID_BLUE.with_alpha(128)),
+                .highlight_text_form_fields(PdfColor::YELLOW.with_alpha(128))
+                .highlight_checkbox_form_fields(PdfColor::BLUE.with_alpha(128)),
         )
         .unwrap()
         .as_image_data()
