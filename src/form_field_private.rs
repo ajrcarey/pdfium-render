@@ -100,6 +100,44 @@ pub(crate) mod internal {
             }
         }
 
+        /// Internal implementation of `value()` function shared by on/off form field widgets
+        /// such as checkbox and radio button fields. Not exposed directly by [PdfFormFieldCommon].
+        fn export_value_impl(&self) -> Option<String> {
+            // Retrieving the export value from Pdfium is a two-step operation. First, we call
+            // FPDFAnnot_GetFormFieldExportValue() with a null buffer; this will retrieve the length of
+            // the export value text in bytes. If the length is zero, then the export value is not set.
+
+            // If the length is non-zero, then we reserve a byte buffer of the given
+            // length and call FPDFAnnot_GetFormFieldExportValue() again with a pointer to the buffer;
+            // this will write the export value to the buffer in UTF16LE format.
+
+            let buffer_length = self.bindings().FPDFAnnot_GetFormFieldExportValue(
+                *self.form_handle(),
+                *self.annotation_handle(),
+                std::ptr::null_mut(),
+                0,
+            );
+
+            if buffer_length == 0 {
+                // The field value is not present.
+
+                None
+            } else {
+                let mut buffer = create_byte_buffer(buffer_length as usize);
+
+                let result = self.bindings().FPDFAnnot_GetFormFieldExportValue(
+                    *self.form_handle(),
+                    *self.annotation_handle(),
+                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                    buffer_length,
+                );
+
+                debug_assert_eq!(result, buffer_length);
+
+                get_string_from_pdfium_utf16le_bytes(buffer)
+            }
+        }
+
         /// Internal implementation of `is_checked()` function shared by checkable form field widgets
         /// such as radio buttons and checkboxes. Not exposed directly by [PdfFormFieldCommon].
         fn is_checked_impl(&self) -> Result<bool, PdfiumError> {
@@ -107,6 +145,22 @@ pub(crate) mod internal {
                 self.bindings()
                     .FPDFAnnot_IsChecked(*self.form_handle(), *self.annotation_handle()),
             ))
+        }
+
+        /// Internal implementation of `index_in_group()` function shared by checkable form field
+        /// widgets such as radio buttons and checkboxes. Not exposed directly by [PdfFormFieldCommon].
+        fn index_in_group_impl(&self) -> u32 {
+            let result = self
+                .bindings()
+                .FPDFAnnot_GetFormControlIndex(*self.form_handle(), *self.annotation_handle());
+
+            if result < 0 {
+                // Pdfium uses a -1 value to signal an error.
+
+                0
+            } else {
+                result as u32
+            }
         }
     }
 }

@@ -39,6 +39,27 @@ impl<'a> PdfFormRadioButtonField<'a> {
         self.bindings
     }
 
+    /// Returns the index of this [PdfFormRadioButtonField] in its control group.
+    ///
+    /// Control groups are used to group related interactive fields together. Checkboxes and
+    /// radio buttons can be grouped such that only a single button can be selected within
+    /// the control group. Each field within the group has a unique group index.
+    #[inline]
+    pub fn index_in_group(&self) -> u32 {
+        self.index_in_group_impl()
+    }
+
+    /// Returns the value set for the control group containing this [PdfFormRadioButtonField].
+    ///
+    /// Control groups are used to group related interactive fields together. Checkboxes and
+    /// radio buttons can be grouped such that only a single button can be selected within
+    /// the control group. In this case, a single value can be shared by the group, indicating
+    /// the value of the currently selected field within the group.
+    #[inline]
+    pub fn group_value(&self) -> Option<String> {
+        self.value_impl()
+    }
+
     /// Returns `true` if this [PdfFormRadioButtonField] object has its radio button selected.
     #[inline]
     pub fn is_checked(&self) -> Result<bool, PdfiumError> {

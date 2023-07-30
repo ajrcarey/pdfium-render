@@ -39,10 +39,46 @@ impl<'a> PdfFormCheckboxField<'a> {
         self.bindings
     }
 
+    /// Returns the index of this [PdfFormCheckboxField] in its control group.
+    ///
+    /// Control groups are used to group related interactive fields together. Checkboxes and
+    /// radio buttons can be grouped such that only a single button can be selected within
+    /// the control group. Each field within the group has a unique group index.
+    #[inline]
+    pub fn index_in_group(&self) -> u32 {
+        self.index_in_group_impl()
+    }
+
+    /// Returns the value set for the control group containing this [PdfFormCheckboxField].
+    ///
+    /// Control groups are used to group related interactive fields together. Checkboxes and
+    /// radio buttons can be grouped such that only a single button can be selected within
+    /// the control group. In this case, a single value can be shared by the group, indicating
+    /// the value of the currently selected field within the group.
+    #[inline]
+    pub fn group_value(&self) -> Option<String> {
+        self.value_impl()
+    }
+
     /// Returns `true` if this [PdfFormCheckboxField] object has its checkbox checked.
     #[inline]
     pub fn is_checked(&self) -> Result<bool, PdfiumError> {
-        self.is_checked_impl()
+        // The PDF Reference manual, version 1.7, states that an appearance stream of "Yes"
+        // can be used to indicate a selected checkbox. Pdfium's FPDFAnnot_IsChecked()
+        // function doesn't check for this; so if FPDFAnnot_IsChecked() comes back with
+        // anything other than Ok(true), we also check the appearance stream.
+
+        match self.is_checked_impl() {
+            Ok(true) => Ok(true),
+            Ok(false) => match self.group_value() {
+                Some(value) => Ok(value == "Yes"),
+                _ => Ok(false),
+            },
+            Err(err) => match self.group_value() {
+                Some(value) => Ok(value == "Yes"),
+                _ => Err(err),
+            },
+        }
     }
 }
 
