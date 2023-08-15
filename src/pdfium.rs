@@ -128,12 +128,33 @@ impl Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
     #[inline]
-    pub fn bind_to_library(
+    pub fn bind_to_library_at(
         path: impl AsRef<Path>,
     ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         let path = path.as_ref();
         let bindings = DynamicPdfiumBindings::new(
             unsafe { Library::new(path.as_os_str()) }.map_err(PdfiumError::LoadLibraryError)?,
+        )
+        .map_err(PdfiumError::LoadLibraryError)?;
+
+        #[cfg(feature = "thread_safe")]
+        let bindings = ThreadSafePdfiumBindings::new(bindings);
+
+        Ok(Box::new(bindings))
+    }
+
+    /// Initializes the external pdfium library, loading it from the given path.
+    /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions
+    /// exposed by the library, or an error if the library could not be loaded.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
+    #[inline]
+    pub fn bind_to_library(
+        path: impl ToString,
+    ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
+        let bindings = DynamicPdfiumBindings::new(
+            unsafe { Library::new(OsString::from(path.to_string())) }
+                .map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
 
