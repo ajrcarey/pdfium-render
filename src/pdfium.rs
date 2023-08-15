@@ -133,7 +133,7 @@ impl Pdfium {
     ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         let path = path.as_ref();
         let bindings = DynamicPdfiumBindings::new(
-            unsafe { Library::new(path.as_os_str()) }.map_err(PdfiumError::LoadLibraryError)?,
+            unsafe { Library::new(path) }.map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
 
