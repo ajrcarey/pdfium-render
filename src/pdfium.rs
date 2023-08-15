@@ -28,6 +28,7 @@ use std::io::{Read, Seek};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
+use std::path::PathBuf;
 
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings};
@@ -128,11 +129,11 @@ impl Pdfium {
     #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_library(
-        path: impl ToString,
+        path: impl AsRef<Path>,
     ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
+        let path = path.as_ref();
         let bindings = DynamicPdfiumBindings::new(
-            unsafe { Library::new(OsString::from(path.to_string())) }
-                .map_err(PdfiumError::LoadLibraryError)?,
+            unsafe { Library::new(path.as_os_str()) }.map_err(PdfiumError::LoadLibraryError)?,
         )
         .map_err(PdfiumError::LoadLibraryError)?;
 
@@ -157,12 +158,10 @@ impl Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
     #[inline]
-    pub fn pdfium_platform_library_name_at_path(path: impl ToString) -> String {
-        let mut path = path.to_string();
+    pub fn pdfium_platform_library_name_at_path(path: impl AsRef<Path>) -> PathBuf {
+        let path = path.as_ref();
 
-        path.push_str(Pdfium::pdfium_platform_library_name().to_str().unwrap());
-
-        path
+        path.join(Pdfium::pdfium_platform_library_name())
     }
 
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
