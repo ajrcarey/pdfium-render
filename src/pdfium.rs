@@ -158,10 +158,23 @@ impl Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
     #[inline]
-    pub fn pdfium_platform_library_name_at_path(path: impl AsRef<Path>) -> PathBuf {
+    pub fn pdfium_platform_library_name_at(path: impl AsRef<Path>) -> PathBuf {
         let path = path.as_ref();
 
         path.join(Pdfium::pdfium_platform_library_name())
+    }
+
+    /// Returns the name of the external Pdfium library on the currently running platform,
+    /// prefixed with the given path string.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
+    #[inline]
+    pub fn pdfium_platform_library_name_at_path(path: impl ToString) -> String {
+        let mut path = path.to_string();
+
+        path.push_str(Pdfium::pdfium_platform_library_name().to_str().unwrap());
+
+        path
     }
 
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
