@@ -7,7 +7,7 @@ and extract text and images from existing PDF files, and create new PDF files fr
 ```rust
     use pdfium_render::prelude::*;
 
-    fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
+    fn export_pdf_to_jpegs(path: &impl AsRef<Path>, password: Option<&str>) -> Result<(), PdfiumError> {
         // Renders each page in the PDF file at the given path to a separate JPEG file.
 
         // Bind to a Pdfium library in the same directory as our Rust executable;
@@ -83,11 +83,17 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.9 adds support for creating new annotations, positioning those annotations,
+Version 0.8.10 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Version 0.8.8 adjust the WASM implementation of `pdfium-render` to account for some small packaging
+Version 0.8.9 changes the `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
+functions so they take and return `AsRef<Path>` and `PathBuf` types, rather than strings. Strings can still
+be passed directly into `Pdfium::bind_to_library()` since both `String` and `str` implement `AsRef<Path>`.
+This is done for consistency with the Rust standard library, thanks to an excellent contribution
+from <https://github.com/heimmat>.
+
+Version 0.8.8 adjusts the WASM implementation of `pdfium-render` to account for some small packaging
 changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>.
 
 Version 0.8.7 corrects a misspelling in the `PdfBitmapFormat` enum, adds implementations of
@@ -112,18 +118,7 @@ Version 0.8.4 corrects a missing import in `PdfPageImageObject` that broke compi
 if the `image` crate feature was disabled, and improves the calculation of the pixel dimensions
 of rendered pages thanks to an excellent contribution from <https://github.com/slawekkolodziej>.
 This corrects a small bug that could sometimes result in rendered bitmaps differing in size by
-one pixel from their target dimensions. 
-
-Version 0.8.3 adds the `PdfFonts` collection for loading new fonts into a `PdfDocument`, the
-`PdfDocument::fonts()` and `PdfDocument::fonts_mut()` accessor functions for accessing the
-collection, and the `PdfFontToken` struct. All font constructor functions previously in
-`PdfFont` have been deprecated and moved to `PdfFonts`; using one of the font constructor
-functions in `PdfFonts` will return a `PdfFontToken` that can be passed into any function
-that previously took a `PdfFont` reference (for instance, `PdfPageTextObject::new()`).
-Previously, it was difficult to construct a `PdfFont` and hold onto it for the lifetime of
-a `PdfDocument`; this new approach solves that problem. For more details, see
-<https://github.com/ajrcarey/pdfium-render/issues/79>. Deprecated font constructor functions
-in `PdfFont` will be removed in release 0.9.0.
+one pixel from their target dimensions.
 
 ## Binding to Pdfium
 
@@ -351,7 +346,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.8, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.9, 323 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -364,7 +359,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.9: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.10: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -374,8 +369,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
-* 0.8.8: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to `Module[asm][malloc]`
-  and `Module[asm][free]` if `Module[_malloc]` and `Module[_free]` are not available, in response to
+* 0.8.9: changes `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
+  to take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to an excellent
+  contribution from <https://github.com/heimmat>.
+* 0.8.8: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to `Module["asm"]["malloc"]`
+  and `Module["asm"]["free"]` if `Module["_malloc"]` and `Module["_free"]` are not available, in response to
   upstream packaging changes at <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details,
   see <https://github.com/ajrcarey/pdfium-render/issues/95>.
 * 0.8.7: renames `PdfBitmapFormat::BRGx` to `PdfBitmapFormat::BGRx`, deprecating the misspelled

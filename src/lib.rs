@@ -163,18 +163,22 @@ mod wasm;
 mod thread_safe;
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
     use image::ImageFormat;
     use std::fs::File;
+    use std::path::Path;
 
     #[test]
     #[cfg(not(feature = "static"))]
     fn test_readme_example() -> Result<(), PdfiumError> {
         // Runs the code in the main example at the top of README.md.
 
-        fn export_pdf_to_jpegs(path: &str, password: Option<&str>) -> Result<(), PdfiumError> {
+        fn export_pdf_to_jpegs(
+            path: &impl AsRef<Path>,
+            password: Option<&str>,
+        ) -> Result<(), PdfiumError> {
             // Renders each page in the given test PDF file to a separate JPEG file.
 
             // Bind to a Pdfium library in the same directory as our application;
@@ -210,7 +214,7 @@ pub mod tests {
             Ok(())
         }
 
-        export_pdf_to_jpegs("./test/export-test.pdf", None)
+        export_pdf_to_jpegs(&"./test/export-test.pdf", None)
     }
 
     #[test]
