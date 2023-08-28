@@ -373,7 +373,7 @@ impl PdfColor {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::color::PdfColor;
 
     #[test]

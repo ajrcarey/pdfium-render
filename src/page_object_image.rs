@@ -895,7 +895,7 @@ impl<'a> Iterator for PdfPageImageObjectFiltersIterator<'a> {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
 

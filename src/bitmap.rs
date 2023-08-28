@@ -294,7 +294,7 @@ impl<'a> Drop for PdfBitmap<'a> {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::prelude::*;
     use crate::utils::mem::create_sized_buffer;
     use crate::utils::test::test_bind_to_pdfium;

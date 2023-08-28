@@ -2236,7 +2236,7 @@ pub trait PdfiumLibraryBindings {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::prelude::*;
 
     #[test]

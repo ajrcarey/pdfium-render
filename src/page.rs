@@ -975,7 +975,7 @@ impl<'a> Drop for PdfPage<'a> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
     use image::GenericImageView;

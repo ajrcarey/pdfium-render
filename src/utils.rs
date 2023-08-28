@@ -338,9 +338,6 @@ pub(crate) mod test {
     // depending on selected crate features.
 
     use crate::pdfium::Pdfium;
-    use crate::utils::dates::*;
-    use crate::utils::pixels::*;
-    use chrono::prelude::*;
 
     #[inline]
     #[cfg(feature = "static")]
@@ -357,8 +354,15 @@ pub(crate) mod test {
                 .unwrap(),
         )
     }
+}
 
+#[cfg(test)]
+mod tests {
     // Tests of color conversion functions.
+
+    use crate::utils::dates::*;
+    use crate::utils::pixels::*;
+    use chrono::prelude::*;
 
     #[test]
     fn test_bgr_to_rgba() {
