@@ -28,6 +28,7 @@ use std::io::{Read, Seek};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
+use std::path::PathBuf;
 
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings};
@@ -127,6 +128,27 @@ impl Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
     #[inline]
+    pub fn bind_to_library_at(
+        path: impl AsRef<Path>,
+    ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
+        let path = path.as_ref();
+        let bindings = DynamicPdfiumBindings::new(
+            unsafe { Library::new(path) }.map_err(PdfiumError::LoadLibraryError)?,
+        )
+        .map_err(PdfiumError::LoadLibraryError)?;
+
+        #[cfg(feature = "thread_safe")]
+        let bindings = ThreadSafePdfiumBindings::new(bindings);
+
+        Ok(Box::new(bindings))
+    }
+
+    /// Initializes the external pdfium library, loading it from the given path.
+    /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions
+    /// exposed by the library, or an error if the library could not be loaded.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
+    #[inline]
     pub fn bind_to_library(
         path: impl ToString,
     ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
@@ -150,6 +172,17 @@ impl Pdfium {
     #[inline]
     pub fn pdfium_platform_library_name() -> OsString {
         libloading::library_filename("pdfium")
+    }
+
+    /// Returns the name of the external Pdfium library on the currently running platform,
+    /// prefixed with the given path string.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
+    #[inline]
+    pub fn pdfium_platform_library_name_at(path: impl AsRef<Path>) -> PathBuf {
+        let path = path.as_ref();
+
+        path.join(Pdfium::pdfium_platform_library_name())
     }
 
     /// Returns the name of the external Pdfium library on the currently running platform,
