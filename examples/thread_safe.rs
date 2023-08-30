@@ -1,4 +1,5 @@
 use image::ImageFormat;
+use once_cell::sync::OnceCell;
 use pdfium_render::prelude::*;
 use rayon::prelude::*;
 use std::thread;
@@ -32,6 +33,14 @@ use std::thread;
 // application. To see an actual performance benefit, you _must_ use parallel processing,
 // _not_ multi-threading.
 
+fn pdfium() -> &'static Pdfium {
+    static INSTANCE: OnceCell<Pdfium> = OnceCell::new();
+
+    INSTANCE.get_or_init(|| {
+        Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+    })
+}
+
 fn main() -> Result<(), PdfiumError> {
     // For general comments about pdfium-render and binding to Pdfium, see export.rs.
 
@@ -64,10 +73,12 @@ fn render(render_config: &PdfRenderConfig, path: &str) -> Result<(), PdfiumError
     // Render each page in the document at the given path out to a JPG file, using the
     // given bindings and rendering configuration.
 
-    let pdfium = Pdfium::new(
-        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-            .or_else(|_| Pdfium::bind_to_system_library())?,
-    );
+    // let pdfium = Pdfium::new(
+    //     Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+    //         .or_else(|_| Pdfium::bind_to_system_library())?,
+    // );
+
+    let pdfium = pdfium();
 
     let document = pdfium.load_pdf_from_file(path, None)?;
 

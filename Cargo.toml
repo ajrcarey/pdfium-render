@@ -49,6 +49,7 @@ bindgen = { version = "^0" }
 # are specified separately in examples/Cargo.toml.
 rand = "^0" # Used by examples/create.rs, examples/matrix.rs
 rayon = "^1" # Used by examples/thread_safe.rs
+once_cell = "1.18.0"
 
 [features]
 default = ["image", "thread_safe"] # The image feature is implicit because the image dependency is optional.
