@@ -75,6 +75,7 @@ impl PdfPageRenderRotation {
         }
     }
 
+    /// Returns the equivalent clockwise rotation of this [PdfPageRenderRotation] variant, in degrees.
     #[inline]
     pub const fn as_degrees(&self) -> f32 {
         match self {
@@ -85,12 +86,13 @@ impl PdfPageRenderRotation {
         }
     }
 
-    pub const DEGREES_90_AS_RADIANS: f32 = FRAC_PI_2;
+    pub(crate) const DEGREES_90_AS_RADIANS: f32 = FRAC_PI_2;
 
-    pub const DEGREES_180_AS_RADIANS: f32 = PI;
+    pub(crate) const DEGREES_180_AS_RADIANS: f32 = PI;
 
-    pub const DEGREES_270_AS_RADIANS: f32 = FRAC_PI_2 + PI;
+    pub(crate) const DEGREES_270_AS_RADIANS: f32 = FRAC_PI_2 + PI;
 
+    /// Returns the equivalent clockwise rotation of this [PdfPageRenderRotation] variant, in radians.
     #[inline]
     pub const fn as_radians(&self) -> f32 {
         match self {
@@ -98,26 +100,6 @@ impl PdfPageRenderRotation {
             PdfPageRenderRotation::Degrees90 => Self::DEGREES_90_AS_RADIANS,
             PdfPageRenderRotation::Degrees180 => Self::DEGREES_180_AS_RADIANS,
             PdfPageRenderRotation::Degrees270 => Self::DEGREES_270_AS_RADIANS,
-        }
-    }
-
-    #[inline]
-    pub const fn as_radians_cos(&self) -> f32 {
-        match self {
-            PdfPageRenderRotation::None => 1.0,
-            PdfPageRenderRotation::Degrees90 => 0.0,
-            PdfPageRenderRotation::Degrees180 => -1.0,
-            PdfPageRenderRotation::Degrees270 => 0.0,
-        }
-    }
-
-    #[inline]
-    pub const fn as_radians_sin(&self) -> f32 {
-        match self {
-            PdfPageRenderRotation::None => 0.0,
-            PdfPageRenderRotation::Degrees90 => 1.0,
-            PdfPageRenderRotation::Degrees180 => 0.0,
-            PdfPageRenderRotation::Degrees270 => -1.0,
         }
     }
 }
@@ -976,39 +958,12 @@ impl<'a> Drop for PdfPage<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
+    use crate::error::PdfiumError;
+    use crate::page::PdfPageRenderRotation;
+    use crate::render_config::PdfRenderConfig;
     use crate::utils::test::test_bind_to_pdfium;
     use image::GenericImageView;
-
-    #[test]
-    fn test_pdf_rect_is_inside() {
-        assert!(PdfRect::new_from_values(3.0, 3.0, 9.0, 9.0)
-            .is_inside(&PdfRect::new_from_values(2.0, 2.0, 10.0, 10.0)));
-
-        assert!(!PdfRect::new_from_values(2.0, 2.0, 10.0, 10.0)
-            .is_inside(&PdfRect::new_from_values(3.0, 3.0, 9.0, 9.0)));
-
-        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
-            .is_inside(&PdfRect::new_from_values(5.0, 4.0, 10.0, 10.0)));
-
-        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
-            .is_inside(&PdfRect::new_from_values(8.0, 4.0, 10.0, 10.0)));
-
-        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
-            .is_inside(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
-    }
-
-    #[test]
-    fn test_pdf_rect_does_overlap() {
-        assert!(PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
-            .does_overlap(&PdfRect::new_from_values(5.0, 4.0, 10.0, 10.0)));
-
-        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
-            .does_overlap(&PdfRect::new_from_values(8.0, 4.0, 10.0, 10.0)));
-
-        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
-            .does_overlap(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
-    }
 
     #[test]
     fn test_page_rendering_reusing_bitmap() -> Result<(), PdfiumError> {

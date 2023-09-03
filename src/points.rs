@@ -1,6 +1,7 @@
 //! Defines the [PdfPoints] struct, the basic unit of measurement within the internal
 //! coordinate system inside a `PdfDocument`.
 
+use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 
@@ -91,7 +92,7 @@ impl PdfPoints {
 
     /// Converts the value of this [PdfPoints] object to millimeters.
     #[inline]
-    pub fn to_mm(self) -> f32 {
+    pub fn to_mm(&self) -> f32 {
         self.to_cm() * 10.0
     }
 }
@@ -152,6 +153,15 @@ impl Neg for PdfPoints {
     #[inline]
     fn neg(self) -> Self::Output {
         PdfPoints::new(-self.value)
+    }
+}
+
+impl Eq for PdfPoints {}
+
+impl Ord for PdfPoints {
+    #[inline]
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.value.total_cmp(&other.value)
     }
 }
 

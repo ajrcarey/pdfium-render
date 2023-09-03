@@ -8,6 +8,7 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::points::PdfPoints;
+use crate::prelude::PdfMatrix;
 use std::os::raw::c_float;
 
 /// The type of a single [PdfPathSegment].
@@ -38,6 +39,7 @@ impl PdfPathSegmentType {
 /// A single [PdfPathSegment] in a `PdfPathSegments` collection.
 pub struct PdfPathSegment<'a> {
     handle: FPDF_PATHSEGMENT,
+    matrix: Option<PdfMatrix>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -45,9 +47,14 @@ impl<'a> PdfPathSegment<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         handle: FPDF_PATHSEGMENT,
+        matrix: Option<PdfMatrix>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        Self { handle, bindings }
+        Self {
+            handle,
+            matrix,
+            bindings,
+        }
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPathSegment].
@@ -83,7 +90,14 @@ impl<'a> PdfPathSegment<'a> {
                     .FPDFPathSegment_GetPoint(self.handle, &mut x, &mut y),
             )
         {
-            (PdfPoints::new(x as f32), PdfPoints::new(y as f32))
+            let x = PdfPoints::new(x as f32);
+
+            let y = PdfPoints::new(y as f32);
+
+            match self.matrix.as_ref() {
+                None => (x, y),
+                Some(matrix) => matrix.apply_to_points(x, y),
+            }
         } else {
             (PdfPoints::ZERO, PdfPoints::ZERO)
         }

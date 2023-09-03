@@ -364,13 +364,13 @@ impl<'a> PdfPageImageObject<'a> {
 
         // Ensure the matrix.a and matrix.d values are not negative.
 
-        if matrix.a < 0f32 {
-            matrix.a = -matrix.a;
+        if matrix.a() < 0f32 {
+            matrix.set_a(-matrix.a());
             self.set_matrix(matrix)?;
         }
 
-        if matrix.d < 0f32 {
-            matrix.d = -matrix.d;
+        if matrix.d() < 0f32 {
+            matrix.set_d(-matrix.d());
             self.set_matrix(matrix)?;
         }
 
@@ -488,7 +488,7 @@ impl<'a> PdfPageImageObject<'a> {
             std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
         };
 
-        let result = match format {
+        match format {
             #[allow(deprecated)]
             PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
                 RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
@@ -503,9 +503,7 @@ impl<'a> PdfPageImageObject<'a> {
                     .map(DynamicImage::ImageLuma8)
             }
         }
-        .ok_or(PdfiumError::ImageError);
-
-        result
+        .ok_or(PdfiumError::ImageError)
     }
 
     /// Return the expected pixel width and height of the processed image from Pdfium's metadata.

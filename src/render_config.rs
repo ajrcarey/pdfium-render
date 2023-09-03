@@ -17,7 +17,6 @@ use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation, PdfPageRenderRotation};
 use crate::points::PdfPoints;
 use std::os::raw::c_int;
-use vecmath::{mat3_det, row_mat3_mul, Matrix3};
 
 // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
 // https://github.com/ajrcarey/pdfium-render/issues/36
@@ -82,7 +81,7 @@ pub struct PdfRenderConfig {
     clear_color: PdfColor,
     do_render_form_data: bool,
     form_field_highlight: Option<Vec<(PdfFormFieldType, PdfColor)>>,
-    transformation_matrix: Matrix3<f32>,
+    transformation_matrix: PdfMatrix,
     clip_rect: Option<(Pixels, Pixels, Pixels, Pixels)>,
 
     // The fields below set Pdfium's page rendering flags. Coverage for the
@@ -120,7 +119,7 @@ impl PdfRenderConfig {
             clear_color: PdfColor::WHITE,
             do_render_form_data: true,
             form_field_highlight: None,
-            transformation_matrix: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            transformation_matrix: PdfMatrix::IDENTITY,
             clip_rect: None,
             do_set_flag_render_annotations: true,
             do_set_flag_use_lcd_text_rendering: false,
@@ -609,12 +608,11 @@ impl PdfRenderConfig {
         e: PdfMatrixValue,
         f: PdfMatrixValue,
     ) -> Result<Self, PdfiumError> {
-        let result = row_mat3_mul(
-            self.transformation_matrix,
-            [[a, b, 0.0], [c, d, 0.0], [e, f, 1.0]],
-        );
+        let result = self
+            .transformation_matrix
+            .multiply(PdfMatrix::new(a, b, c, d, e, f));
 
-        if mat3_det(result) == 0.0 {
+        if result.determinant() == 0.0 {
             Err(PdfiumError::InvalidTransformationMatrix)
         } else {
             self.transformation_matrix = result;
@@ -808,44 +806,23 @@ impl PdfRenderConfig {
 
                 let (delta_x, delta_y) = match target_rotation {
                     PdfPageRenderRotation::None => unreachable!(),
-                    PdfPageRenderRotation::Degrees90 => (0.0, -source_width.value),
-                    PdfPageRenderRotation::Degrees180 => {
-                        (-source_width.value, -source_height.value)
-                    }
-                    PdfPageRenderRotation::Degrees270 => (-source_height.value, 0.0),
+                    PdfPageRenderRotation::Degrees90 => (PdfPoints::ZERO, -source_width),
+                    PdfPageRenderRotation::Degrees180 => (-source_width, -source_height),
+                    PdfPageRenderRotation::Degrees270 => (-source_height, PdfPoints::ZERO),
                 };
 
-                let result = row_mat3_mul(
-                    self.transformation_matrix,
-                    [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [delta_x, delta_y, 1.0]],
-                );
-
-                let cos_theta = target_rotation.as_radians_cos();
-
-                let sin_theta = target_rotation.as_radians_sin();
-
-                row_mat3_mul(
-                    result,
-                    [
-                        [cos_theta, sin_theta, 0.0],
-                        [-sin_theta, cos_theta, 0.0],
-                        [0.0, 0.0, 1.0],
-                    ],
-                )
-            } else {
                 self.transformation_matrix
+                    .translate(delta_x, delta_y)
+                    .and_then(|result| {
+                        result.rotate_clockwise_degrees(target_rotation.as_degrees())
+                    })
+            } else {
+                Ok(self.transformation_matrix)
             };
 
-            row_mat3_mul(
-                result,
-                [
-                    [width_scale, 0.0, 0.0],
-                    [0.0, height_scale, 0.0],
-                    [0.0, 0.0, 1.0],
-                ],
-            )
+            result.and_then(|result| result.scale(width_scale, height_scale))
         } else {
-            self.transformation_matrix
+            Ok(self.transformation_matrix)
         };
 
         PdfRenderSettings {
@@ -875,14 +852,9 @@ impl PdfRenderConfig {
                         .collect::<Vec<_>>(),
                 )
             },
-            matrix: FS_MATRIX {
-                a: transformation_matrix[0][0],
-                b: transformation_matrix[0][1],
-                c: transformation_matrix[1][0],
-                d: transformation_matrix[1][1],
-                e: transformation_matrix[2][0],
-                f: transformation_matrix[2][1],
-            },
+            matrix: transformation_matrix
+                .unwrap_or(PdfMatrix::IDENTITY)
+                .as_pdfium(),
             clipping: if let Some((left, top, right, bottom)) = self.clip_rect {
                 FS_RECTF {
                     left: left as f32,

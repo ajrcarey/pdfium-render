@@ -3,7 +3,9 @@
 use crate::bindgen::{FPDF_BOOL, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::matrix::PdfMatrix;
 use crate::points::PdfPoints;
+use iter_tools::{max, min};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
@@ -129,21 +131,39 @@ impl PdfRect {
 
     /// Returns `true` if the bounds of this [PdfRect] lie entirely within the given rectangle.
     #[inline]
-    pub fn is_inside(&self, rect: &PdfRect) -> bool {
-        self.left >= rect.left
-            && self.right <= rect.right
-            && self.top <= rect.top
-            && self.bottom >= rect.bottom
+    pub fn is_inside(&self, other: &PdfRect) -> bool {
+        self.left >= other.left
+            && self.right <= other.right
+            && self.top <= other.top
+            && self.bottom >= other.bottom
     }
 
     /// Returns `true` if the bounds of this [PdfRect] lie at least partially within
     /// the given rectangle.
     #[inline]
-    pub fn does_overlap(&self, rect: &PdfRect) -> bool {
-        self.left < rect.right
-            && self.right > rect.left
-            && self.bottom < rect.top
-            && self.top > rect.bottom
+    pub fn does_overlap(&self, other: &PdfRect) -> bool {
+        // As per https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
+
+        self.left < other.right
+            && self.right > other.left
+            && self.top > other.bottom
+            && self.bottom < other.top
+    }
+
+    /// Returns the result of applying the given [PdfMatrix] to each corner point of this [PdfRect].
+    #[inline]
+    pub fn transform(&self, matrix: PdfMatrix) -> PdfRect {
+        let (x1, y1) = matrix.apply_to_points(self.left, self.top);
+        let (x2, y2) = matrix.apply_to_points(self.left, self.bottom);
+        let (x3, y3) = matrix.apply_to_points(self.right, self.top);
+        let (x4, y4) = matrix.apply_to_points(self.right, self.bottom);
+
+        PdfRect::new(
+            min([y1, y2, y3, y4]).unwrap_or(PdfPoints::ZERO),
+            min([x1, x2, x3, x4]).unwrap_or(PdfPoints::ZERO),
+            max([y1, y2, y3, y4]).unwrap_or(PdfPoints::ZERO),
+            max([x1, x2, x3, x4]).unwrap_or(PdfPoints::ZERO),
+        )
     }
 
     #[inline]
@@ -190,5 +210,64 @@ impl Display for PdfRect {
             "PdfRect(bottom: {}, left: {}, top: {}, right: {}",
             self.bottom.value, self.left.value, self.top.value, self.right.value
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::matrix::PdfMatrix;
+    use crate::points::PdfPoints;
+    use crate::rect::PdfRect;
+
+    #[test]
+    fn test_rect_is_inside() {
+        assert!(PdfRect::new_from_values(3.0, 3.0, 9.0, 9.0)
+            .is_inside(&PdfRect::new_from_values(2.0, 2.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 10.0, 10.0)
+            .is_inside(&PdfRect::new_from_values(3.0, 3.0, 9.0, 9.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .is_inside(&PdfRect::new_from_values(5.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .is_inside(&PdfRect::new_from_values(8.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .is_inside(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
+    }
+
+    #[test]
+    fn test_rect_does_overlap() {
+        assert!(PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .does_overlap(&PdfRect::new_from_values(5.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .does_overlap(&PdfRect::new_from_values(8.0, 4.0, 10.0, 10.0)));
+
+        assert!(!PdfRect::new_from_values(2.0, 2.0, 7.0, 7.0)
+            .does_overlap(&PdfRect::new_from_values(5.0, 8.0, 10.0, 10.0)));
+    }
+
+    #[test]
+    fn test_transform_rect() {
+        let delta_x = PdfPoints::new(50.0);
+        let delta_y = PdfPoints::new(-25.0);
+
+        let matrix = PdfMatrix::identity().translate(delta_x, delta_y).unwrap();
+
+        let bottom = PdfPoints::new(100.0);
+        let top = PdfPoints::new(200.0);
+        let left = PdfPoints::new(300.0);
+        let right = PdfPoints::new(400.0);
+
+        let rect = PdfRect::new(bottom, left, top, right);
+
+        let result = rect.transform(matrix);
+
+        assert_eq!(result.bottom, bottom + delta_y);
+        assert_eq!(result.top, top + delta_y);
+        assert_eq!(result.left, left + delta_x);
+        assert_eq!(result.right, right + delta_x);
     }
 }

@@ -65,7 +65,14 @@ macro_rules! create_transform_setters {
         #[doc = $custom_doc_ ]
         #[inline]
         pub fn set_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
-            self.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f)
+            self.transform(
+                matrix.a(),
+                matrix.b(),
+                matrix.c(),
+                matrix.d(),
+                matrix.e(),
+                matrix.f(),
+            )
         }
 
         /// Moves the origin of
@@ -244,7 +251,7 @@ macro_rules! create_transform_getters {
         #[inline]
         pub fn get_horizontal_translation(&self) -> PdfPoints {
             self.matrix()
-                .map(|matrix| PdfPoints::new(matrix.e))
+                .map(|matrix| PdfPoints::new(matrix.e()))
                 .unwrap_or(PdfPoints::ZERO)
         }
 
@@ -253,7 +260,7 @@ macro_rules! create_transform_getters {
         #[inline]
         pub fn get_vertical_translation(&self) -> PdfPoints {
             self.matrix()
-                .map(|matrix| PdfPoints::new(matrix.f))
+                .map(|matrix| PdfPoints::new(matrix.f()))
                 .unwrap_or(PdfPoints::ZERO)
         }
 
@@ -268,14 +275,14 @@ macro_rules! create_transform_getters {
         #[doc = $doc_ref_period_ ]
         #[inline]
         pub fn get_horizontal_scale(&self) -> PdfMatrixValue {
-            self.matrix().map(|matrix| matrix.a).unwrap_or(0.0)
+            self.matrix().map(|matrix| matrix.a()).unwrap_or(0.0)
         }
 
         /// Returns the current vertical scale factor applied to
         #[doc = $doc_ref_period_ ]
         #[inline]
         pub fn get_vertical_scale(&self) -> PdfMatrixValue {
-            self.matrix().map(|matrix| matrix.d).unwrap_or(0.0)
+            self.matrix().map(|matrix| matrix.d()).unwrap_or(0.0)
         }
 
         /// Returns the counter-clockwise rotation applied to
@@ -309,7 +316,7 @@ macro_rules! create_transform_getters {
         #[inline]
         pub fn get_rotation_counter_clockwise_radians(&self) -> PdfMatrixValue {
             self.matrix()
-                .map(|matrix| matrix.b.atan2(matrix.a))
+                .map(|matrix| matrix.b().atan2(matrix.a()))
                 .unwrap_or(0.0)
         }
 
@@ -382,7 +389,7 @@ macro_rules! create_transform_getters {
         /// the combined operation.
         #[inline]
         pub fn get_x_axis_skew_radians(&self) -> PdfMatrixValue {
-            self.matrix().map(|matrix| matrix.b.atan()).unwrap_or(0.0)
+            self.matrix().map(|matrix| matrix.b().atan()).unwrap_or(0.0)
         }
 
         /// Returns the current y axis skew applied to
@@ -393,7 +400,7 @@ macro_rules! create_transform_getters {
         /// the combined operation.
         #[inline]
         pub fn get_y_axis_skew_radians(&self) -> PdfMatrixValue {
-            self.matrix().map(|matrix| matrix.c.atan()).unwrap_or(0.0)
+            self.matrix().map(|matrix| matrix.c().atan()).unwrap_or(0.0)
         }
     };
     () => {

@@ -996,8 +996,14 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
 }
 
 /// The collection of [PdfPathSegment] objects inside a path page object.
+///
+/// The coordinates of each segment in the returned iterator will be the untransformed,
+/// raw values supplied at the time the segment was created. Use the
+/// [PdfPagePathObjectSegments::transform()] function to apply a [PdfMatrix] transformation matrix
+/// to the coordinates of each segment as it is returned.
 pub struct PdfPagePathObjectSegments<'a> {
     handle: FPDF_PAGEOBJECT,
+    matrix: Option<PdfMatrix>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -1007,7 +1013,33 @@ impl<'a> PdfPagePathObjectSegments<'a> {
         handle: FPDF_PAGEOBJECT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        Self { handle, bindings }
+        Self {
+            handle,
+            matrix: None,
+            bindings,
+        }
+    }
+
+    /// Returns a new iterator over this collection of [PdfPathSegment] objects that applies
+    /// the given [PdfMatrix] to the points in each returned segment.
+    #[inline]
+    pub fn transform(&self, matrix: PdfMatrix) -> PdfPagePathObjectSegments<'a> {
+        Self {
+            handle: self.handle,
+            matrix: Some(matrix),
+            bindings: self.bindings,
+        }
+    }
+
+    /// Returns a new iterator over this collection of [PdfPathSegment] objects that ensures
+    /// the points of each returned segment are untransformed raw values.
+    #[inline]
+    pub fn raw(&self) -> PdfPagePathObjectSegments<'a> {
+        Self {
+            handle: self.handle,
+            matrix: None,
+            bindings: self.bindings,
+        }
     }
 }
 
@@ -1035,7 +1067,11 @@ impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfPathSegment::from_pdfium(handle, self.bindings()))
+            Ok(PdfPathSegment::from_pdfium(
+                handle,
+                self.matrix,
+                self.bindings(),
+            ))
         }
     }
 
