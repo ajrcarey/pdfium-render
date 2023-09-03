@@ -101,6 +101,7 @@ pub enum PdfiumError {
     SourcePageIndexNotInCache,
     NoUriForAction,
     DestinationPageIndexNotAvailable,
+    DestinationPageLocationNotAvailable,
     PageAnnotationAttachmentPointIndexOutOfBounds,
     NoAttachmentPointsInPageAnnotation,
 
