@@ -358,11 +358,11 @@ pub(crate) mod test {
 
 #[cfg(test)]
 mod tests {
-    // Tests of color conversion functions.
-
     use crate::utils::dates::*;
     use crate::utils::pixels::*;
     use chrono::prelude::*;
+
+    // Tests of color conversion functions.
 
     #[test]
     fn test_bgr_to_rgba() {
@@ -411,6 +411,8 @@ mod tests {
             [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15]
         );
     }
+
+    // Tests of date time conversion functions.
 
     #[test]
     fn test_date_time_to_pdf_date_string() {
