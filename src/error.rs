@@ -73,6 +73,7 @@ pub enum PdfiumError {
     UnknownPdfPageTextRenderMode,
     UnknownPdfPagePathFillMode,
     UnknownPdfAnnotationType,
+    UnknownPdfDestinationViewType,
     UnknownPdfSecurityHandlerRevision,
     UnsupportedPdfPageObjectType,
     TextSegmentIndexOutOfBounds,
@@ -104,6 +105,10 @@ pub enum PdfiumError {
     DestinationPageLocationNotAvailable,
     PageAnnotationAttachmentPointIndexOutOfBounds,
     NoAttachmentPointsInPageAnnotation,
+
+    /// A call to `FPDFDest_GetView()` returned a valid FPDFDEST_VIEW_* value, but the number
+    /// of view parameters returned does not match the PDF specification.
+    PdfDestinationViewInvalidParameters,
 
     /// A [ParseIntError] occurred while attempting to parse a `PdfColor` from a hexadecimal string
     /// in `PdfColor::from_hex()`.

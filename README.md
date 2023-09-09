@@ -90,7 +90,9 @@ annotation type. A new `examples/create_annotations.rs` example demonstrates the
 Version 0.8.10 adds new matrix math functions to `PdfMatrix`, the new `PdfRect::transform()` and
 `PdfMatrix::apply_to_points()` functions for applying transformation matrices directly to rectangles
 and points, the new `PdfPagePathObjectSegments::raw()` and `PdfPagePathObjectSegments::transform()`
-functions to allow iteration over raw or transformed path segment coordinates, respectively.
+functions to allow iteration over raw or transformed path segment coordinates respectively,
+and the new `PdfDestinationViewSettings` enum and `PdfDestination::view()` function for retrieving
+the view settings for an internal document destination.
 
 Version 0.8.9 changes the `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
 functions so they take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to
@@ -378,7 +380,9 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 * 0.8.10: adds matrix math operations to `PdfMatrix`; adds `PdfRect::transform()` and `PdfMatrix::apply_to_points()` functions for transforming
   rectangles and points; uses matrix math operations in `PdfMatrix` to simplify implementation
   of `PdfRenderConfig`; adds `PdfPagePathObjectSegments::raw()` and `PdfPagePathObjectSegments::transform()`
-  functions to allow iteration over raw or transformed path segment coordinates, respectively.
+  functions to allow iteration over raw or transformed path segment coordinates respectively;
+  adds `PdfDestinationViewSettings` enum and `PdfDestination::view()` function for retrieving
+  the view settings for an internal document destination.
 * 0.8.9: changes `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
   to take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to an excellent
   contribution from <https://github.com/heimmat>.
