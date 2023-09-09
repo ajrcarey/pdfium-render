@@ -83,15 +83,16 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.10 adds support for creating new annotations, positioning those annotations,
+Version 0.8.11 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Version 0.8.9 adds new matrix math functions to `PdfMatrix`, the new `PdfRect::transform()` and
+Version 0.8.10 adds new matrix math functions to `PdfMatrix`, the new `PdfRect::transform()` and
 `PdfMatrix::apply_to_points()` functions for applying transformation matrices directly to rectangles
 and points, the new `PdfPagePathObjectSegments::raw()` and `PdfPagePathObjectSegments::transform()`
-functions to allow iteration over raw or transformed path segment coordinates, respectively,
-and changes the `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
+functions to allow iteration over raw or transformed path segment coordinates, respectively.
+
+Version 0.8.9 changes the `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
 functions so they take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to
 an excellent contribution from <https://github.com/heimmat>. This is done for consistency with the
 Rust standard library Strings can still be passed directly into `Pdfium::bind_to_library()` since both
@@ -273,9 +274,10 @@ This crate provides the following optional features:
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
-* `sync`: provides an implementation of the `Send` and `Sync` traits for the `Pdfium` struct. This allows
-  a `Pdfium` instance to be shared across threads. This is particularly useful for creating a static
-  instance that can be used with `lazy_static` or `once_cell`. Requires the `thread_safe` feature.
+* `sync`: provides implementations of the `Send` and `Sync` traits for the `Pdfium` and `PdfDocument`
+  structs. This is useful for creating static instances that can be used with `lazy_static` or `once_cell`,
+  although those instances are not guaranteed to be thread-safe. Use entirely at your own risk.
+  Requires the `thread_safe` feature.
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above.
 
@@ -363,7 +365,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.10: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.11: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -373,13 +375,13 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
-* 0.8.9: changes `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
-  to take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to an excellent
-  contribution from <https://github.com/heimmat>; adds matrix math operations to `PdfMatrix`;
-  adds `PdfRect::transform()` and `PdfMatrix::apply_to_points()` functions for transforming
+* 0.8.10: adds matrix math operations to `PdfMatrix`; adds `PdfRect::transform()` and `PdfMatrix::apply_to_points()` functions for transforming
   rectangles and points; uses matrix math operations in `PdfMatrix` to simplify implementation
   of `PdfRenderConfig`; adds `PdfPagePathObjectSegments::raw()` and `PdfPagePathObjectSegments::transform()`
   functions to allow iteration over raw or transformed path segment coordinates, respectively.
+* 0.8.9: changes `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
+  to take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to an excellent
+  contribution from <https://github.com/heimmat>.
 * 0.8.8: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to `Module["asm"]["malloc"]`
   and `Module["asm"]["free"]` if `Module["_malloc"]` and `Module["_free"]` are not available, in response to
   upstream packaging changes at <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details,
