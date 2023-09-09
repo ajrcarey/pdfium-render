@@ -95,7 +95,7 @@ functions to allow iteration over raw or transformed path segment coordinates, r
 Version 0.8.9 changes the `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
 functions so they take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to
 an excellent contribution from <https://github.com/heimmat>. This is done for consistency with the
-Rust standard library Strings can still be passed directly into `Pdfium::bind_to_library()` since both
+Rust standard library. Strings can still be passed directly into `Pdfium::bind_to_library()` since both
 `String` and `str` implement `AsRef<Path>`.
 
 Version 0.8.8 adjusts the WASM implementation of `pdfium-render` to account for some small packaging
