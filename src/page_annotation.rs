@@ -22,6 +22,7 @@ use crate::page_annotation_link::PdfPageLinkAnnotation;
 use crate::page_annotation_objects::PdfPageAnnotationObjects;
 use crate::page_annotation_popup::PdfPagePopupAnnotation;
 use crate::page_annotation_private::internal::PdfPageAnnotationPrivate;
+use crate::page_annotation_redacted::PdfPageRedactedAnnotation;
 use crate::page_annotation_square::PdfPageSquareAnnotation;
 use crate::page_annotation_squiggly::PdfPageSquigglyAnnotation;
 use crate::page_annotation_stamp::PdfPageStampAnnotation;
@@ -40,8 +41,8 @@ use chrono::prelude::*;
 /// version 1.7, on page 615.
 ///
 /// Not all PDF annotation types are supported by Pdfium. For example, Pdfium does not
-/// currently support embedded sound or movie files, embedded 3D animations, or embedded
-/// file attachments generally.
+/// currently support embedded sound or movie file annotations, embedded 3D animations, or
+/// annotations containing embedded file attachments.
 ///
 /// Pdfium currently supports creating, editing, and rendering the following types of annotations:
 ///
@@ -51,6 +52,7 @@ use chrono::prelude::*;
 /// * [PdfPageAnnotationType::Ink]
 /// * [PdfPageAnnotationType::Link]
 /// * [PdfPageAnnotationType::Popup]
+/// * [PdfPageAnnotationType::Redacted]
 /// * [PdfPageAnnotationType::Square]
 /// * [PdfPageAnnotationType::Squiggly]
 /// * [PdfPageAnnotationType::Stamp]
@@ -93,7 +95,7 @@ pub enum PdfPageAnnotationType {
     ThreeD = FPDF_ANNOT_THREED as isize,
     RichMedia = FPDF_ANNOT_RICHMEDIA as isize,
     XfaWidget = FPDF_ANNOT_XFAWIDGET as isize,
-    Redact = FPDF_ANNOT_REDACT as isize,
+    Redacted = FPDF_ANNOT_REDACT as isize,
 }
 
 impl PdfPageAnnotationType {
@@ -129,7 +131,7 @@ impl PdfPageAnnotationType {
             FPDF_ANNOT_THREED => Ok(PdfPageAnnotationType::ThreeD),
             FPDF_ANNOT_RICHMEDIA => Ok(PdfPageAnnotationType::RichMedia),
             FPDF_ANNOT_XFAWIDGET => Ok(PdfPageAnnotationType::XfaWidget),
-            FPDF_ANNOT_REDACT => Ok(PdfPageAnnotationType::Redact),
+            FPDF_ANNOT_REDACT => Ok(PdfPageAnnotationType::Redacted),
             _ => Err(PdfiumError::UnknownPdfAnnotationType),
         }
     }
@@ -166,7 +168,7 @@ impl PdfPageAnnotationType {
             PdfPageAnnotationType::ThreeD => FPDF_ANNOT_THREED,
             PdfPageAnnotationType::RichMedia => FPDF_ANNOT_RICHMEDIA,
             PdfPageAnnotationType::XfaWidget => FPDF_ANNOT_XFAWIDGET,
-            PdfPageAnnotationType::Redact => FPDF_ANNOT_REDACT,
+            PdfPageAnnotationType::Redacted => FPDF_ANNOT_REDACT,
         }) as FPDF_ANNOTATION_SUBTYPE
     }
 }
@@ -187,6 +189,7 @@ pub enum PdfPageAnnotation<'a> {
     Underline(PdfPageUnderlineAnnotation<'a>),
     Widget(PdfPageWidgetAnnotation<'a>),
     XfaWidget(PdfPageXfaWidgetAnnotation<'a>),
+    Redacted(PdfPageRedactedAnnotation<'a>),
 
     /// Common properties shared by all [PdfPageAnnotation] types can still be accessed for
     /// annotations not supported by Pdfium, but annotation-specific functionality
@@ -321,6 +324,14 @@ impl<'a> PdfPageAnnotation<'a> {
                     bindings,
                 ))
             }
+            PdfPageAnnotationType::Redacted => {
+                PdfPageAnnotation::Redacted(PdfPageRedactedAnnotation::from_pdfium(
+                    document_handle,
+                    page_handle,
+                    annotation_handle,
+                    bindings,
+                ))
+            }
             _ => PdfPageAnnotation::Unsupported(PdfPageUnsupportedAnnotation::from_pdfium(
                 document_handle,
                 page_handle,
@@ -348,6 +359,7 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotation::Underline(annotation) => annotation,
             PdfPageAnnotation::Widget(annotation) => annotation,
             PdfPageAnnotation::XfaWidget(annotation) => annotation,
+            PdfPageAnnotation::Redacted(annotation) => annotation,
             PdfPageAnnotation::Unsupported(annotation) => annotation,
         }
     }
@@ -369,6 +381,7 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotation::Underline(annotation) => annotation,
             PdfPageAnnotation::Widget(annotation) => annotation,
             PdfPageAnnotation::XfaWidget(annotation) => annotation,
+            PdfPageAnnotation::Redacted(annotation) => annotation,
             PdfPageAnnotation::Unsupported(annotation) => annotation,
         }
     }
@@ -376,8 +389,8 @@ impl<'a> PdfPageAnnotation<'a> {
     /// The type of this [PdfPageAnnotation].
     ///
     /// Not all PDF annotation types are supported by Pdfium. For example, Pdfium does not
-    /// currently support embedded sound or movie files, embedded 3D animations, or embedded
-    /// file attachments generally.
+    /// currently support embedded sound or movie file annotations, embedded 3D animations, or
+    /// annotations containing embedded file attachments.
     ///
     /// Pdfium currently supports creating, editing, and rendering the following types of annotations:
     ///
@@ -387,6 +400,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Ink]
     /// * [PdfPageAnnotationType::Link]
     /// * [PdfPageAnnotationType::Popup]
+    /// * [PdfPageAnnotationType::Redacted]
     /// * [PdfPageAnnotationType::Square]
     /// * [PdfPageAnnotationType::Squiggly]
     /// * [PdfPageAnnotationType::Stamp]
@@ -412,6 +426,7 @@ impl<'a> PdfPageAnnotation<'a> {
             PdfPageAnnotation::Underline(_) => PdfPageAnnotationType::Underline,
             PdfPageAnnotation::Widget(_) => PdfPageAnnotationType::Widget,
             PdfPageAnnotation::XfaWidget(_) => PdfPageAnnotationType::XfaWidget,
+            PdfPageAnnotation::Redacted(_) => PdfPageAnnotationType::Redacted,
             PdfPageAnnotation::Unsupported(annotation) => annotation.get_type(),
         }
     }
@@ -420,8 +435,8 @@ impl<'a> PdfPageAnnotation<'a> {
     /// [PdfPageAnnotation].
     ///
     /// Not all PDF annotation types are supported by Pdfium. For example, Pdfium does not
-    /// currently support embedded sound or movie files, embedded 3D animations, or embedded
-    /// file attachments generally.
+    /// currently support embedded sound or movie file annotations, embedded 3D animations, or
+    /// annotations containing embedded file attachments.
     ///
     /// Pdfium currently supports creating, editing, and rendering the following types of annotations:
     ///
@@ -431,6 +446,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Ink]
     /// * [PdfPageAnnotationType::Link]
     /// * [PdfPageAnnotationType::Popup]
+    /// * [PdfPageAnnotationType::Redacted]
     /// * [PdfPageAnnotationType::Square]
     /// * [PdfPageAnnotationType::Squiggly]
     /// * [PdfPageAnnotationType::Stamp]
@@ -448,8 +464,8 @@ impl<'a> PdfPageAnnotation<'a> {
     /// [PdfPageAnnotation].
     ///
     /// Not all PDF annotation types are supported by Pdfium. For example, Pdfium does not
-    /// currently support embedded sound or movie files, embedded 3D animations, or embedded
-    /// file attachments generally.
+    /// currently support embedded sound or movie file annotations, embedded 3D animations, or
+    /// annotations containing embedded file attachments.
     ///
     /// Pdfium currently supports creating, editing, and rendering the following types of annotations:
     ///
@@ -459,6 +475,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// * [PdfPageAnnotationType::Ink]
     /// * [PdfPageAnnotationType::Link]
     /// * [PdfPageAnnotationType::Popup]
+    /// * [PdfPageAnnotationType::Redacted]
     /// * [PdfPageAnnotationType::Square]
     /// * [PdfPageAnnotationType::Squiggly]
     /// * [PdfPageAnnotationType::Stamp]
@@ -608,6 +625,16 @@ impl<'a> PdfPageAnnotation<'a> {
     pub fn as_xfa_widget_annotation(&self) -> Option<&PdfPageXfaWidgetAnnotation> {
         match self {
             PdfPageAnnotation::XfaWidget(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns the underlying [PdfPageRedactedAnnotation] for this [PdfPageAnnotation],
+    /// if this annotation has an annotation type of [PdfPageAnnotationType::Redacted].
+    #[inline]
+    pub fn as_redacted_annotation(&self) -> Option<&PdfPageRedactedAnnotation> {
+        match self {
+            PdfPageAnnotation::Redacted(annotation) => Some(annotation),
             _ => None,
         }
     }

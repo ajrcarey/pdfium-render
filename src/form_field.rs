@@ -1,5 +1,6 @@
 //! Defines the [PdfFormField] enum, exposing functionality related to a single interactive form field.
 
+use crate::appearance_mode::PdfAppearanceMode;
 use crate::bindgen::{
     FPDF_ANNOTATION, FPDF_FORMFIELD_CHECKBOX, FPDF_FORMFIELD_COMBOBOX, FPDF_FORMFIELD_LISTBOX,
     FPDF_FORMFIELD_PUSHBUTTON, FPDF_FORMFIELD_RADIOBUTTON, FPDF_FORMFIELD_SIGNATURE,
@@ -242,6 +243,13 @@ impl<'a> PdfFormField<'a> {
 pub trait PdfFormFieldCommon {
     /// Returns the name of this [PdfFormField], if any.
     fn name(&self) -> Option<String>;
+
+    /// Returns the name of the currently set appearance stream for this [PdfFormField], if any.
+    fn appearance_stream(&self) -> Option<String>;
+
+    /// Returns the value currently set for the given appearance mode for this [PdfFormField],
+    /// if any.
+    fn appearance_mode_value(&self, appearance_mode: PdfAppearanceMode) -> Option<String>;
 }
 
 // Blanket implementation for all PdfFormFieldCommon types.
@@ -253,6 +261,16 @@ where
     #[inline]
     fn name(&self) -> Option<String> {
         self.name_impl()
+    }
+
+    #[inline]
+    fn appearance_stream(&self) -> Option<String> {
+        self.appearance_stream_impl()
+    }
+
+    #[inline]
+    fn appearance_mode_value(&self, appearance_mode: PdfAppearanceMode) -> Option<String> {
+        self.appearance_mode_value_impl(appearance_mode)
     }
 }
 

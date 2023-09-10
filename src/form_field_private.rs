@@ -7,12 +7,36 @@ pub(crate) mod internal {
     // Instead of making the PdfFormFieldPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE, FPDF_WCHAR};
+    use crate::bindgen::{
+        FPDF_ANNOTATION, FPDF_ANNOT_FLAG_HIDDEN, FPDF_ANNOT_FLAG_INVISIBLE, FPDF_ANNOT_FLAG_LOCKED,
+        FPDF_ANNOT_FLAG_NONE, FPDF_ANNOT_FLAG_NOROTATE, FPDF_ANNOT_FLAG_NOVIEW,
+        FPDF_ANNOT_FLAG_NOZOOM, FPDF_ANNOT_FLAG_PRINT, FPDF_ANNOT_FLAG_READONLY,
+        FPDF_ANNOT_FLAG_TOGGLENOVIEW, FPDF_FORMHANDLE, FPDF_WCHAR,
+    };
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::PdfiumError;
     use crate::form_field::PdfFormFieldCommon;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+    use std::ffi::c_int;
+
+    use crate::appearance_mode::PdfAppearanceMode;
+    use bitflags::bitflags;
+
+    bitflags! {
+        pub struct FpdfAnnotationFlags: u32 {
+             const None = FPDF_ANNOT_FLAG_NONE;
+             const Invisible = FPDF_ANNOT_FLAG_INVISIBLE;
+             const Hidden = FPDF_ANNOT_FLAG_HIDDEN;
+             const Print = FPDF_ANNOT_FLAG_PRINT;
+             const NoZoom = FPDF_ANNOT_FLAG_NOZOOM;
+             const NoRotate = FPDF_ANNOT_FLAG_NOROTATE;
+             const NoView = FPDF_ANNOT_FLAG_NOVIEW;
+             const ReadOnly = FPDF_ANNOT_FLAG_READONLY;
+             const Locked = FPDF_ANNOT_FLAG_LOCKED;
+             const ToggleNoView = FPDF_ANNOT_FLAG_TOGGLENOVIEW;
+        }
+    }
 
     /// Internal crate-specific functionality common to all [PdfFormField] objects.
     pub trait PdfFormFieldPrivate<'a>: PdfFormFieldCommon {
@@ -161,6 +185,106 @@ pub(crate) mod internal {
             } else {
                 result as u32
             }
+        }
+        /// Internal implementation of [PdfFormFieldCommon::appearance_mode_value()].
+        fn appearance_mode_value_impl(&self, appearance_mode: PdfAppearanceMode) -> Option<String> {
+            // Retrieving the appearance mode value from Pdfium is a two-step operation.
+            // First, we call FPDFAnnot_GetAP() with a null buffer; this will retrieve the length of
+            // the appearance mode value text in bytes. If the length is zero, then the
+            // appearance mode value is not set.
+
+            // If the length is non-zero, then we reserve a byte buffer of the given
+            // length and call FPDFAnnot_GetAP() again with a pointer to the buffer;
+            // this will write the appearance mode value to the buffer in UTF16LE format.
+
+            let buffer_length = self.bindings().FPDFAnnot_GetAP(
+                *self.annotation_handle(),
+                appearance_mode.as_pdfium(),
+                std::ptr::null_mut(),
+                0,
+            );
+
+            if buffer_length == 0 {
+                // The appearance mode value is not present.
+
+                None
+            } else {
+                let mut buffer = create_byte_buffer(buffer_length as usize);
+
+                let result = self.bindings().FPDFAnnot_GetAP(
+                    *self.annotation_handle(),
+                    appearance_mode.as_pdfium(),
+                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                    buffer_length,
+                );
+
+                debug_assert_eq!(result, buffer_length);
+
+                get_string_from_pdfium_utf16le_bytes(buffer)
+            }
+        }
+
+        /// Returns the currently set appearance stream for this form field, if any.
+        fn appearance_stream_impl(&self) -> Option<String> {
+            // Retrieving the appearance stream value from Pdfium is a two-step operation.
+            // First, we call FPDFAnnot_GetStringValue() with a null buffer; this will retrieve
+            // the length of the appearance stream value text in bytes. If the length is zero,
+            // then the appearance stream value is not set.
+
+            // If the length is non-zero, then we reserve a byte buffer of the given
+            // length and call FPDFAnnot_GetStringValue() again with a pointer to the buffer;
+            // this will write the appearance stream value to the buffer in UTF16LE format.
+
+            let buffer_length = self.bindings().FPDFAnnot_GetStringValue(
+                *self.annotation_handle(),
+                "AS",
+                std::ptr::null_mut(),
+                0,
+            );
+
+            if buffer_length == 0 {
+                // The appearance mode value is not present.
+
+                None
+            } else {
+                let mut buffer = create_byte_buffer(buffer_length as usize);
+
+                let result = self.bindings().FPDFAnnot_GetStringValue(
+                    *self.annotation_handle(),
+                    "AS",
+                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                    buffer_length,
+                );
+
+                debug_assert_eq!(result, buffer_length);
+
+                get_string_from_pdfium_utf16le_bytes(buffer)
+            }
+        }
+
+        #[inline]
+        fn form_field_flags_impl(&self) -> FpdfAnnotationFlags {
+            FpdfAnnotationFlags::from_bits_truncate(
+                self.bindings()
+                    .FPDFAnnot_GetFormFieldFlags(*self.form_handle(), *self.annotation_handle())
+                    as u32,
+            )
+        }
+
+        #[inline]
+        fn flags_impl(&self) -> FpdfAnnotationFlags {
+            FpdfAnnotationFlags::from_bits_truncate(
+                self.bindings()
+                    .FPDFAnnot_GetFlags(*self.annotation_handle()) as u32,
+            )
+        }
+
+        #[inline]
+        fn set_flags_impl(&mut self, flags: FpdfAnnotationFlags) -> bool {
+            self.bindings().is_true(
+                self.bindings()
+                    .FPDFAnnot_SetFlags(*self.annotation_handle(), flags.bits() as c_int),
+            )
         }
     }
 }

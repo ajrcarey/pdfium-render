@@ -6,8 +6,8 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font_glyphs::PdfFontGlyphs;
+use crate::fonts::PdfFontBuiltin;
 use crate::points::PdfPoints;
-use crate::prelude::PdfFontBuiltin;
 use crate::utils::mem::create_byte_buffer;
 use bitflags::bitflags;
 use std::io::Read;
@@ -357,16 +357,16 @@ impl<'a> PdfFont<'a> {
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading font data in WASM:
-    /// * Use the [PdfFont::load_type1_from_fetch()] function to download font data from a
+    /// * Use the [PdfFonts::load_type1_from_fetch()] function to download font data from a
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
-    /// * Use the [PdfFont::load_type1_from_blob()] function to load font data from a
+    /// * Use the [PdfFonts::load_type1_from_blob()] function to load font data from a
     /// Javascript File or Blob object (such as a File object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
-    /// * Use the [PdfFont::load_type1_from_reader()] function to load font data from any
+    /// * Use the [PdfFonts::load_type1_from_reader()] function to load font data from any
     /// valid Rust reader.
     /// * Use another method to retrieve the bytes of the target font over the network,
-    /// then load those bytes into Pdfium using the [PdfFont::new_type1_from_bytes()] function.
+    /// then load those bytes into Pdfium using the [PdfFonts::new_type1_from_bytes()] function.
     /// * Embed the bytes of the desired font directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
     ///
@@ -540,16 +540,16 @@ impl<'a> PdfFont<'a> {
     ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading font data in WASM:
-    /// * Use the [PdfFont::load_true_type_from_fetch()] function to download font data from a
+    /// * Use the [PdfFonts::load_true_type_from_fetch()] function to download font data from a
     /// URL using the browser's built-in `fetch()` API. This function is only available when
     /// compiling to WASM.
-    /// * Use the [PdfFont::load_true_type_from_blob()] function to load font data from a
+    /// * Use the [PdfFonts::load_true_type_from_blob()] function to load font data from a
     /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
     /// `<input type="file">` element). This function is only available when compiling to WASM.
-    /// * Use the [PdfFont::load_true_type_from_reader()] function to load font data from any
+    /// * Use the [PdfFonts::load_true_type_from_reader()] function to load font data from any
     /// valid Rust reader.
     /// * Use another method to retrieve the bytes of the target font over the network,
-    /// then load those bytes into Pdfium using the [PdfFont::new_true_type_from_bytes()] function.
+    /// then load those bytes into Pdfium using the [PdfFonts::new_true_type_from_bytes()] function.
     /// * Embed the bytes of the desired font directly into the compiled WASM module
     /// using the `include_bytes!()` macro.
     ///

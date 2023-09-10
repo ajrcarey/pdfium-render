@@ -55,8 +55,8 @@ pub enum PdfPageRenderRotation {
 
 impl PdfPageRenderRotation {
     #[inline]
-    pub(crate) fn from_pdfium(rotate: i32) -> Result<Self, PdfiumError> {
-        match rotate {
+    pub(crate) fn from_pdfium(value: i32) -> Result<Self, PdfiumError> {
+        match value {
             0 => Ok(PdfPageRenderRotation::None),
             1 => Ok(PdfPageRenderRotation::Degrees90),
             2 => Ok(PdfPageRenderRotation::Degrees180),

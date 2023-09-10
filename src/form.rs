@@ -193,14 +193,21 @@ impl<'a> PdfForm<'a> {
     /// Captures a string representation of the value of every form field on every page of
     /// the given [PdfPages] collection, returning a map of (field name, field value) pairs.
     ///
-    /// This function assumes that all form fields in the document have unique field names.
+    /// This function assumes that all form fields in the document have unique field names
+    /// except for radio button and checkbox control groups.
     pub fn field_values(&self, pages: &'a PdfPages<'a>) -> HashMap<String, Option<String>> {
         let mut result = HashMap::new();
+
+        let field_value_true = Some("true".to_string());
+
+        let field_value_false = Some("false".to_string());
 
         for page in pages.iter() {
             for annotation in page.annotations().iter() {
                 if let Some(field) = annotation.as_form_field() {
-                    let value = match field.field_type() {
+                    let field_type = field.field_type();
+
+                    let field_value = match field_type {
                         PdfFormFieldType::Checkbox => {
                             if field
                                 .as_checkbox_field()
@@ -208,23 +215,20 @@ impl<'a> PdfForm<'a> {
                                 .is_checked()
                                 .unwrap_or(false)
                             {
-                                Some("true".to_string())
+                                field_value_true.clone()
                             } else {
-                                Some("false".to_string())
+                                field_value_false.clone()
                             }
                         }
                         PdfFormFieldType::ComboBox => field.as_combo_box_field().unwrap().value(),
                         PdfFormFieldType::ListBox => field.as_list_box_field().unwrap().value(),
                         PdfFormFieldType::RadioButton => {
-                            if field
-                                .as_radio_button_field()
-                                .unwrap()
-                                .is_checked()
-                                .unwrap_or(false)
-                            {
-                                Some("true".to_string())
+                            let field = field.as_radio_button_field().unwrap();
+
+                            if field.is_checked().unwrap_or(false) {
+                                field.group_value()
                             } else {
-                                Some("false".to_string())
+                                field_value_false.clone()
                             }
                         }
                         PdfFormFieldType::Text => field.as_text_field().unwrap().value(),
@@ -233,7 +237,29 @@ impl<'a> PdfForm<'a> {
                         | PdfFormFieldType::Unknown => None,
                     };
 
-                    result.insert(field.name().unwrap_or_default(), value);
+                    // A group of checkbox or radio button controls all share the same name, so
+                    // as we iterate over the controls, the value of the group will be updated.
+                    // Only the value of the last control in the group will be captured.
+                    // This isn't the behaviour we want; we prefer to capture the value of
+                    // a checked control in preference to an unchecked control.
+
+                    let field_name = field.name().unwrap_or_default();
+
+                    if (field_type == PdfFormFieldType::Checkbox
+                        || field_type == PdfFormFieldType::RadioButton)
+                        && result.contains_key(&field_name)
+                    {
+                        // Only overwrite an existing entry for this control group if
+                        // this field is set.
+
+                        if field_value != field_value_false {
+                            result.insert(field_name, field_value);
+                        }
+                    } else {
+                        // For all other control types, we assume that field names are unique.
+
+                        result.insert(field_name, field_value);
+                    }
                 }
             }
         }

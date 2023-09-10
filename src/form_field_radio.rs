@@ -63,7 +63,20 @@ impl<'a> PdfFormRadioButtonField<'a> {
     /// Returns `true` if this [PdfFormRadioButtonField] object has its radio button selected.
     #[inline]
     pub fn is_checked(&self) -> Result<bool, PdfiumError> {
-        self.is_checked_impl()
+        // The PDF Reference manual, version 1.7, states that a selected radio button can indicate
+        // its selected appearance by setting a custom appearance stream; this appearance stream
+        // value will then become the group value. Pdfium's FPDFAnnot_IsChecked()
+        // function doesn't check for this; so if FPDFAnnot_IsChecked() comes back with
+        // anything other than Ok(true), we also check the appearance stream.
+
+        match self.is_checked_impl() {
+            Ok(true) => Ok(true),
+            Ok(false) => Ok(self.group_value() == self.appearance_stream_impl()),
+            Err(err) => match self.group_value() {
+                None => Err(err),
+                group_value => Ok(group_value == self.appearance_stream_impl()),
+            },
+        }
     }
 }
 
