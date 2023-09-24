@@ -15,43 +15,41 @@ use crate::utils::mem::create_sized_buffer;
 
 /// The view settings that a PDF viewer should apply when displaying the target
 /// `PdfPage` nominated by a [PdfDestination] in its display window.
-#[repr(isize)]
 #[derive(Debug, Copy, Clone)]
 pub enum PdfDestinationViewSettings {
     /// The view settings are unknown.
-    Unknown = PDFDEST_VIEW_UNKNOWN_MODE as isize,
+    Unknown,
 
     /// Display the target `PdfPage` with the given (x, y) coordinates positioned at the
     /// upper-left corner of the window and the contents of the page magnified by the given
     /// zoom factor. A missing value for any of the parameters indicates that the current value
     /// of that parameter is to be retained unchanged.
-    SpecificCoordinatesAndZoom(Option<PdfPoints>, Option<PdfPoints>, Option<f32>) =
-        PDFDEST_VIEW_XYZ as isize,
+    SpecificCoordinatesAndZoom(Option<PdfPoints>, Option<PdfPoints>, Option<f32>),
 
     /// Display the target `PdfPage` with its contents magnified just enough
     /// to fit the entire page within the window both horizontally and vertically. If
     /// the required horizontal and vertical magnification factors are different, use
     /// the smaller of the two, centering the page within the window in the other
     /// dimension.
-    FitPageToWindow = PDFDEST_VIEW_FIT as isize,
+    FitPageToWindow,
 
     /// Display the target `PdfPage` with the given y coordinate positioned at the top edge of
     /// the window and the contents of the page magnified just enough to fit the entire width
     /// of the page within the window. A missing value for the y coordinate indicates
     /// that the current value of that parameter is to be retained unchanged.
-    FitPageHorizontallyToWindow(Option<PdfPoints>) = PDFDEST_VIEW_FITH as isize,
+    FitPageHorizontallyToWindow(Option<PdfPoints>),
 
     /// Display the target `PdfPage` with the given x coordinate positioned at the left edge of
     /// the window and the contents of the page magnified just enough to fit the entire height
     /// of the page within the window. A missing value for the x coordinate indicates
     /// that the current value of that parameter is to be retained unchanged.
-    FitPageVerticallyToWindow(Option<PdfPoints>) = PDFDEST_VIEW_FITV as isize,
+    FitPageVerticallyToWindow(Option<PdfPoints>),
 
     /// Display the target `PdfPage` with its contents magnified just enough to fit the
     /// given rectangle entirely within the window both horizontally and vertically.
     /// If the required horizontal and vertical magnification factors are different, then use
     /// the smaller of the two, centering the rectangle within the window in the other dimension.
-    FitPageToRectangle(PdfRect) = PDFDEST_VIEW_FITR as isize,
+    FitPageToRectangle(PdfRect),
 
     /// Display the target `PdfPage` with its contents magnified just enough to fit its bounding box
     /// entirely within the window both horizontally and vertically. If the required horizontal and
@@ -59,7 +57,7 @@ pub enum PdfDestinationViewSettings {
     /// centering the bounding box within the window in the other dimension.
     ///
     /// This variant was added in PDF version 1.1.
-    FitBoundsToWindow = PDFDEST_VIEW_FITB as isize,
+    FitBoundsToWindow,
 
     /// Display the target `PdfPage` with the given y coordinate positioned at the top edge of
     /// the window and the contents of the page magnified just enough to fit the entire width
@@ -67,7 +65,7 @@ pub enum PdfDestinationViewSettings {
     /// that the current value of that parameter is to be retained unchanged.
     ///
     /// This variant was added in PDF version 1.1.
-    FitBoundsHorizontallyToWindow(Option<PdfPoints>) = PDFDEST_VIEW_FITBH as isize,
+    FitBoundsHorizontallyToWindow(Option<PdfPoints>),
 
     /// Display the target `PdfPage` with the given x coordinate positioned at the left edge of
     /// the window and the contents of the page magnified just enough to fit the entire height
@@ -75,7 +73,7 @@ pub enum PdfDestinationViewSettings {
     /// that the current value of that parameter is to be retained unchanged.
     ///
     /// This variant was added in PDF version 1.1.
-    FitBoundsVerticallyToWindow(Option<PdfPoints>) = PDFDEST_VIEW_FITBV as isize,
+    FitBoundsVerticallyToWindow(Option<PdfPoints>),
 }
 
 impl PdfDestinationViewSettings {

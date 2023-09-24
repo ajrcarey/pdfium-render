@@ -18,7 +18,7 @@ pub(crate) mod internal {
     use crate::form_field::PdfFormFieldCommon;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-    use std::ffi::c_int;
+    use std::os::raw::c_int;
 
     use crate::appearance_mode::PdfAppearanceMode;
     use bitflags::bitflags;

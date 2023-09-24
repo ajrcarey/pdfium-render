@@ -6,7 +6,7 @@ use crate::bindgen::{
     FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
 };
 use crate::error::PdfiumError;
-use std::ffi::c_int;
+use std::os::raw::c_int;
 
 /// The type of appearance stream that should apply to a given `PdfPageAnnotation` or
 /// `PdfFormField` object.
