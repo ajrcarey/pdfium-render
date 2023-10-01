@@ -130,6 +130,8 @@ impl PdfDocumentVersion {
 /// * [PdfDocument::attachments()], an immutable collection of all the [PdfAttachments] in the document.
 /// * [PdfDocument::attachments_mut()], a mutable collection of all the [PdfAttachments] in the document.
 /// * [PdfDocument::bookmarks()], an immutable collection of all the [PdfBookmarks] in the document.
+/// * [PdfDocument::fonts()], an immutable collection of all the [PdfFonts] in the document.
+/// * [PdfDocument::fonts_mut()], a mutable collection of all the [PdfFonts] in the document.
 /// * [PdfDocument::form()], an immutable reference to the [PdfForm] embedded in the document, if any.
 /// * [PdfDocument::metadata()], an immutable collection of all the [PdfMetadata] tags in the document.
 /// * [PdfDocument::pages()], an immutable collection of all the [PdfPages] in the document.

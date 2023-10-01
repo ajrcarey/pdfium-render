@@ -166,6 +166,46 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_DeviceToPage(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        device_x: c_int,
+        device_y: c_int,
+        page_x: *mut c_double,
+        page_y: *mut c_double,
+    ) -> FPDF_BOOL {
+        self.bindings.FPDF_DeviceToPage(
+            page, start_x, start_y, size_x, size_y, rotate, device_x, device_y, page_x, page_y,
+        )
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_PageToDevice(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        page_x: c_double,
+        page_y: c_double,
+        device_x: *mut c_int,
+        device_y: *mut c_int,
+    ) -> FPDF_BOOL {
+        self.bindings.FPDF_PageToDevice(
+            page, start_x, start_y, size_x, size_y, rotate, page_x, page_y, device_x, device_y,
+        )
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL {
         self.bindings.FPDF_GetFileVersion(doc, fileVersion)
     }

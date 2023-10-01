@@ -42,14 +42,15 @@ struct JsValue;
 /// in practice the maximum size of a bitmap image is limited to approximately 2,320,723,080 bytes
 /// (a little over 2 Gb). You can use the [PdfBitmap::bytes_required_for_size()] function
 /// to estimate the maximum size of a bitmap image for a given target pixel width and height.
-pub type Pixels = c_int;
+pub type Pixels = i32;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub enum PdfBitmapFormat {
     Gray = FPDFBitmap_Gray as isize,
     BGR = FPDFBitmap_BGR as isize,
     BGRx = FPDFBitmap_BGRx as isize,
+    #[default]
     BGRA = FPDFBitmap_BGRA as isize,
 
     // TODO: AJRC - 22/7/23 - remove deprecated variant in 0.9.0
@@ -85,13 +86,6 @@ impl PdfBitmapFormat {
             PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => FPDFBitmap_BGRx,
             PdfBitmapFormat::BGRA => FPDFBitmap_BGRA,
         }
-    }
-}
-
-impl Default for PdfBitmapFormat {
-    #[inline]
-    fn default() -> Self {
-        PdfBitmapFormat::BGRA
     }
 }
 

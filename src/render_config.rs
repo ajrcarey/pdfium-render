@@ -1,5 +1,5 @@
 //! Defines the [PdfRenderConfig] struct, a builder-based approach to configuring
-//! the rendering of `PdfBitmap` objects from one or more [PdfPage] objects.
+//! the rendering of [PdfBitmap] objects from one or more [PdfPage] objects.
 
 use crate::bindgen::{
     FPDF_ANNOT, FPDF_CONVERT_FILL_TO_STROKE, FPDF_DWORD, FPDF_GRAYSCALE, FPDF_LCD_TEXT,
@@ -17,6 +17,9 @@ use crate::page::PdfPageOrientation::{Landscape, Portrait};
 use crate::page::{PdfPage, PdfPageOrientation, PdfPageRenderRotation};
 use crate::points::PdfPoints;
 use std::os::raw::c_int;
+
+#[cfg(doc)]
+use crate::bitmap::PdfBitmap;
 
 // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
 // https://github.com/ajrcarey/pdfium-render/issues/36
@@ -53,7 +56,7 @@ impl PdfBitmapConfig {
 }
 
 /// Configures the scaling, rotation, and rendering settings that should be applied to
-/// a [PdfPage] to create a `PdfBitmap` for that page. [PdfRenderConfig] can accommodate pages of
+/// a [PdfPage] to create a [PdfBitmap] for that page. [PdfRenderConfig] can accommodate pages of
 /// different sizes while correctly maintaining each page's aspect ratio, automatically
 /// rotate portrait or landscape pages, generate page thumbnails, apply maximum and
 /// minimum pixel sizes to the scaled width and height of the final bitmap, highlight form fields
@@ -495,7 +498,7 @@ impl PdfRenderConfig {
     /// during rendering. The default is `true`, so that Pdfium returns pixel data as RGB8
     /// rather than its default BGR8. There should generally be no need to change this flag,
     /// unless you want to do raw image processing and specifically need the pixel data returned
-    /// by the `PdfBitmap::as_bytes()` function to be in BGR8 format.
+    /// by the [PdfBitmap::as_bytes()] function to be in BGR8 format.
     #[inline]
     pub fn set_reverse_byte_order(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_reverse_byte_order = do_set_flag;
@@ -622,10 +625,19 @@ impl PdfRenderConfig {
         }
     }
 
-    /// Clips rendering output to the given pixel coordinates.
+    /// Clips rendering output to the given pixel coordinates. Pdfium will not render outside
+    /// the clipping area; any existing image data in the destination [PdfBitmap] will remain
+    /// intact.
+    ///
+    /// Pdfium's rendering pipeline supports _either_ rendering with form data _or_ clipping rendering
+    /// output, but not both at the same time. Applying a clipping rectangle automatically disables
+    /// rendering of form data. If you must render form data while simultaneously applying a
+    /// clipping rectangle, consider using the [PdfPage::flatten()] function to flatten the
+    /// form elements and form data into the containing page.
     #[inline]
     pub fn clip(mut self, left: Pixels, top: Pixels, right: Pixels, bottom: Pixels) -> Self {
         self.clip_rect = Some((left, top, right, bottom));
+        self.do_render_form_data = false;
 
         self
     }
@@ -790,15 +802,15 @@ impl PdfRenderConfig {
             render_flags |= FPDF_CONVERT_FILL_TO_STROKE;
         }
 
-        let output_width = (source_width.value * width_scale).round() as i32;
+        let output_width = (source_width.value * width_scale).round() as c_int;
 
-        let output_height = (source_height.value * height_scale).round() as i32;
+        let output_height = (source_height.value * height_scale).round() as c_int;
 
-        // Pages can be rendered either _with_ transformation matrices but _without_ form data,
-        // or _with_ form data but _without_ transformation matrices. We need to be prepared
-        // for either option. If rendering of form data is disabled then the scaled output
-        // width and height and any user-specified 90-degree rotation need to be applied to the
-        // transformation matrix now.
+        // Pages can be rendered either _with_ transformation matrices and clipping
+        // but _without_ form data, or _with_ form data but _without_ transformation matrices
+        // and clipping. We need to be prepared for either option. If rendering of form data
+        // is disabled, then the scaled output width and height and any user-specified
+        // 90-degree rotation need to be applied to the transformation matrix now.
 
         let transformation_matrix = if !self.do_render_form_data {
             let result = if target_rotation != PdfPageRenderRotation::None {
@@ -828,7 +840,7 @@ impl PdfRenderConfig {
         PdfRenderSettings {
             width: output_width,
             height: output_height,
-            format: self.format.as_pdfium() as i32,
+            format: self.format.as_pdfium() as c_int,
             rotate: target_rotation.as_pdfium(),
             do_clear_bitmap_before_rendering: self.do_clear_bitmap_before_rendering,
             clear_color: self.clear_color.as_pdfium_color(),
@@ -845,7 +857,7 @@ impl PdfRenderConfig {
                         .iter()
                         .map(|(form_field_type, color)| {
                             (
-                                form_field_type.as_pdfium() as i32,
+                                form_field_type.as_pdfium() as c_int,
                                 color.as_pdfium_color_with_alpha(),
                             )
                         })
@@ -870,7 +882,7 @@ impl PdfRenderConfig {
                     bottom: output_height as f32,
                 }
             },
-            render_flags: render_flags as i32,
+            render_flags: render_flags as c_int,
         }
     }
 }

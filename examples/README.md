@@ -12,15 +12,16 @@ Each example can run via `cargo run --example <example_name>`.
 * `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`
 * `copy_objects.rs`: moves a selection of page objects from one page to another using the object copying functions in `PdfPageGroupObject`, saving the new document to `test/copy-test.pdf`.
 * `create.rs`: generates a new document by placing text objects onto a blank page, saving the new document to `test/create-test.pdf`.
-* `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline
+* `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline.
 * `export.rs`: exports the individual pages in `test/export-test.pdf` to JPGs in the working directory. The example will attempt to bind to a copy of Pdfium in the working directory, falling back to the system-bundled library if local loading fails.
+* `export_clip_crop.rs`: exports just a portion of the page in `test/export-clip-crop-test.pdf` to a JPG file, clipping and cropping the rendering output based on object properties in the file.
 * `fonts.rs`: displays information about the 14 built-in PDF fonts retrieved from Pdfium.
 * `form.rs`: exports the individual pages in `test/form-test.pdf` to JPGs in the working directory. The sample PDF includes pre-filled form fields, the values of which should also be rendered.
 * `form_fields.rs`: iterates over the form fields in `test/form-test.pdf`, displaying information about each form field.
 * `image.rs`: generates a new document by placing image objects onto a blank page, saving the new document to `test/image-test.pdf`.
 * `image_extract.rs`: extracts and outputs the images on each page in `test/image-test.pdf` to files.
 * `links.rs`: iterates over every link on every page in `test/links-test.pdf`, displaying information about each link.
-* `matrix.rs`: uses a single `PdfMatrix` object to effect a consistent transformation to a variety of transformable PDF objects, saving its output to `test/matrix-test.pdf`.
+* `matrix.rs`: uses a single `PdfMatrix` object to apply a consistent transformation to a variety of transformable PDF objects, saving its output to `test/matrix-test.pdf`.
 * `objects.rs`: iterates over every page object on every page in `test/export-test.pdf`, displaying information about each page object.
 * `path.rs`: generates a new document by placing path objects onto a blank page, saving the new document to `test/path-test.pdf`.
 * `segments.rs`: iterates over every path object in `test/segments.pdf`, displaying information on each path segment in the path object.

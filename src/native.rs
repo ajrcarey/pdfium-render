@@ -34,6 +34,8 @@ impl DynamicPdfiumBindings {
         result.extern_FPDF_SaveAsCopy()?;
         result.extern_FPDF_SaveWithVersion()?;
         result.extern_FPDF_CloseDocument()?;
+        result.extern_FPDF_DeviceToPage()?;
+        result.extern_FPDF_PageToDevice()?;
         result.extern_FPDF_GetFileVersion()?;
         result.extern_FPDF_GetFileIdentifier()?;
         result.extern_FPDF_GetFormType()?;
@@ -464,6 +466,54 @@ impl DynamicPdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT)>, libloading::Error> {
         unsafe { self.library.get(b"FPDF_CloseDocument\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_DeviceToPage(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                start_x: c_int,
+                start_y: c_int,
+                size_x: c_int,
+                size_y: c_int,
+                rotate: c_int,
+                device_x: c_int,
+                device_y: c_int,
+                page_x: *mut c_double,
+                page_y: *mut c_double,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_DeviceToPage\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_PageToDevice(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                start_x: c_int,
+                start_y: c_int,
+                size_x: c_int,
+                size_y: c_int,
+                rotate: c_int,
+                page_x: c_double,
+                page_y: c_double,
+                device_x: *mut c_int,
+                device_y: *mut c_int,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_PageToDevice\0") }
     }
 
     #[inline]
@@ -4801,6 +4851,50 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT) {
         unsafe {
             self.extern_FPDF_CloseDocument().unwrap()(document);
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_DeviceToPage(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        device_x: c_int,
+        device_y: c_int,
+        page_x: *mut c_double,
+        page_y: *mut c_double,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDF_DeviceToPage().unwrap()(
+                page, start_x, start_y, size_x, size_y, rotate, device_x, device_y, page_x, page_y,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_PageToDevice(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        page_x: c_double,
+        page_y: c_double,
+        device_x: *mut c_int,
+        device_y: *mut c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            self.extern_FPDF_PageToDevice().unwrap()(
+                page, start_x, start_y, size_x, size_y, rotate, page_x, page_y, device_x, device_y,
+            )
         }
     }
 

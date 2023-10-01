@@ -199,6 +199,36 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
 
     #[allow(non_snake_case)]
+    fn FPDF_DeviceToPage(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        device_x: c_int,
+        device_y: c_int,
+        page_x: *mut c_double,
+        page_y: *mut c_double,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDF_PageToDevice(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        page_x: c_double,
+        page_y: c_double,
+        device_x: *mut c_int,
+        device_y: *mut c_int,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]

@@ -23,7 +23,7 @@ use crate::rect::PdfRect;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
 use std::collections::{hash_map::Entry, HashMap};
 use std::f32::consts::{FRAC_PI_2, PI};
-use std::os::raw::c_int;
+use std::os::raw::{c_double, c_int};
 
 /// The orientation of a [PdfPage].
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -484,6 +484,70 @@ impl<'a> PdfPage<'a> {
             .into_iter()
             .map(|handle| PdfFont::from_pdfium(handle, self.bindings, None, false))
             .collect()
+    }
+
+    /// Converts from a bitmap coordinate system, measured in [Pixels] and with constraints
+    /// and dimensions determined by the given [PdfRenderConfig] object, to the equivalent
+    /// position on this page, measured in [PdfPoints].
+    pub fn pixels_to_points(
+        &self,
+        x: Pixels,
+        y: Pixels,
+        config: &PdfRenderConfig,
+    ) -> Result<(PdfPoints, PdfPoints), PdfiumError> {
+        let mut page_x: c_double = 0.0;
+        let mut page_y: c_double = 0.0;
+
+        let settings = config.apply_to_page(self);
+
+        if self.bindings.is_true(self.bindings.FPDF_DeviceToPage(
+            self.page_handle,
+            settings.clipping.left as c_int,
+            settings.clipping.top as c_int,
+            (settings.clipping.right - settings.clipping.left) as c_int,
+            (settings.clipping.bottom - settings.clipping.top) as c_int,
+            settings.rotate,
+            x as c_int,
+            y as c_int,
+            &mut page_x,
+            &mut page_y,
+        )) {
+            Ok((PdfPoints::new(page_x as f32), PdfPoints::new(page_y as f32)))
+        } else {
+            Err(PdfiumError::CoordinateConversionFunctionIndicatedError)
+        }
+    }
+
+    /// Converts from the page coordinate system, measured in [PdfPoints], to the equivalent position
+    /// in a bitmap coordinate system measured in [Pixels] and with constraints and dimensions
+    /// defined by the given [PdfRenderConfig] object.
+    pub fn points_to_pixels(
+        &self,
+        x: PdfPoints,
+        y: PdfPoints,
+        config: &PdfRenderConfig,
+    ) -> Result<(Pixels, Pixels), PdfiumError> {
+        let mut device_x: c_int = 0;
+        let mut device_y: c_int = 0;
+
+        let settings = config.apply_to_page(self);
+
+        if self.bindings.is_true(self.bindings.FPDF_PageToDevice(
+            self.page_handle,
+            settings.clipping.left as c_int,
+            settings.clipping.top as c_int,
+            (settings.clipping.right - settings.clipping.left) as c_int,
+            (settings.clipping.bottom - settings.clipping.top) as c_int,
+            settings.rotate,
+            x.value.into(),
+            y.value.into(),
+            &mut device_x,
+            &mut device_y,
+        )) {
+            Ok((device_x as Pixels, device_y as Pixels))
+        } else {
+            Err(PdfiumError::CoordinateConversionFunctionIndicatedError)
+        }
     }
 
     /// Renders this [PdfPage] into a [PdfBitmap] with the given pixel dimensions and page rotation.

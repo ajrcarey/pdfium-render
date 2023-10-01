@@ -61,7 +61,7 @@ by Pdfium. This is a work in progress that will be completed by version 1.0 of t
 Short, commented examples that demonstrate all the major Pdfium document handling features are
 available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. These examples demonstrate:
 
-* Rendering pages to bitmaps.
+* Rendering pages, and portions of pages, to bitmaps.
 * Text and image extraction.
 * Form field introspection.
 * Document signature introspection.
@@ -73,7 +73,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 * Creation of new documents and new pages.
 * Creation of page objects for text, paths, and bitmaps.
 * Page object transformation.
-* Multi-page tiled output.
+* Multi-page tiled rendering.
 * Watermarking.
 * Thread safety.
 * Compiling to WASM.
@@ -83,9 +83,18 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.12 adds support for creating new annotations, positioning those annotations,
+Version 0.8.14 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+
+Version 0.8.13 corrects a bug in `PdfPageTextObject::chars()` that could see incorrect results
+returned in edge cases involving overlapping text objects.
+
+Version 0.8.12 adds the `PdfPage::points_to_pixels()` and `PdfPage::pixels_to_points()` functions
+for easily converting between the page coordinate system, measured in `PdfPoints`, to the
+bitmap rendering coordinate system, measured in `Pixels`. A new `examples/export_clip_crop.rs`
+example demonstrates using the conversion functions to precisely clip and crop a target area of
+a sample page during rendering.
 
 Version 0.8.11 adds the `PdfAppearanceMode` enum and the `PdfFormFieldCommon::appearance_stream()` and
 `PdfFormFieldCommon::appearance_mode_value()` functions, then uses these to improve the
@@ -99,12 +108,6 @@ and points, the new `PdfPagePathObjectSegments::raw()` and `PdfPagePathObjectSeg
 functions to allow iteration over raw or transformed path segment coordinates respectively,
 and the new `PdfDestinationViewSettings` enum and `PdfDestination::view()` function for retrieving
 the view settings for an internal document destination.
-
-Version 0.8.9 changes the `Pdfium::bind_to_library()` and `Pdfium::pdfium_platform_library_name_at_path()`
-functions so they take and return `AsRef<Path>` and `PathBuf` types rather than strings, thanks to
-an excellent contribution from <https://github.com/heimmat>. This is done for consistency with the
-Rust standard library. Strings can still be passed directly into `Pdfium::bind_to_library()` since both
-`String` and `str` implement `AsRef<Path>`.
 
 ## Binding to Pdfium
 
@@ -333,7 +336,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.9, 323 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.12, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -346,7 +349,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.12: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.14: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -356,6 +359,13 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
+* 0.8.13: addresses incorrect results returned by `PdfPageTextObject::chars()` as
+  described in <https://github.com/ajrcarey/pdfium-render/issues/98>.
+* 0.8.12: improves backwards compatibility with Rust versions prior to 1.62.0 for the
+  `PdfAppearanceMode` enum added in 0.8.11 and the `Ord` trait implementation for `PdfPoints`
+  added in 0.8.10; adds bindings for `FPDF_PageToDevice()` and `FPDF_DeviceToPage()` coordinate
+  system conversion functions; exposes equivalent functionality in the high-level interface
+  via new `PdfPage::points_to_pixels()` and `PdfPage::pixels_to_points()` functions.
 * 0.8.11: adds the `PdfAppearanceMode` enum, the `PdfFormFieldCommon::appearance_stream()` and
   `PdfFormFieldCommon::appearance_mode_value()` functions, supporting internal implementation of
   those functions in `PdfFormFieldPrivate`; improves implementation of `PdfFormRadioButtonField::is_checked()`

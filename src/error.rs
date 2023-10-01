@@ -106,6 +106,7 @@ pub enum PdfiumError {
     DestinationPageLocationNotAvailable,
     PageAnnotationAttachmentPointIndexOutOfBounds,
     NoAttachmentPointsInPageAnnotation,
+    CoordinateConversionFunctionIndicatedError,
 
     /// A call to `FPDFDest_GetView()` returned a valid FPDFDEST_VIEW_* value, but the number
     /// of view parameters returned does not match the PDF specification.
