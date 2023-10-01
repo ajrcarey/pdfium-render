@@ -1670,6 +1670,140 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_DeviceToPage(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        device_x: c_int,
+        device_y: c_int,
+        page_x: *mut c_double,
+        page_y: *mut c_double,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_DeviceToPage()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let page_x_length = size_of::<c_double>();
+        let page_x_ptr = state.malloc(page_x_length);
+
+        let page_y_length = size_of::<c_double>();
+        let page_y_ptr = state.malloc(page_y_length);
+
+        let result = state
+            .call(
+                "FPDF_DeviceToPage",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_page(page),
+                    JsValue::from(start_x),
+                    JsValue::from(start_y),
+                    JsValue::from(size_x),
+                    JsValue::from(size_y),
+                    JsValue::from(rotate),
+                    JsValue::from(device_x),
+                    JsValue::from(device_y),
+                    Self::js_value_from_offset(page_x_ptr),
+                    Self::js_value_from_offset(page_y_ptr),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(page_x_ptr, page_x_length, page_x);
+            state.copy_struct_from_pdfium(page_y_ptr, page_y_length, page_y);
+        }
+
+        state.free(page_x_ptr);
+        state.free(page_y_ptr);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_PageToDevice(
+        &self,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        page_x: c_double,
+        page_y: c_double,
+        device_x: *mut c_int,
+        device_y: *mut c_int,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_PageToDevice()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let device_x_length = size_of::<c_int>();
+        let device_x_ptr = state.malloc(device_x_length);
+
+        let device_y_length = size_of::<c_int>();
+        let device_y_ptr = state.malloc(device_y_length);
+
+        let result = state
+            .call(
+                "FPDF_PageToDevice",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_page(page),
+                    JsValue::from(start_x),
+                    JsValue::from(start_y),
+                    JsValue::from(size_x),
+                    JsValue::from(size_y),
+                    JsValue::from(rotate),
+                    JsValue::from(page_x),
+                    JsValue::from(page_y),
+                    Self::js_value_from_offset(device_x_ptr),
+                    Self::js_value_from_offset(device_y_ptr),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(device_x_ptr, device_x_length, device_x);
+            state.copy_struct_from_pdfium(device_y_ptr, device_y_length, device_y);
+        }
+
+        state.free(device_x_ptr);
+        state.free(device_y_ptr);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFileVersion()");
 
