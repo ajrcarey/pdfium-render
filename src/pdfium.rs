@@ -460,13 +460,25 @@ impl Default for Pdfium {
         Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap())
     }
 
-    /// Binds to an external Pdfium library, loading it from the system libraries,
-    /// by calling [Pdfium::bind_to_system_library()]. This function will panic if no
-    /// suitable system library can be loaded.
+    /// Binds to an external Pdfium library by first attempting to bind to a Pdfium library
+    /// in the current working directory; if that fails, then a system-provided library
+    /// will be used as a fall back.
+    ///
+    /// This function will panic if no suitable Pdfium library can be loaded.
     #[cfg(not(feature = "static"))]
     #[inline]
     fn default() -> Self {
-        Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+        Pdfium::new(
+            Pdfium::bind_to_library(
+                // Attempt to bind to a pdfium library in the current working directory...
+                Pdfium::pdfium_platform_library_name_at_path("./"),
+            )
+            .or_else(
+                // ... and fall back to binding to a system-provided pdfium library.
+                |_| Pdfium::bind_to_system_library(),
+            )
+            .unwrap(),
+        )
     }
 }
 
