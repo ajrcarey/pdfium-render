@@ -19,8 +19,8 @@ fn main() -> Result<(), PdfiumError> {
 
     let document = pdfium.load_pdf_from_file("test/export-clip-crop-test.pdf", None)?;
 
-    for page in document.pages().iter() {
-        for (index, annotation) in page.annotations().iter().enumerate() {
+    for (page_index, page) in document.pages().iter().enumerate() {
+        for (annotation_index, annotation) in page.annotations().iter().enumerate() {
             if annotation.annotation_type() == PdfPageAnnotationType::Square {
                 // This is the target annotation. We want to render everything within
                 // the bounds of this annotation, and nothing outside the bounds of
@@ -49,7 +49,7 @@ fn main() -> Result<(), PdfiumError> {
                     clip_bottom,
                 ))?;
 
-                // ... and save it to a PNG file, cropping out everything outside
+                // ... and save it to a JPG file, cropping out everything outside
                 // the clipping rectangle.
 
                 bitmap
@@ -64,8 +64,11 @@ fn main() -> Result<(), PdfiumError> {
                     .as_rgba8()
                     .ok_or(PdfiumError::ImageError)?
                     .save_with_format(
-                        format!("export-clip-crop-test-{}.jpg", index),
-                        image::ImageFormat::Png,
+                        format!(
+                            "export-clip-crop-test-{}-{}.jpg",
+                            page_index, annotation_index
+                        ),
+                        image::ImageFormat::Jpeg,
                     )
                     .map_err(|_| PdfiumError::ImageError)?;
             }
