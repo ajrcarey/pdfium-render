@@ -355,7 +355,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
   `PdfPageAnnotationCommon::set_creation_date()`, `PdfPageAnnotationCommon::set_modification_date()`;
   `PdfPageAnnotationCommon::stroke_color()`, `PdfPageAnnotationCommon::set_stroke_color()`,
-  `PdfPageAnnotationCommon::fill_color()`, `PdfPageAnnotationCommon::set_fill_color()` functions
+  `PdfPageAnnotationCommon::fill_color()`, `PdfPageAnnotationCommon::set_fill_color()` functions;
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
@@ -366,8 +366,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   added in 0.8.10; adds bindings for `FPDF_PageToDevice()` and `FPDF_DeviceToPage()` coordinate
   system conversion functions; exposes equivalent functionality in the high-level interface
   via new `PdfPage::points_to_pixels()` and `PdfPage::pixels_to_points()` functions;
-  extends implementation of `Pdfium::default()` to try to load a Pdfium library located in
-  the current working directory as well as a system library.
+  adds new `examples/export_clip_crop.rs` example; extends implementation of `Pdfium::default()`
+  to try to load a Pdfium library located in the current working directory as well as a system library.
 * 0.8.11: adds the `PdfAppearanceMode` enum, the `PdfFormFieldCommon::appearance_stream()` and
   `PdfFormFieldCommon::appearance_mode_value()` functions, supporting internal implementation of
   those functions in `PdfFormFieldPrivate`; improves implementation of `PdfFormRadioButtonField::is_checked()`
