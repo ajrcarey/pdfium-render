@@ -156,6 +156,15 @@ attempt to fall back to a system-provided library if that fails:
     );
 ```
 
+This pattern is common enough that it is the default constructor for the Pdfium struct,
+so we could have also simply written:
+
+```rust
+    use pdfium_render::prelude::*;
+
+    let pdfium = Pdfium::default();
+```
+
 ## Static linking
 
 The `static` crate feature offers an alternative to dynamic linking if you prefer to link Pdfium

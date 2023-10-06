@@ -22,7 +22,7 @@ pub fn main() -> Result<(), PdfiumError> {
     let pdfium = Pdfium::new(bindings);
 
     // This pattern is common enough that it is the default constructor for the Pdfium struct,
-    // so we could have also have simply written:
+    // so we could have also simply written:
 
     // let pdfium = Pdfium::default();
 
