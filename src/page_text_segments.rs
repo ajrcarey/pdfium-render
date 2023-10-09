@@ -13,6 +13,7 @@ pub type PdfPageTextSegmentIndex = usize;
 
 pub struct PdfPageTextSegments<'a> {
     text: &'a PdfPageText<'a>,
+    start: i32,
     characters: i32,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
@@ -21,11 +22,13 @@ impl<'a> PdfPageTextSegments<'a> {
     #[inline]
     pub(crate) fn new(
         text: &'a PdfPageText<'a>,
+        start: i32,
         characters: i32,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextSegments {
             text,
+            start,
             characters,
             bindings,
         }
@@ -41,7 +44,7 @@ impl<'a> PdfPageTextSegments<'a> {
     #[inline]
     pub fn len(&self) -> PdfPageTextSegmentIndex {
         self.bindings
-            .FPDFText_CountRects(*self.text.handle(), 0, self.characters) as usize
+            .FPDFText_CountRects(*self.text.handle(), self.start, self.characters) as usize
     }
 
     /// Returns `true` if this [PdfPageTextSegments] collection is empty.

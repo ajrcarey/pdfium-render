@@ -78,7 +78,13 @@ impl<'a> PdfPageText<'a> {
     /// Returns a collection of all the `PdfPageTextSegment` text segments in the containing [PdfPage].
     #[inline]
     pub fn segments(&self) -> PdfPageTextSegments {
-        PdfPageTextSegments::new(self, self.len(), self.bindings)
+        PdfPageTextSegments::new(self, 0, self.len(), self.bindings)
+    }
+
+    /// Returns a collection of all the `PdfPageTextSegment` text segments in the specified `start` index and char `count`.
+    #[inline]
+    pub fn select_segments(&self, start: i32, count: i32) -> PdfPageTextSegments {
+        PdfPageTextSegments::new(self, start, count, self.bindings)
     }
 
     /// Returns a collection of all the `PdfPageTextChar` characters in the containing [PdfPage].
