@@ -92,6 +92,7 @@ pub mod page_size;
 pub mod page_text;
 pub mod page_text_char;
 pub mod page_text_chars;
+pub mod page_text_search;
 pub mod page_text_segment;
 pub mod page_text_segments;
 pub mod pages;
