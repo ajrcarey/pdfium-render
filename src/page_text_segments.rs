@@ -34,6 +34,11 @@ impl<'a> PdfPageTextSegments<'a> {
         }
     }
 
+    #[inline]
+    pub fn index_range(&self) -> (PdfPageTextSegmentIndex, PdfPageTextSegmentIndex) {
+        (self.start as usize, (self.start + self.characters) as usize)
+    }
+
     /// Returns the number of distinct rectangular areas occupied by text in the containing `PdfPage`.
     ///
     /// Pdfium automatically merges smaller text boxes into larger ones if all enclosed characters

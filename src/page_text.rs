@@ -1,7 +1,7 @@
 //! Defines the [PdfPageText] struct, exposing functionality related to the
 //! collection of Unicode characters visible in a single `PdfPage`.
 
-use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR};
+use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR, FPDF_WIDESTRING};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::page::PdfPage;
 use crate::page_annotation::PdfPageAnnotation;
@@ -10,11 +10,12 @@ use crate::page_object::PdfPageObjectCommon;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_text_chars::PdfPageTextChars;
+use crate::page_text_search::{SearchFlag, PageTextSearch, SearchOption};
 use crate::page_text_segments::PdfPageTextSegments;
 use crate::prelude::PdfiumError;
 use crate::rect::PdfRect;
 use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
-use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+use crate::utils::utf16le::{get_string_from_pdfium_utf16le_bytes, get_pdfium_utf16le_bytes_from_str};
 use bytemuck::cast_slice;
 use std::fmt::{Display, Formatter};
 use std::ptr::null_mut;
@@ -262,6 +263,19 @@ impl<'a> PdfPageText<'a> {
         let bounds = annotation.bounds()?;
 
         Ok(self.inside_rect(bounds))
+    }
+
+
+    /// Return [PageTextSearch]
+    pub fn search(&self, text: &str, search_option: &SearchOption, index: i32) -> PageTextSearch {
+
+        let handle = self.bindings.FPDFText_FindStart(
+            self.handle,
+            get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
+            search_option.as_pdfium(),
+            index,
+        );
+        PageTextSearch::from_pdfium(handle, self, self.bindings)
     }
 }
 
