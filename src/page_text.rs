@@ -431,3 +431,88 @@ impl<'a> Drop for PdfPageText<'a> {
         self.bindings.FPDFText_ClosePage(self.handle);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+    use crate::utils::test::test_bind_to_pdfium;
+
+    #[test]
+    fn test_overlapping_chars_results() -> Result<(), PdfiumError> {
+        // Test to make sure the result of the .chars_for_object() function returns the
+        // correct results in the event of overlapping text objects.
+        // For more details, see: https://github.com/ajrcarey/pdfium-render/issues/98
+
+        let pdfium = test_bind_to_pdfium();
+
+        // Create a new document with three overlapping text objects.
+
+        let mut document = pdfium.create_new_pdf()?;
+
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::a4())?;
+
+        let font = document.fonts_mut().courier();
+
+        let txt1 = page.objects_mut().create_text_object(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            "AAAAAA",
+            font,
+            PdfPoints::new(10.0),
+        )?;
+
+        let txt2 = page.objects_mut().create_text_object(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            "BBBBBB",
+            font,
+            PdfPoints::new(10.0),
+        )?;
+
+        let txt3 = page.objects_mut().create_text_object(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            "CDCDCDE",
+            font,
+            PdfPoints::new(10.0),
+        )?;
+
+        let page_text = page.text()?;
+
+        // Check the results for all three objects are not affected by overlapping.
+
+        assert!(test_one_overlapping_text_object_results(
+            &txt1, &page_text, "AAAAAA"
+        )?);
+        assert!(test_one_overlapping_text_object_results(
+            &txt2, &page_text, "BBBBBB"
+        )?);
+        assert!(test_one_overlapping_text_object_results(
+            &txt3, &page_text, "CDCDCDE"
+        )?);
+
+        Ok(())
+    }
+
+    fn test_one_overlapping_text_object_results(
+        object: &PdfPageObject,
+        page_text: &PdfPageText,
+        expected: &str,
+    ) -> Result<bool, PdfiumError> {
+        if let Some(txt) = object.as_text_object() {
+            assert_eq!(txt.text().trim(), expected);
+            assert_eq!(page_text.for_object(txt).trim(), expected);
+
+            for (index, char) in txt.chars(&page_text)?.iter().enumerate() {
+                assert_eq!(txt.text().chars().nth(index), char.unicode_char());
+                assert_eq!(expected.chars().nth(index), char.unicode_char());
+            }
+
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+}
