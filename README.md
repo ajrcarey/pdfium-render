@@ -83,12 +83,15 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.15 adds support for creating new annotations, positioning those annotations,
+Version 0.8.14 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
 Version 0.8.13 corrects a bug in `PdfPageTextObject::chars()` that could see incorrect results
-returned in edge cases involving overlapping text objects.
+returned in edge cases involving overlapping text objects, and adds the `PdfPageTextSearch`
+object and `PdfPageText::search()` function for running text searches across the text of
+a single page, thanks to an excellent contribution from <https://github.com/zhonghua-wang>.
+A new `examples/text_search.rs` example demonstrates the new search functionality.
 
 Version 0.8.12 adds the `PdfPage::points_to_pixels()` and `PdfPage::pixels_to_points()` functions
 for easily converting between the page coordinate system, measured in `PdfPoints`, to the
@@ -338,7 +341,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.12, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.13, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -362,7 +365,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
 * 0.8.13: addresses incorrect results returned by `PdfPageTextObject::chars()` as
-  described in <https://github.com/ajrcarey/pdfium-render/issues/98>.
+  described in <https://github.com/ajrcarey/pdfium-render/issues/98>; adds new `PdfPageTextSearch` and
+  `PdfSearchOptions` objects and new `PdfPageText::search()` function for running text searches
+  across the text of a single page, thanks to an excellent contribution from
+  <https://github.com/zhonghua-wang>; adds new `examples/text_search.rs` example.
 * 0.8.12: improves backwards compatibility with Rust versions prior to 1.62.0 for the
   `PdfAppearanceMode` enum added in 0.8.11 and the `Ord` trait implementation for `PdfPoints`
   added in 0.8.10; adds bindings for `FPDF_PageToDevice()` and `FPDF_DeviceToPage()` coordinate

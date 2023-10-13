@@ -135,9 +135,9 @@ pub mod prelude {
         page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
         page_object_unsupported::*, page_object_x_object_form::*, page_objects::*,
         page_objects_common::*, page_size::*, page_text::*, page_text_char::*, page_text_chars::*,
-        page_text_segment::*, page_text_segments::*, pages::*, path_segment::*, path_segments::*,
-        pdfium::*, permissions::*, points::*, quad_points::*, rect::*, render_config::*,
-        signature::*, signatures::*,
+        page_text_search::*, page_text_segment::*, page_text_segments::*, pages::*,
+        path_segment::*, path_segments::*, pdfium::*, permissions::*, points::*, quad_points::*,
+        rect::*, render_config::*, signature::*, signatures::*,
     };
 }
 

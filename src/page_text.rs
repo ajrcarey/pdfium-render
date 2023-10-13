@@ -1,5 +1,5 @@
 //! Defines the [PdfPageText] struct, exposing functionality related to the
-//! collection of Unicode characters visible in a single `PdfPage`.
+//! collection of Unicode characters visible on a single [PdfPage].
 
 use crate::bindgen::{FPDF_TEXTPAGE, FPDF_WCHAR, FPDF_WIDESTRING};
 use crate::bindings::PdfiumLibraryBindings;
@@ -25,10 +25,13 @@ use std::fmt::{Display, Formatter};
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
 
-/// The collection of Unicode characters visible in a single [PdfPage].
+/// The collection of Unicode characters visible on a single [PdfPage].
 ///
 /// Use the [PdfPageText::all()] function to easily return all characters in the containing
 /// [PdfPage] in the order in which they are defined in the PDF file.
+///
+/// Use the [PdfPageText::search()] function to initialise a new [PdfPageTextSearch] object,
+/// yielding the results of searching for a target string within the character collection.
 ///
 /// In complex custom layouts, the order in which characters are defined in the document
 /// and the order in which they appear visually during rendering (and thus the order in
@@ -90,7 +93,7 @@ impl<'a> PdfPageText<'a> {
     /// Returns a subset of the `PdfPageTextSegment` text segments in the containing [PdfPage].
     /// Only text segments containing characters in the given index range will be included.
     #[inline]
-    pub fn segments_range(
+    pub fn segments_subset(
         &self,
         start: PdfPageTextCharIndex,
         count: PdfPageTextCharIndex,

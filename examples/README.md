@@ -27,6 +27,7 @@ Each example can run via `cargo run --example <example_name>`.
 * `segments.rs`: iterates over every path object in `test/segments.pdf`, displaying information on each path segment in the path object.
 * `signatures.rs`: iterates over every digital signature in `test/signatures.pdf`, displaying information on about each signature.
 * `text_extract.rs`: extracts and outputs the text on each page in `test/text-test.pdf` to the console.
+* `text_search.rs`: finds and highlights a search term found on the first page of `test/text-test.pdf`, saving the result to a new document at `test/search-results.pdf`.
 * `thread_safe.rs`: explains in comments `pdfium-render`'s approach to ensuring thread-safe access to Pdfium, and demonstrates using a parallel iterator to process multiple rendering tasks on separate threads.
 * `tile.rs`: generates a new document by tiling pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf`, saving the new document to `test/tile-test.pdf`.
 * `wasm.rs`: demonstrates `pdfium-render` running in a browser. This requires some manual bundling of the correct resources; see below.

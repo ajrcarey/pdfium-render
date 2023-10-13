@@ -48,7 +48,7 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn unicode_value(&self) -> u32 {
         self.bindings
-            .FPDFText_GetUnicode(self.text_page_handle, self.index) as u32
+            .FPDFText_GetUnicode(self.text_page_handle, self.index)
     }
 
     /// Returns Rust's Unicode `char` representation for this character, if available.

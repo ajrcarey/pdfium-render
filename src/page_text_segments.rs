@@ -1,5 +1,5 @@
 //! Defines the [PdfPageTextSegments] struct, a collection of all the distinct rectangular
-//! areas of a single `PdfPage` occupied by spans of text that share a common text style.
+//! areas of a single [PdfPage] occupied by spans of text that share a common text style.
 
 use crate::bindgen::FS_RECTF;
 use crate::bindings::PdfiumLibraryBindings;
@@ -7,10 +7,22 @@ use crate::error::PdfiumError;
 use crate::page_text::PdfPageText;
 use crate::page_text_segment::PdfPageTextSegment;
 use crate::rect::PdfRect;
+use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
+
+#[cfg(doc)]
+use crate::page::PdfPage;
+
+#[cfg(doc)]
+use crate::page_object_text::PdfPageTextObject;
 
 pub type PdfPageTextSegmentIndex = usize;
 
+/// A collection of all the distinct rectangular areas of a single [PdfPage] occupied by
+/// spans of text that share a common text style.
+///
+/// Pdfium automatically merges smaller text boxes into larger ones if all enclosed characters
+/// are on the same line and share the same font settings.
 pub struct PdfPageTextSegments<'a> {
     text: &'a PdfPageText<'a>,
     start: i32,
@@ -34,28 +46,41 @@ impl<'a> PdfPageTextSegments<'a> {
         }
     }
 
-    #[inline]
-    pub fn index_range(&self) -> (PdfPageTextSegmentIndex, PdfPageTextSegmentIndex) {
-        (self.start as usize, (self.start + self.characters) as usize)
-    }
-
-    /// Returns the number of distinct rectangular areas occupied by text in the containing `PdfPage`.
+    /// Returns the number of distinct rectangular areas occupied by text in the containing [PdfPage].
     ///
     /// Pdfium automatically merges smaller text boxes into larger ones if all enclosed characters
     /// are on the same line and share the same font settings. The number of rectangular text segments
     /// returned by this function therefore indicates the minimum number of spans of text that
-    /// share text styles on the page. The number of individual `PdfPageTextObject` objects on
+    /// share text styles on the page. The number of individual [PdfPageTextObject] objects on
     /// the page may be much larger than the number of text segments.
     #[inline]
     pub fn len(&self) -> PdfPageTextSegmentIndex {
         self.bindings
-            .FPDFText_CountRects(*self.text.handle(), self.start, self.characters) as usize
+            .FPDFText_CountRects(*self.text.handle(), self.start, self.characters)
+            as PdfPageTextSegmentIndex
     }
 
     /// Returns `true` if this [PdfPageTextSegments] collection is empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Returns a Range from `0..(number of segments)` for this [PdfPageTextSegments] collection.
+    #[inline]
+    pub fn as_range(&self) -> Range<PdfPageTextSegmentIndex> {
+        0..self.len()
+    }
+
+    /// Returns an inclusive Range from `0..=(number of segments - 1)` for this
+    /// [PdfPageTextSegments] collection.
+    #[inline]
+    pub fn as_range_inclusive(&self) -> RangeInclusive<PdfPageTextSegmentIndex> {
+        if self.is_empty() {
+            0..=0
+        } else {
+            0..=(self.len() - 1)
+        }
     }
 
     /// Returns a single [PdfPageTextSegment] from this [PdfPageTextSegments] collection.
@@ -99,7 +124,7 @@ impl<'a> PdfPageTextSegments<'a> {
     ///
     /// Pdfium automatically merges smaller text boxes into larger text segments if all
     /// enclosed characters are on the same line and share the same font settings. The number of
-    /// individual `PdfPageTextObject` objects on the page may be much larger than the number of
+    /// individual [PdfPageTextObject] objects on the page may be much larger than the number of
     /// text segments.
     #[inline]
     pub fn iter(&self) -> PdfPageTextSegmentsIterator {
