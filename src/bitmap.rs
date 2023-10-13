@@ -45,12 +45,11 @@ struct JsValue;
 pub type Pixels = i32;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfBitmapFormat {
     Gray = FPDFBitmap_Gray as isize,
     BGR = FPDFBitmap_BGR as isize,
     BGRx = FPDFBitmap_BGRx as isize,
-    #[default]
     BGRA = FPDFBitmap_BGRA as isize,
 
     // TODO: AJRC - 22/7/23 - remove deprecated variant in 0.9.0
@@ -86,6 +85,16 @@ impl PdfBitmapFormat {
             PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => FPDFBitmap_BGRx,
             PdfBitmapFormat::BGRA => FPDFBitmap_BGRA,
         }
+    }
+}
+
+// Deriving Default for enums is experimental. We implement the trait ourselves
+// to provide better compatibility with older Rust versions.
+#[allow(clippy::derivable_impls)]
+impl Default for PdfBitmapFormat {
+    #[inline]
+    fn default() -> Self {
+        PdfBitmapFormat::BGRA
     }
 }
 

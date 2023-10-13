@@ -83,7 +83,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.14 adds support for creating new annotations, positioning those annotations,
+Version 0.8.15 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
@@ -101,13 +101,6 @@ Version 0.8.11 adds the `PdfAppearanceMode` enum and the `PdfFormFieldCommon::ap
 implementations of both `PdfFormRadioButtonField::is_checked()` and `PdfForm::field_values()` to
 take appearance streams into account when determining which checkboxes or radio buttons are
 selected in an embedded form.
-
-Version 0.8.10 adds new matrix math functions to `PdfMatrix`, the new `PdfRect::transform()` and
-`PdfMatrix::apply_to_points()` functions for applying transformation matrices directly to rectangles
-and points, the new `PdfPagePathObjectSegments::raw()` and `PdfPagePathObjectSegments::transform()`
-functions to allow iteration over raw or transformed path segment coordinates respectively,
-and the new `PdfDestinationViewSettings` enum and `PdfDestination::view()` function for retrieving
-the view settings for an internal document destination.
 
 ## Binding to Pdfium
 
@@ -156,8 +149,8 @@ attempt to fall back to a system-provided library if that fails:
     );
 ```
 
-This pattern is common enough that it is the default constructor for the Pdfium struct,
-so we could have also simply written:
+This pattern is used to provide an implementation of the `Default` trait, so the above can be
+written more simply as:
 
 ```rust
     use pdfium_render::prelude::*;
