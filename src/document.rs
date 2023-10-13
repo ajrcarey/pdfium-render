@@ -198,8 +198,8 @@ impl<'a> PdfDocument<'a> {
         self.bindings
     }
 
-    /// Binds a byte buffer to the lifetime of this [PdfDocument], so that it will always be
-    /// available for Pdfium to read data from as needed.
+    /// Transfers ownership of the byte buffer containing the binary data of this [PdfDocument],
+    /// so that it will always be available for Pdfium to read data from as needed.
     #[inline]
     pub(crate) fn set_source_byte_buffer(&mut self, bytes: Vec<u8>) {
         self.source_byte_buffer = Some(bytes);

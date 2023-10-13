@@ -1,18 +1,23 @@
 //! Defines the [PdfPageTextChars] struct, a collection of all the distinct characters
-//! in a bounded rectangular region of a single `PdfPage`.
+//! in a bounded rectangular region of a single [PdfPage].
 
+use crate::bindgen::{FPDF_DOCUMENT, FPDF_TEXTPAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
+use crate::page::PdfPage;
+use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_text::PdfPageText;
 use crate::page_text_char::PdfPageTextChar;
+use crate::pages::PdfPageIndex;
 use crate::points::PdfPoints;
 use std::ops::Range;
-use std::os::raw::c_double;
+use std::os::raw::c_int;
 
 pub type PdfPageTextCharIndex = usize;
 
 pub struct PdfPageTextChars<'a> {
-    text: &'a PdfPageText<'a>,
+    source_page: Option<PdfPage<'a>>,
+    text_page_handle: FPDF_TEXTPAGE,
     start: i32,
     len: i32,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -21,20 +26,56 @@ pub struct PdfPageTextChars<'a> {
 impl<'a> PdfPageTextChars<'a> {
     #[inline]
     pub(crate) fn new(
-        text: &'a PdfPageText<'a>,
+        text_page_handle: FPDF_TEXTPAGE,
         start: i32,
         len: i32,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextChars {
-            text,
+            source_page: None,
+            text_page_handle,
             start,
             len,
             bindings,
         }
     }
 
-    /// Returns the index in the containing `PdfPage` of the first character in this
+    /// Creates a new [PdfPageTextChars] instance for the given character range
+    /// by loading the text page for the given page index in the given document handle.
+    /// The newly created [PdfPageTextChars] instance will take ownership of both the page
+    /// and its text page, disposing of both when the [PdfPageTextChars] instance leaves scope.
+    pub(crate) fn new_for_page_index(
+        document_handle: FPDF_DOCUMENT,
+        page_index: c_int,
+        start: i32,
+        len: i32,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Self {
+        let page_handle = bindings.FPDF_LoadPage(document_handle, page_index);
+
+        // Add the page to the page cache, so we can delete it later when this PdfPageTextChars
+        // instance moves out of scope.
+
+        PdfPageIndexCache::set_index_for_page(
+            document_handle,
+            page_handle,
+            page_index as PdfPageIndex,
+        );
+
+        let page = PdfPage::from_pdfium(document_handle, page_handle, None, None, bindings);
+
+        let text_page_handle = bindings.FPDFText_LoadPage(page.page_handle());
+
+        PdfPageTextChars {
+            source_page: Some(page),
+            text_page_handle,
+            start,
+            len,
+            bindings,
+        }
+    }
+
+    /// Returns the index in the containing [PdfPage] of the first character in this
     /// [PdfPageTextChars] collection.
     #[inline]
     pub fn first_char_index(&self) -> PdfPageTextCharIndex {
@@ -47,7 +88,7 @@ impl<'a> PdfPageTextChars<'a> {
         self.len as PdfPageTextCharIndex
     }
 
-    /// Returns the index in the containing `PdfPage` of the last character in this
+    /// Returns the index in the containing [PdfPage] of the last character in this
     /// [PdfPageTextChars] collection.
     #[inline]
     pub fn last_char_index(&self) -> PdfPageTextCharIndex {
@@ -75,22 +116,23 @@ impl<'a> PdfPageTextChars<'a> {
             Err(PdfiumError::CharIndexOutOfBounds)
         } else {
             Ok(PdfPageTextChar::from_pdfium(
-                self.text,
+                self.text_page_handle,
                 index,
                 self.bindings,
             ))
         }
     }
 
-    /// Returns the character at the given x and y positions on the containing `PdfPage`, if any.
+    /// Returns the character at the given x and y positions on the containing [PdfPage], if any.
     #[inline]
     pub fn get_char_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfPageTextChar> {
         self.get_char_near_point(x, PdfPoints::ZERO, y, PdfPoints::ZERO)
     }
 
-    /// Returns the character near to the given x and y positions on the containing `PdfPage`, if any.
-    /// The returned character will be no further from the given positions than the given
+    /// Returns the character near to the given x and y positions on the containing [PdfPage],
+    /// if any. The returned character will be no further from the given positions than the given
     /// tolerance values.
+    #[inline]
     pub fn get_char_near_point(
         &self,
         x: PdfPoints,
@@ -98,23 +140,37 @@ impl<'a> PdfPageTextChars<'a> {
         y: PdfPoints,
         tolerance_y: PdfPoints,
     ) -> Option<PdfPageTextChar> {
-        match self.bindings.FPDFText_GetCharIndexAtPos(
-            *self.text.handle(),
-            x.value as c_double,
-            y.value as c_double,
-            tolerance_x.value as c_double,
-            tolerance_y.value as c_double,
-        ) {
-            -1 => None, // No character at position within tolerances
-            -3 => None, // An error occurred, but we'll eat it
-            index => self.get(index as PdfPageTextCharIndex).ok(),
-        }
+        PdfPageText::get_char_index_near_point(
+            self.text_page_handle,
+            x,
+            tolerance_x,
+            y,
+            tolerance_y,
+            self.bindings,
+        )
+        .ok_or(PdfiumError::CharIndexOutOfBounds)
+        .and_then(|index| self.get(index))
+        .ok()
     }
 
     /// Returns an iterator over all the characters in this [PdfPageTextChars] collection.
     #[inline]
     pub fn iter(&self) -> PdfPageTextCharsIterator {
         PdfPageTextCharsIterator::new(self)
+    }
+}
+
+impl<'a> Drop for PdfPageTextChars<'a> {
+    /// Closes this [PdfPageTextChars] object, releasing held memory.
+    #[inline]
+    fn drop(&mut self) {
+        if let Some(page) = self.source_page.take() {
+            // This PdfPageTextChars instance had ownership over the page and text page
+            // to which it was bound. Release those resources now.
+
+            self.bindings.FPDFText_ClosePage(self.text_page_handle);
+            assert!(page.delete().is_ok());
+        }
     }
 }
 
