@@ -24,6 +24,7 @@ use bytemuck::cast_slice;
 use std::fmt::{Display, Formatter};
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
+use std::convert::TryInto;
 
 /// The collection of Unicode characters visible on a single [PdfPage].
 ///
@@ -408,7 +409,7 @@ impl<'a> PdfPageText<'a> {
             self.bindings.FPDFText_FindStart(
                 self.handle,
                 get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
-                options.as_pdfium(),
+                options.as_pdfium().try_into().unwrap(),
                 index as c_int,
             ),
             self,
