@@ -6,6 +6,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::page_text::PdfPageText;
 use crate::page_text_chars::PdfPageTextCharIndex;
 use crate::page_text_segments::PdfPageTextSegments;
+use std::os::raw::c_ulong;
 
 #[cfg(doc)]
 use crate::page::PdfPage;
@@ -42,7 +43,7 @@ impl PdfSearchOptions {
         self
     }
 
-    pub(crate) fn as_pdfium(&self) -> u64 {
+    pub(crate) fn as_pdfium(&self) -> c_ulong {
         let mut flag = 0;
 
         if self.match_case {
@@ -52,7 +53,7 @@ impl PdfSearchOptions {
             flag |= FPDF_MATCHWHOLEWORD;
         }
 
-        flag as u64
+        flag as c_ulong
     }
 }
 
