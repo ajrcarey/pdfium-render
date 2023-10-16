@@ -1,7 +1,9 @@
 //! Defines the [PdfPageTextSegment] struct, exposing functionality related to a single rectangular
 //! text segment in a `PdfPageTextSegments` collection.
 
+use crate::error::PdfiumError;
 use crate::page_text::PdfPageText;
+use crate::page_text_chars::PdfPageTextChars;
 use crate::points::PdfPoints;
 use crate::rect::PdfRect;
 
@@ -53,7 +55,7 @@ impl<'a> PdfPageTextSegment<'a> {
     }
 
     /// Returns all characters that lie within the bounds of this [PdfPageTextSegment] in the
-    /// containing `PdfPage`, in the order in which they are defined in the document.
+    /// containing [PdfPage], in the order in which they are defined in the document.
     ///
     /// In complex custom layouts, the order in which characters are defined in the document
     /// and the order in which they appear visually during rendering (and thus the order in
@@ -61,5 +63,17 @@ impl<'a> PdfPageTextSegment<'a> {
     #[inline]
     pub fn text(&self) -> String {
         self.text.inside_rect(self.bounds)
+    }
+
+    /// Returns a collection of all the [PdfPageTextChar] characters that lie within the bounds of
+    /// this [PdfPageTextSegment] in the containing [PdfPage], in the order in which they are
+    /// defined in the document.
+    ///
+    /// In complex custom layouts, the order in which characters are defined in the document
+    /// and the order in which they appear visually during rendering (and thus the order in
+    /// which they are read by a user) may not necessarily match.
+    #[inline]
+    pub fn chars(&self) -> Result<PdfPageTextChars, PdfiumError> {
+        self.text.chars_inside_rect(self.bounds)
     }
 }

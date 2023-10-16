@@ -343,7 +343,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.14, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.15, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -365,7 +365,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `PdfPageAnnotationCommon::fill_color()`, `PdfPageAnnotationCommon::set_fill_color()` functions;
   adds `PdfPageAnnotationCommon::attachment_points()` accessor function; adds conversion from
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
-  creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example.
+  creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
+  adds `PdfPageTextSegment::chars()` convenience function.
 * 0.8.14: adjusts the `PdfSearchOptions::as_pdfium()` function introduced in 0.8.13 to return
   a `c_ulong` in order to fix a build-time error specific to Windows.
 * 0.8.13: addresses incorrect results returned by `PdfPageTextObject::chars()` as
