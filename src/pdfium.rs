@@ -466,6 +466,7 @@ impl Default for Pdfium {
     ///
     /// This function will panic if no suitable Pdfium library can be loaded.
     #[cfg(not(feature = "static"))]
+    #[cfg(not(target_arch = "wasm32"))]
     #[inline]
     fn default() -> Self {
         Pdfium::new(
@@ -478,6 +479,16 @@ impl Default for Pdfium {
                 |_| Pdfium::bind_to_system_library(),
             )
             .unwrap(),
+        )
+    }
+    
+    /// Binds to an external Pdfium library by attempting to a system-provided library.
+    ///
+    /// This function will panic if no suitable Pdfium library can be loaded.
+    #[cfg(target_arch = "wasm32")]
+    fn default() -> Self {
+        Pdfium::new(
+            Pdfium::bind_to_system_library().unwrap()
         )
     }
 }
