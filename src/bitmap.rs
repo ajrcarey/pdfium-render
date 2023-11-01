@@ -334,7 +334,9 @@ mod tests {
         );
         assert_eq!(
             pdfium.bindings().FPDFBitmap_GetStride(bitmap.handle),
-            test_width * 4 // PdfBitmapFormat::BGRx is 4 bytes per pixel
+            test_width * 4 /* PdfBitmapFormat::BGRx is 4 bytes per pixel, and thus the result of
+                           multiplication matches to a stride length (which is always a multiple
+                           of 4) without extra alignment */
         );
 
         Ok(())
