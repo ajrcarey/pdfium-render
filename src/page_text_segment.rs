@@ -7,6 +7,12 @@ use crate::page_text_chars::PdfPageTextChars;
 use crate::points::PdfPoints;
 use crate::rect::PdfRect;
 
+#[cfg(doc)]
+use crate::page::PdfPage;
+
+#[cfg(doc)]
+use crate::page_text_char::PdfPageTextChar;
+
 /// A single rectangular text segment in a `PdfPageTextSegments` collection.
 ///
 /// Pdfium automatically merges smaller text boxes into larger text segments if all

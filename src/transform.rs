@@ -75,6 +75,16 @@ macro_rules! create_transform_setters {
             )
         }
 
+        /// Resets the transformation matrix for
+        #[doc = $doc_ref_]
+        /// to the identity matrix, undoing any previously applied transformations.
+        ///
+        #[doc = $custom_doc_ ]
+        #[inline]
+        pub fn reset_to_identity(self: $self_) -> $ret_ {
+            self.set_matrix(PdfMatrix::IDENTITY)
+        }
+
         /// Moves the origin of
         #[doc = $doc_ref_ ]
         /// by the given horizontal and vertical delta distances.
