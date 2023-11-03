@@ -25,7 +25,7 @@ use std::os::raw::{c_int, c_void};
 use crate::bitmap::PdfBitmapFormat;
 
 #[cfg(feature = "image")]
-use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
+use crate::utils::pixels::{bgr_to_rgba_with_width_and_stride, bgra_to_rgba, rgba_to_bgra};
 
 #[cfg(feature = "image")]
 use image::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
@@ -477,7 +477,9 @@ impl<'a> PdfPageImageObject<'a> {
 
         let height = self.bindings.FPDFBitmap_GetHeight(handle);
 
-        let buffer_length = self.bindings.FPDFBitmap_GetStride(handle) * height;
+        let stride = self.bindings.FPDFBitmap_GetStride(handle);
+
+        let buffer_length = stride * height;
 
         let buffer_start = self.bindings.FPDFBitmap_GetBuffer(handle);
 
@@ -494,10 +496,12 @@ impl<'a> PdfPageImageObject<'a> {
                 RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
                     .map(DynamicImage::ImageRgba8)
             }
-            PdfBitmapFormat::BGR => {
-                RgbaImage::from_raw(width as u32, height as u32, bgr_to_rgba(buffer))
-                    .map(DynamicImage::ImageRgba8)
-            }
+            PdfBitmapFormat::BGR => RgbaImage::from_raw(
+                width as u32,
+                height as u32,
+                bgr_to_rgba_with_width_and_stride(buffer, width as usize, stride as usize),
+            )
+            .map(DynamicImage::ImageRgba8),
             PdfBitmapFormat::Gray => {
                 GrayImage::from_raw(width as u32, height as u32, buffer.to_vec())
                     .map(DynamicImage::ImageLuma8)

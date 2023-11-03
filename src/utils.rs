@@ -8,6 +8,29 @@ pub(crate) mod pixels {
             .collect::<Vec<_>>()
     }
 
+    /// Converts the given byte array, containing pixel data encoded as three-channel BGR, into
+    /// pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
+    ///
+    /// This function takes into account that pdfium bitmap stride (scanline length in bytes) is a
+    /// multiple of 4. And in case of 3 bytes-per-pixel bitmap the stride (scanline length) may be
+    /// more than `width * number of bytes per pixel`. Extra bytes beyond `width * number of bytes
+    /// per pixel` mean nothing and they are there for alignment.
+    ///
+    /// When performing conversion from 3-bytes-per-pixel to 4-bytes-per-pixel the function skips
+    /// alignment bytes.
+    #[inline]
+    pub(crate) fn bgr_to_rgba_with_width_and_stride(
+        bgr: &[u8],
+        width: usize,
+        stride: usize,
+    ) -> Vec<u8> {
+        const BYTES_PER_PIXEL: usize = 3;
+        bgr.chunks_exact(stride)
+            .flat_map(|scanline| scanline[..width * BYTES_PER_PIXEL].chunks_exact(BYTES_PER_PIXEL))
+            .flat_map(|channels| [channels[2], channels[1], channels[0], 255])
+            .collect::<Vec<_>>()
+    }
+
     /// Converts the given byte array, containing pixel data encoded as four-channel BGRA,
     /// into pixel data encoded as four-channel RGBA.
     #[inline]
@@ -373,6 +396,60 @@ mod tests {
         assert_eq!(
             result,
             [0, 1, 2, 255, 5, 6, 3, 255, 10, 7, 4, 255, 11, 8, 9, 255, 12, 13, 14, 255]
+        );
+    }
+
+    #[test]
+    fn test_bgr_to_rgba_with_width_and_stride() {
+        let data: [u8; 24] = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+        ];
+
+        // Interpret the data as 4-byte scanlines with 1 pixel (and 1 alignment byte) in each line.
+        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 1, 4);
+
+        assert_eq!(
+            result,
+            [
+                2, 1, 0, 255, 6, 5, 4, 255, 10, 9, 8, 255, 14, 13, 12, 255, 18, 17, 16, 255, 22,
+                21, 20, 255
+            ]
+        );
+
+        // Interpret the data as 8-byte scanlines with 2 pixels (and 2 alignment bytes) in each
+        // line.
+        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 2, 8);
+
+        assert_eq!(
+            result,
+            [
+                2, 1, 0, 255, 5, 4, 3, 255, 10, 9, 8, 255, 13, 12, 11, 255, 18, 17, 16, 255, 21,
+                20, 19, 255
+            ]
+        );
+
+        // Interpret the data as 12-byte scanlines with 3 pixels (and 3 alignment bytes) in each
+        // line.
+        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 3, 12);
+
+        assert_eq!(
+            result,
+            [
+                2, 1, 0, 255, 5, 4, 3, 255, 8, 7, 6, 255, 14, 13, 12, 255, 17, 16, 15, 255, 20, 19,
+                18, 255
+            ]
+        );
+
+        // Interpret the data as 12-byte scanlines with 4 pixels (and no alignment bytes) in each
+        // line.
+        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 4, 12);
+
+        assert_eq!(
+            result,
+            [
+                2, 1, 0, 255, 5, 4, 3, 255, 8, 7, 6, 255, 11, 10, 9, 255, 14, 13, 12, 255, 17, 16,
+                15, 255, 20, 19, 18, 255, 23, 22, 21, 255
+            ]
         );
     }
 

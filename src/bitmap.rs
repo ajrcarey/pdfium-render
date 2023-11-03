@@ -6,13 +6,15 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
+#[cfg(feature = "image")]
+use crate::utils::pixels::{bgr_to_rgba_with_width_and_stride, bgra_to_rgba};
 use std::os::raw::c_int;
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::os::raw::c_void;
 
 #[cfg(feature = "image")]
-use image::{DynamicImage, ImageBuffer};
+use image::{DynamicImage, GrayImage, RgbaImage};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::{Clamped, JsValue};
@@ -218,12 +220,34 @@ impl<'a> PdfBitmap<'a> {
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image")]
     pub fn as_image(&self) -> DynamicImage {
-        ImageBuffer::from_raw(
-            self.width() as u32,
-            self.height() as u32,
-            self.as_bytes().to_owned(),
-        )
-        .map(DynamicImage::ImageRgba8)
+        let format = self.format().unwrap();
+        match format {
+            #[allow(deprecated)]
+            PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
+                RgbaImage::from_raw(
+                    self.width() as u32,
+                    self.height() as u32,
+                    bgra_to_rgba(self.as_bytes()),
+                )
+                .map(DynamicImage::ImageRgba8)
+            }
+            PdfBitmapFormat::BGR => RgbaImage::from_raw(
+                self.width() as u32,
+                self.height() as u32,
+                bgr_to_rgba_with_width_and_stride(
+                    self.as_bytes(),
+                    self.width() as usize,
+                    self.as_bytes().len() / self.height() as usize,
+                ),
+            )
+            .map(DynamicImage::ImageRgba8),
+            PdfBitmapFormat::Gray => GrayImage::from_raw(
+                self.width() as u32,
+                self.height() as u32,
+                self.as_bytes().to_vec(),
+            )
+            .map(DynamicImage::ImageLuma8),
+        }
         .unwrap()
     }
 
@@ -334,7 +358,9 @@ mod tests {
         );
         assert_eq!(
             pdfium.bindings().FPDFBitmap_GetStride(bitmap.handle),
-            test_width * 4 // PdfBitmapFormat::BGRx is 4 bytes per pixel
+            test_width * 4 /* PdfBitmapFormat::BGRx is 4 bytes per pixel, and thus the result of
+                           multiplication matches to a stride length (which is always a multiple
+                           of 4) without extra alignment */
         );
 
         Ok(())
