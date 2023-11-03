@@ -25,7 +25,7 @@ use std::os::raw::{c_int, c_void};
 use crate::bitmap::PdfBitmapFormat;
 
 #[cfg(feature = "image")]
-use crate::utils::pixels::{bgr_to_rgba_with_width_and_stride, bgra_to_rgba, rgba_to_bgra};
+use crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra};
 
 #[cfg(feature = "image")]
 use image::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
@@ -499,7 +499,7 @@ impl<'a> PdfPageImageObject<'a> {
             PdfBitmapFormat::BGR => RgbaImage::from_raw(
                 width as u32,
                 height as u32,
-                bgr_to_rgba_with_width_and_stride(buffer, width as usize, stride as usize),
+                aligned_bgr_to_rgba(buffer, width as usize, stride as usize),
             )
             .map(DynamicImage::ImageRgba8),
             PdfBitmapFormat::Gray => {

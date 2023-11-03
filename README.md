@@ -83,9 +83,14 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.15 adds support for creating new annotations, positioning those annotations,
+Version 0.8.16 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+
+Version 0.8.15 adds the new `PdfMatrix::reset_to_identity()` function to reset a transformation
+matrix to its initial state, and corrects a byte alignment bug that could occur when converting
+three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
+from <https://github.com/vladmovchan>.
 
 Version 0.8.14 corrects a Windows-specific build error introduced in 0.8.13.
 
@@ -100,12 +105,6 @@ for easily converting between the page coordinate system, measured in `PdfPoints
 bitmap rendering coordinate system, measured in `Pixels`. A new `examples/export_clip_crop.rs`
 example demonstrates using the conversion functions to precisely clip and crop a target area of
 a sample page during rendering.
-
-Version 0.8.11 adds the `PdfAppearanceMode` enum and the `PdfFormFieldCommon::appearance_stream()` and
-`PdfFormFieldCommon::appearance_mode_value()` functions, then uses these to improve the
-implementations of both `PdfFormRadioButtonField::is_checked()` and `PdfForm::field_values()` to
-take appearance streams into account when determining which checkboxes or radio buttons are
-selected in an embedded form.
 
 ## Binding to Pdfium
 
@@ -356,7 +355,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.15: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.16: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -367,6 +366,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
+* 0.8.15: adds new `reset_to_identity()` function to all consumers of the `create_transform_setters!()`
+  macro; adds a matching corrects a byte alignment bug that could occur when converting
+  three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
+  from <https://github.com/vladmovchan>.
 * 0.8.14: adjusts the `PdfSearchOptions::as_pdfium()` function introduced in 0.8.13 to return
   a `c_ulong` in order to fix a build-time error specific to Windows.
 * 0.8.13: addresses incorrect results returned by `PdfPageTextObject::chars()` as

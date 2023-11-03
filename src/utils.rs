@@ -1,32 +1,39 @@
 pub(crate) mod pixels {
+    const BYTES_PER_THREE_CHANNEL_PIXEL: usize = 3;
+
+    const BYTES_PER_FOUR_CHANNEL_PIXEL: usize = 4;
+
     /// Converts the given byte array, containing pixel data encoded as three-channel BGR,
     /// into pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
+    ///
+    /// This function assumes that the BGR pixel data does not include any additional alignment bytes.
+    /// If the source data includes alignment bytes, then the [aligned_bgr_to_rgba()] function
+    /// should be used instead.
     #[inline]
-    pub(crate) fn bgr_to_rgba(bgr: &[u8]) -> Vec<u8> {
-        bgr.chunks_exact(3)
+    pub(crate) fn unaligned_bgr_to_rgba(bgr: &[u8]) -> Vec<u8> {
+        bgr.chunks_exact(BYTES_PER_THREE_CHANNEL_PIXEL)
             .flat_map(|channels| [channels[2], channels[1], channels[0], 255])
             .collect::<Vec<_>>()
     }
 
-    /// Converts the given byte array, containing pixel data encoded as three-channel BGR, into
-    /// pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
+    /// Converts the given byte array, containing pixel data encoded as three-channel BGR with
+    /// one or more empty alignment bytes, into pixel data encoded as four-channel RGBA.
+    /// A new alpha channel is created with full opacity.
     ///
-    /// This function takes into account that pdfium bitmap stride (scanline length in bytes) is a
-    /// multiple of 4. And in case of 3 bytes-per-pixel bitmap the stride (scanline length) may be
-    /// more than `width * number of bytes per pixel`. Extra bytes beyond `width * number of bytes
-    /// per pixel` mean nothing and they are there for alignment.
+    /// Alignment bytes are used to ensure that the stride of a bitmap - the length in bytes of
+    /// a single scanline - is always a multiple of four, irrespective of the pixel data format.
+    /// The number of empty alignment bytes to be skipped is determined from the given width
+    /// and stride parameters.
     ///
-    /// When performing conversion from 3-bytes-per-pixel to 4-bytes-per-pixel the function skips
-    /// alignment bytes.
+    /// If alignment bytes are not used in the source pixel data, then the [unaligned_bgr_to_rgba()]
+    /// function should be used instead.
     #[inline]
-    pub(crate) fn bgr_to_rgba_with_width_and_stride(
-        bgr: &[u8],
-        width: usize,
-        stride: usize,
-    ) -> Vec<u8> {
-        const BYTES_PER_PIXEL: usize = 3;
+    pub(crate) fn aligned_bgr_to_rgba(bgr: &[u8], width: usize, stride: usize) -> Vec<u8> {
         bgr.chunks_exact(stride)
-            .flat_map(|scanline| scanline[..width * BYTES_PER_PIXEL].chunks_exact(BYTES_PER_PIXEL))
+            .flat_map(|scanline| {
+                scanline[..width * BYTES_PER_THREE_CHANNEL_PIXEL]
+                    .chunks_exact(BYTES_PER_THREE_CHANNEL_PIXEL)
+            })
             .flat_map(|channels| [channels[2], channels[1], channels[0], 255])
             .collect::<Vec<_>>()
     }
@@ -35,7 +42,7 @@ pub(crate) mod pixels {
     /// into pixel data encoded as four-channel RGBA.
     #[inline]
     pub(crate) fn bgra_to_rgba(bgra: &[u8]) -> Vec<u8> {
-        bgra.chunks_exact(4)
+        bgra.chunks_exact(BYTES_PER_FOUR_CHANNEL_PIXEL)
             .flat_map(|channels| [channels[2], channels[1], channels[0], channels[3]])
             .collect::<Vec<_>>()
     }
@@ -43,9 +50,9 @@ pub(crate) mod pixels {
     /// Converts the given byte array, containing pixel data encoded as three-channel RGB,
     /// into pixel data encoded as four-channel BGRA. A new alpha channel is created with full opacity.
     #[inline]
-    pub(crate) fn rgb_to_bgra(rgb: &[u8]) -> Vec<u8> {
+    pub(crate) fn unaligned_rgb_to_bgra(rgb: &[u8]) -> Vec<u8> {
         // RGB <-> BGR is an invertible operation where we simply swap bytes 0 and 2.
-        bgr_to_rgba(rgb)
+        unaligned_bgr_to_rgba(rgb)
     }
 
     /// Converts the given byte array, containing pixel data encoded as four-channel RGBA,
@@ -388,10 +395,10 @@ mod tests {
     // Tests of color conversion functions.
 
     #[test]
-    fn test_bgr_to_rgba() {
+    fn test_unaligned_bgr_to_rgba() {
         let data: [u8; 15] = [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12];
 
-        let result = rgb_to_bgra(data.as_slice());
+        let result = unaligned_rgb_to_bgra(data.as_slice());
 
         assert_eq!(
             result,
@@ -400,13 +407,15 @@ mod tests {
     }
 
     #[test]
-    fn test_bgr_to_rgba_with_width_and_stride() {
+    fn test_aligned_bgr_to_rgba() {
         let data: [u8; 24] = [
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
         ];
 
-        // Interpret the data as 4-byte scanlines with 1 pixel (and 1 alignment byte) in each line.
-        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 1, 4);
+        // Interpret the sample data as four-byte scanlines with each line consisting of
+        // one pixel (taking three bytes) followed by one alignment byte.
+
+        let result = aligned_bgr_to_rgba(data.as_slice(), 1, 4);
 
         assert_eq!(
             result,
@@ -416,9 +425,10 @@ mod tests {
             ]
         );
 
-        // Interpret the data as 8-byte scanlines with 2 pixels (and 2 alignment bytes) in each
-        // line.
-        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 2, 8);
+        // Interpret the data as eight-byte scanlines with each line consisting of two pixels
+        // (each taking three bytes) each followed by one alignment byte.
+
+        let result = aligned_bgr_to_rgba(data.as_slice(), 2, 8);
 
         assert_eq!(
             result,
@@ -428,9 +438,10 @@ mod tests {
             ]
         );
 
-        // Interpret the data as 12-byte scanlines with 3 pixels (and 3 alignment bytes) in each
-        // line.
-        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 3, 12);
+        // Interpret the data as 12-byte scanlines with each line consisting of three pixels
+        // (each taking three bytes) each followed by one alignment byte.
+
+        let result = aligned_bgr_to_rgba(data.as_slice(), 3, 12);
 
         assert_eq!(
             result,
@@ -440,9 +451,10 @@ mod tests {
             ]
         );
 
-        // Interpret the data as 12-byte scanlines with 4 pixels (and no alignment bytes) in each
-        // line.
-        let result = bgr_to_rgba_with_width_and_stride(data.as_slice(), 4, 12);
+        // Interpret the data as 12-byte scanlines with each line consisting of four pixels
+        // (each taking three bytes) with no alignment bytes.
+
+        let result = aligned_bgr_to_rgba(data.as_slice(), 4, 12);
 
         assert_eq!(
             result,
@@ -469,7 +481,7 @@ mod tests {
     fn test_rgb_to_bgra() {
         let data: [u8; 15] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
-        let result = rgb_to_bgra(data.as_slice());
+        let result = unaligned_rgb_to_bgra(data.as_slice());
 
         assert_eq!(
             result,

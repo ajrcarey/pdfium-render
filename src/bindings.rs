@@ -15,7 +15,9 @@ use crate::document::PdfDocument;
 use crate::page::PdfPage;
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::utils::pixels::{bgr_to_rgba, bgra_to_rgba, rgb_to_bgra, rgba_to_bgra};
+use crate::utils::pixels::{
+    bgra_to_rgba, rgba_to_bgra, unaligned_bgr_to_rgba, unaligned_rgb_to_bgra,
+};
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
@@ -99,7 +101,7 @@ pub trait PdfiumLibraryBindings {
     /// into pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
     #[inline]
     fn bgr_to_rgba(&self, bgr: &[u8]) -> Vec<u8> {
-        bgr_to_rgba(bgr)
+        unaligned_bgr_to_rgba(bgr)
     }
 
     /// Converts the given byte array, containing pixel data encoded as four-channel BGRA,
@@ -113,7 +115,7 @@ pub trait PdfiumLibraryBindings {
     /// into pixel data encoded as four-channel BGRA. A new alpha channel is created with full opacity.
     #[inline]
     fn rgb_to_bgra(&self, rgb: &[u8]) -> Vec<u8> {
-        rgb_to_bgra(rgb)
+        unaligned_rgb_to_bgra(rgb)
     }
 
     /// Converts the given byte array, containing pixel data encoded as four-channel RGBA,

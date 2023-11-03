@@ -7,7 +7,7 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 #[cfg(feature = "image")]
-use crate::utils::pixels::{bgr_to_rgba_with_width_and_stride, bgra_to_rgba};
+use crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba};
 use std::os::raw::c_int;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -220,7 +220,8 @@ impl<'a> PdfBitmap<'a> {
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image")]
     pub fn as_image(&self) -> DynamicImage {
-        let format = self.format().unwrap();
+        let format = self.format().unwrap_or(PdfBitmapFormat::default());
+
         match format {
             #[allow(deprecated)]
             PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
@@ -234,7 +235,7 @@ impl<'a> PdfBitmap<'a> {
             PdfBitmapFormat::BGR => RgbaImage::from_raw(
                 self.width() as u32,
                 self.height() as u32,
-                bgr_to_rgba_with_width_and_stride(
+                aligned_bgr_to_rgba(
                     self.as_bytes(),
                     self.width() as usize,
                     self.as_bytes().len() / self.height() as usize,
@@ -248,6 +249,9 @@ impl<'a> PdfBitmap<'a> {
             )
             .map(DynamicImage::ImageLuma8),
         }
+        // TODO: AJRC - 3/11/23 - change function signature to return Result<DynamicImage, PdfiumError>
+        // in 0.9.0 so we can account for any image conversion failure here. Tracked
+        // as part of https://github.com/ajrcarey/pdfium-render/issues/36
         .unwrap()
     }
 
@@ -322,7 +326,8 @@ impl<'a> Drop for PdfBitmap<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use crate::bitmap::{PdfBitmap, PdfBitmapFormat};
+    use crate::error::PdfiumError;
     use crate::utils::mem::create_sized_buffer;
     use crate::utils::test::test_bind_to_pdfium;
 
@@ -358,9 +363,12 @@ mod tests {
         );
         assert_eq!(
             pdfium.bindings().FPDFBitmap_GetStride(bitmap.handle),
-            test_width * 4 /* PdfBitmapFormat::BGRx is 4 bytes per pixel, and thus the result of
-                           multiplication matches to a stride length (which is always a multiple
-                           of 4) without extra alignment */
+            // The stride length is always a multiple of four bytes; for image formats
+            // that require less than four bytes per pixel, the extra bytes serve as
+            // alignment padding. For this test, we use the PdfBitmapFormat::BGRx which
+            // consumes four bytes per pixel, so test_width * 4 should indeed match
+            // the returned stride length.
+            test_width * 4
         );
 
         Ok(())
