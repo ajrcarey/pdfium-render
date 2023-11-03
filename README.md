@@ -87,10 +87,15 @@ Version 0.8.16 adds support for creating new annotations, positioning those anno
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Version 0.8.15 adds the new `PdfMatrix::reset_to_identity()` function to reset a transformation
-matrix to its initial state, and corrects a byte alignment bug that could occur when converting
+Version 0.8.15 corrects a byte alignment bug that could occur when converting
 three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
-from <https://github.com/vladmovchan>.
+from <https://github.com/vladmovchan>, and changes the behaviour of the `set_matrix()` function
+available on transformable objects. Prior to 0.8.15, `set_matrix()` _applied_ the given matrix
+to the existing transformation matrix; from 0.8.15 onwards, `set_matrix()` _replaces_ the
+existing transformation matrix with the given matrix. The change in behaviour better reflects the
+name of the function. The old behaviour is still available in a new `apply_matrix()` function.
+A new `reset_to_identity()` function resets the transformation matrix of a transformable object
+to the identity matrix, undoing any previously applied transformations.
 
 Version 0.8.14 corrects a Windows-specific build error introduced in 0.8.13.
 
@@ -99,12 +104,6 @@ returned in edge cases involving overlapping text objects, and adds the `PdfPage
 object and `PdfPageText::search()` function for running text searches across the text of
 a single page, thanks to an excellent contribution from <https://github.com/zhonghua-wang>.
 A new `examples/text_search.rs` example demonstrates the new search functionality.
-
-Version 0.8.12 adds the `PdfPage::points_to_pixels()` and `PdfPage::pixels_to_points()` functions
-for easily converting between the page coordinate system, measured in `PdfPoints`, to the
-bitmap rendering coordinate system, measured in `Pixels`. A new `examples/export_clip_crop.rs`
-example demonstrates using the conversion functions to precisely clip and crop a target area of
-a sample page during rendering.
 
 ## Binding to Pdfium
 
@@ -366,8 +365,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
-* 0.8.15: adds new `reset_to_identity()` function to all consumers of the `create_transform_setters!()`
-  macro; adds a matching corrects a byte alignment bug that could occur when converting
+* 0.8.15: adds new `apply_matrix()` and `reset_to_identity()` functions to all consumers of the
+  `create_transform_setters!()` macro; changes the behaviour of the `set_matrix()` function in the
+  `create_transform_setters!()` macro so that it replaces the existing transformation matrix rather
+  than adding to it; adds a matching corrects a byte alignment bug that could occur when converting
   three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
   from <https://github.com/vladmovchan>.
 * 0.8.14: adjusts the `PdfSearchOptions::as_pdfium()` function introduced in 0.8.13 to return

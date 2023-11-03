@@ -520,8 +520,8 @@ impl<'a> PdfPageObject<'a> {
         "this [PdfPageObject],"
     );
 
-    // The transform_impl() function required by the create_transform_setters!() macro
-    // is provided by the PdfPageObjectPrivate trait.
+    // The transform_impl() and set_matrix_impl() functions required by the
+    // create_transform_setters!() macro are provided by the PdfPageObjectPrivate trait.
 
     create_transform_getters!(
         "this [PdfPageObject]",
@@ -762,7 +762,7 @@ where
 
     #[inline]
     fn transform_from(&mut self, other: &PdfPageObject) -> Result<(), PdfiumError> {
-        self.set_matrix(other.matrix()?)
+        self.set_matrix_impl(other.matrix()?)
     }
 
     #[inline]

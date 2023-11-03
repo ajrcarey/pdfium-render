@@ -261,7 +261,7 @@ pub(crate) mod internal {
         }
 
         /// Sets the raw transformation matrix for this page object.
-        fn set_matrix(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
+        fn set_matrix_impl(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
             if self.bindings().is_true(
                 self.bindings()
                     .FPDFPageObj_SetMatrix(self.get_object_handle(), &matrix.as_pdfium()),
@@ -290,7 +290,13 @@ pub(crate) mod internal {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use crate::color::PdfColor;
+    use crate::error::PdfiumError;
+    use crate::page_object_path::PdfPagePathObject;
+    use crate::page_objects_common::PdfPageObjectsCommon;
+    use crate::page_size::PdfPagePaperSize;
+    use crate::points::PdfPoints;
+    use crate::rect::PdfRect;
     use crate::utils::test::test_bind_to_pdfium;
 
     #[test]

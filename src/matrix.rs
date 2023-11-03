@@ -262,6 +262,18 @@ impl PdfMatrix {
         }
     }
 
+    // The internal implementation of the set_matrix() function used by the create_transform_setters!() macro.
+    fn set_matrix_impl(mut self, matrix: PdfMatrix) -> Result<Self, PdfiumError> {
+        self.set_a(matrix.a());
+        self.set_b(matrix.b());
+        self.set_c(matrix.c());
+        self.set_d(matrix.d());
+        self.set_e(matrix.e());
+        self.set_f(matrix.f());
+
+        Ok(self)
+    }
+
     create_transform_getters!("this [PdfMatrix]", "this [PdfMatrix].", "this [PdfMatrix],");
 
     // The internal implementation of the get_matrix_impl() function used by the create_transform_getters!() macro.
@@ -306,7 +318,8 @@ impl Add for PdfMatrix {
 
     #[inline]
     fn add(self, rhs: Self) -> Self::Output {
-        PdfMatrix::add(&self, rhs)
+        // Add::add() shadows Self::add(), so we must be explicit about which function to call.
+        Self::add(&self, rhs)
     }
 }
 

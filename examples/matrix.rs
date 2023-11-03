@@ -125,7 +125,7 @@ pub fn main() -> Result<(), PdfiumError> {
     // that we already applied to each object individually; this has the effect of applying
     // the matrix to every object twice.)
 
-    page.set_matrix(matrix)?;
+    page.apply_matrix(matrix)?;
 
     // Save the result.
 

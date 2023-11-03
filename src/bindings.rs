@@ -201,6 +201,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
 
     #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
     fn FPDF_DeviceToPage(
         &self,
         page: FPDF_PAGE,
@@ -216,6 +217,7 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
     fn FPDF_PageToDevice(
         &self,
         page: FPDF_PAGE,

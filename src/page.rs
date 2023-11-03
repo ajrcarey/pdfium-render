@@ -805,12 +805,27 @@ impl<'a> PdfPage<'a> {
         f: PdfMatrixValue,
         clip: PdfRect,
     ) -> Result<(), PdfiumError> {
-        self.set_matrix_with_clip(PdfMatrix::new(a, b, c, d, e, f), clip)
+        self.apply_matrix_with_clip(PdfMatrix::new(a, b, c, d, e, f), clip)
+    }
+
+    // TODO: AJRC - 3/11/23 - remove deprecated PdfPage::set_matrix_with_clip() function in 0.9.0
+    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+    #[deprecated(
+        since = "0.8.15",
+        note = "This function has been renamed to better reflect its behaviour. Use the apply_matrix_with_clip() function instead."
+    )]
+    #[inline]
+    pub fn set_matrix_with_clip(
+        &mut self,
+        matrix: PdfMatrix,
+        clip: PdfRect,
+    ) -> Result<(), PdfiumError> {
+        self.apply_matrix_with_clip(matrix, clip)
     }
 
     /// Applies the values in the given [PdfMatrix] to this [PdfPage], restricting the effects
     /// of the transformation matrix to the given clipping rectangle.
-    pub fn set_matrix_with_clip(
+    pub fn apply_matrix_with_clip(
         &mut self,
         matrix: PdfMatrix,
         clip: PdfRect,
@@ -856,11 +871,12 @@ impl<'a> PdfPage<'a> {
         Result<(), PdfiumError>,
         "each object on this [PdfPage]",
         "each object on this [PdfPage].",
-        "each object on this [PdfPage],"
-    );
-
-    // The transform_impl() function required by the create_transform_setters!() macro
-    // is provided by the PdfPageObjectPrivate trait.
+        "each object on this [PdfPage],",
+        "",
+        pub(self)
+    ); // pub(self) visibility for the generated set_matrix() function will effectively make it
+       // private. This is what we want, since Pdfium does not expose a function to directly set
+       // the transformation matrix of a page.
 
     #[inline]
     fn transform_impl(
@@ -873,6 +889,13 @@ impl<'a> PdfPage<'a> {
         f: PdfMatrixValue,
     ) -> Result<(), PdfiumError> {
         self.transform_with_clip(a, b, c, d, e, f, PdfRect::MAX)
+    }
+
+    // The set_matrix() function created by the create_transform_setters!() macro
+    // is not publicly visible, so this function should never be called.
+    #[allow(dead_code)]
+    fn set_matrix_impl(&mut self, _: PdfMatrix) -> Result<(), PdfiumError> {
+        unreachable!();
     }
 
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.

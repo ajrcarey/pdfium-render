@@ -6,7 +6,28 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! create_transform_setters {
-    ($self_:ty, $ret_:ty, $doc_ref_:literal, $doc_ref_period_:literal, $doc_ref_comma_:literal, $custom_doc_:literal) => {
+    // Notes on the macro parameters specified below:
+
+    // $self_:ty - the type of self taken by each function, e.g. &self, Self, &mut self, ...
+    // $ret_:ty - The return value for each function, e.g. Self, Result<Self, ...>, (), Result<(), ...>
+    // This must match the return value of the private transform_impl() function.
+    // $doc_ref_:literal - The wording used to refer to the containing impl block, with no trailing punctuation.
+    // $doc_ref_period_:literal - The wording used to refer to the containing impl block, with a trailing period.
+    // $doc_ref_comma_:literal - The wording used to refer to the containing impl block, with a trailing comma.
+    // $custom_doc_:literal - Any custom documentation to include at the end of each function's doc comment.
+    // $set_matrix_visibility_:ident -  An identifier indicating whether the set_matrix() function
+    // created by this macro should be visible or not. Not all transformable objects allow setting
+    // the transformation matrix directly; PdfPage is an example. For these objects, the set_matrix()
+    // function should be private, not public.
+    (
+        $self_:ty,
+        $ret_:ty,
+        $doc_ref_:literal,
+        $doc_ref_period_:literal,
+        $doc_ref_comma_:literal,
+        $custom_doc_:literal,
+        $set_matrix_visibility_:vis
+    ) => {
         /// Applies the given transformation, expressed as six values representing the six configurable
         /// elements of a nine-element 3x3 PDF transformation matrix, to
         #[doc = $doc_ref_period_ ]
@@ -64,8 +85,8 @@ macro_rules! create_transform_setters {
         ///
         #[doc = $custom_doc_ ]
         #[inline]
-        pub fn set_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
-            self.transform(
+        pub fn apply_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
+            self.transform_impl(
                 matrix.a(),
                 matrix.b(),
                 matrix.c(),
@@ -75,13 +96,25 @@ macro_rules! create_transform_setters {
             )
         }
 
-        /// Resets the transformation matrix for
-        #[doc = $doc_ref_]
-        /// to the identity matrix, undoing any previously applied transformations.
+        /// Resets the transform matrix for
+        #[doc = $doc_ref_ ]
+        /// to the the given [PdfMatrix], overriding any previously applied transformations.
         ///
         #[doc = $custom_doc_ ]
         #[inline]
-        pub fn reset_to_identity(self: $self_) -> $ret_ {
+        #[allow(dead_code)]
+        $set_matrix_visibility_ fn set_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
+            self.set_matrix_impl(matrix)
+        }
+
+        /// Resets the transformation matrix for
+        #[doc = $doc_ref_ ]
+        /// to the identity matrix, undoing all previously applied transformations.
+        ///
+        #[doc = $custom_doc_ ]
+        #[inline]
+        #[allow(dead_code)]
+        $set_matrix_visibility_ fn reset_to_identity(self: $self_) -> $ret_ {
             self.set_matrix(PdfMatrix::IDENTITY)
         }
 
@@ -218,6 +251,17 @@ macro_rules! create_transform_setters {
             self.transform(1.0, x_axis_skew.tan(), y_axis_skew.tan(), 1.0, 0.0, 0.0)
         }
     };
+    ($self_:ty, $ret_:ty, $doc_ref_:literal, $doc_ref_period_:literal, $doc_ref_comma_:literal, $custom_doc_:literal) => {
+        create_transform_setters!(
+            $self_,
+            $ret_,
+            $doc_ref_,
+            $doc_ref_period_,
+            $doc_ref_comma_,
+            $custom_doc_,
+            pub // Make the set_matrix() function public by default.
+        );
+    };
     ($self_:ty, $ret_:ty, $doc_ref_:literal, $doc_ref_period_:literal, $doc_ref_comma_:literal) => {
         create_transform_setters!(
             $self_,
@@ -225,7 +269,8 @@ macro_rules! create_transform_setters {
             $doc_ref_,
             $doc_ref_period_,
             $doc_ref_comma_,
-            "" // No custom documentation for this set of setter functions.
+            "",  // No custom documentation for this set of setter functions.
+            pub  // Make the set_matrix() function public by default.
         );
     };
 }
