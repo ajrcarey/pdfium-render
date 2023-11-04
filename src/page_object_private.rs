@@ -260,8 +260,9 @@ pub(crate) mod internal {
             }
         }
 
-        /// Sets the raw transformation matrix for this page object.
-        fn set_matrix_impl(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
+        /// Resets the raw transformation matrix for this page object, overwriting
+        /// the existing transformation matrix.
+        fn reset_matrix_impl(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
             if self.bindings().is_true(
                 self.bindings()
                     .FPDFPageObj_SetMatrix(self.get_object_handle(), &matrix.as_pdfium()),

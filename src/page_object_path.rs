@@ -989,7 +989,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
             }
         }
 
-        copy.set_matrix(self.matrix()?)?;
+        copy.reset_matrix(self.matrix()?)?;
 
         Ok(PdfPageObject::Path(copy))
     }

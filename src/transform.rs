@@ -15,10 +15,10 @@ macro_rules! create_transform_setters {
     // $doc_ref_period_:literal - The wording used to refer to the containing impl block, with a trailing period.
     // $doc_ref_comma_:literal - The wording used to refer to the containing impl block, with a trailing comma.
     // $custom_doc_:literal - Any custom documentation to include at the end of each function's doc comment.
-    // $set_matrix_visibility_:ident -  An identifier indicating whether the set_matrix() function
-    // created by this macro should be visible or not. Not all transformable objects allow setting
-    // the transformation matrix directly; PdfPage is an example. For these objects, the set_matrix()
-    // function should be private, not public.
+    // $reset_matrix_visibility_:ident -  An identifier indicating whether the reset_matrix() and
+    // reset_matrix_to_identity() functions created by this macro should be public or private.
+    // Not all transformable objects allow setting the transformation matrix directly; PdfPage is an
+    // example. For these objects, the set_matrix() function should be private.
     (
         $self_:ty,
         $ret_:ty,
@@ -26,7 +26,7 @@ macro_rules! create_transform_setters {
         $doc_ref_period_:literal,
         $doc_ref_comma_:literal,
         $custom_doc_:literal,
-        $set_matrix_visibility_:vis
+        $reset_matrix_visibility_:vis
     ) => {
         /// Applies the given transformation, expressed as six values representing the six configurable
         /// elements of a nine-element 3x3 PDF transformation matrix, to
@@ -66,7 +66,7 @@ macro_rules! create_transform_setters {
         /// from translating _then_ rotating the same object.
         ///
         /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
-        /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
+        /// version 1.7 on page 204; a detailed description can be found in section 4.2.3 on page 207.
         #[inline]
         pub fn transform(
             self: $self_,
@@ -80,7 +80,7 @@ macro_rules! create_transform_setters {
             self.transform_impl(a, b, c, d, e, f)
         }
 
-        /// Applies the values in the given [PdfMatrix] to
+        /// Applies the given transformation, expressed as a [PdfMatrix], to
         #[doc = $doc_ref_period_ ]
         ///
         #[doc = $custom_doc_ ]
@@ -96,6 +96,18 @@ macro_rules! create_transform_setters {
             )
         }
 
+        // TODO: AJRC - 29/7/22 - remove deprecated set_matrix() function in 0.9.0
+        // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
+        #[deprecated(
+            since = "0.8.15",
+            note = "This function has been renamed to better reflect its behaviour. Use the apply_matrix() function instead."
+        )]
+        #[doc(hidden)]
+        #[inline]
+        pub fn set_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
+            self.apply_matrix(matrix)
+        }
+
         /// Resets the transform matrix for
         #[doc = $doc_ref_ ]
         /// to the the given [PdfMatrix], overriding any previously applied transformations.
@@ -103,19 +115,19 @@ macro_rules! create_transform_setters {
         #[doc = $custom_doc_ ]
         #[inline]
         #[allow(dead_code)]
-        $set_matrix_visibility_ fn set_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
-            self.set_matrix_impl(matrix)
+        $reset_matrix_visibility_ fn reset_matrix(self: $self_, matrix: PdfMatrix) -> $ret_ {
+            self.reset_matrix_impl(matrix)
         }
 
         /// Resets the transformation matrix for
         #[doc = $doc_ref_ ]
-        /// to the identity matrix, undoing all previously applied transformations.
+        /// to the identity matrix, undoing any previously applied transformations.
         ///
         #[doc = $custom_doc_ ]
         #[inline]
         #[allow(dead_code)]
-        $set_matrix_visibility_ fn reset_to_identity(self: $self_) -> $ret_ {
-            self.set_matrix(PdfMatrix::IDENTITY)
+        $reset_matrix_visibility_ fn reset_matrix_to_identity(self: $self_) -> $ret_ {
+            self.reset_matrix(PdfMatrix::IDENTITY)
         }
 
         /// Moves the origin of

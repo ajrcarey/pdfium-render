@@ -792,7 +792,7 @@ impl<'a> PdfPage<'a> {
     /// from translating _then_ rotating the same object.
     ///
     /// An overview of PDF transformation matrices can be found in the PDF Reference Manual
-    /// version 1.7 on page 204; a detailed description can be founded in section 4.2.3 on page 207.
+    /// version 1.7 on page 204; a detailed description can be found in section 4.2.3 on page 207.
     #[inline]
     #[allow(clippy::too_many_arguments)]
     pub fn transform_with_clip(
@@ -814,6 +814,7 @@ impl<'a> PdfPage<'a> {
         since = "0.8.15",
         note = "This function has been renamed to better reflect its behaviour. Use the apply_matrix_with_clip() function instead."
     )]
+    #[doc(hidden)]
     #[inline]
     pub fn set_matrix_with_clip(
         &mut self,
@@ -823,8 +824,8 @@ impl<'a> PdfPage<'a> {
         self.apply_matrix_with_clip(matrix, clip)
     }
 
-    /// Applies the values in the given [PdfMatrix] to this [PdfPage], restricting the effects
-    /// of the transformation matrix to the given clipping rectangle.
+    /// Applies the given transformation, expressed as a [PdfMatrix], to this [PdfPage],
+    /// restricting the effects of the transformation matrix to the given clipping rectangle.
     pub fn apply_matrix_with_clip(
         &mut self,
         matrix: PdfMatrix,
@@ -874,7 +875,7 @@ impl<'a> PdfPage<'a> {
         "each object on this [PdfPage],",
         "",
         pub(self)
-    ); // pub(self) visibility for the generated set_matrix() function will effectively make it
+    ); // pub(self) visibility for the generated reset_matrix() function will effectively make it
        // private. This is what we want, since Pdfium does not expose a function to directly set
        // the transformation matrix of a page.
 
@@ -891,10 +892,10 @@ impl<'a> PdfPage<'a> {
         self.transform_with_clip(a, b, c, d, e, f, PdfRect::MAX)
     }
 
-    // The set_matrix() function created by the create_transform_setters!() macro
+    // The reset_matrix() function created by the create_transform_setters!() macro
     // is not publicly visible, so this function should never be called.
     #[allow(dead_code)]
-    fn set_matrix_impl(&mut self, _: PdfMatrix) -> Result<(), PdfiumError> {
+    fn reset_matrix_impl(&mut self, _: PdfMatrix) -> Result<(), PdfiumError> {
         unreachable!();
     }
 

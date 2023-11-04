@@ -262,8 +262,8 @@ impl PdfMatrix {
         }
     }
 
-    // The internal implementation of the set_matrix() function used by the create_transform_setters!() macro.
-    fn set_matrix_impl(mut self, matrix: PdfMatrix) -> Result<Self, PdfiumError> {
+    // The internal implementation of the reset_matrix() function used by the create_transform_setters!() macro.
+    fn reset_matrix_impl(mut self, matrix: PdfMatrix) -> Result<Self, PdfiumError> {
         self.set_a(matrix.a());
         self.set_b(matrix.b());
         self.set_c(matrix.c());

@@ -708,9 +708,9 @@ impl<'a> PdfPageGroupObject<'a> {
         self.apply_to_each(|object| object.transform(a, b, c, d, e, f))
     }
 
-    // The internal implementation of the set_matrix() function used by the create_transform_setters!() macro.
-    fn set_matrix_impl(&mut self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
-        self.apply_to_each(|object| object.set_matrix_impl(matrix))
+    // The internal implementation of the reset_matrix() function used by the create_transform_setters!() macro.
+    fn reset_matrix_impl(&mut self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
+        self.apply_to_each(|object| object.reset_matrix_impl(matrix))
     }
 }
 

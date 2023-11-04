@@ -89,13 +89,13 @@ annotation type. A new `examples/create_annotations.rs` example demonstrates the
 
 Version 0.8.15 corrects a byte alignment bug that could occur when converting
 three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
-from <https://github.com/vladmovchan>, and changes the behaviour of the `set_matrix()` function
-available on transformable objects. Prior to 0.8.15, `set_matrix()` _applied_ the given matrix
-to the existing transformation matrix; from 0.8.15 onwards, `set_matrix()` _replaces_ the
-existing transformation matrix with the given matrix. The change in behaviour better reflects the
-name of the function. The old behaviour is still available in a new `apply_matrix()` function.
+from <https://github.com/vladmovchan>, and adds a new `reset_matrix()` function to transformable objects
+that replaces the object's existing transformation with a new matrix. The `set_matrix()` function is
+deprecated in favour of `apply_matrix()`, which better describes the behaviour of the function.
 A new `reset_to_identity()` function resets the transformation matrix of a transformable object
-to the identity matrix, undoing any previously applied transformations.
+to the identity matrix, undoing any previously applied transformations. Similarly, the
+`PdfPage::set_matrix_with_clip()` function is deprecated in favour of the better-named
+`PdfPage::apply_matrix_with_clip()`. Deprecated items will be removed in release 0.9.0.
 
 Version 0.8.14 corrects a Windows-specific build error introduced in 0.8.13.
 
@@ -365,12 +365,12 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
-* 0.8.15: adds new `apply_matrix()` and `reset_to_identity()` functions to all consumers of the
-  `create_transform_setters!()` macro; changes the behaviour of the `set_matrix()` function in the
-  `create_transform_setters!()` macro so that it replaces the existing transformation matrix rather
-  than adding to it; adds a matching corrects a byte alignment bug that could occur when converting
-  three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
-  from <https://github.com/vladmovchan>.
+* 0.8.15: adds new `reset_matrix()` and `reset_matrix_to_identity()` functions to consumers of the
+  `create_transform_setters!()` macro; deprecates `set_matrix()` in favour of `apply_matrix()`
+  and `PdfPage::set_matrix_with_clip()` in favour of `PdfPage::apply_matrix_with_clip()`;
+  adds a matching corrects a byte alignment bug that could occur when converting three-bytes-per-pixel
+  bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution from
+  <https://github.com/vladmovchan>. Deprecated items will be removed in release 0.9.0.
 * 0.8.14: adjusts the `PdfSearchOptions::as_pdfium()` function introduced in 0.8.13 to return
   a `c_ulong` in order to fix a build-time error specific to Windows.
 * 0.8.13: addresses incorrect results returned by `PdfPageTextObject::chars()` as

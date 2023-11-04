@@ -227,8 +227,10 @@ unsafe impl Sync for PdfPageIndexCache {}
 
 #[cfg(test)]
 mod tests {
+    use crate::error::PdfiumError;
     use crate::page_index_cache::PdfPageIndexCache;
-    use crate::prelude::*;
+    use crate::page_size::PdfPagePaperSize;
+    use crate::pages::PdfPageIndex;
     use crate::utils::test::test_bind_to_pdfium;
 
     #[test]

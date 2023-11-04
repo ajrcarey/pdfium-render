@@ -520,7 +520,7 @@ impl<'a> PdfPageObject<'a> {
         "this [PdfPageObject],"
     );
 
-    // The transform_impl() and set_matrix_impl() functions required by the
+    // The transform_impl() and reset_matrix_impl() functions required by the
     // create_transform_setters!() macro are provided by the PdfPageObjectPrivate trait.
 
     create_transform_getters!(
@@ -762,7 +762,7 @@ where
 
     #[inline]
     fn transform_from(&mut self, other: &PdfPageObject) -> Result<(), PdfiumError> {
-        self.set_matrix_impl(other.matrix()?)
+        self.reset_matrix_impl(other.matrix()?)
     }
 
     #[inline]
@@ -1175,5 +1175,93 @@ impl<'a> Drop for PdfPageObject<'a> {
             self.bindings()
                 .FPDFPageObj_Destroy(self.get_object_handle());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::PdfiumError;
+    use crate::matrix::PdfMatrix;
+    use crate::page_objects_common::PdfPageObjectsCommon;
+    use crate::page_size::PdfPagePaperSize;
+    use crate::points::PdfPoints;
+    use crate::utils::test::test_bind_to_pdfium;
+
+    #[test]
+    fn test_apply_matrix() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let mut document = pdfium.create_new_pdf()?;
+
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::a4())?;
+
+        let font = document.fonts_mut().times_roman();
+
+        let mut object = page.objects_mut().create_text_object(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            "My new text object",
+            font,
+            PdfPoints::new(10.0),
+        )?;
+
+        // Apply some basic transformations to the object...
+
+        object.translate(PdfPoints::new(100.0), PdfPoints::new(100.0))?;
+        object.flip_vertically()?;
+        object.rotate_clockwise_degrees(45.0)?;
+        object.scale(3.0, 4.0)?;
+
+        let previous_matrix = object.matrix()?;
+
+        // _Applying_ the identity matrix should not alter the current matrix.
+
+        object.apply_matrix(PdfMatrix::IDENTITY)?;
+
+        assert_eq!(previous_matrix, object.matrix()?);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_reset_matrix_to_identity() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let mut document = pdfium.create_new_pdf()?;
+
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::a4())?;
+
+        let font = document.fonts_mut().times_roman();
+
+        let mut object = page.objects_mut().create_text_object(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            "My new text object",
+            font,
+            PdfPoints::new(10.0),
+        )?;
+
+        // Apply some basic transformations to the object...
+
+        object.translate(PdfPoints::new(100.0), PdfPoints::new(100.0))?;
+        object.flip_vertically()?;
+        object.rotate_clockwise_degrees(45.0)?;
+        object.scale(3.0, 4.0)?;
+
+        let previous_matrix = object.matrix()?;
+
+        // _Resetting_ the object's matrix back to the identity matrix should wipe out
+        // the current matrix.
+
+        object.reset_matrix_to_identity()?;
+
+        assert_ne!(previous_matrix, object.matrix()?);
+        assert_eq!(object.matrix()?, PdfMatrix::IDENTITY);
+
+        Ok(())
     }
 }

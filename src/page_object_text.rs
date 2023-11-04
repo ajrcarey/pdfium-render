@@ -501,7 +501,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
         copy.set_stroke_width(self.stroke_width()?)?;
         copy.set_line_join(self.line_join()?)?;
         copy.set_line_cap(self.line_cap()?)?;
-        copy.set_matrix(self.matrix()?)?;
+        copy.reset_matrix(self.matrix()?)?;
 
         Ok(PdfPageObject::Text(copy))
     }
