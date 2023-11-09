@@ -215,7 +215,7 @@ impl<'a> PdfPage<'a> {
         self.page_handle
     }
 
-    /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfPage].
+    /// Returns the internal `FPDF_DOCUMENT` handle of the `PdfDocument` containing this [PdfPage].
     #[inline]
     pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
         self.document_handle

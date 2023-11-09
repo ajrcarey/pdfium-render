@@ -83,23 +83,23 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Version 0.8.16 adds support for creating new annotations, positioning those annotations,
+Release 0.8.16 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Version 0.8.15 corrects a byte alignment bug that could occur when converting
+Release 0.8.15 corrects a byte alignment bug that could occur when converting
 three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
 from <https://github.com/vladmovchan>, and adds a new `reset_matrix()` function to transformable objects
-that replaces the object's existing transformation with a new matrix. The `set_matrix()` function is
-deprecated in favour of `apply_matrix()`, which better describes the behaviour of the function.
-A new `reset_to_identity()` function resets the transformation matrix of a transformable object
-to the identity matrix, undoing any previously applied transformations. Similarly, the
+that replaces the object's existing transformation matrix with a new matrix. The `set_matrix()`
+function is deprecated in favour of `apply_matrix()`, which better describes the behaviour of the
+function. A new `reset_to_identity()` function resets the transformation matrix of a transformable
+object to the identity matrix, undoing any previously applied transformations. Similarly, the
 `PdfPage::set_matrix_with_clip()` function is deprecated in favour of the better-named
 `PdfPage::apply_matrix_with_clip()`. Deprecated items will be removed in release 0.9.0.
 
-Version 0.8.14 corrects a Windows-specific build error introduced in 0.8.13.
+Release 0.8.14 corrects a Windows-specific build error introduced in 0.8.13.
 
-Version 0.8.13 corrects a bug in `PdfPageTextObject::chars()` that could see incorrect results
+Release 0.8.13 corrects a bug in `PdfPageTextObject::chars()` that could see incorrect results
 returned in edge cases involving overlapping text objects, and adds the `PdfPageTextSearch`
 object and `PdfPageText::search()` function for running text searches across the text of
 a single page, thanks to an excellent contribution from <https://github.com/zhonghua-wang>.

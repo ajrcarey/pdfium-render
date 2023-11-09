@@ -1,10 +1,11 @@
 //! Defines the [PdfBookmarks] struct, exposing functionality related to the
 //! bookmarks contained within a single `PdfDocument`.
 
-use crate::bindgen::FPDF_DOCUMENT;
+use crate::bindgen::{FPDF_BOOKMARK, FPDF_DOCUMENT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmark::PdfBookmark;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use std::collections::{HashMap, VecDeque};
 use std::ptr::null_mut;
 
 /// The bookmarks contained within a single `PdfDocument`.
@@ -34,17 +35,30 @@ impl<'a> PdfBookmarks<'a> {
         }
     }
 
+    /// Returns the internal `FPDF_DOCUMENT` handle of the `PdfDocument` containing
+    /// this [PdfBookmarks] collection.
+    #[inline]
+    pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfBookmarks] collection.
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
+    }
+
     /// Returns the root [PdfBookmark] in the containing `PdfDocument`, if any.
     pub fn root(&self) -> Option<PdfBookmark> {
-        let handle = self
+        let bookmark_handle = self
             .bindings
             .FPDFBookmark_GetFirstChild(self.document_handle, null_mut());
 
-        if handle.is_null() {
+        if bookmark_handle.is_null() {
             None
         } else {
             Some(PdfBookmark::from_pdfium(
-                handle,
+                bookmark_handle,
                 None,
                 self.document_handle,
                 self.bindings,
@@ -97,33 +111,135 @@ impl<'a> PdfBookmarks<'a> {
     /// `PdfDocument`, starting from the top-level root bookmark.
     #[inline]
     pub fn iter(&self) -> PdfBookmarksIterator {
-        PdfBookmarksIterator::new(self.root(), true, true, true, None)
+        PdfBookmarksIterator::new(
+            self.root(),
+            true,
+            true,
+            true,
+            None,
+            self.document_handle(),
+            self.bindings(),
+        )
     }
 }
 
 pub struct PdfBookmarksIterator<'a> {
-    node: Option<PdfBookmark<'a>>,
     include_siblings: bool,
     include_direct_children: bool,
     include_all_descendants: bool,
     skip_sibling: Option<PdfBookmark<'a>>,
+    pending_stack: VecDeque<(FPDF_BOOKMARK, Option<FPDF_BOOKMARK>)>,
+    visited: HashMap<FPDF_BOOKMARK, bool>,
+    document_handle: FPDF_DOCUMENT,
+    bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfBookmarksIterator<'a> {
     pub(crate) fn new(
-        node: Option<PdfBookmark<'a>>,
+        start_node: Option<PdfBookmark<'a>>,
         include_siblings: bool,
         include_direct_children: bool,
         include_all_descendants: bool,
         skip_sibling: Option<PdfBookmark<'a>>,
+        document_handle: FPDF_DOCUMENT,
+        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        PdfBookmarksIterator {
-            node,
+        let mut result = PdfBookmarksIterator {
+            document_handle,
             include_siblings,
             include_direct_children,
             include_all_descendants,
             skip_sibling,
+            pending_stack: VecDeque::with_capacity(20),
+            visited: HashMap::new(),
+            bindings,
+        };
+
+        // Push the start node onto the stack to initiate graph traversal.
+
+        if let Some(start_node) = start_node {
+            result.pending_stack.push_back((
+                start_node.bookmark_handle(),
+                start_node.parent().map(|parent| parent.bookmark_handle()),
+            ));
         }
+
+        result
+    }
+
+    /// Returns `true` if the given [PdfBookmark] has already been visited during
+    /// graph traversal.
+    fn is_already_visited(&self, bookmark: &PdfBookmark) -> bool {
+        self.visited.contains_key(&bookmark.bookmark_handle())
+    }
+
+    /// Pushes the given [PdfBookmark] into the queue of nodes to visit, placing it at
+    /// the front of the queue.
+    fn push_front(&mut self, bookmark: PdfBookmark) {
+        if !self.is_already_visited(&bookmark) {
+            self.pending_stack.push_front((
+                bookmark.bookmark_handle(),
+                bookmark.parent().map(|parent| parent.bookmark_handle()),
+            ));
+        }
+    }
+
+    /// Pushes the given [PdfBookmark] into the queue of nodes to visit, placing it at
+    /// the back of the queue.
+    fn push_back(&mut self, bookmark: PdfBookmark) {
+        if !self.is_already_visited(&bookmark) {
+            self.pending_stack.push_back((
+                bookmark.bookmark_handle(),
+                bookmark.parent().map(|parent| parent.bookmark_handle()),
+            ));
+        }
+    }
+
+    /// Pushes all children of the given [PdfBookmark] into the queue of nodes to visit.
+    fn push_children(&mut self, parent: &PdfBookmark) {
+        let mut children = Vec::with_capacity(10);
+
+        let first_child = parent.first_child();
+
+        if let Some(first_child) = first_child {
+            let mut next_sibling = first_child.next_sibling();
+
+            children.push(first_child);
+
+            while let Some(sibling) = next_sibling {
+                next_sibling = sibling.next_sibling();
+                children.push(sibling);
+            }
+        }
+
+        children
+            .drain(..)
+            .rev()
+            .for_each(|child| self.push_front(child));
+    }
+
+    /// Pushes all siblings of the given [PdfBookmark] into the queue of nodes to visit.
+    fn push_siblings(&mut self, sibling: &PdfBookmark) {
+        let mut siblings = Vec::with_capacity(10);
+
+        let mut next_sibling = sibling.next_sibling();
+
+        while let Some(sibling) = next_sibling {
+            next_sibling = sibling.next_sibling();
+
+            if let Some(skip_sibling) = self.skip_sibling.as_ref() {
+                if skip_sibling.bookmark_handle() != sibling.bookmark_handle() {
+                    siblings.push(sibling);
+                }
+            } else {
+                siblings.push(sibling);
+            }
+        }
+
+        siblings
+            .drain(..)
+            .rev()
+            .for_each(|sibling| self.push_back(sibling));
     }
 }
 
@@ -131,49 +247,51 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
     type Item = PdfBookmark<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.node = match self.node.as_ref() {
-            Some(current_node) => {
-                let next_sibling = if self.include_siblings {
-                    match (self.skip_sibling.as_ref(), current_node.next_sibling()) {
-                        (None, next_sibling) => next_sibling,
-                        (Some(skip_sibling), Some(next_sibling)) => {
-                            // PdfBookmark::iter_siblings() attempts to achieve consistent
-                            // iteration irrespective of which sibling is used to initiate
-                            // the traversal. It does this by actually iterating over the
-                            // direct children of the bookmark's parent, rather than the
-                            // immediate siblings of the target node. When we iterate over the
-                            // siblings of the target node's parent's children, we want to
-                            // skip over the target node itself. Check for this now.
+        // We follow a standard depth-first graph traversal method.
 
-                            if skip_sibling.handle() == next_sibling.handle() {
-                                // This sibling was the target node that initiated iteration.
-                                // Skip over it.
+        // Pop the next node we haven't yet visited off the stack.
 
-                                next_sibling.next_sibling()
-                            } else {
-                                Some(next_sibling)
-                            }
-                        }
-                        (_, None) => None,
-                    }
-                } else {
-                    None
-                };
-
-                if next_sibling.is_some() {
-                    next_sibling
-                } else if self.include_direct_children {
-                    self.include_siblings = true;
-                    self.include_direct_children = self.include_all_descendants;
-
-                    current_node.first_child()
-                } else {
-                    None
+        let next_unvisited_node = loop {
+            if let Some((bookmark_handle, parent_bookmark_handle)) = self.pending_stack.pop_front()
+            {
+                if !self.visited.contains_key(&bookmark_handle) {
+                    break Some(PdfBookmark::from_pdfium(
+                        bookmark_handle,
+                        parent_bookmark_handle,
+                        self.document_handle,
+                        self.bindings,
+                    ));
                 }
+            } else {
+                break None;
             }
-            None => None,
         };
 
-        self.node.as_ref().map(|next_node| next_node.clone())
+        if let Some(bookmark) = next_unvisited_node {
+            // Mark the node as visited...
+
+            self.visited.insert(bookmark.bookmark_handle(), true);
+
+            // ... and schedule its children and siblings for visiting, if so configured.
+
+            if self.include_direct_children {
+                self.push_children(&bookmark);
+
+                // Only probe child nodes for grandchildren if we have been instructed
+                // to include all descendants.
+
+                self.include_direct_children = self.include_all_descendants;
+            }
+
+            if self.include_siblings {
+                self.push_siblings(&bookmark);
+            }
+
+            Some(bookmark)
+        } else {
+            // All nodes in the graph have been visited.
+
+            None
+        }
     }
 }
