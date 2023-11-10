@@ -5,6 +5,7 @@ use crate::action::PdfAction;
 use crate::bindgen::{FPDF_BOOKMARK, FPDF_DOCUMENT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::bookmarks::PdfBookmarksIterator;
+use crate::destination::PdfDestination;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::os::raw::c_void;
@@ -108,6 +109,26 @@ impl<'a> PdfBookmark<'a> {
             Some(PdfAction::from_pdfium(
                 handle,
                 self.document_handle,
+                self.bindings,
+            ))
+        }
+    }
+
+    /// Returns the [PdfDestination] associated with this [PdfBookmark], if any.
+    ///
+    /// The destination specifies the page and region, if any, that will be the target
+    /// of any behaviour that will occur when the user interacts with the link in a PDF viewer.
+    pub fn dest(&self) -> Option<PdfDestination<'a>> {
+        let handle = self
+            .bindings
+            .FPDFBookmark_GetDest(self.document_handle, self.bookmark_handle);
+
+        if handle.is_null() {
+            None
+        } else {
+            Some(PdfDestination::from_pdfium(
+                self.document_handle,
+                handle,
                 self.bindings,
             ))
         }
