@@ -88,7 +88,9 @@ associating them with page objects, and retrieving and setting more annotation p
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
 Release 0.8.16 corrects a bug in the traversal of bookmarks that could result in unexpected
-results when traversing deep bookmark trees.
+results when traversing deep bookmark trees, and adds the `PdfBookmark::destination()` function
+for retrieving the target destination of the action assigned to a bookmark, thanks to an
+excellent contribution from <https://github.com/xVanTuring>.
 
 Release 0.8.15 corrects a byte alignment bug that could occur when converting
 three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
@@ -369,7 +371,9 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
 * 0.8.16: refactors `PdfBookmarksIterator` to use a standard depth-first graph traversal algorithm
-  in response to <https://github.com/ajrcarey/pdfium-render/issues/120>.
+  in response to <https://github.com/ajrcarey/pdfium-render/issues/120>; adds `PdfBookmark::destination()`
+  function for retrieving the target destination of the action assigned to a bookmark, thanks to an
+  excellent contribution from <https://github.com/xVanTuring>.
 * 0.8.15: adds new `reset_matrix()` and `reset_matrix_to_identity()` functions to consumers of the
   `create_transform_setters!()` macro; deprecates `set_matrix()` in favour of `apply_matrix()`
   and `PdfPage::set_matrix_with_clip()` in favour of `PdfPage::apply_matrix_with_clip()`;
