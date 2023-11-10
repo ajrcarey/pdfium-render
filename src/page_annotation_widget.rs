@@ -47,10 +47,18 @@ impl<'a> PdfPageWidgetAnnotation<'a> {
         }
     }
 
-    /// Returns the [PdfFormField] wrapped by this [PdfPageWidgetAnnotation], if any.
+    /// Returns an immutable reference to the [PdfFormField] wrapped by this [PdfPageWidgetAnnotation],
+    /// if any.
     #[inline]
     pub fn form_field(&self) -> Option<&PdfFormField> {
         self.form_field.as_ref()
+    }
+
+    /// Returns a mutable reference to the [PdfFormField] wrapped by this [PdfPageWidgetAnnotation],
+    /// if any.
+    #[inline]
+    pub fn form_field_mut(&mut self) -> Option<&mut PdfFormField<'a>> {
+        self.form_field.as_mut()
     }
 }
 

@@ -489,8 +489,9 @@ impl<'a> PdfPageAnnotation<'a> {
         matches!(self, PdfPageAnnotation::Unsupported(_))
     }
 
-    /// Returns the underlying [PdfPageCircleAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Circle].
+    /// Returns an immutable reference to the underlying [PdfPageCircleAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Circle].
     #[inline]
     pub fn as_circle_annotation(&self) -> Option<&PdfPageCircleAnnotation> {
         match self {
@@ -499,8 +500,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageFreeTextAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::FreeText].
+    /// Returns a mutable reference to the underlying [PdfPageCircleAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Circle].
+    #[inline]
+    pub fn as_circle_annotation_mut(&mut self) -> Option<&mut PdfPageCircleAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Circle(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageFreeTextAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::FreeText].
     #[inline]
     pub fn as_free_text_annotation(&self) -> Option<&PdfPageFreeTextAnnotation> {
         match self {
@@ -509,8 +522,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageHighlightAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Highlight].
+    /// Returns a mutable reference to the underlying [PdfPageFreeTextAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::FreeText].
+    #[inline]
+    pub fn as_free_text_annotation_mut(&mut self) -> Option<&mut PdfPageFreeTextAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::FreeText(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageHighlightAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Highlight].
     #[inline]
     pub fn as_highlight_annotation(&self) -> Option<&PdfPageHighlightAnnotation> {
         match self {
@@ -519,8 +544,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageInkAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Ink].
+    /// Returns a mutable reference to the underlying [PdfPageHighlightAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Highlight].
+    #[inline]
+    pub fn as_highlight_annotation_mut(&mut self) -> Option<&mut PdfPageHighlightAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Highlight(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageInkAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Ink].
     #[inline]
     pub fn as_ink_annotation(&self) -> Option<&PdfPageInkAnnotation> {
         match self {
@@ -529,8 +566,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageLinkAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Link].
+    /// Returns a mutable reference to the underlying [PdfPageInkAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Ink].
+    #[inline]
+    pub fn as_ink_annotation_mut(&mut self) -> Option<&mut PdfPageInkAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Ink(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageLinkAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Link].
     #[inline]
     pub fn as_link_annotation(&self) -> Option<&PdfPageLinkAnnotation> {
         match self {
@@ -539,8 +588,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPagePopupAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Popup].
+    /// Returns a mutable reference to the underlying [PdfPageLinkAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Link].
+    #[inline]
+    pub fn as_link_annotation_mut(&mut self) -> Option<&mut PdfPageLinkAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Link(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPagePopupAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Popup].
     #[inline]
     pub fn as_popup_annotation(&self) -> Option<&PdfPagePopupAnnotation> {
         match self {
@@ -549,8 +610,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageSquareAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Square].
+    /// Returns a mutable reference to the underlying [PdfPagePopupAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Popup].
+    #[inline]
+    pub fn as_popup_annotation_mut(&mut self) -> Option<&mut PdfPagePopupAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Popup(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageSquareAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Square].
     #[inline]
     pub fn as_square_annotation(&self) -> Option<&PdfPageSquareAnnotation> {
         match self {
@@ -559,8 +632,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageSquigglyAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Squiggly].
+    /// Returns a mutable reference to the underlying [PdfPageSquareAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Square].
+    #[inline]
+    pub fn as_square_annotation_mut(&mut self) -> Option<&mut PdfPageSquareAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Square(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageSquigglyAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Squiggly].
     #[inline]
     pub fn as_squiggly_annotation(&self) -> Option<&PdfPageSquigglyAnnotation> {
         match self {
@@ -569,8 +654,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageStampAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Stamp].
+    /// Returns a mutable reference to the underlying [PdfPageSquigglyAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Squiggly].
+    #[inline]
+    pub fn as_squiggly_annotation_mut(&mut self) -> Option<&mut PdfPageSquigglyAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Squiggly(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageStampAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Stamp].
     #[inline]
     pub fn as_stamp_annotation(&self) -> Option<&PdfPageStampAnnotation> {
         match self {
@@ -579,8 +676,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageStrikeoutAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Strikeout].
+    /// Returns a mutable reference to the underlying [PdfPageStampAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Stamp].
+    #[inline]
+    pub fn as_stamp_annotation_mut(&mut self) -> Option<&mut PdfPageStampAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Stamp(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageStrikeoutAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Strikeout].
     #[inline]
     pub fn as_strikeout_annotation(&self) -> Option<&PdfPageStrikeoutAnnotation> {
         match self {
@@ -589,8 +698,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageTextAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Text].
+    /// Returns a mutable reference to the underlying [PdfPageStrikeoutAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Strikeout].
+    #[inline]
+    pub fn as_strikeout_annotation_mut(&mut self) -> Option<&mut PdfPageStrikeoutAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Strikeout(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageTextAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Text].
     #[inline]
     pub fn as_text_annotation(&self) -> Option<&PdfPageTextAnnotation> {
         match self {
@@ -599,8 +720,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageUnderlineAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Underline].
+    /// Returns a mutable reference to the underlying [PdfPageTextAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Text].
+    #[inline]
+    pub fn as_text_annotation_mut(&mut self) -> Option<&mut PdfPageTextAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Text(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageUnderlineAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Underline].
     #[inline]
     pub fn as_underline_annotation(&self) -> Option<&PdfPageUnderlineAnnotation> {
         match self {
@@ -609,8 +742,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageWidgetAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Widget].
+    /// Returns a mutable reference to the underlying [PdfPageUnderlineAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Underline].
+    #[inline]
+    pub fn as_underline_annotation_mut(&mut self) -> Option<&mut PdfPageUnderlineAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Underline(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageWidgetAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Widget].
     #[inline]
     pub fn as_widget_annotation(&self) -> Option<&PdfPageWidgetAnnotation> {
         match self {
@@ -619,8 +764,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageXfaWidgetAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::XfaWidget].
+    /// Returns a mutable reference to the underlying [PdfPageWidgetAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Widget].
+    #[inline]
+    pub fn as_widget_annotation_mut(&mut self) -> Option<&mut PdfPageWidgetAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Widget(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageXfaWidgetAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::XfaWidget].
     #[inline]
     pub fn as_xfa_widget_annotation(&self) -> Option<&PdfPageXfaWidgetAnnotation> {
         match self {
@@ -629,8 +786,20 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the underlying [PdfPageRedactedAnnotation] for this [PdfPageAnnotation],
-    /// if this annotation has an annotation type of [PdfPageAnnotationType::Redacted].
+    /// Returns a mutable reference to the underlying [PdfPageXfaWidgetAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::XfaWidget].
+    #[inline]
+    pub fn as_xfa_widget_annotation_mut(&mut self) -> Option<&mut PdfPageXfaWidgetAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::XfaWidget(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the underlying [PdfPageRedactedAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Redacted].
     #[inline]
     pub fn as_redacted_annotation(&self) -> Option<&PdfPageRedactedAnnotation> {
         match self {
@@ -639,7 +808,19 @@ impl<'a> PdfPageAnnotation<'a> {
         }
     }
 
-    /// Returns the [PdfFormField] wrapped by this [PdfPageAnnotation], if any.
+    /// Returns a mutable reference to the underlying [PdfPageRedactedAnnotation]
+    /// for this [PdfPageAnnotation], if this annotation has an annotation type of
+    /// [PdfPageAnnotationType::Redacted].
+    #[inline]
+    pub fn as_redacted_annotation_mut(&mut self) -> Option<&mut PdfPageRedactedAnnotation<'a>> {
+        match self {
+            PdfPageAnnotation::Redacted(annotation) => Some(annotation),
+            _ => None,
+        }
+    }
+
+    /// Returns an immutable reference to the [PdfFormField] wrapped by this [PdfPageAnnotation],
+    /// if any.
     ///
     /// Only annotations of type [PdfPageAnnotationType::Widget] and [PdfPageAnnotationType::XfaWidget]
     /// wrap form fields.
@@ -648,6 +829,20 @@ impl<'a> PdfPageAnnotation<'a> {
         match self {
             PdfPageAnnotation::Widget(annotation) => annotation.form_field(),
             PdfPageAnnotation::XfaWidget(annotation) => annotation.form_field(),
+            _ => None,
+        }
+    }
+
+    /// Returns a mutable reference to the [PdfFormField] wrapped by this [PdfPageAnnotation],
+    /// if any.
+    ///
+    /// Only annotations of type [PdfPageAnnotationType::Widget] and [PdfPageAnnotationType::XfaWidget]
+    /// wrap form fields.
+    #[inline]
+    pub fn as_form_field_mut(&mut self) -> Option<&mut PdfFormField<'a>> {
+        match self {
+            PdfPageAnnotation::Widget(annotation) => annotation.form_field_mut(),
+            PdfPageAnnotation::XfaWidget(annotation) => annotation.form_field_mut(),
             _ => None,
         }
     }
@@ -744,7 +939,7 @@ pub trait PdfPageAnnotationCommon {
     /// To gain access to the mutable collection of page objects inside an ink or stamp annotation,
     /// you must first unwrap the annotation, like so:
     /// ```
-    /// annotation.as_stamp_annotation().unwrap().objects_mut();
+    /// annotation.as_stamp_annotation_mut().unwrap().objects_mut();
     /// ```
     fn objects(&self) -> &PdfPageAnnotationObjects;
 
@@ -760,7 +955,7 @@ pub trait PdfPageAnnotationCommon {
     /// To gain access to the mutable collection of attachment points inside a supported
     /// annotation, you must first unwrap the annotation, like so:
     /// ```
-    /// annotation.as_link_annotation().unwrap().attachment_points_mut();
+    /// annotation.as_link_annotation_mut().unwrap().attachment_points_mut();
     /// ```
     fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints;
 }
