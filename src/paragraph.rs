@@ -8,10 +8,12 @@ use crate::document::PdfDocument;
 use crate::error::PdfiumError;
 use crate::font::PdfFont;
 use crate::fonts::PdfFontToken;
+use crate::page::PdfPage;
 use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
 use crate::page_object_group::PdfPageGroupObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
+use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::points::PdfPoints;
 use iter_tools::Itertools;
 use maybe_owned::MaybeOwned;
@@ -226,10 +228,11 @@ impl<'a> PdfLine<'a> {
 ///
 /// Text layout in PDF files is handled entirely by text objects. Each text object contains
 /// a single span of text that is styled consistently and can be at most a single line long.
-/// Paragraphs containing multiple lines, with different internal text styles, are formed
-/// from multiple text objects stitched together visually at the time the page is generated.
-/// There is no native functionality for retrieving a single paragraph from its constituent
-/// text objects. This makes it difficult to work with long spans of text.
+/// Multiple text objects stitched together visually at the time the page is generated are
+/// interpreted by the reader as paragraphs, but there is no concept in the PDF file format
+/// of a multi-line text block, and there is no native functionality for retrieving a single
+/// paragraph from its constituent text objects. This makes it difficult to work with long spans
+/// of text.
 ///
 /// The [PdfParagraph] is an attempt to improve multi-line text handling. Paragraphs can
 /// be created from existing groups of page objects, or created by scratch; once created, text in
@@ -237,7 +240,7 @@ impl<'a> PdfLine<'a> {
 /// that can be placed on a page.
 pub struct PdfParagraph<'a> {
     fragments: Vec<PdfParagraphFragment<'a>>,
-    top: Option<PdfPoints>,
+    bottom: Option<PdfPoints>,
     left: Option<PdfPoints>,
     max_width: Option<PdfPoints>,
     max_height: Option<PdfPoints>,
@@ -247,16 +250,26 @@ pub struct PdfParagraph<'a> {
 }
 
 impl<'a> PdfParagraph<'a> {
-    // Creates a set of one or more [PdfParagraph] objects from the objects on the given [PdfPage].
+    // TODO: lifetime issues, using iterator is a possibility but PdfPage::objects().iter()
+    // and PdfPageGroupObject::iter() return iterators over PdfPageObject<'a> whereas
+    // &[PdfPageObject<'a>] returns an iterator over &PdfPageObject<'a>
+
+    // /// Creates a set of one or more [PdfParagraph] objects from the objects on the given [PdfPage].
     // #[inline]
-    // pub fn from_page(page: &'a PdfPage<'a>) -> Vec<Self> {
-    //     let x = page.objects().iter().collect::<Vec<_>>();
+    // pub fn from_page(page: &'a PdfPage<'a>) -> Vec<PdfParagraph<'a>> {
+    //     let objects = page.objects().iter().collect::<Vec<_>>();
     //
-    //     Self::from_objects(x.as_slice())
+    //     Self::from_iter(objects.as_slice())
+    // }
+    //
+    // #[inline]
+    // pub fn from_group(group: &'a PdfPageGroupObject<'a>) -> Vec<PdfParagraph<'a>> {
+    //     let objects = group.iter().collect::<Vec<_>>();
+    //
+    //     Self::from_iter(objects.as_slice())
     // }
 
-    /// Creates a set of one or more [PdfParagraph] objects from the given list of page objects.
-    pub fn from_objects(objects: &'a [PdfPageObject<'a>]) -> Vec<Self> {
+    pub fn from_objects(objects: &'a [PdfPageObject<'a>]) -> Vec<PdfParagraph<'a>> {
         let mut lines = Vec::new();
 
         let mut current_line_fragments = Vec::new();
@@ -291,7 +304,7 @@ impl<'a> PdfParagraph<'a> {
 
                 let object_top = object
                     .bounds()
-                    .map(|bounds| bounds.height())
+                    .map(|bounds| bounds.top)
                     .unwrap_or(PdfPoints::ZERO);
 
                 match objects_top {
@@ -302,6 +315,11 @@ impl<'a> PdfParagraph<'a> {
                     }
                     None => objects_top = Some(object_top),
                 }
+
+                let object_height = object
+                    .bounds()
+                    .map(|bounds| bounds.height())
+                    .unwrap_or(PdfPoints::ZERO);
 
                 let object_left = object
                     .bounds()
@@ -319,7 +337,7 @@ impl<'a> PdfParagraph<'a> {
 
                 let object_right = object
                     .bounds()
-                    .map(|bounds| bounds.width())
+                    .map(|bounds| bounds.right)
                     .unwrap_or(PdfPoints::ZERO);
 
                 match objects_right {
@@ -334,22 +352,22 @@ impl<'a> PdfParagraph<'a> {
                 (object_bottom, object_top, object_left, object_right, object)
             })
             .sorted_by(|a, b| {
-                let (a_top, a_bottom, _, a_right) = (a.0, a.1, a.2, a.3);
+                let (a_bottom, a_top, _, a_right) = (a.0, a.1, a.2, a.3);
 
-                let (b_top, b_bottom, b_left, _) = (b.0, b.1, b.2, b.3);
+                let (b_bottom, b_top, b_left, _) = (b.0, b.1, b.2, b.3);
 
                 // Keep track of the paragraph maximum bounds as we examine objects.
 
                 // Sort by position: vertically first, then horizontally.
 
-                if b_top < a_bottom {
-                    // Object a is in a line higher up the page than object b.
-
-                    Ordering::Less
-                } else if a_top > b_bottom {
+                if b_top > a_bottom {
                     // Object a is in a line lower down the page than object b.
 
                     Ordering::Greater
+                } else if b_top < a_bottom {
+                    // Object a is in a line higher up the page than object b.
+
+                    Ordering::Less
                 } else if a_right < b_left {
                     // Objects a and b are on the same line, and object a is closer to the left edge
                     // of the line than object b.
@@ -378,7 +396,7 @@ impl<'a> PdfParagraph<'a> {
         let mut last_object_right = None;
         let mut last_object_width = None;
 
-        for (top, bottom, left, right, object) in positioned_objects.iter() {
+        for (bottom, top, left, right, object) in positioned_objects.iter() {
             let top = *top;
 
             let bottom = *bottom;
@@ -438,8 +456,6 @@ impl<'a> PdfParagraph<'a> {
             last_object_bottom = Some(bottom);
             last_object_height = Some(top - bottom);
 
-            current_line_right = right;
-
             if let Some(object) = object.as_text_object() {
                 // If the styling of this object is the same as the last styled string fragment,
                 // then append the text of this object to the last fragment; otherwise, start a
@@ -449,16 +465,49 @@ impl<'a> PdfParagraph<'a> {
                     current_line_fragments.last_mut()
                 {
                     if last_string.does_match_object_styling(object) {
-                        // The styles of the two text objects are the same. Merge them into the same
-                        // styled string.
+                        // The styles of the two text objects are the same. They should be
+                        // merged them into the same styled string - but should they
+                        // be part of the same word, or separate words?
+
+                        let separator = if let Ok(bounds) = object.bounds() {
+                            if let Some(last_object_right) = last_object_right {
+                                if last_object_right > bounds.left {
+                                    // The last and current objects are touching.
+                                    // Assume they're part of the same word, despite being
+                                    // in separate objects.
+
+                                    ""
+                                } else {
+                                    // The last and current objects are separated.
+
+                                    " "
+                                }
+                            } else {
+                                // We're at the start of a line.
+
+                                ""
+                            }
+                        } else {
+                            // Cannot measure the bounds of the current object; by default,
+                            // assume it's separated from the last object.
+
+                            " "
+                        };
 
                         println!(
-                            "styling matches, push \"{}\" onto \"{}\", separating with space",
+                            "styling matches, push \"{}\" onto \"{}\", separated by \"{}\"",
                             object.text(),
-                            last_string.text()
+                            last_string.text(),
+                            separator
                         );
 
-                        last_string.push(object.text(), " ");
+                        last_string.push(object.text(), separator);
+
+                        println!(
+                            "last_object_right = {:?},  this object left = {:?}",
+                            last_object_right,
+                            object.bounds().unwrap().left,
+                        );
                     } else {
                         // The styles of the two text objects are different, so they can't be merged.
 
@@ -495,31 +544,119 @@ impl<'a> PdfParagraph<'a> {
             current_line_fragments,
         ));
 
+        // Assemble lines into paragraphs.
+
         let mut paragraphs = Vec::new();
 
-        // let mut current_paragraph = None;
+        let mut current_paragraph_fragments = Vec::new();
 
-        for line in lines.drain(..) {
-            println!("********* got line: {:?}", line.alignment)
+        let mut current_paragraph_bottom = None;
+
+        let mut current_paragraph_left = None;
+
+        let mut current_paragraph_right = None;
+
+        let mut current_paragraph_first_line_left = None;
+
+        let mut last_line_alignment = lines
+            .first()
+            .map(|line| line.alignment)
+            .unwrap_or(PdfLineAlignment::None);
+
+        for mut line in lines.drain(..) {
+            println!("********* got line: {:?}", line.alignment);
+
+            if line.alignment != last_line_alignment {
+                // Finalize the current paragraph...
+
+                if !current_paragraph_fragments.is_empty() {
+                    paragraphs.push(Self::paragraph_from_lines());
+
+                    // ... and start a new paragraph.
+
+                    current_paragraph_fragments = Vec::new();
+                    current_paragraph_bottom = None;
+                    current_paragraph_left = None;
+                    current_paragraph_right = None;
+                    current_paragraph_first_line_left = None;
+                }
+            }
+
+            current_paragraph_fragments.append(&mut line.fragments);
+
+            last_line_alignment = line.alignment;
+
+            if let Some(paragraph_left) = current_paragraph_left {
+                if line.left < paragraph_left {
+                    current_paragraph_left = Some(line.left);
+                }
+            } else {
+                current_paragraph_left = Some(line.left);
+            }
+
+            if let Some(paragraph_right) = current_paragraph_right {
+                if line.left + line.width > paragraph_right {
+                    current_paragraph_right = Some(line.left + line.width);
+                }
+            } else {
+                current_paragraph_right = Some(line.left + line.width);
+            }
+
+            if let Some(paragraph_bottom) = current_paragraph_bottom {
+                if line.bottom < paragraph_bottom {
+                    current_paragraph_bottom = Some(line.bottom);
+                }
+            } else {
+                current_paragraph_bottom = Some(line.bottom);
+            }
+
+            if current_paragraph_first_line_left.is_none() {
+                current_paragraph_first_line_left = Some(line.left);
+            }
         }
 
-        paragraphs
+        // Finalize the last paragraph.
 
-        // PdfParagraph {
-        //     fragments,
-        //     top,
-        //     left,
-        //     max_width: match (left, right) {
-        //         (Some(left), Some(right)) => Some(right - left),
-        //         _ => None,
-        //     },
-        //     max_height: match (top, bottom) {
-        //         (Some(top), Some(bottom)) => Some(top - bottom),
-        //         _ => None,
-        //     },
-        //     overflow: PdfParagraphOverflowBehaviour::FixWidthExpandHeight,
-        //     alignment: PdfParagraphAlignment::LeftAlign,
-        // }
+        paragraphs.push(Self::paragraph_from_lines());
+
+        paragraphs
+    }
+
+    fn paragraph_from_lines(
+        fragments: Vec<PdfParagraphFragment>,
+        bottom: Option<PdfPoints>,
+        left: Option<PdfPoints>,
+        right: Option<PdfPoints>,
+        first_line_left: Option<PdfPoints>,
+        first_line_alignment: PdfLineAlignment,
+        last_line_alignment: PdfLineAlignment,
+    ) -> PdfParagraph<'a> {
+        PdfParagraph {
+            fragments,
+            bottom,
+            left,
+            max_width: match (left, right) {
+                (Some(left), Some(right)) => Some(right - left),
+                _ => None,
+            },
+            max_height: None,
+            overflow: PdfParagraphOverflowBehaviour::FixWidthExpandHeight,
+            alignment: match last_line_alignment {
+                PdfLineAlignment::None | PdfLineAlignment::LeftAlign => {
+                    PdfParagraphAlignment::LeftAlign
+                }
+                PdfLineAlignment::RightAlign => PdfParagraphAlignment::RightAlign,
+                PdfLineAlignment::Center => PdfParagraphAlignment::Center,
+                PdfLineAlignment::Justify => PdfParagraphAlignment::Justify,
+                // TODO: take into account last line justification when
+                // determining paragraph breaks - the last line in a paragraph
+                // is usually unjustified
+            },
+            first_line_indent: match (first_line_left, left) {
+                (Some(first_line_left), Some(left)) => first_line_left - left,
+                _ => PdfPoints::ZERO,
+            },
+        }
     }
 
     fn guess_line_alignment(
@@ -575,7 +712,7 @@ impl<'a> PdfParagraph<'a> {
     ) -> Self {
         PdfParagraph {
             fragments: vec![],
-            top: None,
+            bottom: None,
             left: None,
             max_width: Some(maximum_width),
             max_height: None,
@@ -639,6 +776,8 @@ impl<'a> PdfParagraph<'a> {
     /// Returns the text contained within all text fragments in this paragraph.
     #[inline]
     pub fn text(&self) -> String {
+        println!(">>>> text(): fragments count = {}", self.fragments.len());
+
         self.fragments
             .iter()
             .filter_map(|fragment| match fragment {

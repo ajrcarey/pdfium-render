@@ -96,7 +96,7 @@ pub mod page_text_search;
 pub mod page_text_segment;
 pub mod page_text_segments;
 pub mod pages;
-mod paragraph; // Keep private while PdfParagraph is still in development.
+pub mod paragraph;
 pub mod path_segment;
 pub mod path_segments;
 pub mod pdfium;
