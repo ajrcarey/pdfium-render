@@ -563,14 +563,27 @@ impl<'a> PdfParagraph<'a> {
             .map(|line| line.alignment)
             .unwrap_or(PdfLineAlignment::None);
 
+        let mut first_line_alignment = last_line_alignment;
+
         for mut line in lines.drain(..) {
             println!("********* got line: {:?}", line.alignment);
 
             if line.alignment != last_line_alignment {
+                // TODO: this won't work as expected for non-force-justified paragraphs
+                // where the last line in the paragraph is left-aligned, not justified
+
                 // Finalize the current paragraph...
 
                 if !current_paragraph_fragments.is_empty() {
-                    paragraphs.push(Self::paragraph_from_lines());
+                    paragraphs.push(Self::paragraph_from_lines(
+                        current_paragraph_fragments,
+                        current_paragraph_bottom,
+                        current_paragraph_left,
+                        current_paragraph_right,
+                        current_paragraph_first_line_left,
+                        first_line_alignment,
+                        last_line_alignment,
+                    ));
 
                     // ... and start a new paragraph.
 
@@ -579,6 +592,7 @@ impl<'a> PdfParagraph<'a> {
                     current_paragraph_left = None;
                     current_paragraph_right = None;
                     current_paragraph_first_line_left = None;
+                    first_line_alignment = last_line_alignment
                 }
             }
 
@@ -617,13 +631,21 @@ impl<'a> PdfParagraph<'a> {
 
         // Finalize the last paragraph.
 
-        paragraphs.push(Self::paragraph_from_lines());
+        paragraphs.push(Self::paragraph_from_lines(
+            current_paragraph_fragments,
+            current_paragraph_bottom,
+            current_paragraph_left,
+            current_paragraph_right,
+            current_paragraph_first_line_left,
+            first_line_alignment,
+            last_line_alignment,
+        ));
 
         paragraphs
     }
 
     fn paragraph_from_lines(
-        fragments: Vec<PdfParagraphFragment>,
+        fragments: Vec<PdfParagraphFragment<'a>>,
         bottom: Option<PdfPoints>,
         left: Option<PdfPoints>,
         right: Option<PdfPoints>,
@@ -641,16 +663,21 @@ impl<'a> PdfParagraph<'a> {
             },
             max_height: None,
             overflow: PdfParagraphOverflowBehaviour::FixWidthExpandHeight,
-            alignment: match last_line_alignment {
-                PdfLineAlignment::None | PdfLineAlignment::LeftAlign => {
-                    PdfParagraphAlignment::LeftAlign
+            alignment: if first_line_alignment == last_line_alignment
+                && first_line_alignment == PdfLineAlignment::Justify
+            {
+                // Every line in the paragraph, including the last line, is justified.
+
+                PdfParagraphAlignment::ForceJustify
+            } else {
+                match first_line_alignment {
+                    PdfLineAlignment::None | PdfLineAlignment::LeftAlign => {
+                        PdfParagraphAlignment::LeftAlign
+                    }
+                    PdfLineAlignment::RightAlign => PdfParagraphAlignment::RightAlign,
+                    PdfLineAlignment::Center => PdfParagraphAlignment::Center,
+                    PdfLineAlignment::Justify => PdfParagraphAlignment::Justify,
                 }
-                PdfLineAlignment::RightAlign => PdfParagraphAlignment::RightAlign,
-                PdfLineAlignment::Center => PdfParagraphAlignment::Center,
-                PdfLineAlignment::Justify => PdfParagraphAlignment::Justify,
-                // TODO: take into account last line justification when
-                // determining paragraph breaks - the last line in a paragraph
-                // is usually unjustified
             },
             first_line_indent: match (first_line_left, left) {
                 (Some(first_line_left), Some(left)) => first_line_left - left,
