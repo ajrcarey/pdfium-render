@@ -83,9 +83,12 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.16 adds support for creating new annotations, positioning those annotations,
+Release 0.8.17 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+
+Release 0.8.16 corrects a bug in the traversal of bookmarks that could result in unexpected
+results when traversing deep bookmark trees.
 
 Release 0.8.15 corrects a byte alignment bug that could occur when converting
 three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
@@ -341,7 +344,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.15, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.16, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -354,7 +357,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.16: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.17: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -365,6 +368,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
+* 0.8.16: refactors `PdfBookmarksIterator` to use a standard depth-first graph traversal algorithm
+  in response to <https://github.com/ajrcarey/pdfium-render/issues/120>.
 * 0.8.15: adds new `reset_matrix()` and `reset_matrix_to_identity()` functions to consumers of the
   `create_transform_setters!()` macro; deprecates `set_matrix()` in favour of `apply_matrix()`
   and `PdfPage::set_matrix_with_clip()` in favour of `PdfPage::apply_matrix_with_clip()`;

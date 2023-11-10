@@ -195,7 +195,9 @@ impl<'a> PdfBookmark<'a> {
                     true,
                     false,
                     false,
-                    None,
+                    // Signal that the iterator should skip over this bookmark when iterating
+                    // the parent's direct children.
+                    Some(self.clone()),
                     self.document_handle(),
                     self.bindings(),
                 )

@@ -173,6 +173,17 @@ impl<'a> PdfBookmarksIterator<'a> {
         self.visited.contains_key(&bookmark.bookmark_handle())
     }
 
+    /// Returns `true` if the given [PdfBookmark] matches the bookmark marked as the skip
+    /// sibling for this iterator. The skip sibling should be skipped during traversal
+    /// of siblings. This avoids the bookmark used to start a sibling traversal being
+    /// itself included in the list of siblings.
+    fn is_skip_sibling(&self, bookmark: &PdfBookmark) -> bool {
+        match self.skip_sibling.as_ref() {
+            Some(skip_sibling) => skip_sibling.bookmark_handle() == bookmark.bookmark_handle(),
+            None => false,
+        }
+    }
+
     /// Pushes the given [PdfBookmark] into the queue of nodes to visit, placing it at
     /// the front of the queue.
     fn push_front(&mut self, bookmark: PdfBookmark) {
@@ -227,11 +238,7 @@ impl<'a> PdfBookmarksIterator<'a> {
         while let Some(sibling) = next_sibling {
             next_sibling = sibling.next_sibling();
 
-            if let Some(skip_sibling) = self.skip_sibling.as_ref() {
-                if skip_sibling.bookmark_handle() != sibling.bookmark_handle() {
-                    siblings.push(sibling);
-                }
-            } else {
+            if !self.is_skip_sibling(&sibling) {
                 siblings.push(sibling);
             }
         }
@@ -285,6 +292,12 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
 
             if self.include_siblings {
                 self.push_siblings(&bookmark);
+
+                if self.is_skip_sibling(&bookmark) {
+                    // Don't yield the skip sibling as an iteration result.
+
+                    return self.next();
+                }
             }
 
             Some(bookmark)
