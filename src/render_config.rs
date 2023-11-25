@@ -891,6 +891,7 @@ impl PdfRenderConfig {
                 }
             },
             render_flags: render_flags as c_int,
+            is_reversed_byte_order_flag_set: self.do_set_flag_reverse_byte_order,
         }
     }
 }
@@ -917,4 +918,5 @@ pub(crate) struct PdfRenderSettings {
     pub(crate) matrix: FS_MATRIX,
     pub(crate) clipping: FS_RECTF,
     pub(crate) render_flags: c_int,
+    pub(crate) is_reversed_byte_order_flag_set: bool,
 }

@@ -117,7 +117,7 @@ impl<'a> PdfBookmark<'a> {
     /// Returns the [PdfDestination] associated with this [PdfBookmark], if any.
     ///
     /// The destination specifies the page and region, if any, that will be the target
-    /// of the action behaviour specified by [PdfDestination::action()].
+    /// of the action behaviour specified by [PdfBookmark::action()].
     pub fn destination(&self) -> Option<PdfDestination<'a>> {
         let handle = self
             .bindings

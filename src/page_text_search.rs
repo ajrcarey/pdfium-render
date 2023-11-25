@@ -93,6 +93,7 @@ impl<'a> PdfPageTextSearch<'a> {
     }
 
     /// Returns the internal `FPDF_SCHHANDLE` handle for this [PdfPageTextSearch] object.
+    #[allow(unused)]
     #[inline]
     pub(crate) fn handle(&self) -> FPDF_SCHHANDLE {
         self.handle

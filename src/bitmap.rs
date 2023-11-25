@@ -22,6 +22,8 @@ use wasm_bindgen::{Clamped, JsValue};
 #[cfg(target_arch = "wasm32")]
 use web_sys::ImageData;
 
+use crate::render_config::PdfRenderSettings;
+use crate::utils::pixels::aligned_rgb_to_rgba;
 #[cfg(target_arch = "wasm32")]
 use js_sys::Uint8Array;
 
@@ -103,6 +105,7 @@ impl Default for PdfBitmapFormat {
 /// A bitmap image with a specific width and height.
 pub struct PdfBitmap<'a> {
     handle: FPDF_BITMAP,
+    was_byte_order_reversed_during_rendering: bool,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -112,7 +115,11 @@ impl<'a> PdfBitmap<'a> {
         handle: FPDF_BITMAP,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        PdfBitmap { handle, bindings }
+        PdfBitmap {
+            handle,
+            was_byte_order_reversed_during_rendering: false,
+            bindings,
+        }
     }
 
     /// Creates an empty [PdfBitmap] with a buffer capable of storing an image of the given
@@ -181,6 +188,15 @@ impl<'a> PdfBitmap<'a> {
         &self.handle
     }
 
+    /// Lets this [PdfBitmap] know whether it was created from a rendering configuration
+    /// that instructed Pdfium to reverse the byte order of generated image data from its
+    /// default of BGR8 to RGB8. The setting of this flag determines the color channel
+    /// normalization strategy used by [PdfBitmap::as_rgba_bytes()].
+    #[inline]
+    pub(crate) fn set_byte_order_from_render_settings(&mut self, settings: &PdfRenderSettings) {
+        self.was_byte_order_reversed_during_rendering = settings.is_reversed_byte_order_flag_set
+    }
+
     /// Returns the [PdfiumLibraryBindings] used by this [PdfBitmap].
     #[inline]
     pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
@@ -234,17 +250,35 @@ impl<'a> PdfBitmap<'a> {
     pub fn as_rgba_bytes(&self) -> Vec<u8> {
         let bytes = self.as_raw_bytes();
 
-        match self.format().unwrap_or_default() {
-            #[allow(deprecated)]
-            PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
-                bgra_to_rgba(bytes)
+        let format = self.format().unwrap_or_default();
+
+        let width = self.width() as usize;
+
+        let stride = bytes.len() / self.height() as usize;
+
+        if self.was_byte_order_reversed_during_rendering {
+            // The R and B channels were swapped by Pdfium during rendering, as configured by
+            // a call to PdfRenderConfig::set_reverse_byte_order(true).
+
+            match format {
+                #[allow(deprecated)]
+                PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx | PdfBitmapFormat::BRGx => {
+                    // No conversion necessary; data was already swapped from BGRx
+                    // to four-channel RGB during rendering.
+                    bytes.to_vec()
+                }
+                PdfBitmapFormat::BGR => aligned_rgb_to_rgba(bytes, width, stride),
+                PdfBitmapFormat::Gray => bytes.to_vec(),
             }
-            PdfBitmapFormat::BGR => aligned_bgr_to_rgba(
-                bytes,
-                self.width() as usize,
-                bytes.len() / self.height() as usize,
-            ),
-            PdfBitmapFormat::Gray => bytes.to_vec(),
+        } else {
+            match format {
+                #[allow(deprecated)]
+                PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
+                    bgra_to_rgba(bytes)
+                }
+                PdfBitmapFormat::BGR => aligned_bgr_to_rgba(bytes, width, stride),
+                PdfBitmapFormat::Gray => bytes.to_vec(),
+            }
         }
     }
 
@@ -296,10 +330,10 @@ impl<'a> PdfBitmap<'a> {
     /// this [PdfBitmap].
     ///
     /// This function avoids a memory allocation and copy required by both
-    /// [PdfBitmap::as_rgb_bytes()] and [PdfBitmap::as_image_data()], making it preferable for
+    /// [PdfBitmap::as_rgba_bytes()] and [PdfBitmap::as_image_data()], making it preferable for
     /// situations where performance is paramount.
     ///
-    /// Unlike [PdfBitmap::as_rgb_bytes()], this function does not attempt any color channel normalization.
+    /// Unlike [PdfBitmap::as_rgba_bytes()], this function does not attempt any color channel normalization.
     /// To adjust color channels in your own code, use the [PdfiumLibraryBindings::bgr_to_rgba()],
     /// [PdfiumLibraryBindings::bgra_to_rgba()], [PdfiumLibraryBindings::rgb_to_bgra()],
     /// and [PdfiumLibraryBindings::rgba_to_bgra()] functions.

@@ -1,7 +1,43 @@
 pub(crate) mod pixels {
+
     const BYTES_PER_THREE_CHANNEL_PIXEL: usize = 3;
 
     const BYTES_PER_FOUR_CHANNEL_PIXEL: usize = 4;
+
+    /// Converts the given byte array, containing pixel data encoded as three-channel RGB,
+    /// into pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
+    ///
+    /// This function assumes that the RGB pixel data does not include any additional alignment bytes.
+    /// If the source data includes alignment bytes, then the [aligned_bgr_to_rgba()] function
+    /// should be used instead.
+    #[allow(unused)]
+    pub(crate) fn unaligned_rgb_to_rgba(rgb: &[u8]) -> Vec<u8> {
+        rgb.chunks_exact(BYTES_PER_THREE_CHANNEL_PIXEL)
+            .flat_map(|channels| [channels[0], channels[1], channels[2], 255])
+            .collect::<Vec<_>>()
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as three-channel RGB with
+    /// one or more empty alignment bytes, into pixel data encoded as four-channel RGBA.
+    /// A new alpha channel is created with full opacity.
+    ///
+    /// Alignment bytes are used to ensure that the stride of a bitmap - the length in bytes of
+    /// a single scanline - is always a multiple of four, irrespective of the pixel data format.
+    /// The number of empty alignment bytes to be skipped is determined from the given width
+    /// and stride parameters.
+    ///
+    /// If alignment bytes are not used in the source pixel data, then the [unaligned_rgb_to_rgba()]
+    /// function should be used instead.
+    #[inline]
+    pub(crate) fn aligned_rgb_to_rgba(rgb: &[u8], width: usize, stride: usize) -> Vec<u8> {
+        rgb.chunks_exact(stride)
+            .flat_map(|scanline| {
+                scanline[..width * BYTES_PER_THREE_CHANNEL_PIXEL]
+                    .chunks_exact(BYTES_PER_THREE_CHANNEL_PIXEL)
+            })
+            .flat_map(|channels| [channels[0], channels[1], channels[2], 255])
+            .collect::<Vec<_>>()
+    }
 
     /// Converts the given byte array, containing pixel data encoded as three-channel BGR,
     /// into pixel data encoded as four-channel RGBA. A new alpha channel is created with full opacity.
@@ -61,6 +97,39 @@ pub(crate) mod pixels {
     pub(crate) fn rgba_to_bgra(rgba: &[u8]) -> Vec<u8> {
         // RGBA <-> BGRA is an invertible operation where we simply swap bytes 0 and 2.
         bgra_to_rgba(rgba)
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as three-channel BGR,
+    /// into pixel data encoded as four-channel BGRA. A new alpha channel is created with full opacity.
+    ///
+    /// This function assumes that the BGR pixel data does not include any additional alignment bytes.
+    /// If the source data includes alignment bytes, then the [aligned_bgr_to_rgba()] function
+    /// should be used instead.
+    #[allow(unused)]
+    #[inline]
+    pub(crate) fn unaligned_bgr_to_bgra(bgr: &[u8]) -> Vec<u8> {
+        // Expanding from three-channel to four-channel pixel data by adding an alpha channel
+        // is the same irrespective of the pixel color format.
+        unaligned_rgb_to_rgba(bgr)
+    }
+
+    /// Converts the given byte array, containing pixel data encoded as three-channel BGR with
+    /// one or more empty alignment bytes, into pixel data encoded as four-channel BGRA.
+    /// A new alpha channel is created with full opacity.
+    ///
+    /// Alignment bytes are used to ensure that the stride of a bitmap - the length in bytes of
+    /// a single scanline - is always a multiple of four, irrespective of the pixel data format.
+    /// The number of empty alignment bytes to be skipped is determined from the given width
+    /// and stride parameters.
+    ///
+    /// If alignment bytes are not used in the source pixel data, then the [unaligned_rgb_to_rgba()]
+    /// function should be used instead.
+    #[allow(unused)]
+    #[inline]
+    pub(crate) fn aligned_bgr_to_bgra(bgr: &[u8], width: usize, stride: usize) -> Vec<u8> {
+        // Expanding from three-channel to four-channel pixel data by adding an alpha channel
+        // is the same irrespective of the pixel color format.
+        aligned_rgb_to_rgba(bgr, width, stride)
     }
 }
 

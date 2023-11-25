@@ -1,8 +1,8 @@
-#![allow(unused)] // AJRC - 28/1/23 - Suppress unused function warnings during development of PdfParagraph
-
 //! Defines the [PdfParagraph] struct, exposing functionality related to a group of
 //! styled text strings that should be laid out together on a `PdfPage` as single paragraph.
-#[doc(hidden)]
+
+#![allow(unused)] // AJRC - 28/1/23 - Suppress unused function warnings during development of PdfParagraph
+
 use crate::bindgen::FPDF_PAGEOBJECT;
 use crate::document::PdfDocument;
 use crate::error::PdfiumError;
@@ -152,7 +152,7 @@ enum PdfParagraphFragment<'a> {
     NonTextObject(FPDF_PAGEOBJECT),
 }
 
-/// Controls the overflow behaviour of a [PdfPageParagraphObject] that, due to changes in its content,
+/// Controls the overflow behaviour of a [PdfParagraph] that, due to changes in its content,
 /// needs to overflow the maximum bounds of the original page objects from which it was defined.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfParagraphOverflowBehaviour {
@@ -166,7 +166,7 @@ pub enum PdfParagraphOverflowBehaviour {
     Clip,
 }
 
-/// Controls the line alignment behaviour of a [PdfPageParagraphObject].
+/// Controls the line alignment behaviour of a [PdfParagraph].
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfParagraphAlignment {
     /// All lines will be non-justified, aligned to the left.
@@ -238,6 +238,7 @@ impl<'a> PdfLine<'a> {
 /// be created from existing groups of page objects, or created by scratch; once created, text in
 /// a paragraph can be edited and re-formatted, and then used to generate a group of text objects
 /// that can be placed on a page.
+#[doc(hidden)]
 pub struct PdfParagraph<'a> {
     fragments: Vec<PdfParagraphFragment<'a>>,
     bottom: Option<PdfPoints>,

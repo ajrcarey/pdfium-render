@@ -10,6 +10,8 @@ use crate::bitmap::{PdfBitmap, PdfBitmapFormat, Pixels};
 use crate::create_transform_setters;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::PdfFont;
+use crate::matrix::{PdfMatrix, PdfMatrixValue};
+use crate::page_annotations::PdfPageAnnotations;
 use crate::page_boundaries::PdfPageBoundaries;
 use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_links::PdfPageLinks;
@@ -18,12 +20,14 @@ use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::page_size::PdfPagePaperSize;
 use crate::page_text::PdfPageText;
 use crate::points::PdfPoints;
-use crate::prelude::{PdfMatrix, PdfMatrixValue, PdfPageAnnotations};
 use crate::rect::PdfRect;
 use crate::render_config::{PdfRenderConfig, PdfRenderSettings};
 use std::collections::{hash_map::Entry, HashMap};
 use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::{c_double, c_int};
+
+#[cfg(doc)]
+use crate::document::PdfDocument;
 
 /// The orientation of a [PdfPage].
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -43,7 +47,7 @@ impl PdfPageOrientation {
     }
 }
 
-/// A rotation transformation that should be applied to a `PdfPage` when it is rendered
+/// A rotation transformation that should be applied to a [PdfPage] when it is rendered
 /// into a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfPageRenderRotation {
@@ -116,7 +120,7 @@ pub type PdfBitmapRotation = PdfPageRenderRotation;
 /// Content regeneration strategies that instruct `pdfium-render` when, if ever, it should
 /// automatically regenerate the content of a [PdfPage].
 ///
-/// Updates to a [PdfPage] are not committed to the underlying `PdfDocument` until the page's
+/// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
 /// content is regenerated. If a page is reloaded or closed without regenerating the page's
 /// content, any changes not applied are lost.
 ///
@@ -215,7 +219,7 @@ impl<'a> PdfPage<'a> {
         self.page_handle
     }
 
-    /// Returns the internal `FPDF_DOCUMENT` handle of the `PdfDocument` containing this [PdfPage].
+    /// Returns the internal `FPDF_DOCUMENT` handle of the [PdfDocument] containing this [PdfPage].
     #[inline]
     pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
         self.document_handle
@@ -725,6 +729,8 @@ impl<'a> PdfPage<'a> {
             );
         }
 
+        bitmap.set_byte_order_from_render_settings(&settings);
+
         Ok(())
     }
 
@@ -977,9 +983,9 @@ impl<'a> PdfPage<'a> {
         );
     }
 
-    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying `PdfDocument`.
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     ///
-    /// Updates to a [PdfPage] are not committed to the underlying `PdfDocument` until the page's
+    /// Updates to a [PdfPage] are not committed to the underlying [PdfDocument] until the page's
     /// content is regenerated. If a page is reloaded or closed without regenerating the page's
     /// content, all uncommitted changes will be lost.
     ///
@@ -999,13 +1005,13 @@ impl<'a> PdfPage<'a> {
         self.regenerate_content_immut()
     }
 
-    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying `PdfDocument`.
+    /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
         Self::regenerate_content_immut_for_handle(self.page_handle, self.bindings)
     }
 
     /// Commits any staged but unsaved changes to the page identified by the given internal
-    /// `FPDF_PAGE` handle to the underlying `PdfDocument` containing that page.
+    /// `FPDF_PAGE` handle to the underlying [PdfDocument] containing that page.
     pub(crate) fn regenerate_content_immut_for_handle(
         page: FPDF_PAGE,
         bindings: &dyn PdfiumLibraryBindings,
