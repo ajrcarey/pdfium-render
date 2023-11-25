@@ -50,6 +50,7 @@ impl PdfBitmapConfig {
     )]
     #[inline]
     #[doc(hidden)]
+    #[allow(clippy::should_implement_trait)]
     pub fn default() -> PdfRenderConfig {
         PdfRenderConfig::default()
     }

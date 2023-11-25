@@ -277,6 +277,8 @@ pub(crate) mod files {
         unsafe {
             let reader = (*file_access_ptr).reader.as_mut();
 
+            #[allow(clippy::unnecessary_cast)]
+            // c_ulong isn't guaranteed to be u64 on all platforms
             let result = match reader.seek(SeekFrom::Start(position as u64)) {
                 Ok(_) => reader
                     .read(slice::from_raw_parts_mut(buf, size as usize))
