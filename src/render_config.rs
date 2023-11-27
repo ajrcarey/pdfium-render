@@ -496,10 +496,12 @@ impl PdfRenderConfig {
     }
 
     /// Controls whether the byte order of generated image data should be reversed
-    /// during rendering. The default is `true`, so that Pdfium returns pixel data as RGB8
-    /// rather than its default BGR8. There should generally be no need to change this flag,
-    /// unless you want to do raw image processing and specifically need the pixel data returned
-    /// by the [PdfBitmap::as_bytes()] function to be in BGR8 format.
+    /// during rendering. The default is `true`, so that Pdfium returns pixel data as
+    /// four-channel RGBA rather than its default of four-channel BGRA.
+    ///
+    /// There should generally be no need to change this flag unless you want to do raw
+    /// image processing and specifically need the pixel data returned by the
+    /// [PdfBitmap::as_raw_bytes()] function to be in BGR8 format.
     #[inline]
     pub fn set_reverse_byte_order(mut self, do_set_flag: bool) -> Self {
         self.do_set_flag_reverse_byte_order = do_set_flag;
