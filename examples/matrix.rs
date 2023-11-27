@@ -116,7 +116,7 @@ pub fn main() -> Result<(), PdfiumError> {
         };
 
         object.set_blend_mode(PdfPageObjectBlendMode::Multiply)?;
-        object.set_matrix(matrix)?;
+        object.apply_matrix(matrix)?;
         page.objects_mut().add_path_object(object)?;
     }
 
