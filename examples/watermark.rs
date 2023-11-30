@@ -8,7 +8,7 @@ fn main() -> Result<(), PdfiumError> {
             .or_else(|_| Pdfium::bind_to_system_library())?,
     );
 
-    let mut document = pdfium.load_pdf_from_file("test/export-test.pdf", None)?;
+    let mut document = pdfium.load_pdf_from_file("test/text-test.pdf", None)?;
 
     // Add a page number and a large text watermark to every page in the document.
 
