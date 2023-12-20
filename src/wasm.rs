@@ -115,25 +115,47 @@ impl PdfiumRenderWasmState {
         self.malloc_js_fn = Some(Function::from(
             self.get_value_from_pdfium_wasm_module("_malloc")
                 .or_else(|_| {
+                    // The _malloc function is not defined. Try the wasmExports.malloc function
+                    // in the Pdfium WASM module instead. For more information, see:
+                    // https://github.com/ajrcarey/pdfium-render/issues/128
+
+                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _malloc function export not defined, falling back to Module['wasmExports'].malloc");
+
+                    self.get_value_from_pdfium_wasm_module("wasmExports")
+                        .and_then(|wasm_exports| self.get_value_from_browser_object(&wasm_exports, "malloc"))
+                        .map_err(|_| "Module['wasmExports'] not defined")
+                })
+                .or_else(|_| {
                     // The _malloc function is not defined. Try the asm.malloc function in the
                     // Pdfium WASM module instead. For more information, see:
                     // https://github.com/ajrcarey/pdfium-render/issues/95
 
-                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _malloc function export not defined, falling back to Module.asm.malloc");
+                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _malloc function export not defined, falling back to Module['asm'].malloc");
 
                     self.get_value_from_pdfium_wasm_module("asm")
                         .and_then(|asm| self.get_value_from_browser_object(&asm, "malloc"))
-                        .map_err(|_| "Module._malloc() not defined")
+                        .map_err(|_| "Module['asm'] not defined")
                 })?));
 
         self.free_js_fn = Some(Function::from(
             self.get_value_from_pdfium_wasm_module("_free")
                 .or_else(|_| {
-                    // The _malloc function is not defined. Try the asm.free function in the
+                    // The _free function is not defined. Try the wasmExports.free function in the
+                    // Pdfium WASM module instead. For more information, see:
+                    // https://github.com/ajrcarey/pdfium-render/issues/128
+
+                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _free function export not defined, falling back to Module['wasmExports'].free");
+
+                    self.get_value_from_pdfium_wasm_module("wasmExports")
+                        .and_then(|wasm_exports| self.get_value_from_browser_object(&wasm_exports, "free"))
+                        .map_err(|_| "Module['wasmExports'] not defined")
+                })
+                .or_else(|_| {
+                    // The _free function is not defined. Try the asm.free function in the
                     // Pdfium WASM module instead. For more information, see:
                     // https://github.com/ajrcarey/pdfium-render/issues/95
 
-                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _free function export not defined, falling back to Module.asm.free");
+                    log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): _free function export not defined, falling back to Module['asm'].free");
 
                     self.get_value_from_pdfium_wasm_module("asm")
                         .and_then(|asm| self.get_value_from_browser_object(&asm, "free"))
@@ -168,7 +190,7 @@ impl PdfiumRenderWasmState {
         // failing that, attempt to retrieve it from the asm.__indirect_function_table property
         // in the Pdfium WASM module.
 
-        let table: WebAssembly::Table = if let Ok(table) = self.get_value_from_browser_object(&js_sys::global(), "wasmTable") {
+        let table: WebAssembly::Table = if let Ok(table) = self.get_value_from_browser_globals("wasmTable") {
             table
         } else {
             // The wasmTable global variable is not defined. Try the
@@ -237,6 +259,13 @@ impl PdfiumRenderWasmState {
                     Ok(value)
                 }
             })
+    }
+
+    /// Looks up the given key in the browser's global Window object and returns
+    /// the Javascript value associated with that key, if any.
+    #[inline]
+    fn get_value_from_browser_globals(&self, key: &str) -> Result<JsValue, PdfiumError> {
+        self.get_value_from_browser_object(&js_sys::global(), key)
     }
 
     /// Allocates the given number of bytes in Pdfium's WASM memory heap, returning a pointer
