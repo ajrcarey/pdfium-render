@@ -159,7 +159,7 @@ impl PdfiumRenderWasmState {
 
                     self.get_value_from_pdfium_wasm_module("asm")
                         .and_then(|asm| self.get_value_from_browser_object(&asm, "free"))
-                        .map_err(|_| "Module._free() not defined")
+                        .map_err(|_| "Module['asm'] not defined")
                 })?));
 
         self.call_js_fn = Some(Function::from(

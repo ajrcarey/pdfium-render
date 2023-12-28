@@ -83,9 +83,12 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.17 adds support for creating new annotations, positioning those annotations,
+Release 0.8.18 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+
+Release 0.8.17 adjusts the WASM implementation of `pdfium-render` to account for some small packaging
+changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>.
 
 Release 0.8.16 adds the `PdfBitmap::as_rgba_bytes()` function for retrieving pixel data from a bitmap
 that has had its color channels normalized into RGBA irrespective of the original bitmap pixel format,
@@ -103,14 +106,6 @@ function. A new `reset_to_identity()` function resets the transformation matrix 
 object to the identity matrix, undoing any previously applied transformations. Similarly, the
 `PdfPage::set_matrix_with_clip()` function is deprecated in favour of the better-named
 `PdfPage::apply_matrix_with_clip()`. Deprecated items will be removed in release 0.9.0.
-
-Release 0.8.14 corrects a Windows-specific build error introduced in 0.8.13.
-
-Release 0.8.13 corrects a bug in `PdfPageTextObject::chars()` that could see incorrect results
-returned in edge cases involving overlapping text objects, and adds the `PdfPageTextSearch`
-object and `PdfPageText::search()` function for running text searches across the text of
-a single page, thanks to an excellent contribution from <https://github.com/zhonghua-wang>.
-A new `examples/text_search.rs` example demonstrates the new search functionality.
 
 ## Binding to Pdfium
 
@@ -361,7 +356,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.17: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.18: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -372,6 +367,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
+* 0.8.17: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to `Module["wasmExports"]["malloc"]`
+  and `Module["wasmExports"]["free"]` if `Module["_malloc"]` and `Module["_free"]` are not available, in response to
+  upstream packaging changes at <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details,
+  see <https://github.com/ajrcarey/pdfium-render/issues/128>.
 * 0.8.16: deprecates `PdfBitmap::as_bytes()` function in favour of `PdfBitmap::as_raw_bytes()`;
   adds new `PdfBitmap::as_rgba_bytes()` for returning pixel byte data with normalized color channels,
   irrespective of the original bitmap pixel format; updates the WASM-specific `PdfBitmap::as_image_data()`
