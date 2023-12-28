@@ -4,10 +4,7 @@ use pdfium_render::prelude::*;
 pub fn main() -> Result<(), PdfiumError> {
     // For general comments about pdfium-render and binding to Pdfium, see export.rs.
 
-    let pdfium = Pdfium::new(
-        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-            .or_else(|_| Pdfium::bind_to_system_library())?,
-    );
+    let pdfium = Pdfium::default();
 
     let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?; // Load the sample file...
 

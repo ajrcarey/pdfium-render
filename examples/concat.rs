@@ -3,10 +3,7 @@ use pdfium_render::prelude::*;
 fn main() -> Result<(), PdfiumError> {
     // For general comments about pdfium-render and binding to Pdfium, see export.rs.
 
-    let pdfium = Pdfium::new(
-        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-            .or_else(|_| Pdfium::bind_to_system_library())?,
-    );
+    let pdfium = Pdfium::default();
 
     // There are several functions available to copy one or more pages from one document
     // to another:

@@ -16,12 +16,7 @@ use web_sys::ImageData;
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub async fn log_page_metrics_to_console(url: String) {
-    // Our only option when targeting WASM is to bind to the "system library"
-    // (a separate WASM build of Pdfium).
-
-    let bindings = Pdfium::bind_to_system_library().unwrap();
-
-    let pdfium = Pdfium::new(bindings);
+    let pdfium = Pdfium::default();
 
     let document = pdfium.load_pdf_from_fetch(url, None).await.unwrap();
 
@@ -126,7 +121,7 @@ pub async fn get_image_data_for_page(
     width: Pixels,
     height: Pixels,
 ) -> ImageData {
-    Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+    Pdfium::default()
         .load_pdf_from_fetch(url, None)
         .await
         .unwrap()

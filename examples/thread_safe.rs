@@ -64,10 +64,7 @@ fn render(render_config: &PdfRenderConfig, path: &str) -> Result<(), PdfiumError
     // Render each page in the document at the given path out to a JPG file, using the
     // given bindings and rendering configuration.
 
-    let pdfium = Pdfium::new(
-        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-            .or_else(|_| Pdfium::bind_to_system_library())?,
-    );
+    let pdfium = Pdfium::default();
 
     let document = pdfium.load_pdf_from_file(path, None)?;
 
