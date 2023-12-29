@@ -88,7 +88,9 @@ associating them with page objects, and retrieving and setting more annotation p
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
 Release 0.8.17 adjusts the WASM implementation of `pdfium-render` to account for some small packaging
-changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>.
+changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
+and fixes a potential segmentation fault that could occur when dropping a `PdfDocument` while using
+a V8/XFA-enabled build of Pdfium.
 
 Release 0.8.16 adds the `PdfBitmap::as_rgba_bytes()` function for retrieving pixel data from a bitmap
 that has had its color channels normalized into RGBA irrespective of the original bitmap pixel format,
@@ -343,7 +345,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.16, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.17, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -367,10 +369,13 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
-* 0.8.17: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to `Module["wasmExports"]["malloc"]`
-  and `Module["wasmExports"]["free"]` if `Module["_malloc"]` and `Module["_free"]` are not available, in response to
-  upstream packaging changes at <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details,
-  see <https://github.com/ajrcarey/pdfium-render/issues/128>.
+* 0.8.17: updates all examples (except for `export.rs`) to use extended `Pdfium::default()` implementation
+  introduced in 0.8.12; fixes a segmentation fault in `PdfDocument::drop()` that can occur when using
+  a V8/XFA-enabled build of Pdfium; adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to
+  `Module["wasmExports"]["malloc"]` and `Module["wasmExports"]["free"]` if `Module["_malloc"]` and
+  `Module["_free"]` are not available, in response to upstream packaging changes at
+  <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details, see
+  <https://github.com/ajrcarey/pdfium-render/issues/128>.
 * 0.8.16: deprecates `PdfBitmap::as_bytes()` function in favour of `PdfBitmap::as_raw_bytes()`;
   adds new `PdfBitmap::as_rgba_bytes()` for returning pixel byte data with normalized color channels,
   irrespective of the original bitmap pixel format; updates the WASM-specific `PdfBitmap::as_image_data()`
@@ -379,7 +384,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `PdfBookmarksIterator` to use a standard depth-first graph traversal algorithm in response to
   <https://github.com/ajrcarey/pdfium-render/issues/120>; adds `PdfBookmark::destination()`
   function for retrieving the target destination of the action assigned to a bookmark, thanks to an
-  excellent contribution from <https://github.com/xVanTuring>.
+  excellent contribution from <https://github.com/xVanTuring>. Deprecated items will be removed
+  in release 0.9.0.
 * 0.8.15: adds new `reset_matrix()` and `reset_matrix_to_identity()` functions to consumers of the
   `create_transform_setters!()` macro; deprecates `set_matrix()` in favour of `apply_matrix()`
   and `PdfPage::set_matrix_with_clip()` in favour of `PdfPage::apply_matrix_with_clip()`;
