@@ -385,6 +385,11 @@ impl<'a> Drop for PdfDocument<'a> {
     /// from a file, the file handle on the document.
     #[inline]
     fn drop(&mut self) {
+        // Drop this document's PdfForm, if any, before we close the document itself.
+        // This ensures that FPDFDOC_ExitFormFillEnvironment() is called _before_ FPDF_CloseDocument(),
+        // avoiding a segmentation fault when using Pdfium builds compiled with V8/XFA support.
+
+        self.form = None;
         self.bindings.FPDF_CloseDocument(self.handle);
     }
 }
