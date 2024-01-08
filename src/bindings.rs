@@ -1849,6 +1849,12 @@ pub trait PdfiumLibraryBindings {
     fn FPDFDOC_ExitFormFillEnvironment(&self, handle: FPDF_FORMHANDLE);
 
     #[allow(non_snake_case)]
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE);
+
+    #[allow(non_snake_case)]
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE);
+
+    #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
 
     #[allow(non_snake_case)]

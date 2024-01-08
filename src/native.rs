@@ -2355,6 +2355,28 @@ impl DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FORM_OnAfterLoadPage(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, handle: FPDF_FORMHANDLE)>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FORM_OnAfterLoadPage\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FORM_OnBeforeClosePage(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, handle: FPDF_FORMHANDLE)>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FORM_OnBeforeClosePage\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFDoc_GetPageMode(
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int>, libloading::Error>
@@ -6201,6 +6223,22 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     fn FPDFDOC_ExitFormFillEnvironment(&self, handle: FPDF_FORMHANDLE) {
         unsafe {
             self.extern_FPDFDOC_ExitFormFillEnvironment().unwrap()(handle);
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE) {
+        unsafe {
+            self.extern_FORM_OnAfterLoadPage().unwrap()(page, handle);
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE) {
+        unsafe {
+            self.extern_FORM_OnBeforeClosePage().unwrap()(page, handle);
         }
     }
 
