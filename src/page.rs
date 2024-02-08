@@ -610,7 +610,7 @@ impl<'a> PdfPage<'a> {
         Ok(bitmap)
     }
 
-    /// Renders this [PdfPage] into the given [PdfBitmap] using the given the given pixel dimensions
+    /// Renders this [PdfPage] into the given [PdfBitmap] using the given pixel dimensions
     /// and page rotation.
     ///
     /// It is the responsibility of the caller to ensure the given pixel width and height
