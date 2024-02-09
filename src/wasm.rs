@@ -123,7 +123,7 @@ impl PdfiumRenderWasmState {
 
                     self.get_value_from_pdfium_wasm_module("wasmExports")
                         .and_then(|wasm_exports| self.get_value_from_browser_object(&wasm_exports, "malloc"))
-                        .map_err(|_| "Module['wasmExports'] not defined")
+                        .map_err(|_| "Module['wasmExports'] not defined when looking for malloc()")
                 })
                 .or_else(|_| {
                     // The _malloc function is not defined. Try the asm.malloc function in the
@@ -134,7 +134,7 @@ impl PdfiumRenderWasmState {
 
                     self.get_value_from_pdfium_wasm_module("asm")
                         .and_then(|asm| self.get_value_from_browser_object(&asm, "malloc"))
-                        .map_err(|_| "Module['asm'] not defined")
+                        .map_err(|_| "Module['asm'] not defined when looking for malloc()")
                 })?));
 
         self.free_js_fn = Some(Function::from(
@@ -148,7 +148,7 @@ impl PdfiumRenderWasmState {
 
                     self.get_value_from_pdfium_wasm_module("wasmExports")
                         .and_then(|wasm_exports| self.get_value_from_browser_object(&wasm_exports, "free"))
-                        .map_err(|_| "Module['wasmExports'] not defined")
+                        .map_err(|_| "Module['wasmExports'] not defined when looking for free()")
                 })
                 .or_else(|_| {
                     // The _free function is not defined. Try the asm.free function in the
@@ -159,7 +159,7 @@ impl PdfiumRenderWasmState {
 
                     self.get_value_from_pdfium_wasm_module("asm")
                         .and_then(|asm| self.get_value_from_browser_object(&asm, "free"))
-                        .map_err(|_| "Module['asm'] not defined")
+                        .map_err(|_| "Module['asm'] not defined when looking for free()")
                 })?));
 
         self.call_js_fn = Some(Function::from(
@@ -186,22 +186,31 @@ impl PdfiumRenderWasmState {
         // _including or after_ V5407, Pdfium's function table is available in the Emscripten-wrapped
         // Pdfium WASM module, but is not exported into a global variable.
 
-        // Retrieve the function table by looking for the wasmTable global variable first;
-        // failing that, attempt to retrieve it from the asm.__indirect_function_table property
-        // in the Pdfium WASM module.
+        // Retrieve the function table by looking for the wasmTable global variable first.
 
-        let table: WebAssembly::Table = if let Ok(table) = self.get_value_from_browser_globals("wasmTable") {
-            table
-        } else {
-            // The wasmTable global variable is not defined. Try the
-            // asm.__indirect_function_table property in the Pdfium WASM module instead.
+        let table: WebAssembly::Table = self.get_value_from_browser_globals("wasmTable")
+            .or_else(|_| {
+                // The wasmTable global variable is not defined. Try the
+                // wasmExports.__indirect_function_table variable in the Pdfium WASM module instead.
+                // For more information, see: https://github.com/ajrcarey/pdfium-render/issues/134
 
-            log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): global wasmTable variable not defined, falling back to Module.asm.__indirect_function_table");
+                log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): global wasmTable variable not defined, falling back to Module['wasmExports'].__indirect_function_table");
 
-            self.get_value_from_pdfium_wasm_module("asm")
-                .and_then(|asm| self.get_value_from_browser_object(&asm, "__indirect_function_table"))
-                .map_err(|_| "Unable to locate wasmTable")?
-        }.into();
+                self.get_value_from_pdfium_wasm_module("wasmExports")
+                    .and_then(|wasm_exports| self.get_value_from_browser_object(&wasm_exports, "__indirect_function_table"))
+                    .map_err(|_| "Module['wasmExports'] not defined when looking for wasmTable")
+            })
+            .or_else(|_| {
+                // The wasmTable global variable is not defined. Try the
+                // asm.__indirect_function_table property in the Pdfium WASM module instead.
+                // For more information, see: https://github.com/ajrcarey/pdfium-render/issues/128
+
+                log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): global wasmTable variable not defined, falling back to Module['asm'].__indirect_function_table");
+
+                self.get_value_from_pdfium_wasm_module("asm")
+                    .and_then(|asm| self.get_value_from_browser_object(&asm, "__indirect_function_table"))
+                    .map_err(|_| "Module['asm'] not defined when looking for wasmTable")
+            })?.into();
 
         // Once we have the function table, we scan it for function signatures that take 4 arguments.
 
