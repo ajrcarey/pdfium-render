@@ -1,3 +1,7 @@
+# To run locally using act, use command:
+# act -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:rust-latest
+# See: https://github.com/nektos/act/issues/297
+
 name: Rust
 
 on:
@@ -8,6 +12,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  PDFIUM_RELEASE_TAG: 6281
 
 jobs:
   build:
@@ -18,5 +23,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
+    - name: Download Pdfium
+      run: curl -L -o "pdfium.tgz" "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/${PDFIUM_RELEASE_TAG}/pdfium-linux-x64.tgz"
+    - name: Unpack Pdfium
+      run: mkdir pdfium && tar -xvzf pdfium.tgz -C pdfium
+    - name: Install Pdfium
+      run: cp pdfium/lib/libpdfium.so .
     - name: Run tests
       run: cargo test --verbose
