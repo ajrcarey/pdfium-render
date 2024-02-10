@@ -2,7 +2,7 @@
 # act -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:rust-latest
 # See: https://github.com/nektos/act/issues/297
 
-name: Rust
+name: Auto-build pdfium-render
 
 on:
   push:
