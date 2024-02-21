@@ -2272,13 +2272,11 @@ pub trait PdfiumLibraryBindings {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
+    use crate::utils::test::test_bind_to_pdfium;
 
     #[test]
     fn test_is_true() -> Result<(), PdfiumError> {
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = test_bind_to_pdfium();
 
         assert!(!pdfium.bindings().is_true(0));
         assert!(pdfium.bindings().is_true(1));

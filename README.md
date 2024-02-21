@@ -83,14 +83,14 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.18 adds support for creating new annotations, positioning those annotations,
+Release 0.8.19 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Release 0.8.17 adjusts the WASM implementation of `pdfium-render` to account for some small packaging
-changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>,
-and fixes a potential segmentation fault that could occur when dropping a `PdfDocument` while using
-a V8/XFA-enabled build of Pdfium.
+Releases 0.8.17 and 0.8.18 adjust the WASM implementation of `pdfium-render` to account for some small packaging
+changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
+release 0.8.17 also fixes a potential segmentation fault that could occur when dropping a `PdfDocument`
+while using a V8/XFA-enabled build of Pdfium.
 
 Release 0.8.16 adds the `PdfBitmap::as_rgba_bytes()` function for retrieving pixel data from a bitmap
 that has had its color channels normalized into RGBA irrespective of the original bitmap pixel format,
@@ -297,8 +297,8 @@ For instance, the following code snippet (taken from a C++ sample):
 would translate to the following Rust code:
 
 ```rust
-    let bindings = Pdfium::default().bindings();
-    
+    let pdfium = Pdfium::default();
+    let bindings = pdfium.bindings();
     let test_doc = "test.pdf";
 
     bindings.FPDF_InitLibrary();
@@ -345,7 +345,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.17, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.18, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -358,7 +358,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.18: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.19: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -369,6 +369,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
+* 0.8.18: Adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to
+  `Module["wasmExports"]["__indirect_function_table"]` if `Window.wasmTable` global variable is
+  not available, in response to upstream packaging changes at
+  <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details, see
+  <https://github.com/ajrcarey/pdfium-render/issues/134>.
 * 0.8.17: updates all examples (except for `export.rs`) to use extended `Pdfium::default()` implementation
   introduced in 0.8.12; fixes a segmentation fault in `PdfDocument::drop()` that can occur when using
   a V8/XFA-enabled build of Pdfium; adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to
