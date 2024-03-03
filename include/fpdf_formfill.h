@@ -1,4 +1,4 @@
-// Copyright 2014 PDFium Authors. All rights reserved.
+// Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #define PUBLIC_FPDF_FORMFILL_H_
 
 // clang-format off
-// NOLINTNEXTLINE(build/include)
+// NOLINTNEXTLINE(build/include_directory)
 #include "fpdfview.h"
 
 // These values are return values for a public API, so should not be changed
@@ -307,7 +307,9 @@ typedef struct _IPDF_JsPlatform {
                       int length);
 
   /*
-   * Pointer to FPDF_FORMFILLINFO interface.
+   * Pointer for embedder-specific data. Unused by PDFium, and despite
+   * its name, can be any data the embedder desires, though traditionally
+   * a FPDF_FORMFILLINFO interface.
    */
   void* m_pFormfillinfo;
 
@@ -637,8 +639,9 @@ typedef struct _FPDF_FORMFILLINFO {
    * Return value:
    *       None.
    * Comments:
-   *       See the named actions description of <<PDF Reference, version 1.7>>
-   *       for more details.
+   *       See ISO 32000-1:2008, section 12.6.4.11 for descriptions of the
+   *       standard named actions, but note that a document may supply any
+   *       name of its choosing.
    */
   void (*FFI_ExecuteNamedAction)(struct _FPDF_FORMFILLINFO* pThis,
                                  FPDF_BYTESTRING namedAction);
@@ -1140,11 +1143,13 @@ typedef struct _FPDF_FORMFILLINFO {
  *       Initialize form fill environment.
  * Parameters:
  *       document        -   Handle to document from FPDF_LoadDocument().
- *       pFormFillInfo   -   Pointer to a FPDF_FORMFILLINFO structure.
+ *       formInfo        -   Pointer to a FPDF_FORMFILLINFO structure.
  * Return Value:
  *       Handle to the form fill module, or NULL on failure.
  * Comments:
  *       This function should be called before any form fill operation.
+ *       The FPDF_FORMFILLINFO passed in via |formInfo| must remain valid until
+ *       the returned FPDF_FORMHANDLE is closed.
  */
 FPDF_EXPORT FPDF_FORMHANDLE FPDF_CALLCONV
 FPDFDOC_InitFormFillEnvironment(FPDF_DOCUMENT document,
@@ -1480,6 +1485,9 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnKeyDown(FPDF_FORMHANDLE hHandle,
  *                       flag values).
  * Return Value:
  *       True indicates success; otherwise false.
+ * Comments:
+ *       Currently unimplemented and always returns false. PDFium reserves this
+ *       API and may implement it in the future on an as-needed basis.
  */
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnKeyUp(FPDF_FORMHANDLE hHandle,
                                                  FPDF_PAGE page,
@@ -1552,12 +1560,35 @@ FORM_GetSelectedText(FPDF_FORMHANDLE hHandle,
                      unsigned long buflen);
 
 /*
+ * Experimental API
+ * Function: FORM_ReplaceAndKeepSelection
+ *       Call this function to replace the selected text in a form
+ *       text field or user-editable form combobox text field with another
+ *       text string (which can be empty or non-empty). If there is no
+ *       selected text, this function will append the replacement text after
+ *       the current caret position. After the insertion, the inserted text
+ *       will be selected.
+ * Parameters:
+ *       hHandle     -   Handle to the form fill module, as returned by
+ *                       FPDFDOC_InitFormFillEnvironment().
+ *       page        -   Handle to the page, as Returned by FPDF_LoadPage().
+ *       wsText      -   The text to be inserted, in UTF-16LE format.
+ * Return Value:
+ *       None.
+ */
+FPDF_EXPORT void FPDF_CALLCONV
+FORM_ReplaceAndKeepSelection(FPDF_FORMHANDLE hHandle,
+                             FPDF_PAGE page,
+                             FPDF_WIDESTRING wsText);
+
+/*
  * Function: FORM_ReplaceSelection
  *       Call this function to replace the selected text in a form
  *       text field or user-editable form combobox text field with another
  *       text string (which can be empty or non-empty). If there is no
  *       selected text, this function will append the replacement text after
- *       the current caret position.
+ *       the current caret position. After the insertion, the selection range
+ *       will be set to empty.
  * Parameters:
  *       hHandle     -   Handle to the form fill module, as returned by
  *                       FPDFDOC_InitFormFillEnvironment().
@@ -1881,16 +1912,16 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_FFLDraw(FPDF_FORMHANDLE hHandle,
                                             int rotate,
                                             int flags);
 
-#if defined(_SKIA_SUPPORT_)
-FPDF_EXPORT void FPDF_CALLCONV FPDF_FFLRecord(FPDF_FORMHANDLE hHandle,
-                                              FPDF_RECORDER recorder,
-                                              FPDF_PAGE page,
-                                              int start_x,
-                                              int start_y,
-                                              int size_x,
-                                              int size_y,
-                                              int rotate,
-                                              int flags);
+#if defined(PDF_USE_SKIA)
+FPDF_EXPORT void FPDF_CALLCONV FPDF_FFLDrawSkia(FPDF_FORMHANDLE hHandle,
+                                                FPDF_SKIA_CANVAS canvas,
+                                                FPDF_PAGE page,
+                                                int start_x,
+                                                int start_y,
+                                                int size_x,
+                                                int size_y,
+                                                int rotate,
+                                                int flags);
 #endif
 
 /*

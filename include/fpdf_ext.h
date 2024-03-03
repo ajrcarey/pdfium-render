@@ -1,4 +1,4 @@
-// Copyright 2014 PDFium Authors. All rights reserved.
+// Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 
 #ifndef PUBLIC_FPDF_EXT_H_
 #define PUBLIC_FPDF_EXT_H_
+
+#include <time.h>
 
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
@@ -66,6 +68,25 @@ typedef struct _UNSUPPORT_INFO {
 // Returns TRUE on success.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FSDK_SetUnSpObjProcessHandler(UNSUPPORT_INFO* unsp_info);
+
+// Set replacement function for calls to time().
+//
+// This API is intended to be used only for testing, thus may cause PDFium to
+// behave poorly in production environments.
+//
+//   func - Function pointer to alternate implementation of time(), or
+//          NULL to restore to actual time() call itself.
+FPDF_EXPORT void FPDF_CALLCONV FSDK_SetTimeFunction(time_t (*func)());
+
+// Set replacement function for calls to localtime().
+//
+// This API is intended to be used only for testing, thus may cause PDFium to
+// behave poorly in production environments.
+//
+//   func - Function pointer to alternate implementation of localtime(), or
+//          NULL to restore to actual localtime() call itself.
+FPDF_EXPORT void FPDF_CALLCONV
+FSDK_SetLocaltimeFunction(struct tm* (*func)(const time_t*));
 
 // Unknown page mode.
 #define PAGEMODE_UNKNOWN -1

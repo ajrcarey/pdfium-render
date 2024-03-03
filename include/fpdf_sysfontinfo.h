@@ -1,4 +1,4 @@
-// Copyright 2014 PDFium Authors. All rights reserved.
+// Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,12 @@
 #define FXFONT_HANGEUL_CHARSET 129
 #define FXFONT_GB2312_CHARSET 134
 #define FXFONT_CHINESEBIG5_CHARSET 136
+#define FXFONT_GREEK_CHARSET 161
+#define FXFONT_VIETNAMESE_CHARSET 163
+#define FXFONT_HEBREW_CHARSET 177
 #define FXFONT_ARABIC_CHARSET 178
 #define FXFONT_CYRILLIC_CHARSET 204
+#define FXFONT_THAI_CHARSET 222
 #define FXFONT_EASTERNEUROPEAN_CHARSET 238
 
 /* Font pitch and family flags */
@@ -271,6 +275,9 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_AddInstalledFont(void* mapper,
  *          Platform support implementation should implement required methods of
  *          FFDF_SYSFONTINFO interface, then call this function during PDFium
  *          initialization process.
+ *
+ *          Call this with NULL to tell PDFium to stop using a previously set
+ *          |FPDF_SYSFONTINFO|.
  */
 FPDF_EXPORT void FPDF_CALLCONV
 FPDF_SetSystemFontInfo(FPDF_SYSFONTINFO* pFontInfo);
@@ -301,7 +308,7 @@ FPDF_EXPORT FPDF_SYSFONTINFO* FPDF_CALLCONV FPDF_GetDefaultSystemFontInfo();
  *           None
  * Comments:
  *           This function should be called on the output from
- *           FPDF_SetSystemFontInfo() once it is no longer needed.
+ *           FPDF_GetDefaultSystemFontInfo() once it is no longer needed.
  */
 FPDF_EXPORT void FPDF_CALLCONV
 FPDF_FreeDefaultSystemFontInfo(FPDF_SYSFONTINFO* pFontInfo);
