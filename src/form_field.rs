@@ -228,6 +228,15 @@ impl<'a> PdfFormField<'a> {
         }
     }
 
+    /// Returns a mutable reference to the underlying [PdfFormTextField] for this
+    /// [PdfFormField], if this form field has a field type of [PdfFormField::Text].
+    pub fn as_text_field_mut(&mut self) -> Option<&mut PdfFormTextField<'a>> {
+        match self {
+            PdfFormField::Text(field) => Some(field),
+            _ => None,
+        }
+    }
+
     /// Returns the underlying [PdfFormUnknownField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::Unknown].
     #[inline]

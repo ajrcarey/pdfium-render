@@ -4,6 +4,7 @@
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::form_field_private::internal::PdfFormFieldPrivate;
+use crate::prelude::PdfiumError;
 
 /// A single `PdfFormField` of type `PdfFormFieldType::Text`. The form field object defines
 /// an interactive data entry widget that allows the user to enter data by typing.
@@ -42,6 +43,12 @@ impl<'a> PdfFormTextField<'a> {
     #[inline]
     pub fn value(&self) -> Option<String> {
         self.value_impl()
+    }
+
+    /// Sets the value of this [PdfFormTextField].
+    #[inline]
+    pub fn set_value(&mut self, value: &str) -> Result<(), PdfiumError> {
+        self.set_value_impl(value)
     }
 }
 

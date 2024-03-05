@@ -26,11 +26,20 @@ pub fn main() -> Result<(), PdfiumError> {
     for (page_index, page) in pages.iter().enumerate() {
         let annotations = page.annotations();
 
-        for (annotation_index, annotation) in annotations.iter().enumerate() {
+        for (annotation_index, mut annotation) in annotations.iter().enumerate() {
             // The PdfPageAnnotation::as_form_field() helper function handles the filtering out
             // of non-form-field-wrapping annotations for us.
 
-            if let Some(field) = annotation.as_form_field() {
+            if let Some(field) = annotation.as_form_field_mut() {
+                // TODO: don't be hacky, move this to a separate code block, and save a copy of the pdf.
+                if let Some(text_field) = field.as_text_field_mut() {
+                    if text_field.name()
+                        == Some("form1[0].#subform[0].Pt1Line1b_GivenName[0]".to_string())
+                    {
+                        text_field.set_value("Pdfium Render")?;
+                    }
+                }
+
                 println!(
                     "Page {}, annotation {}: {:?}, {:?} has form field value: {}",
                     page_index,

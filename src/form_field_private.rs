@@ -16,12 +16,15 @@ pub(crate) mod internal {
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::PdfiumError;
     use crate::form_field::PdfFormFieldCommon;
+    use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
     use std::os::raw::c_int;
+    use std::ptr::null;
 
     use crate::appearance_mode::PdfAppearanceMode;
     use bitflags::bitflags;
+    use chrono::Utc;
 
     bitflags! {
         pub struct FpdfAnnotationFlags: u32 {
@@ -84,6 +87,33 @@ pub(crate) mod internal {
 
                 get_string_from_pdfium_utf16le_bytes(buffer)
             }
+        }
+
+        /// Internal implementation of `set_value()` function shared by value-carrying form
+        /// field widgets, such as text fields. Not exposed directly by [PdfFormFieldCommon].
+        #[inline]
+        fn set_value_impl(&mut self, value: &str) -> Result<(), PdfiumError> {
+            self.bindings()
+                .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
+                    *self.annotation_handle(),
+                    "M",
+                    &date_time_to_pdf_string(Utc::now()),
+                ))
+                .and_then(|_| {
+                    self.bindings().to_result(self.bindings().FPDFAnnot_SetAP(
+                        *self.annotation_handle(),
+                        PdfAppearanceMode::Normal as i32,
+                        null(),
+                    ))
+                })
+                .and_then(|_| {
+                    self.bindings()
+                        .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
+                            *self.annotation_handle(),
+                            "V",
+                            value,
+                        ))
+                })
         }
 
         /// Internal implementation of `value()` function shared by value-carrying form field widgets
