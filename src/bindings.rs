@@ -827,22 +827,22 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    - underline
     ///
-    ///   |subtype|   - the subtype to be checked.
+    ///   `subtype`   - the subtype to be checked.
     ///
-    /// Returns |true| if this subtype supported.
+    /// Returns `true` if this subtype supported.
     #[allow(non_snake_case)]
     fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
 
-    /// Creates an annotation in |page| of the subtype |subtype|. If the specified
+    /// Creates an annotation in `page` of the subtype `subtype`. If the specified
     /// subtype is illegal or unsupported, then a new annotation will not be created.
     /// Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the annotation returned by this
     /// function is no longer needed.
     ///
-    ///   |page|      - handle to a page.
+    ///   `page`      - handle to a page.
     ///
-    ///   |subtype|   - the subtype of the new annotation.
+    ///   `subtype`   - the subtype of the new annotation.
     ///
-    /// Returns a handle to the new annotation object, or |NULL| on failure.
+    /// Returns a handle to the new annotation object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFPage_CreateAnnot(
         &self,
@@ -850,33 +850,33 @@ pub trait PdfiumLibraryBindings {
         subtype: FPDF_ANNOTATION_SUBTYPE,
     ) -> FPDF_ANNOTATION;
 
-    /// Gets the number of annotations in |page|.
+    /// Gets the number of annotations in `page`.
     ///
-    ///   |page|   - handle to a page.
+    ///   `page`   - handle to a page.
     ///
-    /// Returns the number of annotations in |page|.
+    /// Returns the number of annotations in `page`.
     #[allow(non_snake_case)]
     fn FPDFPage_GetAnnotCount(&self, page: FPDF_PAGE) -> c_int;
 
-    /// Gets annotation in |page| at |index|. Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the
+    /// Gets annotation in `page` at `index`. Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the
     /// annotation returned by this function is no longer needed.
     ///
-    ///   |page|  - handle to a page.
+    ///   `page`  - handle to a page.
     ///
-    ///   |index| - the index of the annotation.
+    ///   `index` - the index of the annotation.
     ///
-    /// Returns a handle to the annotation object, or |NULL| on failure.
+    /// Returns a handle to the annotation object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFPage_GetAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_ANNOTATION;
 
-    /// Gets the index of |annot| in |page|. This is the opposite of
+    /// Gets the index of `annot` in `page`. This is the opposite of
     /// [PdfiumLibraryBindings::FPDFPage_GetAnnot].
     ///
-    ///   |page|  - handle to the page that the annotation is on.
+    ///   `page`  - handle to the page that the annotation is on.
     ///
-    ///   |annot| - handle to an annotation.
+    ///   `annot` - handle to an annotation.
     ///
-    /// Returns the index of |annot|, or -1 on failure.
+    /// Returns the index of `annot`, or -1 on failure.
     #[allow(non_snake_case)]
     fn FPDFPage_GetAnnotIndex(&self, page: FPDF_PAGE, annot: FPDF_ANNOTATION) -> c_int;
 
@@ -884,23 +884,23 @@ pub trait PdfiumLibraryBindings {
     /// [PdfiumLibraryBindings::FPDFPage_CreateAnnot] or [PdfiumLibraryBindings::FPDFPage_GetAnnot]
     /// is no longer needed. This function does not remove the annotation from the document.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     #[allow(non_snake_case)]
     fn FPDFPage_CloseAnnot(&self, annot: FPDF_ANNOTATION);
 
-    /// Removes the annotation in |page| at |index|.
+    /// Removes the annotation in `page` at `index`.
     ///
-    ///   |page|  - handle to a page.
+    ///   `page`  - handle to a page.
     ///
-    ///   |index| - the index of the annotation.
+    ///   `index` - the index of the annotation.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL;
 
     /// Gets the subtype of an annotation.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
     /// Returns the annotation subtype.
     #[allow(non_snake_case)]
@@ -911,40 +911,40 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Currently supported subtypes: ink and stamp.
     ///
-    ///   |subtype|   - the subtype to be checked.
+    ///   `subtype`   - the subtype to be checked.
     ///
-    /// Returns |true| if this subtype supported.
+    /// Returns `true` if this subtype supported.
     #[allow(non_snake_case)]
     fn FPDFAnnot_IsObjectSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
 
-    /// Updates |obj| in |annot|. |obj| must be in |annot| already and must have
+    /// Updates `obj` in `annot`. `obj` must be in `annot` already and must have
     /// been retrieved by [PdfiumLibraryBindings::FPDFAnnot_GetObject]. Currently, only ink and stamp
     /// annotations are supported by this API. Also note that only path, image, and
-    /// text objects have APIs for modification; see |FPDFPath_\*()|, |FPDFText_\*()|, and
-    /// |FPDFImageObj_\*()|.
+    /// text objects have APIs for modification; see `FPDFPath_*()`, `FPDFText_*()`, and
+    /// `FPDFImageObj_*()`.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |obj|    - handle to the object that |annot| needs to update.
+    ///   `obj`    - handle to the object that `annot` needs to update.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_UpdateObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
     /// Adds a new InkStroke, represented by an array of points, to the InkList of
-    /// |annot|. The API creates an InkList if one doesn't already exist in |annot|.
+    /// `annot`. The API creates an InkList if one doesn't already exist in `annot`.
     /// This API works only for ink annotations. Please refer to ISO 32000-1:2008
     /// spec, section 12.5.6.13.
     ///
-    ///   |annot|       - handle to an annotation.
+    ///   `annot`       - handle to an annotation.
     ///
-    ///   |points|      - pointer to a |FS_POINTF| array representing input points.
+    ///   `points`      - pointer to a `FS_POINTF` array representing input points.
     ///
-    ///   |point_count| - number of elements in |points| array. This should not exceed
-    ///                   the maximum value that can be represented by an |int32_t|.
+    ///   `point_count` - number of elements in `points` array. This should not exceed
+    ///                   the maximum value that can be represented by an `int32_t`.
     ///
     /// Returns the 0-based index at which the new InkStroke is added in the InkList
-    /// of the |annot|. Returns -1 on failure.
+    /// of the `annot`. Returns -1 on failure.
     #[allow(non_snake_case)]
     fn FPDFAnnot_AddInkStroke(
         &self,
@@ -953,58 +953,58 @@ pub trait PdfiumLibraryBindings {
         point_count: size_t,
     ) -> c_int;
 
-    /// Removes an InkList in |annot|.
+    /// Removes an InkList in `annot`.
     ///
     /// This API works only for ink annotations.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    /// Return true on successful removal of |/InkList| entry from context of the
-    /// non-null ink |annot|. Returns |false| on failure.
+    /// Return true on successful removal of `/InkList` entry from context of the
+    /// non-null ink `annot`. Returns `false` on failure.
     #[allow(non_snake_case)]
     fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
-    /// Adds |obj| to |annot|. |obj| must have been created by
+    /// Adds `obj` to `annot`. `obj` must have been created by
     /// [PdfiumLibraryBindings::FPDFPageObj_CreateNewPath], [PdfiumLibraryBindings::FPDFPageObj_CreateNewRect],
     /// [PdfiumLibraryBindings::FPDFPageObj_NewTextObj], or [PdfiumLibraryBindings::FPDFPageObj_NewImageObj], and
-    /// will be owned by |annot|. Note that an |obj| cannot belong to more than one
-    /// |annot|. Currently, only ink and stamp annotations are supported by this API.
+    /// will be owned by `annot`. Note that an `obj` cannot belong to more than one
+    /// `annot`. Currently, only ink and stamp annotations are supported by this API.
     /// Also note that only path, image, and text objects have APIs for creation.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |obj|    - handle to the object that is to be added to |annot|.
+    ///   `obj`    - handle to the object that is to be added to `annot`.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_AppendObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
-    /// Gets the total number of objects in |annot|, including path objects, text
+    /// Gets the total number of objects in `annot`, including path objects, text
     /// objects, external objects, image objects, and shading objects.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    /// Returns the number of objects in |annot|.
+    /// Returns the number of objects in `annot`.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetObjectCount(&self, annot: FPDF_ANNOTATION) -> c_int;
 
-    /// Gets the object in |annot| at |index|.
+    /// Gets the object in `annot` at `index`.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |index|  - the index of the object.
+    ///   `index`  - the index of the object.
     ///
-    /// Returns a handle to the object, or |NULL| on failure.
+    /// Returns a handle to the object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_PAGEOBJECT;
 
-    /// Removes the object in |annot| at |index|.
+    /// Removes the object in `annot` at `index`.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |index|  - the index of the object to be removed.
+    ///   `index`  - the index of the object to be removed.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL;
 
@@ -1012,15 +1012,15 @@ pub trait PdfiumLibraryBindings {
     /// appearance streams already defined; instead use
     /// [PdfiumLibraryBindings::FPDFPageObj_SetStrokeColor] or [PdfiumLibraryBindings::FPDFPageObj_SetFillColor].
     ///
-    ///   |annot|        - handle to an annotation.
+    ///   `annot`        - handle to an annotation.
     ///
-    ///   |type|         - type of the color to be set.
+    ///   `type`         - type of the color to be set.
     ///
-    ///   |R|, |G|, |B|  - buffers to hold the RGB values of the color. Ranges from 0 to 255.
+    ///   `R`, `G`, `B`  - buffers to hold the RGB values of the color. Ranges from 0 to 255.
     ///
-    ///   |A|            - buffers to hold the opacity. Ranges from 0 to 255.
+    ///   `A`            - buffers to hold the opacity. Ranges from 0 to 255.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetColor(
         &self,
@@ -1037,15 +1037,15 @@ pub trait PdfiumLibraryBindings {
     /// annotations with appearance streams already defined; instead use
     /// [PdfiumLibraryBindings::FPDFPageObj_GetStrokeColor] or [PdfiumLibraryBindings::FPDFPageObj_GetFillColor].
     ///
-    ///   |annot|        - handle to an annotation.
+    ///   `annot`        - handle to an annotation.
     ///
-    ///   |type|         - type of the color requested.
+    ///   `type`         - type of the color requested.
     ///
-    ///   |R|, |G|, |B|  - buffers to hold the RGB values of the color. Ranges from 0 to 255.
+    ///   `R`, `G`, `B`  - buffers to hold the RGB values of the color. Ranges from 0 to 255.
     ///
-    ///   |A|            - buffer to hold the opacity. Ranges from 0 to 255.
+    ///   `A`            - buffer to hold the opacity. Ranges from 0 to 255.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetColor(
         &self,
@@ -1064,27 +1064,27 @@ pub trait PdfiumLibraryBindings {
     /// annotations (i.e. highlight, strikeout, squiggly, and underline) and link
     /// annotations have quadpoints.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    /// Returns |true| if the annotation is of a type that has quadpoints.
+    /// Returns `true` if the annotation is of a type that has quadpoints.
     #[allow(non_snake_case)]
     fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
     /// Replaces the attachment points (i.e. quadpoints) set of an annotation at
-    /// |quad_index|. This index needs to be within the result of
+    /// `quad_index`. This index needs to be within the result of
     /// [PdfiumLibraryBindings::FPDFAnnot_CountAttachmentPoints].
     ///
     /// If the annotation's appearance stream is defined and this annotation is of a
     /// type with quadpoints, then update the bounding box too if the new quadpoints
     /// define a bigger one.
     ///
-    ///   |annot|       - handle to an annotation.
+    ///   `annot`       - handle to an annotation.
     ///
-    ///   |quad_index|  - index of the set of quadpoints.
+    ///   `quad_index`  - index of the set of quadpoints.
     ///
-    ///   |quad_points| - the quadpoints to be set.
+    ///   `quad_points` - the quadpoints to be set.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetAttachmentPoints(
         &self,
@@ -1098,11 +1098,11 @@ pub trait PdfiumLibraryBindings {
     /// type with quadpoints, then update the bounding box too if the new quadpoints
     /// define a bigger one.
     ///
-    ///   |annot|       - handle to an annotation.
+    ///   `annot`       - handle to an annotation.
     ///
-    ///   |quad_points| - the quadpoints to be set.
+    ///   `quad_points` - the quadpoints to be set.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_AppendAttachmentPoints(
         &self,
@@ -1112,7 +1112,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the number of sets of quadpoints of an annotation.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
     /// Returns the number of sets of quadpoints, or 0 on failure.
     #[allow(non_snake_case)]
@@ -1120,13 +1120,13 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the attachment points (i.e. quadpoints) of an annotation.
     ///
-    ///   |annot|       - handle to an annotation.
+    ///   `annot`       - handle to an annotation.
     ///
-    ///   |quad_index|  - index of the set of quadpoints.
+    ///   `quad_index`  - index of the set of quadpoints.
     ///
-    ///   |quad_points| - receives the quadpoints; must not be |NULL|.
+    ///   `quad_points` - receives the quadpoints; must not be `NULL`.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetAttachmentPoints(
         &self,
@@ -1140,33 +1140,33 @@ pub trait PdfiumLibraryBindings {
     /// without quadpoints, then update the bounding box too if the new rectangle
     /// defines a bigger one.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |rect|   - the annotation rectangle to be set.
+    ///   `rect`   - the annotation rectangle to be set.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL;
 
     /// Gets the annotation rectangle defining the location of the annotation.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |rect|   - receives the rectangle; must not be |NULL|.
+    ///   `rect`   - receives the rectangle; must not be `NULL`.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
-    /// Gets the vertices of a polygon or polyline annotation. |buffer| is an array of
-    /// points of the annotation. If |length| is less than the returned length, or
-    /// |annot| or |buffer| is |NULL|, |buffer| will not be modified.
+    /// Gets the vertices of a polygon or polyline annotation. `buffer` is an array of
+    /// points of the annotation. If `length` is less than the returned length, or
+    /// `annot` or `buffer` is `NULL`, `buffer` will not be modified.
     ///
-    ///   |annot|  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
+    ///   `annot`  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
     ///
-    ///   |buffer| - buffer for holding the points.
+    ///   `buffer` - buffer for holding the points.
     ///
-    ///   |length| - length of the buffer in points.
+    ///   `length` - length of the buffer in points.
     ///
     /// Returns the number of points if the annotation is of type polygon or
     /// polyline, 0 otherwise.
@@ -1180,24 +1180,24 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the number of paths in the ink list of an ink annotation.
     ///
-    ///   |annot|  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
+    ///   `annot`  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
     ///
     /// Returns the number of paths in the ink list if the annotation is of type ink,
     /// 0 otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetInkListCount(&self, annot: FPDF_ANNOTATION) -> c_ulong;
 
-    /// Gets a path in the ink list of an ink annotation. |buffer| is an array of
-    /// points of the path. If |length| is less than the returned length, or |annot|
-    /// or |buffer| is |NULL|, |buffer| will not be modified.
+    /// Gets a path in the ink list of an ink annotation. `buffer` is an array of
+    /// points of the path. If `length` is less than the returned length, or `annot`
+    /// or `buffer` is `NULL`, `buffer` will not be modified.
     ///
-    ///   |annot|  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
+    ///   `annot`  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
     ///
-    ///   |path_index| - index of the path.
+    ///   `path_index` - index of the path.
     ///
-    ///   |buffer| - buffer for holding the points.
+    ///   `buffer` - buffer for holding the points.
     ///
-    ///   |length| - length of the buffer in points.
+    ///   `length` - length of the buffer in points.
     ///
     /// Returns the number of points of the path if the annotation is of type ink, 0
     /// otherwise.
@@ -1212,14 +1212,14 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the starting and ending coordinates of a line annotation.
     ///
-    ///   |annot|  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
+    ///   `annot`  - handle to an annotation, as returned by e.g. [PdfiumLibraryBindings::FPDFPage_GetAnnot]
     ///
-    ///   |start| - starting point
+    ///   `start` - starting point
     ///
-    ///   |end| - ending point
+    ///   `end` - ending point
     ///
-    /// Returns |true| if the annotation is of type line and |start| and |end| are not
-    /// |NULL|, |false| otherwise.
+    /// Returns `true` if the annotation is of type line and `start` and `end` are not
+    /// `NULL`, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetLine(
         &self,
@@ -1230,17 +1230,17 @@ pub trait PdfiumLibraryBindings {
 
     /// Sets the characteristics of the annotation's border (rounded rectangle).
     ///
-    ///   |annot|              - handle to an annotation.
+    ///   `annot`              - handle to an annotation.
     ///
-    ///   |horizontal_radius|  - horizontal corner radius, in default user space units.
+    ///   `horizontal_radius`  - horizontal corner radius, in default user space units.
     ///
-    ///   |vertical_radius|    - vertical corner radius, in default user space units.
+    ///   `vertical_radius`    - vertical corner radius, in default user space units.
     ///
-    ///   |border_width|       - border width, in default user space units.
+    ///   `border_width`       - border width, in default user space units.
     ///
-    /// Returns |true| if setting the border for |annot| succeeds, |false| otherwise.
+    /// Returns `true` if setting the border for `annot` succeeds, `false` otherwise.
     ///
-    /// If |annot| contains an appearance stream that overrides the border values,
+    /// If `annot` contains an appearance stream that overrides the border values,
     /// then the appearance stream will be removed on success.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetBorder(
@@ -1253,16 +1253,16 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the characteristics of the annotation's border (rounded rectangle).
     ///
-    ///   |annot|              - handle to an annotation.
+    ///   `annot`              - handle to an annotation.
     ///
-    ///   |horizontal_radius|  - horizontal corner radius, in default user space units.
+    ///   `horizontal_radius`  - horizontal corner radius, in default user space units.
     ///
-    ///   |vertical_radius|    - vertical corner radius, in default user space units.
+    ///   `vertical_radius`    - vertical corner radius, in default user space units.
     ///
-    ///   |border_width|       - border width, in default user space units.
+    ///   `border_width`       - border width, in default user space units.
     ///
-    /// Returns |true| if |horizontal_radius|, |vertical_radius| and |border_width| are
-    /// not |NULL|, |false| otherwise.
+    /// Returns `true` if `horizontal_radius`, `vertical_radius` and `border_width` are
+    /// not `NULL`, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetBorder(
         &self,
@@ -1272,37 +1272,37 @@ pub trait PdfiumLibraryBindings {
         border_width: *mut c_float,
     ) -> FPDF_BOOL;
 
-    /// Check if |annot|'s dictionary has |key| as a key.
+    /// Check if `annot`'s dictionary has `key` as a key.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to look for, encoded in UTF-8.
+    ///   `key`    - the key to look for, encoded in UTF-8.
     ///
-    /// Returns |true| if |key| exists.
+    /// Returns `true` if `key` exists.
     #[allow(non_snake_case)]
     fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL;
 
-    /// Gets the type of the value corresponding to |key| in |annot|'s dictionary.
+    /// Gets the type of the value corresponding to `key` in `annot`'s dictionary.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to look for, encoded in UTF-8.
+    ///   `key`    - the key to look for, encoded in UTF-8.
     ///
     /// Returns the type of the dictionary value.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE;
 
-    /// Sets the string value corresponding to |key| in |annot|'s dictionary,
+    /// Sets the string value corresponding to `key` in `annot`'s dictionary,
     /// overwriting the existing value if any. The value type would be
-    /// |FPDF_OBJECT_STRING| after this function call succeeds.
+    /// `FPDF_OBJECT_STRING` after this function call succeeds.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to the dictionary entry to be set, encoded in UTF-8.
+    ///   `key`    - the key to the dictionary entry to be set, encoded in UTF-8.
     ///
-    ///   |value|  - the string value to be set, encoded in UTF-16LE.
+    ///   `value`  - the string value to be set, encoded in UTF-16LE.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_SetStringValue_str].
@@ -1316,17 +1316,17 @@ pub trait PdfiumLibraryBindings {
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFAnnot_SetStringValue].
     ///
-    /// Sets the string value corresponding to |key| in |annot|'s dictionary,
+    /// Sets the string value corresponding to `key` in `annot`'s dictionary,
     /// overwriting the existing value if any. The value type would be
-    /// |FPDF_OBJECT_STRING| after this function call succeeds.
+    /// `FPDF_OBJECT_STRING` after this function call succeeds.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to the dictionary entry to be set.
+    ///   `key`    - the key to the dictionary entry to be set.
     ///
-    ///   |value|  - the string value to be set.
+    ///   `value`  - the string value to be set.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetStringValue_str(
@@ -1342,21 +1342,21 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    /// Gets the string value corresponding to |key| in |annot|'s dictionary. |buffer|
-    /// is only modified if |buflen| is longer than the length of contents. Note that
-    /// if |key| does not exist in the dictionary or if |key|'s corresponding value
+    /// Gets the string value corresponding to `key` in `annot`'s dictionary. `buffer`
+    /// is only modified if `buflen` is longer than the length of contents. Note that
+    /// if `key` does not exist in the dictionary or if `key`'s corresponding value
     /// in the dictionary is not a string (i.e. the value is not of type
-    /// |FPDF_OBJECT_STRING| or |FPDF_OBJECT_NAME|), then an empty string would be copied
-    /// to |buffer| and the return value would be 2. On other errors, nothing would
-    /// be added to |buffer| and the return value would be 0.
+    /// `FPDF_OBJECT_STRING` or `FPDF_OBJECT_NAME`), then an empty string would be copied
+    /// to `buffer` and the return value would be 2. On other errors, nothing would
+    /// be added to `buffer` and the return value would be 0.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to the requested dictionary entry, encoded in UTF-8.
+    ///   `key`    - the key to the requested dictionary entry, encoded in UTF-8.
     ///
-    ///   |buffer| - buffer for holding the value string, encoded in UTF-16LE.
+    ///   `buffer` - buffer for holding the value string, encoded in UTF-16LE.
     ///
-    ///   |buflen| - length of the buffer in bytes.
+    ///   `buflen` - length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
@@ -1368,18 +1368,18 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Gets the float value corresponding to |key| in |annot|'s dictionary. Writes
-    /// value to |value| and returns |true| if |key| exists in the dictionary and
-    /// |key|'s corresponding value is a number (|FPDF_OBJECT_NUMBER|), |false|
+    /// Gets the float value corresponding to `key` in `annot`'s dictionary. Writes
+    /// value to `value` and returns `true` if `key` exists in the dictionary and
+    /// `key`'s corresponding value is a number (`FPDF_OBJECT_NUMBER`), `false`
     /// otherwise.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to the requested dictionary entry, encoded in UTF-8.
+    ///   `key`    - the key to the requested dictionary entry, encoded in UTF-8.
     ///
-    ///   |value|  - receives the value, must not be |NULL|.
+    ///   `value`  - receives the value, must not be `NULL`.
     ///
-    /// Returns |true| if value found, |false| otherwise.
+    /// Returns `true` if value found, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetNumberValue(
         &self,
@@ -1388,19 +1388,19 @@ pub trait PdfiumLibraryBindings {
         value: *mut c_float,
     ) -> FPDF_BOOL;
 
-    /// Sets the AP (appearance string) in |annot|'s dictionary for a given
-    /// |appearanceMode|.
+    /// Sets the AP (appearance string) in `annot`'s dictionary for a given
+    /// `appearanceMode`.
     ///
-    ///   |annot|          - handle to an annotation.
+    ///   `annot`          - handle to an annotation.
     ///
-    ///   |appearanceMode| - the appearance mode (normal, rollover or down) for which
+    ///   `appearanceMode` - the appearance mode (normal, rollover or down) for which
     ///                      to set the AP.
     ///
-    ///   |value|          - the string value to be set, encoded in UTF-16LE. If
-    ///                      |nullptr| is passed, the AP is cleared for that mode. If the
+    ///   `value`          - the string value to be set, encoded in UTF-16LE. If
+    ///                      `nullptr` is passed, the AP is cleared for that mode. If the
     ///                      mode is Normal, APs for all modes are cleared.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_SetAP_str].
@@ -1414,20 +1414,20 @@ pub trait PdfiumLibraryBindings {
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFAnnot_SetAP].
     ///
-    /// Sets the AP (appearance string) in |annot|'s dictionary for a given
-    /// |appearanceMode|.
+    /// Sets the AP (appearance string) in `annot`'s dictionary for a given
+    /// `appearanceMode`.
     ///
-    ///   |annot|          - handle to an annotation.
+    ///   `annot`          - handle to an annotation.
     ///
-    ///   |appearanceMode| - the appearance mode (normal, rollover or down) for which
+    ///   `appearanceMode` - the appearance mode (normal, rollover or down) for which
     ///                      to set the AP.
     ///
-    ///   |value|          - the string value to be set.
+    ///   `value`          - the string value to be set.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     ///
     /// Note that this helper function cannot clear appearance strings, since it cannot pass
-    /// a null pointer for |value|. To clear an appearance string, use [PdfiumLibraryBindings::FPDFAnnot_SetAP].
+    /// a null pointer for `value`. To clear an appearance string, use [PdfiumLibraryBindings::FPDFAnnot_SetAP].
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetAP_str(
@@ -1443,26 +1443,26 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    /// Gets the AP (appearance string) from |annot|'s dictionary for a given
-    /// |appearanceMode|.
+    /// Gets the AP (appearance string) from `annot`'s dictionary for a given
+    /// `appearanceMode`.
     ///
-    /// |buffer| is only modified if |buflen| is large enough to hold the whole AP
-    /// string. If |buflen| is smaller, the total size of the AP is still returned,
+    /// `buffer` is only modified if `buflen` is large enough to hold the whole AP
+    /// string. If `buflen` is smaller, the total size of the AP is still returned,
     /// but nothing is copied.
     ///
-    /// If there is no appearance stream for |annot| in |appearanceMode|, an empty
-    /// string is written to |buf| and 2 is returned.
+    /// If there is no appearance stream for `annot` in `appearanceMode`, an empty
+    /// string is written to `buf` and 2 is returned.
     ///
-    /// On other errors, nothing is written to |buffer| and 0 is returned.
+    /// On other errors, nothing is written to `buffer` and 0 is returned.
     ///
-    ///   |annot|          - handle to an annotation.
+    ///   `annot`          - handle to an annotation.
     ///
-    ///   |appearanceMode| - the appearance mode (normal, rollover or down) for which
+    ///   `appearanceMode` - the appearance mode (normal, rollover or down) for which
     ///                      to get the AP.
     ///
-    ///   |buffer|         - buffer for holding the value string, encoded in UTF-16LE.
+    ///   `buffer`         - buffer for holding the value string, encoded in UTF-16LE.
     ///
-    ///   |buflen|         - length of the buffer in bytes.
+    ///   `buflen`         - length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
@@ -1474,42 +1474,42 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Gets the annotation corresponding to |key| in |annot|'s dictionary. Common
+    /// Gets the annotation corresponding to `key` in `annot`'s dictionary. Common
     /// keys for linking annotations include "IRT" and "Popup". Must call
     /// [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the annotation returned by this function
     /// is no longer needed.
     ///
-    ///   |annot|  - handle to an annotation.
+    ///   `annot`  - handle to an annotation.
     ///
-    ///   |key|    - the key to the requested dictionary entry, encoded in UTF-8.
+    ///   `key`    - the key to the requested dictionary entry, encoded in UTF-8.
     ///
-    /// Returns a handle to the linked annotation object, or |NULL| on failure.
+    /// Returns a handle to the linked annotation object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetLinkedAnnot(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_ANNOTATION;
 
-    /// Gets the annotation flags of |annot|.
+    /// Gets the annotation flags of `annot`.
     ///
-    ///   |annot|    - handle to an annotation.
+    ///   `annot`    - handle to an annotation.
     ///
     /// Returns the annotation flags.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFlags(&self, annot: FPDF_ANNOTATION) -> c_int;
 
-    /// Sets the |annot|'s flags to be of the value |flags|.
+    /// Sets the `annot`'s flags to be of the value `flags`.
     ///
-    ///   |annot|      - handle to an annotation.
+    ///   `annot`      - handle to an annotation.
     ///
-    ///   |flags|      - the flag values to be set.
+    ///   `flags`      - the flag values to be set.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL;
 
-    /// Gets the annotation flags of |annot|.
+    /// Gets the annotation flags of `annot`.
     ///
-    ///    |hHandle|    -   handle to the form fill module, returned by
+    ///    `hHandle`    -   handle to the form fill module, returned by
     ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
-    ///    |annot|      -   handle to an interactive form annotation.
+    ///    `annot`      -   handle to an interactive form annotation.
     ///
     /// Returns the annotation flags specific to interactive forms.
     #[allow(non_snake_case)]
@@ -1523,15 +1523,15 @@ pub trait PdfiumLibraryBindings {
     /// point on a page. Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the
     /// annotation returned is no longer needed.
     ///
-    ///    |hHandle|    -   handle to the form fill module, returned by
+    ///    `hHandle`    -   handle to the form fill module, returned by
     ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///    |page|       -   handle to the page, returned by [PdfiumLibraryBindings::FPDF_LoadPage] function.
+    ///    `page`       -   handle to the page, returned by [PdfiumLibraryBindings::FPDF_LoadPage] function.
     ///
-    ///    |point|      -   position in PDF "user space".
+    ///    `point`      -   position in PDF "user space".
     ///
     /// Returns the interactive form annotation whose rectangle contains the given
-    /// coordinates on the page. If there is no such annotation, return |NULL|.
+    /// coordinates on the page. If there is no such annotation, return `NULL`.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
@@ -1540,19 +1540,19 @@ pub trait PdfiumLibraryBindings {
         point: *const FS_POINTF,
     ) -> FPDF_ANNOTATION;
 
-    /// Gets the name of |annot|, which is an interactive form annotation.
-    /// |buffer| is only modified if |buflen| is longer than the length of contents.
-    /// In case of error, nothing will be added to |buffer| and the return value will
+    /// Gets the name of `annot`, which is an interactive form annotation.
+    /// `buffer` is only modified if `buflen` is longer than the length of contents.
+    /// In case of error, nothing will be added to `buffer` and the return value will
     /// be 0. Note that return value of empty string is 2 for "\0\0".
     ///
-    ///    |hHandle|     -   handle to the form fill module, returned by
+    ///    `hHandle`     -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///    |annot|       -   handle to an interactive form annotation.
+    ///    `annot`       -   handle to an interactive form annotation.
     ///
-    ///    |buffer|      -   buffer for holding the name string, encoded in UTF-16LE.
+    ///    `buffer`      -   buffer for holding the name string, encoded in UTF-16LE.
     ///
-    ///    |buflen|      -   length of the buffer in bytes.
+    ///    `buflen`      -   length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
@@ -1564,32 +1564,32 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Gets the form field type of |annot|, which is an interactive form annotation.
+    /// Gets the form field type of `annot`, which is an interactive form annotation.
     ///
-    ///    |hHandle|     -   handle to the form fill module, returned by
+    ///    `hHandle`     -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///    |annot|       -   handle to an interactive form annotation.
+    ///    `annot`       -   handle to an interactive form annotation.
     ///
-    /// Returns the type of the form field (one of the |FPDF_FORMFIELD_*| values) on
+    /// Returns the type of the form field (one of the `FPDF_FORMFIELD_*` values) on
     /// success. Returns -1 on error.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldType(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
         -> c_int;
 
-    /// Gets the value of |annot|, which is an interactive form annotation.
-    /// |buffer| is only modified if |buflen| is longer than the length of contents.
-    /// In case of error, nothing will be added to |buffer| and the return value will
+    /// Gets the value of `annot`, which is an interactive form annotation.
+    /// `buffer` is only modified if `buflen` is longer than the length of contents.
+    /// In case of error, nothing will be added to `buffer` and the return value will
     /// be 0. Note that return value of empty string is 2 for "\0\0".
     ///
-    ///    |hHandle|     -   handle to the form fill module, returned by
+    ///    `hHandle`     -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///    |annot|       -   handle to an interactive form annotation.
+    ///    `annot`       -   handle to an interactive form annotation.
     ///
-    ///    |buffer|      -   buffer for holding the value string, encoded in UTF-16LE.
+    ///    `buffer`      -   buffer for holding the value string, encoded in UTF-16LE.
     ///
-    ///    |buflen|      -   length of the buffer in bytes.
+    ///    `buflen`      -   length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
@@ -1601,39 +1601,39 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Gets the number of options in the |annot|'s "Opt" dictionary. Intended for
+    /// Gets the number of options in the `annot`'s "Opt" dictionary. Intended for
     /// use with listbox and combobox widget annotations.
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
     /// Returns the number of options in "Opt" dictionary on success. Return value
     /// will be -1 if annotation does not have an "Opt" dictionary or other error.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetOptionCount(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
 
-    /// Gets the string value for the label of the option at |index| in |annot|'s
+    /// Gets the string value for the label of the option at `index` in `annot`'s
     /// "Opt" dictionary. Intended for use with listbox and combobox widget
-    /// annotations. |buffer| is only modified if |buflen| is longer than the length
+    /// annotations. `buffer` is only modified if `buflen` is longer than the length
     /// of contents. If index is out of range or in case of other error, nothing
-    /// will be added to |buffer| and the return value will be 0. Note that
+    /// will be added to `buffer` and the return value will be 0. Note that
     /// return value of empty string is 2 for "\0\0".
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
-    ///   |index|   - numeric index of the option in the "Opt" array.
+    ///   `index`   - numeric index of the option in the "Opt" array.
     ///
-    ///   |buffer|  - buffer for holding the value string, encoded in UTF-16LE.
+    ///   `buffer`  - buffer for holding the value string, encoded in UTF-16LE.
     ///
-    ///   |buflen|  - length of the buffer in bytes.
+    ///   `buflen`  - length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
-    /// If |annot| does not have an "Opt" array, |index| is out of range or if any
+    /// If `annot` does not have an "Opt" array, `index` is out of range or if any
     /// other error occurs, returns 0.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetOptionLabel(
@@ -1645,18 +1645,18 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Determines whether or not the option at |index| in |annot|'s "Opt" dictionary
+    /// Determines whether or not the option at `index` in `annot`'s "Opt" dictionary
     /// is selected. Intended for use with listbox and combobox widget annotations.
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
-    ///   |index|   - numeric index of the option in the "Opt" array.
+    ///   `index`   - numeric index of the option in the "Opt" array.
     ///
-    /// Returns |true| if the option at |index| in |annot|'s "Opt" dictionary is
-    /// selected, |false| otherwise.
+    /// Returns `true` if the option at `index` in `annot`'s "Opt" dictionary is
+    /// selected, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_IsOptionSelected(
         &self,
@@ -1665,19 +1665,19 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_BOOL;
 
-    /// Gets the float value of the font size for an |annot| with variable text.
+    /// Gets the float value of the font size for an `annot` with variable text.
     /// If 0, the font is to be auto-sized: its size is computed as a function of
     /// the height of the annotation rectangle.
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
-    ///   |value|   - Required. Float which will be set to font size on success.
+    ///   `value`   - Required. Float which will be set to font size on success.
     ///
-    /// Returns |true| if the font size was set in |value|, |false| on error or if
-    /// |value| not provided.
+    /// Returns `true` if the font size was set in `value`, `false` on error or if
+    /// `value` not provided.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontSize(
         &self,
@@ -1686,30 +1686,30 @@ pub trait PdfiumLibraryBindings {
         value: *mut c_float,
     ) -> FPDF_BOOL;
 
-    /// Determines if |annot| is a form widget that is checked. Intended for use with
+    /// Determines if `annot` is a form widget that is checked. Intended for use with
     /// checkbox and radio button widgets.
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
-    /// Returns |true| if |annot| is a form widget and is checked, |false| otherwise.
+    /// Returns `true` if `annot` is a form widget and is checked, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_IsChecked(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
     /// Sets the list of focusable annotation subtypes. Annotations of subtype
-    /// |FPDF_ANNOT_WIDGET| are by default focusable. New subtypes set using this API
+    /// `FPDF_ANNOT_WIDGET` are by default focusable. New subtypes set using this API
     /// will override the existing subtypes.
     ///
-    ///   |hHandle|  - handle to the form fill module, returned by
+    ///   `hHandle`  - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |subtypes| - list of annotation subtype which can be tabbed over.
+    ///   `subtypes` - list of annotation subtype which can be tabbed over.
     ///
-    ///   |count|    - total number of annotation subtype in list.
+    ///   `count`    - total number of annotation subtype in list.
     ///
-    /// Returns |true| if list of annotation subtype is set successfully, |false| otherwise.
+    /// Returns `true` if list of annotation subtype is set successfully, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFocusableSubtypes(
         &self,
@@ -1719,33 +1719,33 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     /// Gets the count of focusable annotation subtypes as set by host
-    /// for a |hHandle|.
+    /// for a `hHandle`.
     ///
-    ///   |hHandle|  - handle to the form fill module, returned by
+    ///   `hHandle`  - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     /// Returns the count of focusable annotation subtypes or -1 on error.
     ///
-    /// Note: Annotations of type |FPDF_ANNOT_WIDGET| are by default focusable.
+    /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFocusableSubtypesCount(&self, hHandle: FPDF_FORMHANDLE) -> c_int;
 
     /// Gets the list of focusable annotation subtype as set by host.
     ///
-    ///   |hHandle|  - handle to the form fill module, returned by
+    ///   `hHandle`  - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |subtypes| - receives the list of annotation subtype which can be tabbed
-    ///                over. Caller must have allocated |subtypes| more than or
+    ///   `subtypes` - receives the list of annotation subtype which can be tabbed
+    ///                over. Caller must have allocated `subtypes` more than or
     ///                equal to the count obtained from
     ///                [PdfiumLibraryBindings::FPDFAnnot_GetFocusableSubtypesCount] API.
     ///
-    ///   |count|    - size of |subtypes|.
+    ///   `count`    - size of `subtypes`.
     ///
-    /// Returns |true| on success and set list of annotation subtype to |subtypes|,
-    /// |false| otherwise.
+    /// Returns `true` on success and set list of annotation subtype to `subtypes`,
+    /// `false` otherwise.
     ///
-    /// Note: Annotations of type |FPDF_ANNOT_WIDGET| are by default focusable.
+    /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFocusableSubtypes(
         &self,
@@ -1754,25 +1754,25 @@ pub trait PdfiumLibraryBindings {
         count: size_t,
     ) -> FPDF_BOOL;
 
-    /// Gets |FPDF_LINK| object for |annot|. Intended to use for link annotations.
+    /// Gets `FPDF_LINK` object for `annot`. Intended to use for link annotations.
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
-    /// Returns |FPDF_LINK| from the |FPDF_ANNOTATION| and |NULL| on failure,
-    /// if the input annot is |NULL|, or input annot's subtype is not link.
+    /// Returns `FPDF_LINK` from the `FPDF_ANNOTATION` and `NULL` on failure,
+    /// if the input annot is `NULL`, or input annot's subtype is not link.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetLink(&self, annot: FPDF_ANNOTATION) -> FPDF_LINK;
 
-    /// Gets the count of annotations in the |annot|'s control group.
+    /// Gets the count of annotations in the `annot`'s control group.
     ///
     /// A group of interactive form annotations is collectively called a form
-    /// control group. Here, |annot|, an interactive form annotation, should be
+    /// control group. Here, `annot`, an interactive form annotation, should be
     /// either a radio button or a checkbox.
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
     /// Returns number of controls in its control group or -1 on error.
     #[allow(non_snake_case)]
@@ -1782,18 +1782,18 @@ pub trait PdfiumLibraryBindings {
         annot: FPDF_ANNOTATION,
     ) -> c_int;
 
-    /// Gets the index of |annot| in |annot|'s control group.
+    /// Gets the index of `annot` in `annot`'s control group.
     ///
     /// A group of interactive form annotations is collectively called a form
-    /// control group. Here, |annot|, an interactive form annotation, should be
+    /// control group. Here, `annot`, an interactive form annotation, should be
     /// either a radio button or a checkbox.
     ///
-    ///   |hHandle| - handle to the form fill module, returned by
+    ///   `hHandle` - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   |annot|   - handle to an annotation.
+    ///   `annot`   - handle to an annotation.
     ///
-    /// Returns index of a given |annot| in its control group or -1 on error.
+    /// Returns index of a given `annot` in its control group or -1 on error.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlIndex(
         &self,
@@ -1801,22 +1801,22 @@ pub trait PdfiumLibraryBindings {
         annot: FPDF_ANNOTATION,
     ) -> c_int;
 
-    /// Gets the export value of |annot| which is an interactive form annotation.
+    /// Gets the export value of `annot` which is an interactive form annotation.
     ///
     /// Intended for use with radio button and checkbox widget annotations.
     ///
-    /// |buffer| is only modified if |buflen| is longer than the length of contents.
-    /// In case of error, nothing will be added to |buffer| and the return value
+    /// `buffer` is only modified if `buflen` is longer than the length of contents.
+    /// In case of error, nothing will be added to `buffer` and the return value
     /// will be 0. Note that return value of empty string is 2 for "\0\0".
     ///
-    ///    |hHandle|     -   handle to the form fill module, returned by
+    ///    `hHandle`     -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///    |annot|       -   handle to an interactive form annotation.
+    ///    `annot`       -   handle to an interactive form annotation.
     ///
-    ///    |buffer|      -   buffer for holding the value string, encoded in UTF-16LE.
+    ///    `buffer`      -   buffer for holding the value string, encoded in UTF-16LE.
     ///
-    ///    |buflen|      -   length of the buffer in bytes.
+    ///    `buflen`      -   length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
@@ -1828,13 +1828,13 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Add a URI action to |annot|, overwriting the existing action, if any.
+    /// Add a URI action to `annot`, overwriting the existing action, if any.
     ///
-    ///   |annot|  - handle to a link annotation.
+    ///   `annot`  - handle to a link annotation.
     ///
-    ///   |uri|    - the URI to be set, encoded in 7-bit ASCII.
+    ///   `uri`    - the URI to be set, encoded in 7-bit ASCII.
     ///
-    /// Returns |true| if successful.
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
 
@@ -2866,17 +2866,17 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    /// Get the number of embedded files in |document|.
+    /// Get the number of embedded files in `document`.
     ///
     ///   document - handle to a document.
     ///
-    /// Returns the number of embedded files in |document|.
+    /// Returns the number of embedded files in `document`.
     #[allow(non_snake_case)]
     fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    /// Add an embedded file with |name| in |document|. If |name| is empty, or if
-    /// |name| is the name of a existing embedded file in |document|, or if
-    /// |document|'s embedded file name tree is too deep (i.e. |document| has too
+    /// Add an embedded file with `name` in `document`. If `name` is empty, or if
+    /// `name` is the name of a existing embedded file in `document`, or if
+    /// `document`'s embedded file name tree is too deep (i.e. `document` has too
     /// many embedded files already), then a new attachment will not be added.
     ///
     ///   document - handle to a document.
@@ -2896,9 +2896,9 @@ pub trait PdfiumLibraryBindings {
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFDoc_AddAttachment].
     ///
-    /// Add an embedded file with |name| in |document|. If |name| is empty, or if
-    /// |name| is the name of a existing embedded file in |document|, or if
-    /// |document|'s embedded file name tree is too deep (i.e. |document| has too
+    /// Add an embedded file with `name` in `document`. If `name` is empty, or if
+    /// `name` is the name of a existing embedded file in `document`, or if
+    /// `document`'s embedded file name tree is too deep (i.e. `document` has too
     /// many embedded files already), then a new attachment will not be added.
     ///
     ///   document - handle to a document.
@@ -2914,8 +2914,8 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    /// Get the embedded attachment at |index| in |document|. Note that the returned
-    /// attachment handle is only valid while |document| is open.
+    /// Get the embedded attachment at `index` in `document`. Note that the returned
+    /// attachment handle is only valid while `document` is open.
     ///
     ///   document - handle to a document.
     ///
@@ -2925,7 +2925,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT;
 
-    /// Delete the embedded attachment at |index| in |document|. Note that this does
+    /// Delete the embedded attachment at `index` in `document`. Note that this does
     /// not remove the attachment data from the PDF file; it simply removes the
     /// file's entry in the embedded files name tree so that it does not appear in
     /// the attachment list. This behavior may change in the future.
@@ -2938,8 +2938,8 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
 
-    /// Get the name of the |attachment| file. |buffer| is only modified if |buflen|
-    /// is longer than the length of the file name. On errors, |buffer| is unmodified
+    /// Get the name of the `attachment` file. `buffer` is only modified if `buflen`
+    /// is longer than the length of the file name. On errors, `buffer` is unmodified
     /// and the returned length is 0.
     ///
     ///   attachment - handle to an attachment.
@@ -2957,18 +2957,18 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Check if the params dictionary of |attachment| has |key| as a key.
+    /// Check if the params dictionary of `attachment` has `key` as a key.
     ///
     ///   attachment - handle to an attachment.
     ///
     ///   key        - the key to look for, encoded in UTF-8.
     ///
-    /// Returns true if |key| exists.
+    /// Returns true if `key` exists.
     #[allow(non_snake_case)]
     fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL;
 
-    /// Get the type of the value corresponding to |key| in the params dictionary of
-    /// the embedded |attachment|.
+    /// Get the type of the value corresponding to `key` in the params dictionary of
+    /// the embedded `attachment`.
     ///
     ///   attachment - handle to an attachment.
     ///
@@ -2982,8 +2982,8 @@ pub trait PdfiumLibraryBindings {
         key: &str,
     ) -> FPDF_OBJECT_TYPE;
 
-    /// Set the string value corresponding to |key| in the params dictionary of the
-    /// embedded file |attachment|, overwriting the existing value if any. The value
+    /// Set the string value corresponding to `key` in the params dictionary of the
+    /// embedded file `attachment`, overwriting the existing value if any. The value
     /// type should be FPDF_OBJECT_STRING after this function call succeeds.
     ///
     ///   attachment - handle to an attachment.
@@ -3006,8 +3006,8 @@ pub trait PdfiumLibraryBindings {
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFAttachment_SetStringValue].
     ///
-    /// Set the string value corresponding to |key| in the params dictionary of the
-    /// embedded file |attachment|, overwriting the existing value if any. The value
+    /// Set the string value corresponding to `key` in the params dictionary of the
+    /// embedded file `attachment`, overwriting the existing value if any. The value
     /// type should be FPDF_OBJECT_STRING after this function call succeeds.
     ///
     ///   attachment - handle to an attachment.
@@ -3032,13 +3032,13 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    /// Get the string value corresponding to |key| in the params dictionary of the
-    /// embedded file |attachment|. |buffer| is only modified if |buflen| is longer
-    /// than the length of the string value. Note that if |key| does not exist in the
-    /// dictionary or if |key|'s corresponding value in the dictionary is not a
+    /// Get the string value corresponding to `key` in the params dictionary of the
+    /// embedded file `attachment`. `buffer` is only modified if `buflen` is longer
+    /// than the length of the string value. Note that if `key` does not exist in the
+    /// dictionary or if `key`'s corresponding value in the dictionary is not a
     /// string (i.e. the value is not of type FPDF_OBJECT_STRING or
-    /// FPDF_OBJECT_NAME), then an empty string would be copied to |buffer| and the
-    /// return value would be 2. On other errors, nothing would be added to |buffer|
+    /// FPDF_OBJECT_NAME), then an empty string would be copied to `buffer` and the
+    /// return value would be 2. On other errors, nothing would be added to `buffer`
     /// and the return value would be 0.
     ///
     ///   attachment - handle to an attachment.
@@ -3059,14 +3059,14 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Set the file data of |attachment|, overwriting the existing file data if any.
+    /// Set the file data of `attachment`, overwriting the existing file data if any.
     /// The creation date and checksum will be updated, while all other dictionary
-    /// entries will be deleted. Note that only contents with |len| smaller than
+    /// entries will be deleted. Note that only contents with `len` smaller than
     /// INT_MAX is supported.
     ///
     ///   attachment - handle to an attachment.
     ///
-    ///   contents   - buffer holding the file data to write to |attachment|.
+    ///   contents   - buffer holding the file data to write to `attachment`.
     ///
     ///   len        - length of file data in bytes.
     ///
@@ -3080,25 +3080,25 @@ pub trait PdfiumLibraryBindings {
         len: c_ulong,
     ) -> FPDF_BOOL;
 
-    /// Get the file data of |attachment|.
+    /// Get the file data of `attachment`.
     ///
-    /// When the attachment file data is readable, true is returned, and |out_buflen|
-    /// is updated to indicate the file data size. |buffer| is only modified if
-    /// |buflen| is non-null and long enough to contain the entire file data. Callers
-    /// must check both the return value and the input |buflen| is no less than the
-    /// returned |out_buflen| before using the data.
+    /// When the attachment file data is readable, true is returned, and `out_buflen`
+    /// is updated to indicate the file data size. `buffer` is only modified if
+    /// `buflen` is non-null and long enough to contain the entire file data. Callers
+    /// must check both the return value and the input `buflen` is no less than the
+    /// returned `out_buflen` before using the data.
     ///
-    /// Otherwise, when the attachment file data is unreadable or when |out_buflen|
-    /// is null, false is returned and |buffer| and |out_buflen| remain unmodified.
+    /// Otherwise, when the attachment file data is unreadable or when `out_buflen`
+    /// is null, false is returned and `buffer` and `out_buflen` remain unmodified.
     ///
     ///   attachment - handle to an attachment.
     ///
-    ///   buffer     - buffer for holding the file data from |attachment|.
+    ///   buffer     - buffer for holding the file data from `attachment`.
     ///
     ///   buflen     - length of the buffer in bytes.
     ///
     ///   out_buflen - pointer to the variable that will receive the minimum buffer
-    ///                size to contain the file data of |attachment|.
+    ///                size to contain the file data of `attachment`.
     ///
     /// Returns true on success, false otherwise.
     #[allow(non_snake_case)]
