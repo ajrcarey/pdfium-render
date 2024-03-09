@@ -11970,4 +11970,21 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         result
     }
+
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFCatalog_IsTagged()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFCatalog_IsTagged",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
+                    document,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_BOOL
+    }
 }

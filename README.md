@@ -87,9 +87,9 @@ Release 0.8.20 adds support for creating new annotations, positioning those anno
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Release 0.8.19 fixes a bug in `PdfPage::flatten()` that prevented the effect of the flatten operation
-from taking effect until the page was dropped and reloaded. The effect of the flatten operation
-is now immediately available.
+Release 0.8.19 fixes a bug in `PdfPage::flatten()` that meant the effect of the flatten operation
+was not apparent until the page was dropped and reloaded. The effect of the flatten operation
+now takes effect immediately.
 
 Releases 0.8.17 and 0.8.18 adjust the WASM implementation of `pdfium-render` to account for some small packaging
 changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
@@ -349,7 +349,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.19, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.19, 328 (89%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 

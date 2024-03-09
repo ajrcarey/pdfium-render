@@ -1443,6 +1443,18 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE) {
+        unsafe { crate::bindgen::FORM_OnAfterLoadPage(page, hHandle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE) {
+        unsafe { crate::bindgen::FORM_OnBeforeClosePage(page, hHandle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { crate::bindgen::FPDFDoc_GetPageMode(document) }
     }
@@ -3118,5 +3130,11 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDFAttachment_GetFile(attachment, buffer, buflen, out_buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFCatalog_IsTagged(document) }
     }
 }

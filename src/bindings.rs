@@ -1838,6 +1838,19 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
 
+    ///  Initializes the form fill environment.
+    ///
+    ///    `document` - Handle to document from [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `formInfo` - Pointer to a `FPDF_FORMFILLINFO` structure.
+    ///
+    /// Return Value:
+    ///        Handle to the form fill module, or `NULL` on failure.
+    ///
+    /// Comments:
+    ///        This function should be called before any form fill operation.
+    ///        The `FPDF_FORMFILLINFO` passed in via `form_info` must remain valid until
+    ///        the returned `FPDF_FORMHANDLE` is closed.
     #[allow(non_snake_case)]
     fn FPDFDOC_InitFormFillEnvironment(
         &self,
@@ -1845,14 +1858,33 @@ pub trait PdfiumLibraryBindings {
         form_info: *mut FPDF_FORMFILLINFO,
     ) -> FPDF_FORMHANDLE;
 
+    /// Takes ownership of `hHandle` and exits the form fill environment.
+    ///
+    ///    `hHandle`  -   Handle to the form fill module, as returned by
+    ///                   [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    /// This function is a no-op when `hHandle` is null.
     #[allow(non_snake_case)]
-    fn FPDFDOC_ExitFormFillEnvironment(&self, handle: FPDF_FORMHANDLE);
+    fn FPDFDOC_ExitFormFillEnvironment(&self, hHandle: FPDF_FORMHANDLE);
 
+    /// This method is required for implementing all the form related
+    /// functions. Should be invoked after user successfully loaded a
+    /// PDF page, and [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment] has been invoked.
+    ///
+    ///    `hHandle`   -   Handle to the form fill module, as returned by
+    ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     #[allow(non_snake_case)]
-    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE);
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
+    /// This method is required for implementing all the form related
+    /// functions. Should be invoked before user closes the PDF page.
+    ///
+    ///    `page`      -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `hHandle`   -   Handle to the form fill module, as returned by
+    ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     #[allow(non_snake_case)]
-    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE);
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
     #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
@@ -3109,6 +3141,16 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
+
+    /// Determines if `document` represents a tagged PDF.
+    ///
+    /// For the definition of tagged PDF, see 10.7 "Tagged PDF" in PDF Reference 1.7.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    /// Returns `true` if `document` is a tagged PDF.
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 }
 
 #[cfg(test)]

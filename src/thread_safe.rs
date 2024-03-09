@@ -3151,4 +3151,10 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings
             .FPDFAttachment_GetFile(attachment, buffer, buflen, out_buflen)
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        self.bindings.FPDFCatalog_IsTagged(document)
+    }
 }

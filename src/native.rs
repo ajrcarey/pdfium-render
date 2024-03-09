@@ -170,6 +170,8 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFAnnot_SetURI()?;
         result.extern_FPDFDOC_InitFormFillEnvironment()?;
         result.extern_FPDFDOC_ExitFormFillEnvironment()?;
+        result.extern_FORM_OnAfterLoadPage()?;
+        result.extern_FORM_OnBeforeClosePage()?;
         result.extern_FPDFDoc_GetPageMode()?;
         result.extern_FPDFPage_Flatten()?;
         result.extern_FPDF_SetFormFieldHighlightColor()?;
@@ -342,6 +344,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFAttachment_GetStringValue()?;
         result.extern_FPDFAttachment_SetFile()?;
         result.extern_FPDFAttachment_GetFile()?;
+        result.extern_FPDFCatalog_IsTagged()?;
 
         Ok(result)
     }
@@ -4775,6 +4778,15 @@ impl DynamicPdfiumBindings {
     > {
         unsafe { self.library.get(b"FPDFAttachment_GetFile\0") }
     }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFCatalog_IsTagged(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFCatalog_IsTagged\0") }
+    }
 }
 
 impl PdfiumLibraryBindings for DynamicPdfiumBindings {
@@ -7967,5 +7979,11 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe {
             self.extern_FPDFAttachment_GetFile().unwrap()(attachment, buffer, buflen, out_buflen)
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFCatalog_IsTagged().unwrap()(document) }
     }
 }
