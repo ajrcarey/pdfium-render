@@ -849,22 +849,7 @@ impl<'a> PdfPage<'a> {
             // transformation to take effect. For more information, see:
             // https://github.com/ajrcarey/pdfium-render/issues/93
 
-            if let Some(page_index) =
-                PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
-            {
-                self.drop_impl();
-
-                self.page_handle = self
-                    .bindings
-                    .FPDF_LoadPage(self.document_handle, page_index as c_int);
-
-                PdfPageIndexCache::set_index_for_page(
-                    self.document_handle,
-                    self.page_handle,
-                    page_index,
-                );
-            }
-
+            self.reload_in_place();
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -915,9 +900,16 @@ impl<'a> PdfPage<'a> {
             .FPDFPage_Flatten(self.page_handle, flag as c_int) as u32
         {
             FLATTEN_SUCCESS => {
-                self.is_content_regeneration_required = true;
+                self.regenerate_content()?;
 
-                self.regenerate_content()
+                // As noted at https://bugs.chromium.org/p/pdfium/issues/detail?id=2055,
+                // FPDFPage_Flatten() updates the underlying dictionaries and content streams for
+                // the page, but does not update the FPDF_Page structure. We must reload the
+                // page for the effects of the flatten operation to be visible. For more information, see:
+                // https://github.com/ajrcarey/pdfium-render/issues/140
+
+                self.reload_in_place();
+                Ok(())
             }
             FLATTEN_NOTHINGTODO => Ok(()),
             FLATTEN_FAIL => Err(PdfiumError::PageFlattenFailure),
@@ -1025,6 +1017,28 @@ impl<'a> PdfPage<'a> {
         }
     }
 
+    /// Reloads the page transparently to any caller, forcing a refresh of all page data structures.
+    /// This will replace this page's `FPDF_PAGE` handle. The page index cache will be updated.
+    fn reload_in_place(&mut self) {
+        if let Some(page_index) =
+            PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
+        {
+            self.drop_impl();
+
+            self.page_handle = self
+                .bindings
+                .FPDF_LoadPage(self.document_handle, page_index as c_int);
+
+            PdfPageIndexCache::set_index_for_page(
+                self.document_handle,
+                self.page_handle,
+                page_index,
+            );
+        }
+    }
+
+    /// Drops the page by calling `FPDF_ClosePage()`, freeing held memory. This will invalidate
+    /// this page's `FPDF_PAGE` handle. The page index cache will be updated.
     fn drop_impl(&mut self) {
         if self.regeneration_strategy != PdfPageContentRegenerationStrategy::Manual
             && self.is_content_regeneration_required

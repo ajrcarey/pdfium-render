@@ -83,9 +83,13 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.19 adds support for creating new annotations, positioning those annotations,
+Release 0.8.20 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
+
+Release 0.8.19 fixes a bug in `PdfPage::flatten()` that prevented the effect of the flatten operation
+from taking effect until the page was dropped and reloaded. The effect of the flatten operation
+is now immediately available.
 
 Releases 0.8.17 and 0.8.18 adjust the WASM implementation of `pdfium-render` to account for some small packaging
 changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
@@ -345,7 +349,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.18, 325 (88%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.19, 325 (88%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -358,7 +362,7 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.19: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
+* 0.8.20: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
   `PdfPageAnnotationCommon::set_width()`, `PdfPageAnnotationCommon::set_height()`,
@@ -369,7 +373,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
-* 0.8.18: Adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to
+* 0.8.19: adjusts the behaviour of `PdfPage::flatten()` so that the page is reloaded after the
+  call to `FPDFPage_Flatten()`. This ensures that the effect of the flatten operation is immediately
+  visible to the caller; previously, it was necessary for the caller to drop and reload the page
+  themselves. For more details, see <https://github.com/ajrcarey/pdfium-render/issues/140>.
+* 0.8.18: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to
   `Module["wasmExports"]["__indirect_function_table"]` if `Window.wasmTable` global variable is
   not available, in response to upstream packaging changes at
   <https://github.com/paulocoutinhox/pdfium-lib/releases>. For more details, see
