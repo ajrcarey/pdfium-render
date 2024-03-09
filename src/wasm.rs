@@ -5973,6 +5973,42 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnAfterLoadPage()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FORM_OnAfterLoadPage",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+            ]),
+            Some(&JsValue::from(Array::of2(
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_form(handle),
+            ))),
+        );
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnBeforeClosePage()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FORM_OnBeforeClosePage",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+            ]),
+            Some(&JsValue::from(Array::of2(
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_form(handle),
+            ))),
+        );
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetPageMode()");
 
