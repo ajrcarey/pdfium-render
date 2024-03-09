@@ -1509,6 +1509,16 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFDOC_ExitFormFillEnvironment(handle)
     }
 
+    #[allow(non_snake_case)]
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE) {
+        self.bindings.FORM_OnAfterLoadPage(page, handle)
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, handle: FPDF_FORMHANDLE) {
+        self.bindings.FORM_OnBeforeClosePage(page, handle)
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
