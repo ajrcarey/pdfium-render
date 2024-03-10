@@ -175,34 +175,8 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetFileIdentifier(
-        &self,
-        document: FPDF_DOCUMENT,
-        id_type: FPDF_FILEIDTYPE,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong {
-        unsafe { crate::bindgen::FPDF_GetFileIdentifier(document, id_type, buffer, buflen) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { crate::bindgen::FPDF_GetFormType(document) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetMetaText(
-        &self,
-        document: FPDF_DOCUMENT,
-        tag: &str,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong {
-        let c_tag = CString::new(tag).unwrap();
-
-        unsafe { crate::bindgen::FPDF_GetMetaText(document, c_tag.as_ptr(), buffer, buflen) }
     }
 
     #[inline]
@@ -297,18 +271,6 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float {
         unsafe { crate::bindgen::FPDF_GetPageHeightF(page) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDF_GetPageLabel(
-        &self,
-        document: FPDF_DOCUMENT,
-        page_index: c_int,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong {
-        unsafe { crate::bindgen::FPDF_GetPageLabel(document, page_index, buffer, buflen) }
     }
 
     #[inline]
@@ -1540,6 +1502,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int {
+        unsafe { crate::bindgen::FPDFBookmark_GetCount(bookmark) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK {
         unsafe { crate::bindgen::FPDFBookmark_Find(document, title) }
     }
@@ -1689,6 +1657,50 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDFLink_GetQuadPoints(link_annot, quad_index, quad_points) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION {
+        unsafe { crate::bindgen::FPDF_GetPageAAction(page, aa_type) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetFileIdentifier(
+        &self,
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDF_GetFileIdentifier(document, id_type, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetMetaText(
+        &self,
+        document: FPDF_DOCUMENT,
+        tag: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        let c_tag = CString::new(tag).unwrap();
+
+        unsafe { crate::bindgen::FPDF_GetMetaText(document, c_tag.as_ptr(), buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageLabel(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDF_GetPageLabel(document, page_index, buffer, buflen) }
     }
 
     #[inline]

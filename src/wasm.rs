@@ -6237,6 +6237,23 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_GetCount()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFBookmark_GetCount",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_bookmark(
+                    bookmark,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as usize as c_int
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_Find()");
 
@@ -6896,6 +6913,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(ptr_quad_points);
 
         result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageAAction()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_GetPageAAction",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(aa_type as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_ACTION
     }
 
     #[allow(non_snake_case)]

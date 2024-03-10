@@ -241,25 +241,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
-    fn FPDF_GetFileIdentifier(
-        &self,
-        document: FPDF_DOCUMENT,
-        id_type: FPDF_FILEIDTYPE,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong;
-
-    #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int;
-
-    #[allow(non_snake_case)]
-    fn FPDF_GetMetaText(
-        &self,
-        document: FPDF_DOCUMENT,
-        tag: &str,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong;
 
     #[allow(non_snake_case)]
     fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
@@ -328,15 +310,6 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float;
-
-    #[allow(non_snake_case)]
-    fn FPDF_GetPageLabel(
-        &self,
-        document: FPDF_DOCUMENT,
-        page_index: c_int,
-        buffer: *mut c_void,
-        buflen: c_ulong,
-    ) -> c_ulong;
 
     #[allow(non_snake_case)]
     fn FPDFText_GetCharIndexFromTextIndex(
@@ -1918,6 +1891,17 @@ pub trait PdfiumLibraryBindings {
         flags: c_int,
     );
 
+    /// Gets the first child of `bookmark`, or the first top-level bookmark item.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `bookmark` - handle to the current bookmark. Pass `NULL` for the first top
+    ///                level item.
+    ///
+    /// Returns a handle to the first child of `bookmark` or the first top-level
+    /// bookmark item. `NULL` if no child or top-level bookmark found.
+    /// Note that another name for the bookmarks is the document outline, as
+    /// described in ISO 32000-1:2008, section 12.3.3.
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetFirstChild(
         &self,
@@ -1925,6 +1909,17 @@ pub trait PdfiumLibraryBindings {
         bookmark: FPDF_BOOKMARK,
     ) -> FPDF_BOOKMARK;
 
+    /// Gets the next sibling of `bookmark`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `bookmark` - handle to the current bookmark.
+    ///
+    /// Returns a handle to the next sibling of `bookmark`, or `NULL` if this is the
+    /// last bookmark at this level.
+    ///
+    /// Note that the caller is responsible for handling circular bookmark
+    /// references, as may arise from malformed documents.
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetNextSibling(
         &self,
@@ -1932,6 +1927,21 @@ pub trait PdfiumLibraryBindings {
         bookmark: FPDF_BOOKMARK,
     ) -> FPDF_BOOKMARK;
 
+    /// Gets the title of `bookmark`.
+    ///
+    ///   `bookmark` - handle to the bookmark.
+    ///
+    ///   `buffer`   - buffer for the title. May be `NULL`.
+    ///
+    ///   `buflen`   - the length of the buffer in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the title, including the terminating `NUL`
+    /// character. The number of bytes is returned regardless of the `buffer` and
+    /// `buflen` parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding. The
+    /// string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetTitle(
         &self,
@@ -1940,9 +1950,46 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the number of children of `bookmark`.
+    ///
+    ///   `bookmark` - handle to the bookmark.
+    ///
+    /// Returns a signed integer that represents the number of sub-items the given
+    /// bookmark has. If the value is positive, child items shall be shown by default
+    /// (open state). If the value is negative, child items shall be hidden by
+    /// default (closed state). Please refer to PDF 32000-1:2008, Table 153.
+    /// Returns 0 if the bookmark has no children or is invalid.
+    #[allow(non_snake_case)]
+    fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int;
+
+    /// Finds the bookmark with `title` in `document`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `title`    - the UTF-16LE encoded Unicode title for which to search.
+    ///
+    /// Returns the handle to the bookmark, or `NULL` if `title` can't be found.
+    ///
+    /// `FPDFBookmark_Find()` will always return the first bookmark found even if
+    /// multiple bookmarks have the same `title`.
+    ///
+    /// A [&str]-friendly helper function is available for this function.
+    /// See [PdfiumLibraryBindings::FPDFBookmark_Find_str].
     #[allow(non_snake_case)]
     fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK;
 
+    /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFBookmark_Find].
+    ///
+    /// Finds the bookmark with `title` in `document`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `title`    - the title for which to search.
+    ///
+    /// Returns the handle to the bookmark, or `NULL` if `title` can't be found.
+    ///
+    /// `FPDFBookmark_Find_str()` will always return the first bookmark found even if
+    /// multiple bookmarks have the same `title`.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBookmark_Find_str(&self, document: FPDF_DOCUMENT, title: &str) -> FPDF_BOOKMARK {
@@ -1952,18 +1999,77 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
+    /// Gets the destination associated with `bookmark`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `bookmark` - handle to the bookmark.
+    ///
+    /// Returns the handle to the destination data, or `NULL` if no destination is
+    /// associated with `bookmark`.
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetDest(&self, document: FPDF_DOCUMENT, bookmark: FPDF_BOOKMARK) -> FPDF_DEST;
 
+    /// Gets the action associated with `bookmark`.
+    ///
+    ///   `bookmark` - handle to the bookmark.
+    ///
+    /// Returns the handle to the action data, or `NULL` if no action is associated
+    /// with `bookmark`.
+    ///
+    /// If this function returns a valid handle, it is valid as long as `bookmark` is
+    /// valid.
+    ///
+    /// If this function returns `NULL`, `FPDFBookmark_GetDest()` should be called to get
+    /// the `bookmark` destination data.
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetAction(&self, bookmark: FPDF_BOOKMARK) -> FPDF_ACTION;
 
+    /// Gets the type of `action`.
+    ///
+    ///   `action` - handle to the action.
+    ///
+    /// Returns one of:
+    ///   - `PDFACTION_UNSUPPORTED`
+    ///   - `PDFACTION_GOTO`
+    ///   - `PDFACTION_REMOTEGOTO`
+    ///   - `PDFACTION_URI`
+    ///   - `PDFACTION_LAUNCH`
     #[allow(non_snake_case)]
     fn FPDFAction_GetType(&self, action: FPDF_ACTION) -> c_ulong;
 
+    /// Gets the destination of `action`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `action`   - handle to the action. `action` must be a `PDFACTION_GOTO` or
+    ///                `PDFACTION_REMOTEGOTO`.
+    ///
+    /// Returns a handle to the destination data, or `NULL` on error, typically
+    /// because the arguments were bad or the action was of the wrong type.
+    ///
+    /// In the case of `PDFACTION_REMOTEGOTO`, you must first call
+    /// `FPDFAction_GetFilePath()`, then load the document at that path, then pass
+    /// the document handle from that document as `document` to `FPDFAction_GetDest()`.
     #[allow(non_snake_case)]
     fn FPDFAction_GetDest(&self, document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST;
 
+    /// Gets the file path of `action`.
+    ///
+    ///   `action` - handle to the action. `action` must be a `PDFACTION_LAUNCH` or
+    ///              `PDFACTION_REMOTEGOTO`.
+    ///
+    ///   `buffer` - a buffer for output the path string. May be `NULL`.
+    ///
+    ///   `buflen` - the length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the file path, including the trailing `NUL`
+    /// character, or 0 on error, typically because the arguments were bad or the
+    /// action was of the wrong type.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-8 encoding.
+    /// If `buflen` is less than the returned length, or `buffer` is `NULL`, `buffer`
+    /// will not be modified.
     #[allow(non_snake_case)]
     fn FPDFAction_GetFilePath(
         &self,
@@ -1972,6 +2078,32 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the URI path of `action`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `action`   - handle to the action. Must be a `PDFACTION_URI`.
+    ///
+    ///   `buffer`   - a buffer for the path string. May be `NULL`.
+    ///
+    ///   `buflen`   - the length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the URI path, including the trailing `NUL`
+    /// character, or 0 on error, typically because the arguments were bad or the
+    /// action was of the wrong type.
+    ///
+    /// The `buffer` may contain badly encoded data. The caller should validate the
+    /// output, i.e. check to see if it is UTF-8.
+    ///
+    /// If `buflen` is less than the returned length, or `buffer` is `NULL`, buffer`
+    /// will not be modified.
+    ///
+    /// Historically, the documentation for this API claimed `buffer` is always
+    /// encoded in 7-bit ASCII, but did not actually enforce it.
+    /// <https://pdfium.googlesource.com/pdfium.git/+/d609e84cee2e14a18333247485af91df48a40592>
+    /// added that enforcement, but that did not work well for real world PDFs that
+    /// used UTF-8. As of this writing, this API reverted back to its original
+    /// behavior prior to commit d609e84cee.
     #[allow(non_snake_case)]
     fn FPDFAction_GetURIPath(
         &self,
@@ -1981,9 +2113,27 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the page index of `dest`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `dest`     - handle to the destination.
+    ///
+    /// Returns the 0-based page index containing `dest`. Returns -1 on error.
     #[allow(non_snake_case)]
     fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int;
 
+    /// Gets the view (fit type) specified by `dest`.
+    ///
+    ///   `dest`         - handle to the destination.
+    ///
+    ///   `pNumParams`   - receives the number of view parameters, which is at most 4.
+    ///
+    ///   `pParams`      - buffer to write the view parameters. Must be at least 4
+    ///                    `FS_FLOAT`s long.
+    ///
+    /// Returns one of the `PDFDEST_VIEW_*` constants, or `PDFDEST_VIEW_UNKNOWN_MODE` if
+    /// `dest` does not specify a view.
     #[allow(non_snake_case)]
     fn FPDFDest_GetView(
         &self,
@@ -1992,6 +2142,27 @@ pub trait PdfiumLibraryBindings {
         pParams: *mut FS_FLOAT,
     ) -> c_ulong;
 
+    /// Gets the (`x`, `y`, `zoom`) location of `dest` in the destination page, if the
+    /// destination is in `page /XYZ x y zoom` syntax.
+    ///
+    ///   `dest`       - handle to the destination.
+    ///
+    ///   `hasXVal`    - out parameter; true if the `x` value is not null
+    ///
+    ///   `hasYVal`    - out parameter; true if the `y` value is not null
+    ///
+    ///   `hasZoomVal` - out parameter; true if the `zoom` value is not null
+    ///
+    ///   `x`          - out parameter; the `x` coordinate, in page coordinates.
+    ///
+    ///   `y`          - out parameter; the `y` coordinate, in page coordinates.
+    ///
+    ///   `zoom`       - out parameter; the `zoom` value.
+    ///
+    /// Returns `true` on successfully reading the `/XYZ` value.
+    ///
+    /// Note the `x`, `y`, `zoom` values are only set if the corresponding `hasXVal`,
+    /// `hasYVal`, or `hasZoomVal` flags are true.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFDest_GetLocationInPage(
@@ -2005,18 +2176,69 @@ pub trait PdfiumLibraryBindings {
         zoom: *mut FS_FLOAT,
     ) -> FPDF_BOOL;
 
+    /// Finds a link at point (`x`, `y`) on `page`.
+    ///
+    ///   `page` - handle to the document page.
+    ///
+    ///   `x`    - the `x` coordinate, in the page coordinate system.
+    ///
+    ///   `y`    - the `y` coordinate, in the page coordinate system.
+    ///
+    /// Returns a handle to the link, or `NULL` if no link found at the given point.
+    ///
+    /// You can convert coordinates from screen coordinates to page coordinates using
+    /// `FPDF_DeviceToPage()`.
     #[allow(non_snake_case)]
     fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK;
 
+    /// Finds the Z-order of link at point (`x`, `y`) on `page`.
+    ///
+    ///   `page` - handle to the document page.
+    ///
+    ///   `x`    - the `x` coordinate, in the page coordinate system.
+    ///
+    ///   `y`    - the `y` coordinate, in the page coordinate system.
+    ///
+    /// Returns the Z-order of the link, or -1 if no link found at the given point.
+    /// Larger Z-order numbers are closer to the front.
+    ///
+    /// You can convert coordinates from screen coordinates to page coordinates using
+    /// `FPDF_DeviceToPage()`.
     #[allow(non_snake_case)]
     fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int;
 
+    /// Gets destination info for `link`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `link`     - handle to the link.
+    ///
+    /// Returns a handle to the destination, or `NULL` if there is no destination
+    /// associated with the link. In this case, you should call `FPDFLink_GetAction()`
+    /// to retrieve the action associated with `link`.
     #[allow(non_snake_case)]
     fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;
 
+    /// Gets action info for `link`.
+    ///
+    ///   `link` - handle to the link.
+    ///
+    /// Returns a handle to the action associated to `link`, or `NULL` if no action.
+    /// If this function returns a valid handle, it is valid as long as `link` is
+    /// valid.
     #[allow(non_snake_case)]
     fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION;
 
+    /// Enumerates all the link annotations in `page`.
+    ///
+    ///   `page`       - handle to the page.
+    ///
+    ///   `start_pos`  - the start position, should initially be 0 and is updated with
+    ///                  the next start position on return.
+    ///
+    ///   `link_annot` - the link handle for `startPos`.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFLink_Enumerate(
         &self,
@@ -2025,15 +2247,44 @@ pub trait PdfiumLibraryBindings {
         link_annot: *mut FPDF_LINK,
     ) -> FPDF_BOOL;
 
+    /// Gets `FPDF_ANNOTATION` object for `link_annot`.
+    ///
+    ///   `page`       - handle to the page in which `FPDF_LINK` object is present.
+    ///
+    ///   `link_annot` - handle to link annotation.
+    ///
+    /// Returns `FPDF_ANNOTATION` from the `FPDF_LINK` or `NULL` on failure,
+    /// if the input link annot or page is `NULL`.
     #[allow(non_snake_case)]
     fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION;
 
+    /// Gets the rectangle for `link_annot`.
+    ///
+    ///   `link_annot` - handle to the link annotation.
+    ///
+    ///   `rect`       - the annotation rectangle.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
+    /// Gets the count of quadrilateral points to the `link_annot`.
+    ///
+    ///   `link_annot` - handle to the link annotation.
+    ///
+    /// Returns the count of quadrilateral points.
     #[allow(non_snake_case)]
     fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int;
 
+    /// Gets the quadrilateral points for the specified `quad_index` in `link_annot`.
+    ///
+    ///   `link_annot`  - handle to the link annotation.
+    ///
+    ///   `quad_index`  - the specified quad point index.
+    ///
+    ///   `quad_points` - receives the quadrilateral points.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFLink_GetQuadPoints(
         &self,
@@ -2041,6 +2292,103 @@ pub trait PdfiumLibraryBindings {
         quad_index: c_int,
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL;
+
+    /// Gets an additional-action from `page`.
+    ///
+    ///   `page`      - handle to the page, as returned by `FPDF_LoadPage()`.
+    ///
+    ///   `aa_type`   - the type of the page object's additional-action, defined
+    ///                 in `public/fpdf_formfill.h`
+    ///
+    ///   Returns the handle to the action data, or `NULL` if there is no
+    ///   additional-action of type `aa_type`.
+    ///
+    ///   If this function returns a valid handle, it is valid as long as `page` is
+    ///   valid.
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION;
+
+    /// Gets the file identifier defined in the trailer of `document`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `id_type`  - the file identifier type to retrieve.
+    ///
+    ///   `buffer`   - a buffer for the file identifier. May be `NULL`.
+    ///
+    ///   `buflen`   - the length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the file identifier, including the `NUL`
+    /// terminator.
+    ///
+    /// The `buffer` is always a byte string. The `buffer` is followed by a `NUL`
+    /// terminator.  If `buflen` is less than the returned length, or `buffer` is
+    /// `NULL`, `buffer` will not be modified.
+    #[allow(non_snake_case)]
+    fn FPDF_GetFileIdentifier(
+        &self,
+        document: FPDF_DOCUMENT,
+        id_type: FPDF_FILEIDTYPE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    /// Gets meta-data `tag` content from `document`.
+    ///
+    ///   `document` - handle to the document.
+    ///
+    ///   `tag`      - the tag to retrieve. The tag can be one of:
+    ///                Title, Author, Subject, Keywords, Creator, Producer,
+    ///                CreationDate, or ModDate.
+    ///                For detailed explanations of these tags and their respective
+    ///                values, please refer to PDF Reference 1.6, section 10.2.1,
+    ///                "Document Information Dictionary".
+    ///
+    ///   `buffer`   - a buffer for the tag. May be `NULL`.
+    ///
+    ///   `buflen`   - the length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the tag, including trailing zeros.
+    ///
+    /// The |buffer| is always encoded in UTF-16LE. The `buffer` is followed by two
+    /// bytes of zeros indicating the end of the string.  If `buflen` is less than
+    /// the returned length, or `buffer` is `NULL`, `buffer` will not be modified.
+    ///
+    /// For linearized files, `FPDFAvail_IsFormAvail()` must be called before this, and
+    /// it must have returned `PDF_FORM_AVAIL` or `PDF_FORM_NOTEXIST`. Before that, there
+    /// is no guarantee the metadata has been loaded.
+    #[allow(non_snake_case)]
+    fn FPDF_GetMetaText(
+        &self,
+        document: FPDF_DOCUMENT,
+        tag: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    /// Gets the page label for `page_index` from `document`.
+    ///
+    ///   `document`    - handle to the document.
+    ///
+    ///   `page_index`  - the 0-based index of the page.
+    ///
+    ///   `buffer`      - a buffer for the page label. May be `NULL`.
+    ///
+    ///   `buflen`      - the length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the page label, including trailing zeros.
+    ///
+    /// The `buffer` is always encoded in UTF-16LE. The `buffer` is followed by two
+    /// bytes of zeros indicating the end of the string.  If `buflen` is less than
+    /// the returned length, or `buffer` is `NULL`, `buffer` will not be modified.
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageLabel(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
 
     #[allow(non_snake_case)]
     fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE;

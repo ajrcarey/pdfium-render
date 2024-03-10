@@ -87,14 +87,17 @@ Release 0.8.20 adds support for creating new annotations, positioning those anno
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
-Release 0.8.19 fixes a bug in `PdfPage::flatten()` that meant the effect of the flatten operation
-was not apparent until the page was dropped and reloaded. The effect of the flatten operation
-now takes effect immediately.
+Release 0.8.19 adds the `PdfBookmark::children_len()` function, for returning the number of direct
+child nodes of a bookmark without the need for iteration, and fixes a bug in `PdfPage::flatten()`
+to ensure that the flatten operation takes immediate effect; previously, it was necessary to drop
+and reload the page after calling `PdfPage::flatten()` in order to see the result of the flatten
+operation.
 
-Releases 0.8.17 and 0.8.18 adjust the WASM implementation of `pdfium-render` to account for some small packaging
-changes in the upstream releases of Pdfium published at <https://github.com/paulocoutinhox/pdfium-lib/releases>;
-release 0.8.17 also fixes a potential segmentation fault that could occur when dropping a `PdfDocument`
-while using a V8/XFA-enabled build of Pdfium.
+Releases 0.8.17 and 0.8.18 adjust the WASM implementation of `pdfium-render` to account for some
+small packaging changes in the upstream releases of Pdfium published at
+<https://github.com/paulocoutinhox/pdfium-lib/releases>; release 0.8.17 also fixes a potential
+segmentation fault that could occur when dropping a `PdfDocument` while using a V8/XFA-enabled build
+of Pdfium.
 
 Release 0.8.16 adds the `PdfBitmap::as_rgba_bytes()` function for retrieving pixel data from a bitmap
 that has had its color channels normalized into RGBA irrespective of the original bitmap pixel format,
@@ -102,16 +105,6 @@ corrects a bug in the traversal of bookmarks that could result in unexpected res
 deep bookmark trees, and adds the `PdfBookmark::destination()` function for retrieving the target
 destination of the action assigned to a bookmark, thanks to an excellent contribution from
 <https://github.com/xVanTuring>.
-
-Release 0.8.15 corrects a byte alignment bug that could occur when converting
-three-bytes-per-pixel bitmaps to four-bytes-per-pixel bitmaps, thanks to an excellent contribution
-from <https://github.com/vladmovchan>, and adds a new `reset_matrix()` function to transformable objects
-that replaces the object's existing transformation matrix with a new matrix. The `set_matrix()`
-function is deprecated in favour of `apply_matrix()`, which better describes the behaviour of the
-function. A new `reset_to_identity()` function resets the transformation matrix of a transformable
-object to the identity matrix, undoing any previously applied transformations. Similarly, the
-`PdfPage::set_matrix_with_clip()` function is deprecated in favour of the better-named
-`PdfPage::apply_matrix_with_clip()`. Deprecated items will be removed in release 0.9.0.
 
 ## Binding to Pdfium
 
@@ -349,7 +342,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.19, 328 (89%) have
+There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.19, 329 (89%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -373,10 +366,13 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `chrono::DateTime` types to PDF date strings in `utils::dates`; adds mutability and annotation
   creation functions to `PdfPageAnnotations` collection; adds new `create_annotations.rs` example;
   adds `PdfPageTextSegment::chars()` convenience function.
-* 0.8.19: adjusts the behaviour of `PdfPage::flatten()` so that the page is reloaded after the
-  call to `FPDFPage_Flatten()`. This ensures that the effect of the flatten operation is immediately
-  visible to the caller; previously, it was necessary for the caller to drop and reload the page
-  themselves. For more details, see <https://github.com/ajrcarey/pdfium-render/issues/140>.
+* 0.8.19: adds bindings for `FORM_OnAfterLoadPage()`, `FORM_OnBeforeClosePage()`,
+  `FPDFCatalog_IsTagged()`, `FPDFBookmark_GetCount()`, and `FPDF_GetPageAAction()` functions;
+  adds the `PdfBookmark::children_len()` function; adjusts the behaviour of `PdfPage::flatten()`
+  so that the page is reloaded after the call to `FPDFPage_Flatten()`. This ensures that the effect
+  of the flatten operation is immediately visible to the caller; previously, it was necessary for
+  the caller to explicitly drop and reload the page. For more details, see
+  <https://github.com/ajrcarey/pdfium-render/issues/140>.
 * 0.8.18: adjusts `PdfiumRenderWasmState::bind_to_pdfium()` to fall back to
   `Module["wasmExports"]["__indirect_function_table"]` if `Window.wasmTable` global variable is
   not available, in response to upstream packaging changes at

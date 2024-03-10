@@ -31,5 +31,7 @@ jobs:
       run: cp pdfium/lib/libpdfium.so .
     - name: Run tests
       run: cargo test --verbose
+    - name: Verify static linking compatibility
+      run: cargo check --features="static"
     - name: Verify WASM compatibility
       run: cargo install wasm-pack && wasm-pack build examples/ --target no-modules

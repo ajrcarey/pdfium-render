@@ -180,6 +180,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFBookmark_GetFirstChild()?;
         result.extern_FPDFBookmark_GetNextSibling()?;
         result.extern_FPDFBookmark_GetTitle()?;
+        result.extern_FPDFBookmark_GetCount()?;
         result.extern_FPDFBookmark_Find()?;
         result.extern_FPDFBookmark_GetDest()?;
         result.extern_FPDFBookmark_GetAction()?;
@@ -199,6 +200,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFLink_GetAnnotRect()?;
         result.extern_FPDFLink_CountQuadPoints()?;
         result.extern_FPDFLink_GetQuadPoints()?;
+        result.extern_FPDF_GetPageAAction()?;
         result.extern_FPDFText_LoadPage()?;
         result.extern_FPDFText_ClosePage()?;
         result.extern_FPDFText_CountChars()?;
@@ -2498,6 +2500,15 @@ impl DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDFBookmark_GetCount(
+        &self,
+    ) -> Result<Symbol<unsafe extern "C" fn(bookmark: FPDF_BOOKMARK) -> c_int>, libloading::Error>
+    {
+        unsafe { self.library.get(b"FPDFBookmark_GetCount\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFBookmark_Find(
         &self,
     ) -> Result<
@@ -2741,6 +2752,17 @@ impl DynamicPdfiumBindings {
         libloading::Error,
     > {
         unsafe { self.library.get(b"FPDFLink_GetQuadPoints\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDF_GetPageAAction(
+        &self,
+    ) -> Result<
+        Symbol<unsafe extern "C" fn(page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION>,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDF_GetPageAAction\0") }
     }
 
     #[inline]
@@ -6341,6 +6363,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int {
+        unsafe { self.extern_FPDFBookmark_GetCount().unwrap()(bookmark) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK {
         unsafe { self.extern_FPDFBookmark_Find().unwrap()(document, title) }
     }
@@ -6493,6 +6521,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe {
             self.extern_FPDFLink_GetQuadPoints().unwrap()(link_annot, quad_index, quad_points)
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION {
+        unsafe { self.extern_FPDF_GetPageAAction().unwrap()(page, aa_type) }
     }
 
     #[inline]

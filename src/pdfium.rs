@@ -14,6 +14,9 @@ use libloading::Library;
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use crate::native::DynamicPdfiumBindings;
 
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
+use std::path::PathBuf;
+
 #[cfg(all(not(target_arch = "wasm32"), feature = "static"))]
 use crate::linked::StaticPdfiumBindings;
 
@@ -28,9 +31,6 @@ use std::io::{Read, Seek};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
-
-#[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
 
 #[cfg(target_arch = "wasm32")]
 use crate::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings};

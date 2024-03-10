@@ -1,5 +1,5 @@
 //! Defines the [PdfBookmark] struct, exposing functionality related to a single bookmark
-//! in a `PdfBookmarks` collection.
+//! in a [PdfBookmarks] collection.
 
 use crate::action::PdfAction;
 use crate::bindgen::{FPDF_BOOKMARK, FPDF_DOCUMENT};
@@ -9,6 +9,15 @@ use crate::destination::PdfDestination;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::os::raw::c_void;
+
+#[cfg(doc)]
+use crate::bookmarks::PdfBookmarks;
+
+#[cfg(doc)]
+use crate::document::PdfDocument;
+
+#[cfg(doc)]
+use crate::action::PdfActionType;
 
 pub struct PdfBookmark<'a> {
     bookmark_handle: FPDF_BOOKMARK,
@@ -38,7 +47,7 @@ impl<'a> PdfBookmark<'a> {
         self.bookmark_handle
     }
 
-    /// Returns the internal `FPDF_DOCUMENT` handle of the `PdfDocument` containing this [PdfBookmark].
+    /// Returns the internal `FPDF_DOCUMENT` handle of the [PdfDocument] containing this [PdfBookmark].
     #[inline]
     pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
         self.document_handle
@@ -98,7 +107,7 @@ impl<'a> PdfBookmark<'a> {
     ///
     /// The action indicates the behaviour that will occur when the user interacts with the
     /// bookmark in a PDF viewer. For most bookmarks, this will be a local navigation action
-    /// of type `PdfActionType::GoToDestinationInSameDocument`, but the PDF file format supports
+    /// of type [PdfActionType::GoToDestinationInSameDocument], but the PDF file format supports
     /// a variety of other actions.
     pub fn action(&self) -> Option<PdfAction<'a>> {
         let handle = self.bindings.FPDFBookmark_GetAction(self.bookmark_handle);
@@ -142,8 +151,13 @@ impl<'a> PdfBookmark<'a> {
         })
     }
 
-    /// Returns the first child [PdfBookmark] of this [PdfBookmark] in the containing
-    /// `PdfDocument`, if any.
+    /// Returns the number of direct children of this [PdfBookmark].
+    #[inline]
+    pub fn children_len(&self) -> usize {
+        self.bindings.FPDFBookmark_GetCount(self.bookmark_handle) as usize
+    }
+
+    /// Returns the first child [PdfBookmark] of this [PdfBookmark], if any.
     pub fn first_child(&self) -> Option<PdfBookmark<'a>> {
         let handle = self
             .bindings
@@ -161,8 +175,7 @@ impl<'a> PdfBookmark<'a> {
         }
     }
 
-    /// Returns the next [PdfBookmark] at the same tree level as this [PdfBookmark] in
-    /// the containing `PdfDocument`, if any.
+    /// Returns the next [PdfBookmark] at the same tree level as this [PdfBookmark], if any.
     pub fn next_sibling(&self) -> Option<PdfBookmark<'a>> {
         let handle = self
             .bindings
@@ -228,7 +241,7 @@ impl<'a> PdfBookmark<'a> {
 
     /// Returns an iterator over all [PdfBookmark] child nodes of this [PdfBookmark].
     /// Only direct children of this [PdfBookmark] will be traversed by the iterator;
-    /// grandchildren, great-grandchildren and other descendant nodes will be ignored.
+    /// grandchildren, great-grandchildren, and other descendant nodes will be ignored.
     /// To visit all child nodes, including children of children, use [PdfBookmark::iter_all_descendants()].
     #[inline]
     pub fn iter_direct_children(&self) -> PdfBookmarksIterator<'a> {
@@ -243,7 +256,7 @@ impl<'a> PdfBookmark<'a> {
         )
     }
 
-    /// Returns an iterator over all [PdfBookmark] child nodes of this [PdfBookmark],
+    /// Returns an iterator over all [PdfBookmark] descendant nodes of this [PdfBookmark],
     /// including any children of those nodes. To visit only direct children of this [PdfBookmark],
     /// use [PdfBookmark::iter_direct_children()].
     #[inline]
