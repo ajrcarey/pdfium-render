@@ -68,6 +68,7 @@ pub enum PdfiumError {
     PageAnnotationIndexOutOfBounds,
     PageObjectNotAttachedToAnnotation,
     FormFieldOptionIndexOutOfBounds,
+    FormFieldAppearanceStreamUndefined,
     PageFlattenFailure,
     PageMissingEmbeddedThumbnail,
     UnknownPdfPageObjectType,

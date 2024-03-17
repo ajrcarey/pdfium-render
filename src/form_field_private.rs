@@ -7,6 +7,7 @@ pub(crate) mod internal {
     // Instead of making the PdfFormFieldPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
+    use crate::appearance_mode::PdfAppearanceMode;
     use crate::bindgen::{
         FPDF_ANNOTATION, FPDF_ANNOT_FLAG_HIDDEN, FPDF_ANNOT_FLAG_INVISIBLE, FPDF_ANNOT_FLAG_LOCKED,
         FPDF_ANNOT_FLAG_NONE, FPDF_ANNOT_FLAG_NOROTATE, FPDF_ANNOT_FLAG_NOVIEW,
@@ -19,12 +20,9 @@ pub(crate) mod internal {
     use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-    use std::os::raw::c_int;
-    use std::ptr::null;
-
-    use crate::appearance_mode::PdfAppearanceMode;
     use bitflags::bitflags;
     use chrono::Utc;
+    use std::os::raw::c_int;
 
     bitflags! {
         pub struct FpdfAnnotationFlags: u32 {
@@ -89,33 +87,6 @@ pub(crate) mod internal {
             }
         }
 
-        /// Internal implementation of `set_value()` function shared by value-carrying form
-        /// field widgets, such as text fields. Not exposed directly by [PdfFormFieldCommon].
-        #[inline]
-        fn set_value_impl(&mut self, value: &str) -> Result<(), PdfiumError> {
-            self.bindings()
-                .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
-                    *self.annotation_handle(),
-                    "M",
-                    &date_time_to_pdf_string(Utc::now()),
-                ))
-                .and_then(|_| {
-                    self.bindings().to_result(self.bindings().FPDFAnnot_SetAP(
-                        *self.annotation_handle(),
-                        PdfAppearanceMode::Normal as i32,
-                        null(),
-                    ))
-                })
-                .and_then(|_| {
-                    self.bindings()
-                        .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
-                            *self.annotation_handle(),
-                            "V",
-                            value,
-                        ))
-                })
-        }
-
         /// Internal implementation of `value()` function shared by value-carrying form field widgets
         /// such as text fields. Not exposed directly by [PdfFormFieldCommon].
         fn value_impl(&self) -> Option<String> {
@@ -154,7 +125,34 @@ pub(crate) mod internal {
             }
         }
 
-        /// Internal implementation of `value()` function shared by on/off form field widgets
+        /// Internal implementation of `set_value()` function shared by value-carrying form
+        /// field widgets such as text fields. Not exposed directly by [PdfFormFieldCommon].
+        #[inline]
+        fn set_value_impl(&mut self, value: &str) -> Result<(), PdfiumError> {
+            self.bindings()
+                .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
+                    *self.annotation_handle(),
+                    "M",
+                    &date_time_to_pdf_string(Utc::now()),
+                ))
+                .and_then(|_| {
+                    self.bindings().to_result(self.bindings().FPDFAnnot_SetAP(
+                        *self.annotation_handle(),
+                        PdfAppearanceMode::Normal as i32,
+                        std::ptr::null(),
+                    ))
+                })
+                .and_then(|_| {
+                    self.bindings()
+                        .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
+                            *self.annotation_handle(),
+                            "V",
+                            value,
+                        ))
+                })
+        }
+
+        /// Internal implementation of `export_value()` function shared by on/off form field widgets
         /// such as checkbox and radio button fields. Not exposed directly by [PdfFormFieldCommon].
         fn export_value_impl(&self) -> Option<String> {
             // Retrieving the export value from Pdfium is a two-step operation. First, we call

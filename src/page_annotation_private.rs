@@ -23,7 +23,7 @@ pub(crate) mod internal {
     use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-    use chrono::prelude::*;
+    use chrono::{DateTime, Utc};
     use std::os::raw::c_uint;
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.

@@ -17,10 +17,10 @@ use crate::bindgen::{
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
 };
 use crate::document::PdfDocument;
+use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::page::PdfPage;
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::prelude::{PdfiumError, PdfiumInternalError};
 use crate::utils::pixels::{
     bgra_to_rgba, rgba_to_bgra, unaligned_bgr_to_rgba, unaligned_rgb_to_bgra,
 };
@@ -90,21 +90,20 @@ pub trait PdfiumLibraryBindings {
         }
     }
 
-    /// Converts from a C-style boolean integer to a Rust `Result`
+    /// Converts from a C-style boolean integer to a Rust `Result`.
     ///
-    /// This allows monadic chaining of operations that might fail, each step should return
-    /// `to_result()`. Meaning `Ok(())` on success and [PdfiumInternalError::Unknown] on failure.
+    /// Assumes `PdfiumLibraryBindings::FALSE()` indicates `false` and any other value indicates `true`.
     ///
-    /// This behaviour is in accordance with [PdfiumInternalError], which describes how any function
-    /// encountering an error -- besides those related to loading -- will return a C-style boolean
-    /// integer to flag failure.
+    /// A value of `PdfiumLibraryBindings::FALSE()` will return a [PdfiumInternalError::Unknown].
+    /// All other values will return `Ok(())`.
+    #[inline]
     fn to_result(&self, bool: FPDF_BOOL) -> Result<(), PdfiumError> {
         if self.is_true(bool) {
             Ok(())
         } else {
-            Err(
-                PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown)
-            )
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
         }
     }
 

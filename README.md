@@ -63,7 +63,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 * Rendering pages, and portions of pages, to bitmaps.
 * Text and image extraction.
-* Form field introspection.
+* Form field introspection and filling of form fields.
 * Document signature introspection.
 * Document attachment creation and introspection.
 * Document concatenation.
@@ -82,6 +82,10 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
+
+Release 0.8.21 adds the `PdfFormFieldText::set_value()` function for setting the values of text
+form fields, thanks to an excellent contribution from <https://github.com/liammcdermott>.
+A new `examples/fill_form_field.rs` example demonstrates the new functionality.
 
 Release 0.8.20 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
@@ -321,8 +325,9 @@ for converting to and from `FPDF_WIDESTRING` in your own code.
 
 Some Pdfium functions return classic C-style integer boolean values, aliased as `FPDF_BOOL`.
 The `PdfiumLibraryBindings::TRUE()`, `PdfiumLibraryBindings::FALSE()`,
-`PdfiumLibraryBindings::is_true()`, and `PdfiumLibraryBindings::bool_to_pdfium()` utility functions
-are provided for converting to and from `FPDF_BOOL` in your own code.
+`PdfiumLibraryBindings::is_true()`, `PdfiumLibraryBindings::to_result()`, and
+`PdfiumLibraryBindings::bool_to_pdfium()` utility functions are provided for converting to
+and from `FPDF_BOOL` in your own code.
 
 Image pixel data in Pdfium is encoded in either three-channel BGR or four-channel BGRA.
 The `PdfiumLibraryBindings::bgr_to_rgba()`, `PdfiumLibraryBindings::bgra_to_rgba()`,
