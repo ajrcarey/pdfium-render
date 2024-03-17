@@ -20,6 +20,7 @@ use crate::document::PdfDocument;
 use crate::page::PdfPage;
 use crate::page_object::PdfPageObject;
 use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::prelude::{PdfiumError, PdfiumInternalError};
 use crate::utils::pixels::{
     bgra_to_rgba, rgba_to_bgra, unaligned_bgr_to_rgba, unaligned_rgb_to_bgra,
 };
@@ -86,6 +87,24 @@ pub trait PdfiumLibraryBindings {
             self.TRUE()
         } else {
             self.FALSE()
+        }
+    }
+
+    /// Converts from a C-style boolean integer to a Rust `Result`
+    ///
+    /// This allows monadic chaining of operations that might fail, each step should return
+    /// `to_result()`. Meaning `Ok(())` on success and [PdfiumInternalError::Unknown] on failure.
+    ///
+    /// This behaviour is in accordance with [PdfiumInternalError], which describes how any function
+    /// encountering an error -- besides those related to loading -- will return a C-style boolean
+    /// integer to flag failure.
+    fn to_result(&self, bool: FPDF_BOOL) -> Result<(), PdfiumError> {
+        if self.is_true(bool) {
+            Ok(())
+        } else {
+            Err(
+                PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown)
+            )
         }
     }
 
