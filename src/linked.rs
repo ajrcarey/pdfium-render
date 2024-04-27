@@ -6,7 +6,7 @@ use crate::bindgen::{
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
     FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::CString;
@@ -526,6 +526,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDF_GetPageBoundingBox(page, rect) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageSizeByIndexF(&self, document: FPDF_DOCUMENT, page_index: c_int, size: *mut FS_SIZEF) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDF_GetPageSizeByIndexF(document, page_index, size) }
     }
 
     #[inline]

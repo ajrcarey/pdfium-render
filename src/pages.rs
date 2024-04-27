@@ -2,7 +2,9 @@
 //! `PdfDocument`.
 
 use crate::bindgen::{
-    size_t, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE, FS_SIZEF, PAGEMODE_FULLSCREEN, PAGEMODE_UNKNOWN, PAGEMODE_USEATTACHMENTS, PAGEMODE_USENONE, PAGEMODE_USEOC, PAGEMODE_USEOUTLINES, PAGEMODE_USETHUMBS
+    size_t, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE, FS_SIZEF, PAGEMODE_FULLSCREEN,
+    PAGEMODE_UNKNOWN, PAGEMODE_USEATTACHMENTS, PAGEMODE_USENONE, PAGEMODE_USEOC,
+    PAGEMODE_USEOUTLINES, PAGEMODE_USETHUMBS,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
@@ -146,11 +148,20 @@ impl<'a> PdfPages<'a> {
             width: 0.,
             height: 0.,
         };
-        let result = self
+        if self
             .bindings
-            .FPDF_GetPageSizeByIndexF(self.document_handle, index.into(), &mut size);
-
-        Ok(size)
+            .is_true(self.bindings.FPDF_GetPageSizeByIndexF(
+                self.document_handle,
+                index.into(),
+                &mut size,
+            ))
+        {
+            Ok(size)
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
     }
 
     /// Returns the first [PdfPage] in this [PdfPages] collection.

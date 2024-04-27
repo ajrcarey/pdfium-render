@@ -83,5 +83,9 @@ fn statically_link_pdfium() {
 
         #[cfg(feature = "libc++")]
         println!("cargo:rustc-link-lib=dylib=c++");
+    } else if let Ok(path) = std::env::var("PDFIUM_DYNAMIC_LIB_PATH") {
+        // Instruct cargo to dynamically link the given library during the build.
+        println!("cargo:rustc-link-lib=dylib=pdfium");
+        println!("cargo:rustc-link-search=native={}", path);
     }
 }
