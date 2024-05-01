@@ -70,6 +70,12 @@ impl PdfPageMode {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct PdfSize {
+    pub width: PdfPoints,
+    pub height: PdfPoints,
+}
+
 /// The collection of [PdfPage] objects inside a [PdfDocument].
 pub struct PdfPages<'a> {
     document_handle: FPDF_DOCUMENT,
@@ -143,7 +149,11 @@ impl<'a> PdfPages<'a> {
         result
     }
 
-    pub fn get_size(&self, index: PdfPageIndex) -> Result<FS_SIZEF, PdfiumError> {
+    pub fn get_size(&self, index: PdfPageIndex) -> Result<PdfSize, PdfiumError> {
+        if index >= self.len() {
+            return Err(PdfiumError::PageIndexOutOfBounds);
+        }
+
         let mut size = FS_SIZEF {
             width: 0.,
             height: 0.,
@@ -156,12 +166,44 @@ impl<'a> PdfPages<'a> {
                 &mut size,
             ))
         {
-            Ok(size)
+            Ok(PdfSize {
+                width: PdfPoints::new(size.width),
+                height: PdfPoints::new(size.height),
+            })
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
             ))
         }
+    }
+
+    pub fn get_page_sizes(&self) -> Result<Vec<PdfSize>, PdfiumError> {
+        let mut size = FS_SIZEF {
+            width: 0.,
+            height: 0.,
+        };
+        let len = self.len();
+        let mut sizes = Vec::with_capacity(len.into());
+        for i in 0..self.len() {
+            if self
+                .bindings
+                .is_true(self.bindings.FPDF_GetPageSizeByIndexF(
+                    self.document_handle,
+                    i.into(),
+                    &mut size,
+                ))
+            {
+                sizes.push(PdfSize {
+                    width: PdfPoints::new(size.width),
+                    height: PdfPoints::new(size.height),
+                });
+            } else {
+                return Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ));
+            }
+        }
+        Ok(sizes)
     }
 
     /// Returns the first [PdfPage] in this [PdfPages] collection.
