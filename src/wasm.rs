@@ -6,7 +6,7 @@ use crate::bindgen::{
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
     FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -3292,6 +3292,48 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         if self.is_true(result) {
             state.copy_struct_from_pdfium(buffer_ptr, buffer_length, rect);
+        }
+
+        state.free(buffer_ptr);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageSizeByIndexF(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        size: *mut FS_SIZEF,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageSizeByIndexF()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = size_of::<FS_SIZEF>();
+
+        let buffer_ptr = state.malloc(buffer_length);
+
+        let result = state
+            .call(
+                "FPDF_GetPageSizeByIndexF",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_document(document),
+                    &JsValue::from(page_index),
+                    &Self::js_value_from_offset(buffer_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(buffer_ptr, buffer_length, size);
         }
 
         state.free(buffer_ptr);
