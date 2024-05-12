@@ -1095,8 +1095,7 @@ mod tests {
 
             bitmap
                 .as_image()
-                .as_rgba8()
-                .ok_or(PdfiumError::ImageError)?
+                .into_rgb8()
                 .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg)
                 .map_err(|_| PdfiumError::ImageError)?;
         }
