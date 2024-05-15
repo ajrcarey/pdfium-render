@@ -645,6 +645,18 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
+    fn FPDFPage_TransformAnnots(
+        &self,
+        page: FPDF_PAGE,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,

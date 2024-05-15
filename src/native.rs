@@ -1402,6 +1402,27 @@ impl DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn extern_FPDFPage_TransformAnnots(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                a: c_double,
+                b: c_double,
+                c: c_double,
+                d: c_double,
+                e: c_double,
+                f: c_double,
+            ) -> FPDF_BOOL,
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_TransformAnnots\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn extern_FPDFBitmap_CreateEx(
         &self,
     ) -> Result<
