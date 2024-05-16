@@ -100,6 +100,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPage_InsertClipPath()?;
         result.extern_FPDFPage_HasTransparency()?;
         result.extern_FPDFPage_GenerateContent()?;
+        result.extern_FPDFPage_TransformAnnots()?;
         result.extern_FPDFBitmap_CreateEx()?;
         result.extern_FPDFBitmap_Destroy()?;
         result.extern_FPDFBitmap_GetFormat()?;
@@ -5601,6 +5602,21 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL {
         unsafe { self.extern_FPDFPage_GenerateContent().unwrap()(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_TransformAnnots(
+        &self,
+        page: FPDF_PAGE,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) -> FPDF_BOOL {
+        unsafe { self.extern_FPDFPage_TransformAnnots().unwrap()(page, a, b, c, d, e, f) }
     }
 
     #[inline]
