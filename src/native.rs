@@ -1415,7 +1415,7 @@ impl DynamicPdfiumBindings {
                 d: c_double,
                 e: c_double,
                 f: c_double,
-            ) -> FPDF_BOOL,
+            ),
         >,
         libloading::Error,
     > {
@@ -5615,7 +5615,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         d: f64,
         e: f64,
         f: f64,
-    ) -> FPDF_BOOL {
+    ) {
         unsafe { self.extern_FPDFPage_TransformAnnots().unwrap()(page, a, b, c, d, e, f) }
     }
 

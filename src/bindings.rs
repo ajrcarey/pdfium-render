@@ -654,7 +654,7 @@ pub trait PdfiumLibraryBindings {
         d: f64,
         e: f64,
         f: f64,
-    ) -> FPDF_BOOL;
+    );
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(

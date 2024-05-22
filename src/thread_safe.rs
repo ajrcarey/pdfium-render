@@ -812,7 +812,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         d: f64,
         e: f64,
         f: f64,
-    ) -> FPDF_BOOL {
+    ) {
         self.bindings
             .FPDFPage_TransformAnnots(page, a, b, c, d, e, f)
     }
