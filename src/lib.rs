@@ -209,8 +209,7 @@ mod tests {
             for (index, page) in document.pages().iter().enumerate() {
                 page.render_with_config(&render_config)?
                     .as_image() // Renders this page to an Image::DynamicImage...
-                    .as_rgba8() // ... then converts it to an Image::Image ...
-                    .ok_or(PdfiumError::ImageError)?
+                    .into_rgb8() // ... then converts it to an Image::Image ...
                     .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg) // ... and saves it to a file.
                     .map_err(|_| PdfiumError::ImageError)?;
             }
@@ -242,8 +241,7 @@ mod tests {
             let result = page
                 .render_with_config(&render_config)?
                 .as_image()
-                .as_rgba8()
-                .ok_or(PdfiumError::ImageError)?
+                .into_rgb8()
                 .save_with_format(format!("form-test-page-{}.jpg", index), ImageFormat::Jpeg);
 
             assert!(result.is_ok());
