@@ -5,7 +5,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::matrix::PdfMatrix;
 use crate::points::PdfPoints;
-use iter_tools::{max, min};
+use itertools::{max, min};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
