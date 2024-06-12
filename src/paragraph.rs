@@ -15,7 +15,7 @@ use crate::page_object_private::internal::PdfPageObjectPrivate;
 use crate::page_object_text::PdfPageTextObject;
 use crate::page_objects_common::PdfPageObjectsCommon;
 use crate::points::PdfPoints;
-use iter_tools::Itertools;
+use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 use std::cmp::Ordering;
 
