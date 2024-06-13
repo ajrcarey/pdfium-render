@@ -100,6 +100,7 @@ impl DynamicPdfiumBindings {
         result.extern_FPDFPage_InsertClipPath()?;
         result.extern_FPDFPage_HasTransparency()?;
         result.extern_FPDFPage_GenerateContent()?;
+        result.extern_FPDFPage_TransformAnnots()?;
         result.extern_FPDFBitmap_CreateEx()?;
         result.extern_FPDFBitmap_Destroy()?;
         result.extern_FPDFBitmap_GetFormat()?;
@@ -1398,6 +1399,27 @@ impl DynamicPdfiumBindings {
         &self,
     ) -> Result<Symbol<unsafe extern "C" fn(page: FPDF_PAGE) -> FPDF_BOOL>, libloading::Error> {
         unsafe { self.library.get(b"FPDFPage_GenerateContent\0") }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn extern_FPDFPage_TransformAnnots(
+        &self,
+    ) -> Result<
+        Symbol<
+            unsafe extern "C" fn(
+                page: FPDF_PAGE,
+                a: c_double,
+                b: c_double,
+                c: c_double,
+                d: c_double,
+                e: c_double,
+                f: c_double,
+            ),
+        >,
+        libloading::Error,
+    > {
+        unsafe { self.library.get(b"FPDFPage_TransformAnnots\0") }
     }
 
     #[inline]
@@ -5580,6 +5602,21 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL {
         unsafe { self.extern_FPDFPage_GenerateContent().unwrap()(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_TransformAnnots(
+        &self,
+        page: FPDF_PAGE,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) {
+        unsafe { self.extern_FPDFPage_TransformAnnots().unwrap()(page, a, b, c, d, e, f) }
     }
 
     #[inline]

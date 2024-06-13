@@ -802,6 +802,21 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFPage_GenerateContent(page)
     }
 
+    #[allow(non_snake_case)]
+    fn FPDFPage_TransformAnnots(
+        &self,
+        page: FPDF_PAGE,
+        a: f64,
+        b: f64,
+        c: f64,
+        d: f64,
+        e: f64,
+        f: f64,
+    ) {
+        self.bindings
+            .FPDFPage_TransformAnnots(page, a, b, c, d, e, f)
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(

@@ -3675,6 +3675,43 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFPage_TransformAnnots(
+        &self,
+        page: FPDF_PAGE,
+        a: c_double,
+        b: c_double,
+        c: c_double,
+        d: c_double,
+        e: c_double,
+        f: c_double,
+    ) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_TransformAnnots()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDFPage_TransformAnnots",
+            JsFunctionArgumentType::Number,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Array::of7(
+                &Self::js_value_from_page(page),
+                &JsValue::from(a),
+                &JsValue::from(b),
+                &JsValue::from(c),
+                &JsValue::from(d),
+                &JsValue::from(e),
+                &JsValue::from(f),
+            ))),
+        )
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,
