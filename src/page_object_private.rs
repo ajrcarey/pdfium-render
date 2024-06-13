@@ -43,6 +43,7 @@ pub(crate) mod internal {
 
         /// Clears the internal `FPDF_ANNOTATION` handle for the annotation containing
         /// this [PdfPageObject]. This [PdfPageObject] is detached from any containing annotation.
+        #[allow(dead_code)] // TODO: AJRC - 13/6/24 - remove once clear_annotation_handle() function is in use.
         fn clear_annotation_handle(&mut self);
 
         /// Returns the [PdfiumLibraryBindings] used by this [PdfPageObject].
