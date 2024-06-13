@@ -58,8 +58,7 @@ fn main() -> Result<(), PdfiumError> {
                         (clip_right - clip_left) as u32,
                         (clip_bottom - clip_top) as u32,
                     )
-                    .as_rgba8()
-                    .ok_or(PdfiumError::ImageError)?
+                    .into_rgb8()
                     .save_with_format(
                         format!(
                             "export-clip-crop-test-{}-{}.jpg",

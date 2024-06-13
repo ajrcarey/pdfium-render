@@ -11,7 +11,7 @@ use web_sys::ImageData;
 // on how to build and package this example alongside a WASM build of Pdfium, suitable
 // for running in a browser.
 
-/// Downloads the given url, opens it as a PDF document, then Logs the width and height of
+/// Downloads the given URL, opens it as a PDF document, then logs the width and height of
 /// each page in the document, along with other document metrics, to the Javascript console.
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
@@ -111,7 +111,7 @@ pub async fn log_page_metrics_to_console(url: String) {
     });
 }
 
-/// Downloads the given url, opens it as a PDF document, then returns the ImageData for
+/// Downloads the given URL, opens it as a PDF document, then returns the ImageData for
 /// the given page index using the given bitmap dimensions.
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
