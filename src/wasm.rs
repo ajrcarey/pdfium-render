@@ -3699,16 +3699,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 JsFunctionArgumentType::Number,
                 JsFunctionArgumentType::Number,
             ]),
-            Some(&JsValue::from(Array::of7(
-                &Self::js_value_from_page(page),
-                &JsValue::from(a),
-                &JsValue::from(b),
-                &JsValue::from(c),
-                &JsValue::from(d),
-                &JsValue::from(e),
-                &JsValue::from(f),
-            ))),
-        )
+            Some(&JsValue::from(Self::js_array_from_vec(vec![
+                Self::js_value_from_page(page),
+                JsValue::from(a),
+                JsValue::from(b),
+                JsValue::from(c),
+                JsValue::from(d),
+                JsValue::from(e),
+                JsValue::from(f),
+            ]))),
+        );
     }
 
     #[allow(non_snake_case)]

@@ -34,8 +34,7 @@ and extract text and images from existing PDF files, and create new PDF files fr
         for (index, page) in document.pages().iter().enumerate() {
             page.render_with_config(&render_config)?
                 .as_image() // Renders this page to an image::DynamicImage...
-                .as_rgba8() // ... then converts it to an image::Image...
-                .ok_or(PdfiumError::ImageError)?
+                .into_rgb8() // ... then converts it to an image::Image...
                 .save_with_format(
                     format!("test-page-{}.jpg", index), 
                     image::ImageFormat::Jpeg
@@ -83,6 +82,11 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
+Release 0.8.22 updates all examples and tests that reference functionality from the `image` crate
+to use calls compatible with both `image` 0.25.x and 0.24.x, thanks to an excellent contribution
+from <https://github.com/DorianRudolph>, and removes an unneeded internal dependency on the
+`iter_tools` crate, thanks to an excellent contribution from <https://github.com/aruediger>.
+
 Release 0.8.21 adds the `PdfFormFieldText::set_value()` function for setting the values of text
 form fields, thanks to an excellent contribution from <https://github.com/liammcdermott>.
 A new `examples/fill_form_field.rs` example demonstrates the new functionality.
@@ -96,19 +100,6 @@ child nodes of a bookmark without the need for iteration, and fixes a bug in `Pd
 to ensure that the flatten operation takes immediate effect; previously, it was necessary to drop
 and reload the page after calling `PdfPage::flatten()` in order to see the result of the flatten
 operation.
-
-Releases 0.8.17 and 0.8.18 adjust the WASM implementation of `pdfium-render` to account for some
-small packaging changes in the upstream releases of Pdfium published at
-<https://github.com/paulocoutinhox/pdfium-lib/releases>; release 0.8.17 also fixes a potential
-segmentation fault that could occur when dropping a `PdfDocument` while using a V8/XFA-enabled build
-of Pdfium.
-
-Release 0.8.16 adds the `PdfBitmap::as_rgba_bytes()` function for retrieving pixel data from a bitmap
-that has had its color channels normalized into RGBA irrespective of the original bitmap pixel format,
-corrects a bug in the traversal of bookmarks that could result in unexpected results when traversing
-deep bookmark trees, and adds the `PdfBookmark::destination()` function for retrieving the target
-destination of the action assigned to a bookmark, thanks to an excellent contribution from
-<https://github.com/xVanTuring>.
 
 ## Binding to Pdfium
 
@@ -360,6 +351,14 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.22: adds bindings for `FPDFPage_TransformAnnots()`, thanks to an excellent contribution from
+  <https://github.com/liammcdermott>; updates all examples and tests that reference functionality from
+  the `image` crate to use calls compatible with both `image` 0.25.x and 0.24.x, thanks to an excellent
+  contribution from <https://github.com/DorianRudolph>, and removes an unneeded internal dependency on
+  the `iter_tools` crate, thanks to an excellent contribution from <https://github.com/aruediger>.
+* 0.8.21: adds the `PdfFormFieldText::set_value()` function for setting the values of text
+  form fields, thanks to an excellent contribution from <https://github.com/liammcdermott>;
+  adds new `examples/fill_form_field.rs` example.
 * 0.8.20: adds `PdfPageAnnotationAttachmentPoints` struct and matching iterator; adds new annotation functions
   to `PdfPageAnnotationCommon` along with their matching implementations in `PdfPageAnnotationPrivate`,
   including `PdfPageAnnotationCommon::set_bounds()`, `PdfPageAnnotationCommon::set_position()`,
