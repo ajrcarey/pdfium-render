@@ -33,47 +33,10 @@ pub fn main() -> Result<(), PdfiumError> {
             if let Some(field) = annotation.as_form_field_mut() {
                 // If this field is a fillable form field...
 
-                if let Some(field) = field.as_radio_button_field_mut() {
-                    // ... select its radio button.
+                // TODO: AJRC - 13/6/24 - radio button and checkbox implementations in progress
+                // as part of https://github.com/ajrcarey/pdfium-render/issues/132.
 
-                    println!(
-                        "Page {}, radio button {}: {:?} currently has value: {}",
-                        page_index,
-                        annotation_index,
-                        field.name(),
-                        format!("{:?}", field.is_checked()),
-                    );
-
-                    field.set_checked()?;
-
-                    println!(
-                        "Page {}, radio button {}: {:?} now has updated value: {}",
-                        page_index,
-                        annotation_index,
-                        field.name(),
-                        format!("{:?}", field.is_checked()),
-                    );
-                } else if let Some(field) = field.as_checkbox_field_mut() {
-                    // ... check its checkbox.
-
-                    println!(
-                        "Page {}, checkbox {}: {:?} currently has value: {}",
-                        page_index,
-                        annotation_index,
-                        field.name(),
-                        format!("{:?}", field.is_checked()),
-                    );
-
-                    field.set_checked(true)?;
-
-                    println!(
-                        "Page {}, checkbox {}: {:?} now has updated value: {}",
-                        page_index,
-                        annotation_index,
-                        field.name(),
-                        format!("{:?}", field.is_checked()),
-                    );
-                } else if let Some(field) = field.as_text_field_mut() {
+                if let Some(field) = field.as_text_field_mut() {
                     // ... set its value to the field's internal name.
 
                     println!(
