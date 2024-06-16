@@ -170,19 +170,19 @@ function which binds directly to the Pdfium functions compiled into your executa
     let pdfium = Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap());
 ```
 
-As a convenience, `pdfium-render` can instruct `cargo` to link to either a dynamically-build or a
+As a convenience, `pdfium-render` can instruct `cargo` to link to either a dynamically-built or a
 statically-built Pdfium library for you. To link to a dynamically-built library, set the
 `PDFIUM_DYNAMIC_LIB_PATH` environment variable when you run `cargo build`, like so:
 
 ```rust
-    PDFIUM_STATIC_LIB_PATH="/path/containing/your/static/pdfium/library" cargo build
+    PDFIUM_DYNAMIC_LIB_PATH="/path/containing/your/static/pdfium/library" cargo build
 ```
 
 `pdfium-render` will pass the following flags to `cargo`:
 
 ```rust
-    cargo:rustc-link-lib=static=pdfium
-    cargo:rustc-link-search=native=$PDFIUM_STATIC_LIB_PATH
+    cargo:rustc-link-lib=dylib=pdfium
+    cargo:rustc-link-search=native=$PDFIUM_DYNAMIC_LIB_PATH
 ```
 
 To link to a statically-built library, set the path to the directory containing your library using
