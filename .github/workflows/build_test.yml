@@ -22,7 +22,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: cargo build --verbose
+      run: rustup update && cargo build --verbose
     - name: Download Pdfium
       run: curl -L -o "pdfium.tgz" "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/${PDFIUM_RELEASE_TAG}/pdfium-linux-x64.tgz"
     - name: Unpack Pdfium
