@@ -2,9 +2,9 @@
 //! `PdfDocument`.
 
 use crate::bindgen::{
-    size_t, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE, PAGEMODE_FULLSCREEN, PAGEMODE_UNKNOWN,
-    PAGEMODE_USEATTACHMENTS, PAGEMODE_USENONE, PAGEMODE_USEOC, PAGEMODE_USEOUTLINES,
-    PAGEMODE_USETHUMBS,
+    size_t, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE, FS_SIZEF, PAGEMODE_FULLSCREEN,
+    PAGEMODE_UNKNOWN, PAGEMODE_USEATTACHMENTS, PAGEMODE_USENONE, PAGEMODE_USEOC,
+    PAGEMODE_USEOUTLINES, PAGEMODE_USETHUMBS,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::document::PdfDocument;
@@ -14,6 +14,7 @@ use crate::page_index_cache::PdfPageIndexCache;
 use crate::page_object_group::PdfPageGroupObject;
 use crate::page_size::PdfPagePaperSize;
 use crate::points::PdfPoints;
+use crate::rect::PdfRect;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ops::{Range, RangeInclusive};
@@ -141,6 +142,52 @@ impl<'a> PdfPages<'a> {
         }
 
         result
+    }
+
+    /// Returns the size of a single [PdfPage] without loading it into memory.
+    /// This is considerably faster than loading the page first via [PdfPages::get()] and then
+    /// retrieving the page size using [PdfPage::page_size()].
+    pub fn page_size(&self, index: PdfPageIndex) -> Result<PdfRect, PdfiumError> {
+        if index >= self.len() {
+            return Err(PdfiumError::PageIndexOutOfBounds);
+        }
+
+        let mut size = FS_SIZEF {
+            width: 0.0,
+            height: 0.0,
+        };
+
+        if self
+            .bindings
+            .is_true(self.bindings.FPDF_GetPageSizeByIndexF(
+                self.document_handle,
+                index.into(),
+                &mut size,
+            ))
+        {
+            Ok(PdfRect::new(
+                PdfPoints::ZERO,
+                PdfPoints::ZERO,
+                PdfPoints::new(size.height),
+                PdfPoints::new(size.width),
+            ))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
+
+    /// Returns the size of every [PdfPage] in this [PdfPages] collection.
+    #[inline]
+    pub fn page_sizes(&self) -> Result<Vec<PdfRect>, PdfiumError> {
+        let mut sizes = Vec::with_capacity(self.len() as usize);
+
+        for i in self.as_range() {
+            sizes.push(self.page_size(i)?);
+        }
+
+        Ok(sizes)
     }
 
     /// Returns the first [PdfPage] in this [PdfPages] collection.
@@ -603,5 +650,28 @@ impl<'a> Iterator for PdfPagesIterator<'a> {
         self.next_index += 1;
 
         next.ok()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::PdfiumError;
+    use crate::rect::PdfRect;
+    use crate::utils::test::test_bind_to_pdfium;
+
+    #[test]
+    fn test_page_size() -> Result<(), PdfiumError> {
+        // Tests the dimensions of each page in a sample file.
+
+        let pdfium = test_bind_to_pdfium();
+
+        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+
+        assert_eq!(
+            document.pages().page_size(0).unwrap(),
+            PdfRect::new_from_values(0.0, 0.0, 841.8897, 595.3039),
+        );
+
+        Ok(())
     }
 }
