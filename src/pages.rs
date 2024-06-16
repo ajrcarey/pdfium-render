@@ -665,13 +665,57 @@ mod tests {
 
         let pdfium = test_bind_to_pdfium();
 
-        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+        let document = pdfium.load_pdf_from_file("./test/page-sizes-test.pdf", None)?;
+
+        assert_eq!(document.pages().page_size(0)?, expected_page_0_size());
+        assert_eq!(document.pages().page_size(1)?, expected_page_1_size());
+        assert_eq!(document.pages().page_size(2)?, expected_page_2_size());
+        assert_eq!(document.pages().page_size(3)?, expected_page_3_size());
+        assert_eq!(document.pages().page_size(4)?, expected_page_4_size());
+        assert!(document.pages().page_size(5).is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_page_sizes() -> Result<(), PdfiumError> {
+        // Tests the dimensions of all pages in a sample file.
+
+        let pdfium = test_bind_to_pdfium();
+
+        let document = pdfium.load_pdf_from_file("./test/page-sizes-test.pdf", None)?;
 
         assert_eq!(
-            document.pages().page_size(0).unwrap(),
-            PdfRect::new_from_values(0.0, 0.0, 841.8897, 595.3039),
+            document.pages().page_sizes()?,
+            vec!(
+                expected_page_0_size(),
+                expected_page_1_size(),
+                expected_page_2_size(),
+                expected_page_3_size(),
+                expected_page_4_size(),
+            ),
         );
 
         Ok(())
+    }
+
+    const fn expected_page_0_size() -> PdfRect {
+        PdfRect::new_from_values(0.0, 0.0, 841.8897, 595.3039)
+    }
+
+    const fn expected_page_1_size() -> PdfRect {
+        PdfRect::new_from_values(0.0, 0.0, 595.3039, 841.8897)
+    }
+
+    const fn expected_page_2_size() -> PdfRect {
+        PdfRect::new_from_values(0.0, 0.0, 1190.5513, 841.8897)
+    }
+
+    const fn expected_page_3_size() -> PdfRect {
+        PdfRect::new_from_values(0.0, 0.0, 419.55588, 595.3039)
+    }
+
+    const fn expected_page_4_size() -> PdfRect {
+        expected_page_0_size()
     }
 }

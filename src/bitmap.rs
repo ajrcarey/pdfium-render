@@ -51,6 +51,7 @@ pub type Pixels = i32;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[allow(clippy::manual_non_exhaustive)] // triggered by deprecation below, can be removed in 0.9.0
 pub enum PdfBitmapFormat {
     Gray = FPDFBitmap_Gray as isize,
     BGR = FPDFBitmap_BGR as isize,

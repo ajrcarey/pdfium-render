@@ -1,6 +1,7 @@
 //! Defines the [PdfPagePaperSize] enum, a set of common ANSI and ISO paper sizes.
 
 use crate::points::PdfPoints;
+use crate::rect::PdfRect;
 
 /// A standardized paper size.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -490,6 +491,7 @@ impl PdfPagePaperSize {
     }
 
     /// Returns the width of this [PdfPagePaperSize].
+    #[inline]
     pub fn width(&self) -> PdfPoints {
         match self {
             PdfPagePaperSize::Portrait(size) => size.width(),
@@ -499,11 +501,23 @@ impl PdfPagePaperSize {
     }
 
     /// Returns the height of this [PdfPagePaperSize].
+    #[inline]
     pub fn height(&self) -> PdfPoints {
         match self {
             PdfPagePaperSize::Portrait(size) => size.height(),
             PdfPagePaperSize::Landscape(size) => size.width(),
             PdfPagePaperSize::Custom(_, height) => *height,
         }
+    }
+
+    /// Returns the dimensions of this [PdfPagePaperSize] as a [PdfRect].
+    #[inline]
+    pub fn as_rect(&self) -> PdfRect {
+        PdfRect::new(
+            PdfPoints::ZERO,
+            PdfPoints::ZERO,
+            self.height(),
+            self.width(),
+        )
     }
 }

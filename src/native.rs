@@ -1591,7 +1591,7 @@ impl DynamicPdfiumBindings {
                 extern_FPDFAttachment_SetFile: *(library.get(b"FPDFAttachment_SetFile\0")?),
                 extern_FPDFAttachment_GetFile: *(library.get(b"FPDFAttachment_GetFile\0")?),
                 extern_FPDFCatalog_IsTagged: *(library.get(b"FPDFCatalog_IsTagged\0")?),
-                library: library,
+                library,
             }
         };
 

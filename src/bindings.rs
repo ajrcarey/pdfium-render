@@ -492,7 +492,12 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageSizeByIndexF(&self, document: FPDF_DOCUMENT, page_index: c_int, size: *mut FS_SIZEF) -> FPDF_BOOL;
+    fn FPDF_GetPageSizeByIndexF(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        size: *mut FS_SIZEF,
+    ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
     fn FPDFPage_GetMediaBox(
@@ -648,6 +653,7 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
     fn FPDFPage_TransformAnnots(
         &self,
         page: FPDF_PAGE,
