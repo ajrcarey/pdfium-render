@@ -175,7 +175,7 @@ statically-built Pdfium library for you. To link to a dynamically-built library,
 `PDFIUM_DYNAMIC_LIB_PATH` environment variable when you run `cargo build`, like so:
 
 ```rust
-    PDFIUM_DYNAMIC_LIB_PATH="/path/containing/your/static/pdfium/library" cargo build
+    PDFIUM_DYNAMIC_LIB_PATH="/path/containing/your/dynamic/pdfium/library" cargo build
 ```
 
 `pdfium-render` will pass the following flags to `cargo`:
