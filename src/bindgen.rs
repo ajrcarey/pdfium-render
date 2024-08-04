@@ -168,7 +168,7 @@ pub const PDFDEST_VIEW_FITBV: u32 = 8;
 pub const _STDINT_H: u32 = 1;
 pub const _FEATURES_H: u32 = 1;
 pub const _DEFAULT_SOURCE: u32 = 1;
-pub const __GLIBC_USE_ISOC2X: u32 = 0;
+pub const __GLIBC_USE_ISOC23: u32 = 0;
 pub const __USE_ISOC11: u32 = 1;
 pub const __USE_ISOC99: u32 = 1;
 pub const __USE_ISOC95: u32 = 1;
@@ -186,12 +186,13 @@ pub const __WORDSIZE: u32 = 64;
 pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
 pub const __SYSCALL_WORDSIZE: u32 = 64;
 pub const __TIMESIZE: u32 = 64;
+pub const __USE_TIME_BITS64: u32 = 1;
 pub const __USE_MISC: u32 = 1;
 pub const __USE_ATFILE: u32 = 1;
 pub const __USE_FORTIFY_LEVEL: u32 = 0;
 pub const __GLIBC_USE_DEPRECATED_GETS: u32 = 0;
 pub const __GLIBC_USE_DEPRECATED_SCANF: u32 = 0;
-pub const __GLIBC_USE_C2X_STRTOL: u32 = 0;
+pub const __GLIBC_USE_C23_STRTOL: u32 = 0;
 pub const _STDC_PREDEF_H: u32 = 1;
 pub const __STDC_IEC_559__: u32 = 1;
 pub const __STDC_IEC_60559_BFP__: u32 = 201404;
@@ -200,17 +201,17 @@ pub const __STDC_IEC_60559_COMPLEX__: u32 = 201404;
 pub const __STDC_ISO_10646__: u32 = 201706;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 39;
+pub const __GLIBC_MINOR__: u32 = 40;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI: u32 = 0;
 pub const __HAVE_GENERIC_SELECTION: u32 = 1;
 pub const __GLIBC_USE_LIB_EXT2: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_BFP_EXT: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_BFP_EXT_C2X: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_BFP_EXT_C23: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_EXT: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_FUNCS_EXT: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_FUNCS_EXT_C23: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_TYPES_EXT: u32 = 0;
 pub const _BITS_TYPES_H: u32 = 1;
 pub const _BITS_TYPESIZES_H: u32 = 1;
@@ -594,6 +595,12 @@ pub struct fpdf_structelement_attr_t__ {
     _unused: [u8; 0],
 }
 pub type FPDF_STRUCTELEMENT_ATTR = *const fpdf_structelement_attr_t__;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct fpdf_structelement_attr_value_t__ {
+    _unused: [u8; 0],
+}
+pub type FPDF_STRUCTELEMENT_ATTR_VALUE = *const fpdf_structelement_attr_value_t__;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct fpdf_structtree_t__ {
@@ -1622,7 +1629,7 @@ extern "C" {
     pub fn FPDFBitmap_GetFormat(bitmap: FPDF_BITMAP) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Function: FPDFBitmap_FillRect\n          Fill a rectangle in a bitmap.\n Parameters:\n          bitmap      -   The handle to the bitmap. Returned by\n                          FPDFBitmap_Create.\n          left        -   The left position. Starting from 0 at the\n                          left-most pixel.\n          top         -   The top position. Starting from 0 at the\n                          top-most line.\n          width       -   Width in pixels to be filled.\n          height      -   Height in pixels to be filled.\n          color       -   A 32-bit value specifing the color, in 8888 ARGB\n                          format.\n Return value:\n          None.\n Comments:\n          This function sets the color and (optionally) alpha value in the\n          specified region of the bitmap.\n\n          NOTE: If the alpha channel is used, this function does NOT\n          composite the background with the source color, instead the\n          background will be replaced by the source color and the alpha.\n\n          If the alpha channel is not used, the alpha parameter is ignored."]
+    #[doc = " Function: FPDFBitmap_FillRect\n          Fill a rectangle in a bitmap.\n Parameters:\n          bitmap      -   The handle to the bitmap. Returned by\n                          FPDFBitmap_Create.\n          left        -   The left position. Starting from 0 at the\n                          left-most pixel.\n          top         -   The top position. Starting from 0 at the\n                          top-most line.\n          width       -   Width in pixels to be filled.\n          height      -   Height in pixels to be filled.\n          color       -   A 32-bit value specifing the color, in 8888 ARGB\n                          format.\n Return value:\n          Returns whether the operation succeeded or not.\n Comments:\n          This function sets the color and (optionally) alpha value in the\n          specified region of the bitmap.\n\n          NOTE: If the alpha channel is used, this function does NOT\n          composite the background with the source color, instead the\n          background will be replaced by the source color and the alpha.\n\n          If the alpha channel is not used, the alpha parameter is ignored."]
     pub fn FPDFBitmap_FillRect(
         bitmap: FPDF_BITMAP,
         left: ::std::os::raw::c_int,
@@ -1630,7 +1637,7 @@ extern "C" {
         width: ::std::os::raw::c_int,
         height: ::std::os::raw::c_int,
         color: FPDF_DWORD,
-    );
+    ) -> FPDF_BOOL;
 }
 extern "C" {
     #[doc = " Function: FPDFBitmap_GetBuffer\n          Get data buffer of a bitmap.\n Parameters:\n          bitmap      -   Handle to the bitmap. Returned by FPDFBitmap_Create\n                          or FPDFImageObj_GetBitmap.\n Return value:\n          The pointer to the first byte of the bitmap buffer.\n Comments:\n          The stride may be more than width * number of bytes per pixel\n\n          Applications can use this function to get the bitmap buffer pointer,\n          then manipulate any color and/or alpha values for any pixels in the\n          bitmap.\n\n          Use FPDFBitmap_GetFormat() to find out the format of the data."]
@@ -1680,7 +1687,7 @@ extern "C" {
     pub fn FPDF_VIEWERREF_GetDuplex(document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE;
 }
 extern "C" {
-    #[doc = " Function: FPDF_VIEWERREF_GetName\n          Gets the contents for a viewer ref, with a given key. The value must\n          be of type \"name\".\n Parameters:\n          document    -   Handle to the loaded document.\n          key         -   Name of the key in the viewer pref dictionary,\n                          encoded in UTF-8.\n          buffer      -   A string to write the contents of the key to.\n          length      -   Length of the buffer.\n Return value:\n          The number of bytes in the contents, including the NULL terminator.\n          Thus if the return value is 0, then that indicates an error, such\n          as when |document| is invalid or |buffer| is NULL. If |length| is\n          less than the returned length, or |buffer| is NULL, |buffer| will\n          not be modified."]
+    #[doc = " Function: FPDF_VIEWERREF_GetName\n          Gets the contents for a viewer ref, with a given key. The value must\n          be of type \"name\".\n Parameters:\n          document    -   Handle to the loaded document.\n          key         -   Name of the key in the viewer pref dictionary,\n                          encoded in UTF-8.\n          buffer      -   Caller-allocate buffer to receive the key, or NULL\n                      -   to query the required length.\n          length      -   Length of the buffer.\n Return value:\n          The number of bytes in the contents, including the NULL terminator.\n          Thus if the return value is 0, then that indicates an error, such\n          as when |document| is invalid. If |length| is less than the required\n          length, or |buffer| is NULL, |buffer| will not be modified."]
     pub fn FPDF_VIEWERREF_GetName(
         document: FPDF_DOCUMENT,
         key: FPDF_BYTESTRING,
@@ -1805,11 +1812,11 @@ pub struct _IPDF_JsPlatform {
             URL: FPDF_WIDESTRING,
         ),
     >,
-    #[doc = " Method: Doc_gotoPage\n       Jump to a specified page.\n Interface Version:\n       1\n Implementation Required:\n       yes\n Parameters:\n       pThis       -   Pointer to the interface structure itself\n       nPageNum    -   The specified page number, zero for the first page.\n Return Value:\n       None.\n"]
+    #[doc = " Method: Doc_gotoPage\n       Jump to a specified page.\n Interface Version:\n       1\n Implementation Required:\n       yes\n Parameters:\n       pThis       -   Pointer to the interface structure itself\n       nPageNum    -   The specified page number, zero for the first page.\n Return Value:\n       None."]
     pub Doc_gotoPage: ::std::option::Option<
         unsafe extern "C" fn(pThis: *mut _IPDF_JsPlatform, nPageNum: ::std::os::raw::c_int),
     >,
-    #[doc = " Method: Field_browse\n       Show a file selection dialog, and return the selected file path.\n Interface Version:\n       1\n Implementation Required:\n       yes\n Parameters:\n       pThis       -   Pointer to the interface structure itself.\n       filePath    -   Pointer to the data buffer to receive the file\n                       path. Can be NULL.\n       length      -   The length of the buffer, in bytes. Can be 0.\n Return Value:\n       Number of bytes the filePath consumes, including trailing zeros.\n Comments:\n       The filePath shoule always be provided in local encoding."]
+    #[doc = " Method: Field_browse\n       Show a file selection dialog, and return the selected file path.\n Interface Version:\n       1\n Implementation Required:\n       yes\n Parameters:\n       pThis       -   Pointer to the interface structure itself.\n       filePath    -   Pointer to the data buffer to receive the file\n                       path. Can be NULL.\n       length      -   The length of the buffer, in bytes. Can be 0.\n Return Value:\n       Number of bytes the filePath consumes, including trailing zeros.\n Comments:\n       The filePath should always be provided in local encoding."]
     pub Field_browse: ::std::option::Option<
         unsafe extern "C" fn(
             pThis: *mut _IPDF_JsPlatform,
@@ -2096,7 +2103,7 @@ pub type FPDF_SYSTEMTIME = _FPDF_SYSTEMTIME;
 pub struct _FPDF_FORMFILLINFO {
     #[doc = " Version number of the interface.\n Version 1 contains stable interfaces. Version 2 has additional\n experimental interfaces.\n When PDFium is built without the XFA module, version can be 1 or 2.\n With version 1, only stable interfaces are called. With version 2,\n additional experimental interfaces are also called.\n When PDFium is built with the XFA module, version must be 2.\n All the XFA related interfaces are experimental. If PDFium is built with\n the XFA module and version 1 then none of the XFA related interfaces\n would be called. When PDFium is built with XFA module then the version\n must be 2."]
     pub version: ::std::os::raw::c_int,
-    #[doc = " Version 1. */\n/*\n Method: Release\n       Give the implementation a chance to release any resources after the\n       interface is no longer used.\n Interface Version:\n       1\n Implementation Required:\n       No\n Comments:\n       Called by PDFium during the final cleanup process.\n Parameters:\n       pThis       -   Pointer to the interface structure itself\n Return Value:\n       None"]
+    #[doc = " Method: Release\n       Give the implementation a chance to release any resources after the\n       interface is no longer used.\n Interface Version:\n       1\n Implementation Required:\n       No\n Comments:\n       Called by PDFium during the final cleanup process.\n Parameters:\n       pThis       -   Pointer to the interface structure itself\n Return Value:\n       None"]
     pub Release: ::std::option::Option<unsafe extern "C" fn(pThis: *mut _FPDF_FORMFILLINFO)>,
     #[doc = " Method: FFI_Invalidate\n       Invalidate the client area within the specified rectangle.\n Interface Version:\n       1\n Implementation Required:\n       yes\n Parameters:\n       pThis       -   Pointer to the interface structure itself.\n       page        -   Handle to the page. Returned by FPDF_LoadPage().\n       left        -   Left position of the client area in PDF page\n                       coordinates.\n       top         -   Top position of the client area in PDF page\n                       coordinates.\n       right       -   Right position of the client area in PDF page\n                       coordinates.\n       bottom      -   Bottom position of the client area in PDF page\n                       coordinates.\n Return Value:\n       None.\n Comments:\n       All positions are measured in PDF \"user space\".\n       Implementation should call FPDF_RenderPageBitmap() for repainting\n       the specified page area."]
     pub FFI_Invalidate: ::std::option::Option<
@@ -2190,7 +2197,7 @@ pub struct _FPDF_FORMFILLINFO {
     >,
     #[doc = " Pointer to IPDF_JSPLATFORM interface.\n Unused if PDFium is built without V8 support. Otherwise, if NULL, then\n JavaScript will be prevented from executing while rendering the document."]
     pub m_pJsPlatform: *mut IPDF_JSPLATFORM,
-    #[doc = " Version 2 - Experimental. */\n/*\n Whether the XFA module is disabled when built with the XFA module.\n Interface Version:\n       Ignored if |version| < 2."]
+    #[doc = " Whether the XFA module is disabled when built with the XFA module.\n Interface Version:\n       Ignored if |version| < 2."]
     pub xfa_disabled: FPDF_BOOL,
     #[doc = " Method: FFI_DisplayCaret\n       This method will show the caret at specified position.\n Interface Version:\n       Ignored if |version| < 2.\n Implementation Required:\n       Required for XFA, otherwise set to NULL.\n Parameters:\n       pThis           -   Pointer to the interface structure itself.\n       page            -   Handle to page. Returned by FPDF_LoadPage().\n       left            -   Left position of the client area in PDF page\n                           coordinates.\n       top             -   Top position of the client area in PDF page\n                           coordinates.\n       right           -   Right position of the client area in PDF page\n                           coordinates.\n       bottom          -   Bottom position of the client area in PDF page\n                           coordinates.\n Return value:\n       None."]
     pub FFI_DisplayCaret: ::std::option::Option<
@@ -2910,11 +2917,11 @@ extern "C" {
     pub fn FORM_CanRedo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Function: FORM_Undo\n       Make the current focussed widget perform an undo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the undo operation succeeded."]
+    #[doc = " Function: FORM_Undo\n       Make the current focused widget perform an undo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the undo operation succeeded."]
     pub fn FORM_Undo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Function: FORM_Redo\n       Make the current focussed widget perform a redo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the redo operation succeeded."]
+    #[doc = " Function: FORM_Redo\n       Make the current focused widget perform a redo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the redo operation succeeded."]
     pub fn FORM_Redo(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 }
 extern "C" {
@@ -2922,7 +2929,7 @@ extern "C" {
     pub fn FORM_ForceToKillFocus(hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FORM_GetFocusedAnnot.\n       Call this member function to get the currently focused annotation.\n Parameters:\n       handle      -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page_index  -   Buffer to hold the index number of the page which\n                       contains the focused annotation. 0 for the first page.\n                       Can't be NULL.\n       annot       -   Buffer to hold the focused annotation. Can't be NULL.\n Return Value:\n       On success, return true and write to the out parameters. Otherwise return\n       false and leave the out parameters unmodified.\n Comments:\n       Not currently supported for XFA forms - will report no focused\n       annotation.\n       Must call FPDFPage_CloseAnnot() when the annotation returned in |annot|\n       by this function is no longer needed.\n       This will return true and set |page_index| to -1 and |annot| to NULL, if\n       there is no focused annotation."]
+    #[doc = " Experimental API.\n Function: FORM_GetFocusedAnnot.\n       Call this member function to get the currently focused annotation.\n Parameters:\n       handle      -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page_index  -   Buffer to hold the index number of the page which\n                       contains the focused annotation. 0 for the first page.\n                       Can't be NULL.\n       annot       -   Buffer to hold the focused annotation. Can't be NULL.\n Return Value:\n       On success, return true and write to the out parameters. Otherwise\n       return false and leave the out parameters unmodified.\n Comments:\n       Not currently supported for XFA forms - will report no focused\n       annotation.\n       Must call FPDFPage_CloseAnnot() when the annotation returned in |annot|\n       by this function is no longer needed.\n       This will return true and set |page_index| to -1 and |annot| to NULL,\n       if there is no focused annotation."]
     pub fn FORM_GetFocusedAnnot(
         handle: FPDF_FORMHANDLE,
         page_index: *mut ::std::os::raw::c_int,
@@ -3354,6 +3361,16 @@ extern "C" {
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut f32,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Get the RGB value of the font color for an |annot| with variable text.\n\n   hHandle  - handle to the form fill module, returned by\n              FPDFDOC_InitFormFillEnvironment.\n   annot    - handle to an annotation.\n   R, G, B  - buffer to hold the RGB value of the color. Ranges from 0 to 255.\n\n Returns true if the font color was set, false on error or if the font\n color was not provided."]
+    pub fn FPDFAnnot_GetFontColor(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: *mut ::std::os::raw::c_uint,
+        G: *mut ::std::os::raw::c_uint,
+        B: *mut ::std::os::raw::c_uint,
     ) -> FPDF_BOOL;
 }
 extern "C" {
@@ -4079,7 +4096,7 @@ extern "C" {
     pub fn FPDFPage_InsertObject(page: FPDF_PAGE, page_object: FPDF_PAGEOBJECT);
 }
 extern "C" {
-    #[doc = " Experimental API.\n Remove |page_object| from |page|.\n\n   page        - handle to a page\n   page_object - handle to a page object to be removed.\n\n Returns TRUE on success.\n\n Ownership is transferred to the caller. Call FPDFPageObj_Destroy() to free\n it."]
+    #[doc = " Experimental API.\n Remove |page_object| from |page|.\n\n   page        - handle to a page\n   page_object - handle to a page object to be removed.\n\n Returns TRUE on success.\n\n Ownership is transferred to the caller. Call FPDFPageObj_Destroy() to free\n it.\n Note that when removing a |page_object| of type FPDF_PAGEOBJ_TEXT, all\n FPDF_TEXTPAGE handles for |page| are no longer valid."]
     pub fn FPDFPage_RemoveObject(page: FPDF_PAGE, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 }
 extern "C" {
@@ -4123,6 +4140,13 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = " Experimental API.\n Transform |page_object| by the given matrix.\n\n   page_object - handle to a page object.\n   matrix      - the transform matrix.\n\n Returns TRUE on success.\n\n This can be used to scale, rotate, shear and translate the |page_object|.\n It is an improved version of FPDFPageObj_Transform() that does not do\n unnecessary double to float conversions, and only uses 1 parameter for the\n matrix. It also returns whether the operation succeeded or not."]
+    pub fn FPDFPageObj_TransformF(
+        page_object: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
     #[doc = " Experimental API.\n Get the transform matrix of a page object.\n\n   page_object - handle to a page object.\n   matrix      - pointer to struct to receive the matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and used to scale, rotate, shear and translate the page object.\n\n For page objects outside form objects, the matrix values are relative to the\n page that contains it.\n For page objects inside form objects, the matrix values are relative to the\n form that contains it.\n\n Returns TRUE on success."]
     pub fn FPDFPageObj_GetMatrix(page_object: FPDF_PAGEOBJECT, matrix: *mut FS_MATRIX)
         -> FPDF_BOOL;
@@ -4149,6 +4173,10 @@ extern "C" {
 extern "C" {
     #[doc = " Create a new image object.\n\n   document - handle to a document.\n\n Returns a handle to a new image object."]
     pub fn FPDFPageObj_NewImageObj(document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Get the marked content ID for the object.\n\n   page_object - handle to a page object.\n\n Returns the page object's marked content ID, or -1 on error."]
+    pub fn FPDFPageObj_GetMarkedContentID(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = " Experimental API.\n Get number of content marks in |page_object|.\n\n   page_object - handle to a page object.\n\n Returns the number of content marks in |page_object|, or -1 in case of\n failure."]
@@ -4659,12 +4687,20 @@ extern "C" {
     pub fn FPDFTextObj_GetFont(text: FPDF_PAGEOBJECT) -> FPDF_FONT;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Get the font name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the font name (including the trailing NUL\n character) on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
-    pub fn FPDFFont_GetFontName(
+    #[doc = " Experimental API.\n Get the base name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the base font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the base name (including the trailing NUL\n character) on success, 0 on error. The base name is typically the font's\n PostScript name. See descriptions of \"BaseFont\" in ISO 32000-1:2008 spec.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    pub fn FPDFFont_GetBaseFontName(
         font: FPDF_FONT,
         buffer: *mut ::std::os::raw::c_char,
-        length: ::std::os::raw::c_ulong,
-    ) -> ::std::os::raw::c_ulong;
+        length: usize,
+    ) -> usize;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Get the family name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the family name (including the trailing NUL\n character) on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    pub fn FPDFFont_GetFamilyName(
+        font: FPDF_FONT,
+        buffer: *mut ::std::os::raw::c_char,
+        length: usize,
+    ) -> usize;
 }
 extern "C" {
     #[doc = " Experimental API.\n Get the decoded data from the |font| object.\n\n font       - The handle to the font object. (Required)\n buffer     - The address of a buffer that receives the font data.\n buflen     - Length of the buffer.\n out_buflen - Pointer to variable that will receive the minimum buffer size\n              to contain the font data. Not filled if the return value is\n              FALSE. (Required)\n\n Returns TRUE on success. In which case, |out_buflen| will be filled, and\n |buffer| will be filled if it is large enough. Returns FALSE if any of the\n required parameters are null.\n\n The decoded data is the uncompressed font data. i.e. the raw font data after\n having all stream filters applied, when the data is embedded.\n\n If the font is not embedded, then this API will instead return the data for\n the substitution font it is using."]
@@ -5815,7 +5851,7 @@ extern "C" {
     ) -> ::std::os::raw::c_uint;
 }
 extern "C" {
-    #[doc = " Function: FPDF_StructTree_GetForPage\n          Get the structure tree for a page.\n Parameters:\n          page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return value:\n          A handle to the structure tree or NULL on error."]
+    #[doc = " Function: FPDF_StructTree_GetForPage\n          Get the structure tree for a page.\n Parameters:\n          page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return value:\n          A handle to the structure tree or NULL on error. The caller owns the\n          returned handle and must use FPDF_StructTree_Close() to release it.\n          The handle should be released before |page| gets released."]
     pub fn FPDF_StructTree_GetForPage(page: FPDF_PAGE) -> FPDF_STRUCTTREE;
 }
 extern "C" {
@@ -5827,7 +5863,7 @@ extern "C" {
     pub fn FPDF_StructTree_CountChildren(struct_tree: FPDF_STRUCTTREE) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Function: FPDF_StructTree_GetChildAtIndex\n          Get a child in the structure tree.\n Parameters:\n          struct_tree -   Handle to the structure tree, as returned by\n                          FPDF_StructTree_LoadPage().\n          index       -   The index for the child, 0-based.\n Return value:\n          The child at the n-th index or NULL on error."]
+    #[doc = " Function: FPDF_StructTree_GetChildAtIndex\n          Get a child in the structure tree.\n Parameters:\n          struct_tree -   Handle to the structure tree, as returned by\n                          FPDF_StructTree_LoadPage().\n          index       -   The index for the child, 0-based.\n Return value:\n          The child at the n-th index or NULL on error. The caller does not\n          own the handle. The handle remains valid as long as |struct_tree|\n          remains valid.\n Comments:\n          The |index| must be less than the FPDF_StructTree_CountChildren()\n          return value."]
     pub fn FPDF_StructTree_GetChildAtIndex(
         struct_tree: FPDF_STRUCTTREE,
         index: ::std::os::raw::c_int,
@@ -5875,7 +5911,7 @@ extern "C" {
     ) -> ::std::os::raw::c_ulong;
 }
 extern "C" {
-    #[doc = " Function: FPDF_StructElement_GetMarkedContentID\n          Get the marked content ID for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n Return value:\n          The marked content ID of the element. If no ID exists, returns\n          -1."]
+    #[doc = " Function: FPDF_StructElement_GetMarkedContentID\n          Get the marked content ID for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n Return value:\n          The marked content ID of the element. If no ID exists, returns\n          -1.\n Comments:\n          FPDF_StructElement_GetMarkedContentIdAtIndex() may be able to\n          extract more marked content IDs out of |struct_element|. This API\n          may be deprecated in the future."]
     pub fn FPDF_StructElement_GetMarkedContentID(
         struct_element: FPDF_STRUCTELEMENT,
     ) -> ::std::os::raw::c_int;
@@ -5911,14 +5947,14 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Function: FPDF_StructElement_GetChildAtIndex\n          Get a child in the structure element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index for the child, 0-based.\n Return value:\n          The child at the n-th index or NULL on error.\n Comments:\n          If the child exists but is not an element, then this function will\n          return NULL. This will also return NULL for out of bounds indices."]
+    #[doc = " Function: FPDF_StructElement_GetChildAtIndex\n          Get a child in the structure element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index for the child, 0-based.\n Return value:\n          The child at the n-th index or NULL on error.\n Comments:\n          If the child exists but is not an element, then this function will\n          return NULL. This will also return NULL for out of bounds indices.\n          The |index| must be less than the FPDF_StructElement_CountChildren()\n          return value."]
     pub fn FPDF_StructElement_GetChildAtIndex(
         struct_element: FPDF_STRUCTELEMENT,
         index: ::std::os::raw::c_int,
     ) -> FPDF_STRUCTELEMENT;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetChildMarkedContentID\n          Get the child's content id\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index for the child, 0-based.\n Return value:\n          The marked content ID of the child. If no ID exists, returns -1.\n Comments:\n          If the child exists but is not a stream or object, then this\n          function will return -1. This will also return -1 for out of bounds\n          indices. Compared to FPDF_StructElement_GetMarkedContentIdAtIndex,\n          it is scoped to the current page."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetChildMarkedContentID\n          Get the child's content id\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index for the child, 0-based.\n Return value:\n          The marked content ID of the child. If no ID exists, returns -1.\n Comments:\n          If the child exists but is not a stream or object, then this\n          function will return -1. This will also return -1 for out of bounds\n          indices. Compared to FPDF_StructElement_GetMarkedContentIdAtIndex,\n          it is scoped to the current page.\n          The |index| must be less than the FPDF_StructElement_CountChildren()\n          return value."]
     pub fn FPDF_StructElement_GetChildMarkedContentID(
         struct_element: FPDF_STRUCTELEMENT,
         index: ::std::os::raw::c_int,
@@ -5935,7 +5971,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetAttributeAtIndex\n          Get an attribute object in the structure element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index for the attribute object, 0-based.\n Return value:\n          The attribute object at the n-th index or NULL on error.\n Comments:\n          If the attribute object exists but is not a dict, then this\n          function will return NULL. This will also return NULL for out of\n          bounds indices."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetAttributeAtIndex\n          Get an attribute object in the structure element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index for the attribute object, 0-based.\n Return value:\n          The attribute object at the n-th index or NULL on error.\n Comments:\n          If the attribute object exists but is not a dict, then this\n          function will return NULL. This will also return NULL for out of\n          bounds indices. The caller does not own the handle. The handle\n          remains valid as long as |struct_element| remains valid.\n          The |index| must be less than the\n          FPDF_StructElement_GetAttributeCount() return value."]
     pub fn FPDF_StructElement_GetAttributeAtIndex(
         struct_element: FPDF_STRUCTELEMENT,
         index: ::std::os::raw::c_int,
@@ -5958,47 +5994,62 @@ extern "C" {
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetType\n          Get the type of an attribute in a structure element attribute map.\n Parameters:\n          struct_attribute   - Handle to the struct element attribute.\n          name               - The attribute name.\n Return value:\n          Returns the type of the value, or FPDF_OBJECT_UNKNOWN in case of\n          failure."]
-    pub fn FPDF_StructElement_Attr_GetType(
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetValue\n           Get a handle to a value for an attribute in a structure element\n           attribute map.\n Parameters:\n           struct_attribute   - Handle to the struct element attribute.\n           name               - The attribute name.\n Return value:\n           Returns a handle to the value associated with the input, if any.\n           Returns NULL on failure. The caller does not own the handle.\n           The handle remains valid as long as |struct_attribute| remains\n           valid."]
+    pub fn FPDF_StructElement_Attr_GetValue(
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: FPDF_BYTESTRING,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetType\n           Get the type of an attribute in a structure element attribute map.\n Parameters:\n           value - Handle to the value.\n Return value:\n           Returns the type of the value, or FPDF_OBJECT_UNKNOWN in case of\n           failure. Note that this will never return FPDF_OBJECT_REFERENCE, as\n           references are always dereferenced."]
+    pub fn FPDF_StructElement_Attr_GetType(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
     ) -> FPDF_OBJECT_TYPE;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetBooleanValue\n          Get the value of a boolean attribute in an attribute map by name as\n          FPDF_BOOL. FPDF_StructElement_Attr_GetType() should have returned\n          FPDF_OBJECT_BOOLEAN for this property.\n Parameters:\n          struct_attribute   - Handle to the struct element attribute.\n          name               - The attribute name.\n          out_value          - A pointer to variable that will receive the\n                               value. Not filled if false is returned.\n Return value:\n          Returns TRUE if the name maps to a boolean value, FALSE otherwise."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetBooleanValue\n           Get the value of a boolean attribute in an attribute map as\n           FPDF_BOOL. FPDF_StructElement_Attr_GetType() should have returned\n           FPDF_OBJECT_BOOLEAN for this property.\n Parameters:\n           value     - Handle to the value.\n           out_value - A pointer to variable that will receive the value. Not\n                       filled if false is returned.\n Return value:\n           Returns TRUE if the attribute maps to a boolean value, FALSE\n           otherwise."]
     pub fn FPDF_StructElement_Attr_GetBooleanValue(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut FPDF_BOOL,
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetNumberValue\n          Get the value of a number attribute in an attribute map by name as\n          float. FPDF_StructElement_Attr_GetType() should have returned\n          FPDF_OBJECT_NUMBER for this property.\n Parameters:\n          struct_attribute   - Handle to the struct element attribute.\n          name               - The attribute name.\n          out_value          - A pointer to variable that will receive the\n                               value. Not filled if false is returned.\n Return value:\n          Returns TRUE if the name maps to a number value, FALSE otherwise."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetNumberValue\n           Get the value of a number attribute in an attribute map as float.\n           FPDF_StructElement_Attr_GetType() should have returned\n           FPDF_OBJECT_NUMBER for this property.\n Parameters:\n           value     - Handle to the value.\n           out_value - A pointer to variable that will receive the value. Not\n                       filled if false is returned.\n Return value:\n           Returns TRUE if the attribute maps to a number value, FALSE\n           otherwise."]
     pub fn FPDF_StructElement_Attr_GetNumberValue(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut f32,
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetStringValue\n          Get the value of a string attribute in an attribute map by name as\n          string. FPDF_StructElement_Attr_GetType() should have returned\n          FPDF_OBJECT_STRING or FPDF_OBJECT_NAME for this property.\n Parameters:\n          struct_attribute   - Handle to the struct element attribute.\n          name               - The attribute name.\n          buffer             - A buffer for holding the returned key in\n                               UTF-16LE. This is only modified if |buflen| is\n                               longer than the length of the key. Optional,\n                               pass null to just retrieve the size of the\n                               buffer needed.\n          buflen             - The length of the buffer.\n          out_buflen         - A pointer to variable that will receive the\n                               minimum buffer size to contain the key. Not\n                               filled if FALSE is returned.\n Return value:\n          Returns TRUE if the name maps to a string value, FALSE otherwise."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetStringValue\n           Get the value of a string attribute in an attribute map as string.\n           FPDF_StructElement_Attr_GetType() should have returned\n           FPDF_OBJECT_STRING or FPDF_OBJECT_NAME for this property.\n Parameters:\n           value      - Handle to the value.\n           buffer     - A buffer for holding the returned key in UTF-16LE.\n                        This is only modified if |buflen| is longer than the\n                        length of the key. Optional, pass null to just\n                        retrieve the size of the buffer needed.\n           buflen     - The length of the buffer.\n           out_buflen - A pointer to variable that will receive the minimum\n                        buffer size to contain the key. Not filled if FALSE is\n                        returned.\n Return value:\n           Returns TRUE if the attribute maps to a string value, FALSE\n           otherwise."]
     pub fn FPDF_StructElement_Attr_GetStringValue(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut ::std::os::raw::c_void,
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetBlobValue\n          Get the value of a blob attribute in an attribute map by name as\n          string.\n Parameters:\n          struct_attribute   - Handle to the struct element attribute.\n          name               - The attribute name.\n          buffer             - A buffer for holding the returned value. This\n                               is only modified if |buflen| is at least as\n                               long as the length of the value. Optional, pass\n                               null to just retrieve the size of the buffer\n                               needed.\n          buflen             - The length of the buffer.\n          out_buflen         - A pointer to variable that will receive the\n                               minimum buffer size to contain the key. Not\n                               filled if FALSE is returned.\n Return value:\n          Returns TRUE if the name maps to a string value, FALSE otherwise."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetBlobValue\n           Get the value of a blob attribute in an attribute map as string.\n Parameters:\n           value      - Handle to the value.\n           buffer     - A buffer for holding the returned value. This is only\n                        modified if |buflen| is at least as long as the length\n                        of the value. Optional, pass null to just retrieve the\n                        size of the buffer needed.\n           buflen     - The length of the buffer.\n           out_buflen - A pointer to variable that will receive the minimum\n                        buffer size to contain the key. Not filled if FALSE is\n                        returned.\n Return value:\n           Returns TRUE if the attribute maps to a string value, FALSE\n           otherwise."]
     pub fn FPDF_StructElement_Attr_GetBlobValue(
-        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
-        name: FPDF_BYTESTRING,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut ::std::os::raw::c_void,
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_CountChildren\n           Count the number of children values in an attribute.\n Parameters:\n           value - Handle to the value.\n Return value:\n           The number of children, or -1 on error."]
+    pub fn FPDF_StructElement_Attr_CountChildren(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_Attr_GetChildAtIndex\n           Get a child from an attribute.\n Parameters:\n           value - Handle to the value.\n           index - The index for the child, 0-based.\n Return value:\n           The child at the n-th index or NULL on error.\n Comments:\n           The |index| must be less than the\n           FPDF_StructElement_Attr_CountChildren() return value."]
+    pub fn FPDF_StructElement_Attr_GetChildAtIndex(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE;
 }
 extern "C" {
     #[doc = " Experimental API.\n Function: FPDF_StructElement_GetMarkedContentIdCount\n          Get the count of marked content ids for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n Return value:\n          The count of marked content ids or -1 if none exists."]
@@ -6007,7 +6058,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetMarkedContentIdAtIndex\n          Get the marked content id at a given index for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index of the marked content id, 0-based.\n Return value:\n          The marked content ID of the element. If no ID exists, returns\n          -1."]
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetMarkedContentIdAtIndex\n          Get the marked content id at a given index for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          index          -   The index of the marked content id, 0-based.\n Return value:\n          The marked content ID of the element. If no ID exists, returns\n          -1.\n Comments:\n          The |index| must be less than the\n          FPDF_StructElement_GetMarkedContentIdCount() return value.\n          This will likely supersede FPDF_StructElement_GetMarkedContentID()."]
     pub fn FPDF_StructElement_GetMarkedContentIdAtIndex(
         struct_element: FPDF_STRUCTELEMENT,
         index: ::std::os::raw::c_int,
@@ -6021,7 +6072,7 @@ pub struct _FPDF_SYSFONTINFO {
     pub version: ::std::os::raw::c_int,
     #[doc = " Method: Release\n          Give implementation a chance to release any data after the\n          interface is no longer used.\n Interface Version:\n          1\n Implementation Required:\n          No\n Parameters:\n          pThis       -   Pointer to the interface structure itself\n Return Value:\n          None\n Comments:\n          Called by PDFium during the final cleanup process."]
     pub Release: ::std::option::Option<unsafe extern "C" fn(pThis: *mut _FPDF_SYSFONTINFO)>,
-    #[doc = " Method: EnumFonts\n          Enumerate all fonts installed on the system\n Interface Version:\n          1\n Implementation Required:\n          No\n Parameters:\n          pThis       -   Pointer to the interface structure itself\n          pMapper     -   An opaque pointer to internal font mapper, used\n                          when calling FPDF_AddInstalledFont().\n Return Value:\n          None\n Comments:\n          Implementations should call FPDF_AddIntalledFont() function for\n          each font found. Only TrueType/OpenType and Type1 fonts are accepted\n          by PDFium."]
+    #[doc = " Method: EnumFonts\n          Enumerate all fonts installed on the system\n Interface Version:\n          1\n Implementation Required:\n          No\n Parameters:\n          pThis       -   Pointer to the interface structure itself\n          pMapper     -   An opaque pointer to internal font mapper, used\n                          when calling FPDF_AddInstalledFont().\n Return Value:\n          None\n Comments:\n          Implementations should call FPDF_AddInstalledFont() function for\n          each font found. Only TrueType/OpenType and Type1 fonts are\n          accepted by PDFium."]
     pub EnumFonts: ::std::option::Option<
         unsafe extern "C" fn(pThis: *mut _FPDF_SYSFONTINFO, pMapper: *mut ::std::os::raw::c_void),
     >,
@@ -6229,8 +6280,16 @@ fn bindgen_test_layout_FPDF_CharsetFontMap_() {
 #[doc = " Struct: FPDF_CharsetFontMap\n    Provides the name of a font to use for a given charset value."]
 pub type FPDF_CharsetFontMap = FPDF_CharsetFontMap_;
 extern "C" {
-    #[doc = " Function: FPDF_GetDefaultTTFMap\n    Returns a pointer to the default character set to TT Font name map. The\n    map is an array of FPDF_CharsetFontMap structs, with its end indicated\n    by a { -1, NULL } entry.\n Parameters:\n     None.\n Return Value:\n     Pointer to the Charset Font Map."]
+    #[doc = " Function: FPDF_GetDefaultTTFMap\n    Returns a pointer to the default character set to TT Font name map. The\n    map is an array of FPDF_CharsetFontMap structs, with its end indicated\n    by a { -1, NULL } entry.\n Parameters:\n     None.\n Return Value:\n     Pointer to the Charset Font Map.\n Note:\n     Once FPDF_GetDefaultTTFMapCount() and FPDF_GetDefaultTTFMapEntry() are no\n     longer experimental, this API will be marked as deprecated.\n     See https://crbug.com/348468114"]
     pub fn FPDF_GetDefaultTTFMap() -> *const FPDF_CharsetFontMap;
+}
+extern "C" {
+    #[doc = " Experimental API.\n\n Function: FPDF_GetDefaultTTFMapCount\n    Returns the number of entries in the default character set to TT Font name\n    map.\n Parameters:\n    None.\n Return Value:\n    The number of entries in the map."]
+    pub fn FPDF_GetDefaultTTFMapCount() -> usize;
+}
+extern "C" {
+    #[doc = " Experimental API.\n\n Function: FPDF_GetDefaultTTFMapEntry\n    Returns an entry in the default character set to TT Font name map.\n Parameters:\n    index    -   The index to the entry in the map to retrieve.\n Return Value:\n     A pointer to the entry, if it is in the map, or NULL if the index is out\n     of bounds."]
+    pub fn FPDF_GetDefaultTTFMapEntry(index: usize) -> *const FPDF_CharsetFontMap;
 }
 extern "C" {
     #[doc = " Function: FPDF_AddInstalledFont\n          Add a system font to the list in PDFium.\n Comments:\n          This function is only called during the system font list building\n          process.\n Parameters:\n          mapper          -   Opaque pointer to Foxit font mapper\n          face            -   The font face name\n          charset         -   Font character set. See above defined constants.\n Return Value:\n          None."]
@@ -6270,6 +6329,13 @@ extern "C" {
         text_page: FPDF_TEXTPAGE,
         index: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_uint;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Function: FPDFText_GetTextObject\n          Get the FPDF_PAGEOBJECT associated with a given character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          The associated text object for the character at |index|, or NULL on\n          error. The returned text object, if non-null, is of type\n          |FPDF_PAGEOBJ_TEXT|. The caller does not own the returned object.\n"]
+    pub fn FPDFText_GetTextObject(
+        text_page: FPDF_TEXTPAGE,
+        index: ::std::os::raw::c_int,
+    ) -> FPDF_PAGEOBJECT;
 }
 extern "C" {
     #[doc = " Experimental API.\n Function: FPDFText_IsGenerated\n          Get if a character in a page is generated by PDFium.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          1 if the character is generated by PDFium.\n          0 if the character is not generated by PDFium.\n          -1 if there was an error.\n"]
@@ -6312,13 +6378,6 @@ extern "C" {
         text_page: FPDF_TEXTPAGE,
         index: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    #[doc = " Experimental API.\n Function: FPDFText_GetTextRenderMode\n          Get text rendering mode of character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return Value:\n          On success, return the render mode value. A valid value is of type\n          FPDF_TEXT_RENDERMODE. If |text_page| is invalid, if |index| is out\n          of bounds, or if the text object is undefined, then return\n          FPDF_TEXTRENDERMODE_UNKNOWN.\n"]
-    pub fn FPDFText_GetTextRenderMode(
-        text_page: FPDF_TEXTPAGE,
-        index: ::std::os::raw::c_int,
-    ) -> FPDF_TEXT_RENDERMODE;
 }
 extern "C" {
     #[doc = " Experimental API.\n Function: FPDFText_GetFillColor\n          Get the fill color of a particular character.\n Parameters:\n          text_page      -   Handle to a text page information structure.\n                             Returned by FPDFText_LoadPage function.\n          index          -   Zero-based index of the character.\n          R              -   Pointer to an unsigned int number receiving the\n                             red value of the fill color.\n          G              -   Pointer to an unsigned int number receiving the\n                             green value of the fill color.\n          B              -   Pointer to an unsigned int number receiving the\n                             blue value of the fill color.\n          A              -   Pointer to an unsigned int number receiving the\n                             alpha value of the fill color.\n Return value:\n          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are\n          unchanged.\n"]
@@ -6393,7 +6452,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Function: FPDFText_GetText\n          Extract unicode text string from the page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          start_index -   Index for the start characters.\n          count       -   Number of characters to be extracted.\n          result      -   A buffer (allocated by application) receiving the\n                          extracted unicodes. The size of the buffer must be\n                          able to hold the number of characters plus a\n                          terminator.\n Return Value:\n          Number of characters written into the result buffer, including the\n          trailing terminator.\n Comments:\n          This function ignores characters without unicode information.\n          It returns all characters on the page, even those that are not\n          visible when the page has a cropbox. To filter out the characters\n          outside of the cropbox, use FPDF_GetPageBoundingBox() and\n          FPDFText_GetCharBox().\n"]
+    #[doc = " Function: FPDFText_GetText\n          Extract unicode text string from the page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          start_index -   Index for the start characters.\n          count       -   Number of UCS-2 values to be extracted.\n          result      -   A buffer (allocated by application) receiving the\n                          extracted UCS-2 values. The buffer must be able to\n                          hold `count` UCS-2 values plus a terminator.\n Return Value:\n          Number of characters written into the result buffer, including the\n          trailing terminator.\n Comments:\n          This function ignores characters without UCS-2 representations.\n          It considers all characters on the page, even those that are not\n          visible when the page has a cropbox. To filter out the characters\n          outside of the cropbox, use FPDF_GetPageBoundingBox() and\n          FPDFText_GetCharBox().\n"]
     pub fn FPDFText_GetText(
         text_page: FPDF_TEXTPAGE,
         start_index: ::std::os::raw::c_int,
@@ -6421,7 +6480,7 @@ extern "C" {
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Function: FPDFText_GetBoundedText\n          Extract unicode text within a rectangular boundary on the page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          left        -   Left boundary.\n          top         -   Top boundary.\n          right       -   Right boundary.\n          bottom      -   Bottom boundary.\n          buffer      -   A unicode buffer.\n          buflen      -   Number of characters (not bytes) for the buffer,\n                          excluding an additional terminator.\n Return Value:\n          If buffer is NULL or buflen is zero, return number of characters\n          (not bytes) of text present within the rectangle, excluding a\n          terminating NUL. Generally you should pass a buffer at least one\n          larger than this if you want a terminating NUL, which will be\n          provided if space is available. Otherwise, return number of\n          characters copied into the buffer, including the terminating NUL\n          when space for it is available.\n Comment:\n          If the buffer is too small, as much text as will fit is copied into\n          it.\n"]
+    #[doc = " Function: FPDFText_GetBoundedText\n          Extract unicode text within a rectangular boundary on the page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          left        -   Left boundary.\n          top         -   Top boundary.\n          right       -   Right boundary.\n          bottom      -   Bottom boundary.\n          buffer      -   Caller-allocated buffer to receive UTF-16 values.\n          buflen      -   Number of UTF-16 values (not bytes) that `buffer`\n                          is capable of holding.\n Return Value:\n          If buffer is NULL or buflen is zero, return number of UTF-16\n          values (not bytes) of text present within the rectangle, excluding\n          a terminating NUL. Generally you should pass a buffer at least one\n          larger than this if you want a terminating NUL, which will be\n          provided if space is available. Otherwise, return number of UTF-16\n          values copied into the buffer, including the terminating NUL when\n          space for it is available.\n Comment:\n          If the buffer is too small, as much text as will fit is copied into\n          it. May return a split surrogate in that case.\n"]
     pub fn FPDFText_GetBoundedText(
         text_page: FPDF_TEXTPAGE,
         left: f64,

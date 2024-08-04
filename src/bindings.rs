@@ -52,11 +52,11 @@ use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c
 /// native function signatures in Pdfium:
 /// * [PdfiumLibraryBindings::FPDF_LoadDocument()]: this function is not available when compiling to WASM.
 /// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()]: the return type of this function is modified
-/// when compiling to WASM. Instead of returning `*mut c_void`, it returns `*const c_void`.
-/// This is to encourage callers to avoid directly mutating the returned buffer, as this is not
-/// supported when compiling to WASM. Instead, callers should use the provided
-/// [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()] convenience function to apply modified pixel data
-/// to a bitmap.
+///   when compiling to WASM. Instead of returning `*mut c_void`, it returns `*const c_void`.
+///   This is to encourage callers to avoid directly mutating the returned buffer, as this is not
+///   supported when compiling to WASM. Instead, callers should use the provided
+///   [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()] convenience function to apply modified pixel data
+///   to a bitmap.
 pub trait PdfiumLibraryBindings {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
     #[inline]
@@ -2442,6 +2442,9 @@ pub trait PdfiumLibraryBindings {
     fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint;
 
     #[allow(non_snake_case)]
+    fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT;
+
+    #[allow(non_snake_case)]
     fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double;
 
     #[allow(non_snake_case)]
@@ -2456,13 +2459,6 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
-
-    #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(
-        &self,
-        text_page: FPDF_TEXTPAGE,
-        index: c_int,
-    ) -> FPDF_TEXT_RENDERMODE;
 
     #[allow(non_snake_case)]
     fn FPDFText_GetFillColor(
