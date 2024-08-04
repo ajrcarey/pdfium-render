@@ -2904,15 +2904,41 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         unsafe { crate::bindgen::FPDFPathSegment_GetClose(segment) }
     }
 
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    // #[inline]
+    // #[allow(non_snake_case)]
+    // fn FPDFFont_GetBaseFontName(
+    //     &self,
+    //     font: FPDF_FONT,
+    //     buffer: *mut c_char,
+    //     length: usize,
+    // ) -> usize {
+    //     unsafe { crate::bindgen::FPDFFont_GetBaseFontName(font, buffer, length) }
+    // }
+
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
+    fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
+        unsafe { crate::bindgen::FPDFFont_GetFamilyName(font, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFontData(
         &self,
         font: FPDF_FONT,
-        buffer: *mut c_char,
-        length: c_ulong,
-    ) -> c_ulong {
-        unsafe { crate::bindgen::FPDFFont_GetFontName(font, buffer, length) }
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFFont_GetFontData(font, buffer, buflen, out_buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int {
+        unsafe { crate::bindgen::FPDFFont_GetIsEmbedded(font) }
     }
 
     #[inline]

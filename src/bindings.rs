@@ -3190,13 +3190,35 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    // #[allow(non_snake_case)]
+    // fn FPDFFont_GetBaseFontName(
+    //     &self,
+    //     font: FPDF_FONT,
+    //     buffer: *mut c_char,
+    //     length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
+    // ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
+    fn FPDFFont_GetFamilyName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
-        length: c_ulong,
-    ) -> c_ulong;
+        length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
+    ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFontData(
+        &self,
+        font: FPDF_FONT,
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
+    ) -> FPDF_BOOL;
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int;

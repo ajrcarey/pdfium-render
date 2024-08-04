@@ -41,15 +41,16 @@ fn main() -> Result<(), PdfiumError> {
         // italic angles, and certain other properties correctly for built-in fonts.
 
         println!(
-            "Built-in PDF font {} is built-in {:?}: name = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}, number of glyphs: {}",
+            "Built-in PDF font {} is built-in {:?}: family = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}, number of glyphs: {}, is embedded in document?: {}",
             index,
             built_in,
-            font.name(),
+            font.family(),
             font.is_symbolic(),
             font.is_non_symbolic(),
             font.ascent(font_size),
             font.descent(font_size),
-            font.glyphs().len()
+            font.glyphs().len(),
+            font.is_embedded()?,
         );
     }
 
@@ -57,21 +58,29 @@ fn main() -> Result<(), PdfiumError> {
     // italic angles, and certain other properties correctly for built-in fonts.
     // So let's also output these properties for some fonts embedded into a file.
 
-    let document = pdfium.load_pdf_from_file("test/form-test.pdf", None)?;
+    let document = pdfium.load_pdf_from_file("test/text-test.pdf", None)?;
 
     for (page_index, page) in document.pages().iter().enumerate() {
         for (font_index, font) in page.fonts().iter().enumerate() {
             println!(
-            "Font {} on page {} is embedded: name = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}, number of glyphs: {}",
-            font_index,
-            page_index,
-            font.name(),
-            font.is_symbolic(),
-            font.is_non_symbolic(),
-            font.ascent(font_size),
-            font.descent(font_size),
-            font.glyphs().len()
-        );
+                "Font {} on page {} is embedded: family = {}, is symbolic? {}, is non-symbolic? {}, ascent {:?}, descent {:?}, number of glyphs: {}, is embedded in document?: {}",
+                font_index,
+                page_index,
+                font.family(),
+                font.is_symbolic(),
+                font.is_non_symbolic(),
+                font.ascent(font_size),
+                font.descent(font_size),
+                font.glyphs().len(),
+                font.is_embedded()?,
+            );
+
+            if font.is_embedded()? {
+                println!("{} bytes in embedded font data", font.data()?.len());
+
+                // If we wished, we could write the embedded font data out to a file like so:
+                // std::fs::write(format!("./{}.ttf", font_index), font.data()?).expect("failed writing font data");
+            }
         }
     }
 

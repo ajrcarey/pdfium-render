@@ -1082,8 +1082,19 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(segment: FPDF_PATHSEGMENT, x: *mut f32, y: *mut f32) -> FPDF_BOOL,
     extern_FPDFPathSegment_GetType: unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> c_int,
     extern_FPDFPathSegment_GetClose: unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> FPDF_BOOL,
-    extern_FPDFFont_GetFontName:
-        unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: c_ulong) -> c_ulong,
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    // extern_FPDFFont_GetBaseFontName:
+    //     unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize,
+    extern_FPDFFont_GetFamilyName:
+        unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize,
+    extern_FPDFFont_GetFontData: unsafe extern "C" fn(
+        font: FPDF_FONT,
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
+    ) -> FPDF_BOOL,
+    extern_FPDFFont_GetIsEmbedded: unsafe extern "C" fn(font: FPDF_FONT) -> c_int,
     extern_FPDFFont_GetFlags: unsafe extern "C" fn(font: FPDF_FONT) -> c_int,
     extern_FPDFFont_GetWeight: unsafe extern "C" fn(font: FPDF_FONT) -> c_int,
     extern_FPDFFont_GetItalicAngle:
@@ -1550,7 +1561,12 @@ impl DynamicPdfiumBindings {
                 extern_FPDFPathSegment_GetPoint: *(library.get(b"FPDFPathSegment_GetPoint\0")?),
                 extern_FPDFPathSegment_GetType: *(library.get(b"FPDFPathSegment_GetType\0")?),
                 extern_FPDFPathSegment_GetClose: *(library.get(b"FPDFPathSegment_GetClose\0")?),
-                extern_FPDFFont_GetFontName: *(library.get(b"FPDFFont_GetFontName\0")?),
+                // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+                // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+                // extern_FPDFFont_GetBaseFontName: *(library.get(b"FPDFFont_GetBaseFontName\0")?),
+                extern_FPDFFont_GetFamilyName: *(library.get(b"FPDFFont_GetFamilyName\0")?),
+                extern_FPDFFont_GetFontData: *(library.get(b"FPDFFont_GetFontData\0")?),
+                extern_FPDFFont_GetIsEmbedded: *(library.get(b"FPDFFont_GetIsEmbedded\0")?),
                 extern_FPDFFont_GetFlags: *(library.get(b"FPDFFont_GetFlags\0")?),
                 extern_FPDFFont_GetWeight: *(library.get(b"FPDFFont_GetWeight\0")?),
                 extern_FPDFFont_GetItalicAngle: *(library.get(b"FPDFFont_GetItalicAngle\0")?),
@@ -4468,15 +4484,41 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPathSegment_GetClose)(segment) }
     }
 
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    // #[inline]
+    // #[allow(non_snake_case)]
+    // fn FPDFFont_GetBaseFontName(
+    //     &self,
+    //     font: FPDF_FONT,
+    //     buffer: *mut c_char,
+    //     length: usize,
+    // ) -> usize {
+    //     unsafe { (self.extern_FPDFFont_GetBaseFontName)(font, buffer, length) }
+    // }
+
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
+    fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
+        unsafe { (self.extern_FPDFFont_GetFamilyName)(font, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFontData(
         &self,
         font: FPDF_FONT,
-        buffer: *mut c_char,
-        length: c_ulong,
-    ) -> c_ulong {
-        unsafe { (self.extern_FPDFFont_GetFontName)(font, buffer, length) }
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFFont_GetFontData)(font, buffer, buflen, out_buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int {
+        unsafe { (self.extern_FPDFFont_GetIsEmbedded)(font) }
     }
 
     #[inline]

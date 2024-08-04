@@ -11152,34 +11152,81 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_BOOL
     }
 
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    // #[allow(non_snake_case)]
+    // fn FPDFFont_GetBaseFontName(
+    //     &self,
+    //     font: FPDF_FONT,
+    //     buffer: *mut c_char,
+    //     length: usize,
+    // ) -> usize {
+    //     log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetBaseFontName()");
+
+    //     let state = PdfiumRenderWasmState::lock();
+
+    //     let buffer_ptr = if length > 0 {
+    //         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetBaseFontName(): allocating buffer of {} bytes in Pdfium's WASM heap", length);
+
+    //         state.malloc(length)
+    //     } else {
+    //         0
+    //     };
+
+    //     log::debug!(
+    //         "pdfium-render::PdfiumLibraryBindings::FPDFFont_GetBaseFontName(): calling FPDFFont_GetBaseFontName()"
+    //     );
+
+    //     let result = state
+    //         .call(
+    //             "FPDFFont_GetBaseFontName",
+    //             JsFunctionArgumentType::Number,
+    //             Some(vec![
+    //                 JsFunctionArgumentType::Pointer,
+    //                 JsFunctionArgumentType::Pointer,
+    //                 JsFunctionArgumentType::Number,
+    //             ]),
+    //             Some(&JsValue::from(Array::of3(
+    //                 &Self::js_value_from_font(font),
+    //                 &Self::js_value_from_offset(buffer_ptr),
+    //                 &JsValue::from_f64(length as f64),
+    //             ))),
+    //         )
+    //         .as_f64()
+    //         .unwrap() as usize;
+
+    //     if result > 0 && result <= length {
+    //         state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+    //     }
+
+    //     state.free(buffer_ptr);
+
+    //     log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetBaseFontName(): leaving");
+
+    //     result
+    // }
+
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
-        &self,
-        font: FPDF_FONT,
-        buffer: *mut c_char,
-        length: c_ulong,
-    ) -> c_ulong {
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontName()");
+    fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName()");
 
         let state = PdfiumRenderWasmState::lock();
 
-        let buffer_length = length as usize;
+        let buffer_ptr = if length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName(): allocating buffer of {} bytes in Pdfium's WASM heap", length);
 
-        let buffer_ptr = if buffer_length > 0 {
-            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
-
-            state.malloc(buffer_length)
+            state.malloc(length)
         } else {
             0
         };
 
         log::debug!(
-            "pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontName(): calling FPDFFont_GetFontName()"
+            "pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName(): calling FPDFFont_GetFamilyName()"
         );
 
         let result = state
             .call(
-                "FPDFFont_GetFontName",
+                "FPDFFont_GetFamilyName",
                 JsFunctionArgumentType::Number,
                 Some(vec![
                     JsFunctionArgumentType::Pointer,
@@ -11189,21 +11236,94 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 Some(&JsValue::from(Array::of3(
                     &Self::js_value_from_font(font),
                     &Self::js_value_from_offset(buffer_ptr),
-                    &JsValue::from_f64(buffer_length as f64),
+                    &JsValue::from_f64(length as f64),
                 ))),
             )
             .as_f64()
             .unwrap() as usize;
 
-        if result > 0 && result <= buffer_length {
+        if result > 0 && result <= length {
             state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
         }
 
         state.free(buffer_ptr);
 
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontName(): leaving");
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName(): leaving");
 
-        result as c_ulong
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFontData(
+        &self,
+        font: FPDF_FONT,
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontData()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_ptr = if buflen > 0 { state.malloc(buflen) } else { 0 };
+
+        let out_buflen_length = size_of::<usize>();
+
+        let out_buflen_ptr = state.malloc(out_buflen_length);
+
+        let result = state
+            .call(
+                "FPDFFont_GetFontData",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_font(font),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buflen as f64),
+                    &Self::js_value_from_offset(out_buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_buflen = state
+                    .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
+                    .try_into()
+                    .map(usize::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *out_buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *out_buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(buffer_ptr);
+        state.free(out_buflen_ptr);
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetIsEmbedded()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFFont_GetIsEmbedded",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_font(font)))),
+            )
+            .as_f64()
+            .unwrap() as usize as c_int
     }
 
     #[allow(non_snake_case)]

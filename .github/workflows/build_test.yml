@@ -12,7 +12,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  PDFIUM_RELEASE_TAG: 6281
+  PDFIUM_RELEASE_TAG: 6611 # July 2024, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F6611
 
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
     - name: Unpack Pdfium
       run: mkdir pdfium && tar -xvzf pdfium.tgz -C pdfium
     - name: Install Pdfium
-      run: cp pdfium/lib/libpdfium.so .
+      run: cp pdfium/lib/libpdfium.so . && export LD_LIBRARY_PATH="./"
     - name: Run tests
       run: cargo test --verbose
     - name: Verify static linking compatibility

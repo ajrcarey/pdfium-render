@@ -2933,15 +2933,42 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFPathSegment_GetClose(segment)
     }
 
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    // #[inline]
+    // #[allow(non_snake_case)]
+    // fn FPDFFont_GetBaseFontName(
+    //     &self,
+    //     font: FPDF_FONT,
+    //     buffer: *mut c_char,
+    //     length: usize,
+    // ) -> usize {
+    //     self.bindings.FPDFFont_GetBaseFontName(font, buffer, length)
+    // }
+
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
+    fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
+        self.bindings.FPDFFont_GetFamilyName(font, buffer, length)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFontData(
         &self,
         font: FPDF_FONT,
-        buffer: *mut c_char,
-        length: c_ulong,
-    ) -> c_ulong {
-        self.bindings.FPDFFont_GetFontName(font, buffer, length)
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFFont_GetFontData(font, buffer, buflen, out_buflen)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int {
+        self.bindings.FPDFFont_GetIsEmbedded(font)
     }
 
     #[inline]

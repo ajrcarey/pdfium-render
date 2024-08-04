@@ -755,10 +755,60 @@ impl<'a> PdfFont<'a> {
         self.bindings
     }
 
+    #[inline]
+    #[deprecated(
+        since = "0.8.22",
+        note = "This function has been renamed in line with upstream Pdfium. Use the PdfFont::family() function instead."
+    )]
     /// Returns the name of this [PdfFont].
     pub fn name(&self) -> String {
-        // Retrieving the font name from Pdfium is a two-step operation. First, we call
-        // FPDFFont_GetFontName() with a null buffer; this will retrieve the length of
+        self.family()
+    }
+
+    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    /// Returns the name of this [PdfFont].
+    // pub fn name(&self) -> String {
+    //     // Retrieving the font name from Pdfium is a two-step operation. First, we call
+    //     // FPDFFont_GetBaseFontName() with a null buffer; this will retrieve the length of
+    //     // the font name in bytes. If the length is zero, then there is no font name.
+
+    //     // If the length is non-zero, then we reserve a byte buffer of the given
+    //     // length and call FPDFFont_GetBaseFontName() again with a pointer to the buffer;
+    //     // this will write the font name into the buffer. Unlike most text handling in
+    //     // Pdfium, font names are returned in UTF-8 format.
+
+    //     let buffer_length =
+    //         self.bindings
+    //             .FPDFFont_GetBaseFontName(self.handle, std::ptr::null_mut(), 0);
+
+    //     if buffer_length == 0 {
+    //         // The font name is not present.
+
+    //         return String::new();
+    //     }
+
+    //     let mut buffer = create_byte_buffer(buffer_length as usize);
+
+    //     let result = self.bindings.FPDFFont_GetBaseFontName(
+    //         self.handle,
+    //         buffer.as_mut_ptr() as *mut c_char,
+    //         buffer_length,
+    //     );
+
+    //     assert_eq!(result, buffer_length);
+
+    //     String::from_utf8(buffer)
+    //         // Trim any trailing nulls. All strings returned from Pdfium are generally terminated
+    //         // by one null byte.
+    //         .map(|str| str.trim_end_matches(char::from(0)).to_owned())
+    //         .unwrap_or_else(|_| String::new())
+    // }
+
+    /// Returns the family of this [PdfFont].
+    pub fn family(&self) -> String {
+        // Retrieving the family name from Pdfium is a two-step operation. First, we call
+        // FPDFFont_GetFamilyName() with a null buffer; this will retrieve the length of
         // the font name in bytes. If the length is zero, then there is no font name.
 
         // If the length is non-zero, then we reserve a byte buffer of the given
@@ -768,7 +818,7 @@ impl<'a> PdfFont<'a> {
 
         let buffer_length =
             self.bindings
-                .FPDFFont_GetFontName(self.handle, std::ptr::null_mut(), 0);
+                .FPDFFont_GetFamilyName(self.handle, std::ptr::null_mut(), 0);
 
         if buffer_length == 0 {
             // The font name is not present.
@@ -778,7 +828,7 @@ impl<'a> PdfFont<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings.FPDFFont_GetFontName(
+        let result = self.bindings.FPDFFont_GetFamilyName(
             self.handle,
             buffer.as_mut_ptr() as *mut c_char,
             buffer_length,
@@ -999,6 +1049,68 @@ impl<'a> PdfFont<'a> {
     #[inline]
     pub fn built_in(&self) -> Option<PdfFontBuiltin> {
         self.built_in
+    }
+
+    /// Returns `true` if the data for this [PdfFont] is embedded in the containing [PdfDocument].
+    pub fn is_embedded(&self) -> Result<bool, PdfiumError> {
+        let result = self.bindings.FPDFFont_GetIsEmbedded(self.handle);
+
+        match result {
+            1 => Ok(true),
+            0 => Ok(false),
+            _ => Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            )),
+        }
+    }
+
+    /// Writes this [PdfFont] to a new byte buffer, returning the byte buffer.
+    ///
+    /// If this [PdfFont] is not embedded in the containing [PdfDocument], then the data
+    /// returned will be for the substitution font instead.
+    pub fn data(&self) -> Result<Vec<u8>, PdfiumError> {
+        // Retrieving the font data from Pdfium is a two-step operation. First, we call
+        // FPDFFont_GetFontData() with a null buffer; this will retrieve the length of
+        // the data in bytes. If the length is zero, then there is no data associated
+        // with this font.
+
+        // If the length is non-zero, then we reserve a byte buffer of the given
+        // length and call FPDFFont_GetFontData() again with a pointer to the buffer;
+        // this will write the font data to the buffer.
+
+        let mut out_buflen: usize = 0;
+
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFFont_GetFontData(
+                self.handle,
+                std::ptr::null_mut(),
+                0,
+                &mut out_buflen,
+            ))
+        {
+            // out_buflen now contains the length of the font data.
+
+            let buffer_length = out_buflen;
+
+            let mut buffer = create_byte_buffer(buffer_length as usize);
+
+            let result = self.bindings().FPDFFont_GetFontData(
+                self.handle,
+                buffer.as_mut_ptr(),
+                buffer_length,
+                &mut out_buflen,
+            );
+
+            assert!(self.bindings.is_true(result));
+            assert_eq!(buffer_length, out_buflen);
+
+            Ok(buffer)
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
     }
 
     /// Returns a collection of all the [PdfFontGlyphs] defined for this [PdfFont] in the containing
