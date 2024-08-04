@@ -82,6 +82,8 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
+Release 0.8.23 updates the Pdfium bindings to the latest release, adjusting the implementation of some internal functions in response to upstream changes, deprecates `PdfFont::name()` function in favour of `PdfFont::family()` to match changes in upstream naming, and adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data. The `examples/fonts.rs` example has been updated to demonstrate the new functionality. Deprecated items will be removed in release 0.9.0.
+
 Release 0.8.22 updates all examples and tests that reference functionality from the `image` crate
 to use calls compatible with both `image` 0.25.x and 0.24.x, adds support for static linking to a
 dynamic Pdfium library at compile time, adds the `PdfPages::page_size()` and `PdfPages::page_sizes()`
@@ -96,11 +98,6 @@ A new `examples/fill_form_field.rs` example demonstrates the new functionality.
 Release 0.8.20 adds support for creating new annotations, positioning those annotations,
 associating them with page objects, and retrieving and setting more annotation properties for each
 annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
-
-Release 0.8.19 adds the `PdfBookmark::children_len()` function for returning the number of direct
-child nodes of a bookmark without the need for iteration, and fixes a bug in `PdfPage::flatten()`
-to ensure that the flatten operation takes immediate effect; previously, it was necessary to drop
-and reload the page after calling `PdfPage::flatten()` in order to see the result of the operation.
 
 ## Binding to Pdfium
 
@@ -356,7 +353,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 374 `FPDF_*` functions in the Pdfium API. As of version 0.8.23, 331 (89%) have
+There are 377 `FPDF_*` functions in the Pdfium API. As of version 0.8.23, 334 (89%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -369,10 +366,14 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.23: synchronised Pdfium API header files against mainline; removes binding for function
+* 0.8.23: synchronized Pdfium API header files against mainline; removes binding for function
   `FPDFText_GetTextRenderMode()` in response to upstream change described at
-  <https://github.com/ajrcarey/pdfium-render/issues/151>; adds binding for `FPDFText_GetTextObject()`;
-  adds new `PdfPageTextChar::text_object()` function.
+  <https://github.com/ajrcarey/pdfium-render/issues/151>; adds bindings for `FPDFText_GetTextObject()`,
+  `FPDFFont_GetFamilyName()`, `FPDFFont_GetIsEmbedded()`, and `FPDFFont_GetFontData()` functions;
+  deprecates `PdfFont::name()` function in favour of `PdfFont::family()` to match upstream naming
+  changes; adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data; updates `examples/fonts.rs` example; adds new function `PdfPageTextChar::text_object()`
+  for retrieving the page object containing a specific character. Deprecated items will be removed
+  in release 0.9.0.
 * 0.8.22: adds bindings for `FPDFPage_TransformAnnots()`, thanks to an excellent contribution from
   <https://github.com/liammcdermott>; adds bindings for `FPDF_GetPageSizeByIndexF()`, thanks to an excellent
   contribution from <https://github.com/DorianRudolph>; updates all examples and tests that reference
