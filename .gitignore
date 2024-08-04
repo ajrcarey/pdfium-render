@@ -21,3 +21,7 @@ examples/test*.png
 *.ipr
 *.iws
 .idea/
+
+# Do not check Visual Studio Code-specific files into source control
+
+*.code-workspace

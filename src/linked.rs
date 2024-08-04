@@ -530,7 +530,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageSizeByIndexF(&self, document: FPDF_DOCUMENT, page_index: c_int, size: *mut FS_SIZEF) -> FPDF_BOOL {
+    fn FPDF_GetPageSizeByIndexF(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        size: *mut FS_SIZEF,
+    ) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDF_GetPageSizeByIndexF(document, page_index, size) }
     }
 
@@ -1751,6 +1756,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
+        unsafe { crate::bindgen::FPDFText_GetTextObject(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
         unsafe { crate::bindgen::FPDFText_GetFontSize(text_page, index) }
     }
@@ -1772,16 +1783,6 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         unsafe { crate::bindgen::FPDFText_GetFontWeight(text_page, index) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(
-        &self,
-        text_page: FPDF_TEXTPAGE,
-        index: c_int,
-    ) -> FPDF_TEXT_RENDERMODE {
-        unsafe { crate::bindgen::FPDFText_GetTextRenderMode(text_page, index) }
     }
 
     #[inline]

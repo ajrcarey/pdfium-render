@@ -23,23 +23,19 @@ extern "C" {
 
 // IFPDF_RENDERINFO interface.
 typedef struct _IFSDK_PAUSE {
-  /*
-   * Version number of the interface. Currently must be 1.
-   */
+  // Version number of the interface. Currently must be 1.
   int version;
 
-  /*
-   * Method: NeedToPauseNow
-   *           Check if we need to pause a progressive process now.
-   * Interface Version:
-   *           1
-   * Implementation Required:
-   *           yes
-   * Parameters:
-   *           pThis       -   Pointer to the interface structure itself
-   * Return Value:
-   *           Non-zero for pause now, 0 for continue.
-   */
+  // Method: NeedToPauseNow
+  //           Check if we need to pause a progressive process now.
+  // Interface Version:
+  //           1
+  // Implementation Required:
+  //           yes
+  // Parameters:
+  //           pThis       -   Pointer to the interface structure itself
+  // Return Value:
+  //           Non-zero for pause now, 0 for continue.
   FPDF_BOOL (*NeedToPauseNow)(struct _IFSDK_PAUSE* pThis);
 
   // A user defined data pointer, used by user's application. Can be NULL.

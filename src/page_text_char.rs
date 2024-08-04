@@ -1,12 +1,12 @@
 //! Defines the [PdfPageTextChar] struct, exposing functionality related to a single character
 //! in a `PdfPageTextChars` collection.
 
-use crate::bindgen::{FPDF_TEXTPAGE, FS_MATRIX, FS_RECTF};
+use crate::bindgen::{FPDF_PAGE, FPDF_TEXTPAGE, FS_MATRIX, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::color::PdfColor;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::font::{FpdfFontDescriptorFlags, PdfFontWeight};
-use crate::page_object_text::PdfPageTextRenderMode;
+use crate::page_object_text::{PdfPageTextObject, PdfPageTextRenderMode};
 use crate::page_text_chars::PdfPageTextCharIndex;
 use crate::points::PdfPoints;
 use crate::rect::PdfRect;
@@ -16,6 +16,7 @@ use std::ffi::c_void;
 
 /// A single character in a `PdfPageTextChars` collection.
 pub struct PdfPageTextChar<'a> {
+    page_handle: FPDF_PAGE,
     text_page_handle: FPDF_TEXTPAGE,
     index: i32,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -24,11 +25,13 @@ pub struct PdfPageTextChar<'a> {
 impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
+        page_handle: FPDF_PAGE,
         text_page_handle: FPDF_TEXTPAGE,
         index: i32,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextChar {
+            page_handle,
             text_page_handle,
             index,
             bindings,
@@ -289,12 +292,30 @@ impl<'a> PdfPageTextChar<'a> {
             .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
     }
 
+    /// Returns the page text object that contains this character.
+    pub fn text_object(&self) -> Result<PdfPageTextObject, PdfiumError> {
+        let object_handle = self
+            .bindings
+            .FPDFText_GetTextObject(self.text_page_handle, self.index);
+
+        if object_handle.is_null() {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        } else {
+            Ok(PdfPageTextObject::from_pdfium(
+                object_handle,
+                Some(self.page_handle),
+                None,
+                self.bindings,
+            ))
+        }
+    }
+
     /// Returns the text rendering mode for this character.
     pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
-        PdfPageTextRenderMode::from_pdfium(
-            self.bindings
-                .FPDFText_GetTextRenderMode(self.text_page_handle, self.index) as u32,
-        )
+        self.text_object()
+            .map(|text_object| text_object.render_mode())
     }
 
     /// Returns the fill color applied to this character.

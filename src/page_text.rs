@@ -104,7 +104,13 @@ impl<'a> PdfPageText<'a> {
     /// Returns a collection of all the `PdfPageTextChar` characters in the containing [PdfPage].
     #[inline]
     pub fn chars(&self) -> PdfPageTextChars {
-        PdfPageTextChars::new(self.handle, 0, self.len(), self.bindings)
+        PdfPageTextChars::new(
+            self.page.page_handle(),
+            self.handle,
+            0,
+            self.len(),
+            self.bindings,
+        )
     }
 
     /// Returns a collection of all the `PdfPageTextChar` characters in the given [PdfPageTextObject].
@@ -196,7 +202,7 @@ impl<'a> PdfPageText<'a> {
         // ... and use raw handles and indices to create a new PdfPageTextChars instance
         // that isn't bound to the lifetime of the current object.
 
-        Ok(PdfPageTextChars::new_for_page_index(
+        Ok(PdfPageTextChars::new_with_owned_page(
             document_handle,
             page_index,
             start_index as i32,
@@ -233,6 +239,7 @@ impl<'a> PdfPageText<'a> {
             chars.get_char_near_point(rect.right, tolerance_x, center_height, tolerance_y),
         ) {
             (Some(start), Some(end)) => Ok(PdfPageTextChars::new(
+                self.page.page_handle(),
                 self.handle,
                 start.index() as i32,
                 end.index().saturating_sub(start.index()) as i32 + 1,

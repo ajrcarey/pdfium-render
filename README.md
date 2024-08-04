@@ -356,7 +356,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 368 `FPDF_*` functions in the Pdfium API. As of version 0.8.22, 331 (90%) have
+There are 374 `FPDF_*` functions in the Pdfium API. As of version 0.8.23, 331 (89%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -369,6 +369,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.23: synchronised Pdfium API header files against mainline; removes binding for function
+  `FPDFText_GetTextRenderMode()` in response to upstream change described at
+  <https://github.com/ajrcarey/pdfium-render/issues/151>; adds binding for `FPDFText_GetTextObject()`;
+  adds new `PdfPageTextChar::text_object()` function.
 * 0.8.22: adds bindings for `FPDFPage_TransformAnnots()`, thanks to an excellent contribution from
   <https://github.com/liammcdermott>; adds bindings for `FPDF_GetPageSizeByIndexF()`, thanks to an excellent
   contribution from <https://github.com/DorianRudolph>; updates all examples and tests that reference

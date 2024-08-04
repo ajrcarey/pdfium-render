@@ -659,6 +659,8 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFText_CountChars: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE) -> c_int,
     extern_FPDFText_GetUnicode:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint,
+    extern_FPDFText_GetTextObject:
+        unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT,
     extern_FPDFText_GetFontSize:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_double,
     extern_FPDFText_GetFontInfo: unsafe extern "C" fn(
@@ -670,8 +672,6 @@ pub(crate) struct DynamicPdfiumBindings {
     ) -> c_ulong,
     extern_FPDFText_GetFontWeight:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
-    extern_FPDFText_GetTextRenderMode:
-        unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_TEXT_RENDERMODE,
     extern_FPDFText_GetFillColor: unsafe extern "C" fn(
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -1408,11 +1408,10 @@ impl DynamicPdfiumBindings {
                 extern_FPDFText_ClosePage: *(library.get(b"FPDFText_ClosePage\0")?),
                 extern_FPDFText_CountChars: *(library.get(b"FPDFText_CountChars\0")?),
                 extern_FPDFText_GetUnicode: *(library.get(b"FPDFText_GetUnicode\0")?),
+                extern_FPDFText_GetTextObject: *(library.get(b"FPDFText_GetTextObject\0")?),
                 extern_FPDFText_GetFontSize: *(library.get(b"FPDFText_GetFontSize\0")?),
                 extern_FPDFText_GetFontInfo: *(library.get(b"FPDFText_GetFontInfo\0")?),
                 extern_FPDFText_GetFontWeight: *(library.get(b"FPDFText_GetFontWeight\0")?),
-                extern_FPDFText_GetTextRenderMode: *(library
-                    .get(b"FPDFText_GetTextRenderMode\0")?),
                 extern_FPDFText_GetFillColor: *(library.get(b"FPDFText_GetFillColor\0")?),
                 extern_FPDFText_GetStrokeColor: *(library.get(b"FPDFText_GetStrokeColor\0")?),
                 extern_FPDFText_GetCharAngle: *(library.get(b"FPDFText_GetCharAngle\0")?),
@@ -3321,16 +3320,25 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_CountChars)(text_page) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint {
         unsafe { (self.extern_FPDFText_GetUnicode)(text_page, index) }
     }
 
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
+        unsafe { (self.extern_FPDFText_GetTextObject)(text_page, index) }
+    }
+
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
         unsafe { (self.extern_FPDFText_GetFontSize)(text_page, index) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetFontInfo(
         &self,
@@ -3343,20 +3351,13 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetFontInfo)(text_page, index, buffer, buflen, flags) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         unsafe { (self.extern_FPDFText_GetFontWeight)(text_page, index) }
     }
 
-    #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(
-        &self,
-        text_page: FPDF_TEXTPAGE,
-        index: c_int,
-    ) -> FPDF_TEXT_RENDERMODE {
-        unsafe { (self.extern_FPDFText_GetTextRenderMode)(text_page, index) }
-    }
-
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetFillColor(
         &self,
@@ -3370,6 +3371,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetFillColor)(text_page, index, R, G, B, A) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetStrokeColor(
         &self,
@@ -3383,11 +3385,13 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetStrokeColor)(text_page, index, R, G, B, A) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float {
         unsafe { (self.extern_FPDFText_GetCharAngle)(text_page, index) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetCharBox(
         &self,
@@ -3401,6 +3405,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetCharBox)(text_page, index, left, right, bottom, top) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetLooseCharBox(
         &self,
@@ -3411,6 +3416,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetLooseCharBox)(text_page, index, rect) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetMatrix(
         &self,
@@ -3421,6 +3427,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetMatrix)(text_page, index, matrix) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetCharOrigin(
         &self,
@@ -3432,6 +3439,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetCharOrigin)(text_page, index, x, y) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetCharIndexAtPos(
         &self,
@@ -3444,6 +3452,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetCharIndexAtPos)(text_page, x, y, xTolerance, yTolerance) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetText(
         &self,
@@ -3455,6 +3464,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetText)(text_page, start_index, count, result) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_CountRects(
         &self,
@@ -3465,6 +3475,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_CountRects)(text_page, start_index, count) }
     }
 
+    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetRect(
         &self,

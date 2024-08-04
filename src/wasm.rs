@@ -7083,6 +7083,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_GetTextObject()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFText_GetTextObject",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_text_page(text_page),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_PAGEOBJECT
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_GetFontSize()");
 
@@ -7195,31 +7216,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as c_int
-    }
-
-    #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(
-        &self,
-        text_page: FPDF_TEXTPAGE,
-        index: c_int,
-    ) -> FPDF_TEXT_RENDERMODE {
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_GetTextRenderMode()");
-
-        PdfiumRenderWasmState::lock()
-            .call(
-                "FPDFText_GetTextRenderMode",
-                JsFunctionArgumentType::Number,
-                Some(vec![
-                    JsFunctionArgumentType::Pointer,
-                    JsFunctionArgumentType::Number,
-                ]),
-                Some(&JsValue::from(Array::of2(
-                    &Self::js_value_from_text_page(text_page),
-                    &JsValue::from_f64(index as f64),
-                ))),
-            )
-            .as_f64()
-            .unwrap() as usize as FPDF_TEXT_RENDERMODE
     }
 
     #[allow(non_snake_case)]
