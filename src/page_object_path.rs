@@ -120,24 +120,24 @@ impl Default for PdfPathFillMode {
 /// collection manually.
 ///
 /// * [PdfPagePathObject::new()]: creates an empty detached path object. Segments can be added to the
-/// path by sequentially calling one or more of the [PdfPagePathObject::move_to()],
-/// [PdfPagePathObject::line_to()], or [PdfPagePathObject::bezier_to()] functions.
-/// A closed sub-path can be created by calling the [PdfPagePathObject::close_path()]
-/// function. Convenience functions for adding rectangles, circles, and ellipses are also
-/// available with the [PdfPagePathObject::rect_to()], [PdfPagePathObject::circle_to()],
-/// and [PdfPagePathObject::ellipse_to()] functions, which create the desired shapes by
-/// constructing closed sub-paths from other path segments.
+///   path by sequentially calling one or more of the [PdfPagePathObject::move_to()],
+///   [PdfPagePathObject::line_to()], or [PdfPagePathObject::bezier_to()] functions.
+///   A closed sub-path can be created by calling the [PdfPagePathObject::close_path()]
+///   function. Convenience functions for adding rectangles, circles, and ellipses are also
+///   available with the [PdfPagePathObject::rect_to()], [PdfPagePathObject::circle_to()],
+///   and [PdfPagePathObject::ellipse_to()] functions, which create the desired shapes by
+///   constructing closed sub-paths from other path segments.
 /// * [PdfPagePathObject::new_line()]: creates a detached path object initialized with a single straight line.
 /// * [PdfPagePathObject::new_bezier()]: creates a detached path object initialized with a single cubic Bézier curve.
 /// * [PdfPagePathObject::new_rect()]: creates a detached path object initialized with a rectangular path.
 /// * [PdfPagePathObject::new_circle()]: creates a detached path object initialized with a circular path,
-/// filling the given rectangle.
+///   filling the given rectangle.
 /// * [PdfPagePathObject::new_circle_at()]: creates a detached path object initialized with a circular path,
-/// centered at a particular origin point with a given radius.
+///   centered at a particular origin point with a given radius.
 /// * [PdfPagePathObject::new_ellipse()]: creates a detached path object initialized with an elliptical path,
-/// filling the given rectangle.
+///   filling the given rectangle.
 /// * [PdfPagePathObject::new_ellipse_at()]: creates a detached path object initialized with an elliptical path,
-/// centered at a particular origin point with given horizontal and vertical radii.
+///   centered at a particular origin point with given horizontal and vertical radii.
 ///
 /// The detached path object can later be attached to a page by calling the
 /// `PdfPageObjects::add_path_object()` function.

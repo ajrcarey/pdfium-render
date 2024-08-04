@@ -784,14 +784,14 @@ impl<'a> PdfPage<'a> {
     /// * [PdfPage::translate()]: changes the position of each object on this [PdfPage].
     /// * [PdfPage::scale()]: changes the size of each object on this [PdfPage].
     /// * [PdfPage::flip_horizontally()]: flips each object on this [PdfPage] horizontally around
-    /// the page origin point.
+    ///   the page origin point.
     /// * [PdfPage::flip_vertically()]: flips each object on this [PdfPage] vertically around
-    /// the page origin point.
+    ///   the page origin point.
     /// * [PdfPage::rotate_clockwise_degrees()], [PdfPage::rotate_counter_clockwise_degrees()],
-    /// [PdfPage::rotate_clockwise_radians()], [PdfPage::rotate_counter_clockwise_radians()]:
-    /// rotates each object on this [PdfPage] around its origin.
+    ///   [PdfPage::rotate_clockwise_radians()], [PdfPage::rotate_counter_clockwise_radians()]:
+    ///   rotates each object on this [PdfPage] around its origin.
     /// * [PdfPage::skew_degrees()], [PdfPage::skew_radians()]: skews each object
-    /// on this [PdfPage] relative to its axes.
+    ///   on this [PdfPage] relative to its axes.
     ///
     /// **The order in which transformations are applied is significant.**
     /// For example, the result of rotating _then_ translating an object may be vastly different
@@ -891,6 +891,17 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Flattens all annotations and form fields on this [PdfPage] into the page contents.
+    #[cfg(feature = "flatten")]
+    // Use a custom-written flatten operation, rather than Pdfium's built-in flatten. See:
+    // https://github.com/ajrcarey/pdfium-render/issues/140
+    pub fn flatten(&mut self) -> Result<(), PdfiumError> {
+        flatten_page(self.handle())
+    }
+
+    /// Flattens all annotations and form fields on this [PdfPage] into the page contents.
+    #[cfg(not(feature = "flatten"))]
+    // Use Pdfium's built-in flatten. This has some problems; see:
+    // https://github.com/ajrcarey/pdfium-render/issues/140
     pub fn flatten(&mut self) -> Result<(), PdfiumError> {
         // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
         let flag = FLAT_PRINT;
@@ -998,6 +1009,7 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
+    #[inline]
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
         Self::regenerate_content_immut_for_handle(self.page_handle, self.bindings)
     }

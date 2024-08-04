@@ -31,6 +31,7 @@ pub mod color_space;
 pub mod destination;
 pub mod document;
 pub mod error;
+mod flatten; // Keep internal flatten operation private.
 pub mod font;
 pub mod font_glyph;
 pub mod font_glyphs;
@@ -96,6 +97,7 @@ pub mod page_text_search;
 pub mod page_text_segment;
 pub mod page_text_segments;
 pub mod pages;
+#[cfg(feature = "paragraph")]
 pub mod paragraph;
 pub mod path_segment;
 pub mod path_segments;

@@ -137,7 +137,7 @@ impl PdfDocumentVersion {
 /// * [PdfDocument::pages()], an immutable collection of all the [PdfPages] in the document.
 /// * [PdfDocument::pages_mut()], a mutable collection of all the [PdfPages] in the document.
 /// * [PdfDocument::permissions()], settings relating to security handlers and document permissions
-/// for the document.
+///   for the document.
 /// * [PdfDocument::signatures()], an immutable collection of all the [PdfSignatures] in the document.
 pub struct PdfDocument<'a> {
     handle: FPDF_DOCUMENT,
@@ -344,9 +344,9 @@ impl<'a> PdfDocument<'a> {
     /// This function is not available when compiling to WASM. You have several options for
     /// saving your PDF document data in WASM:
     /// * Use either the [PdfDocument::save_to_writer()] or the [PdfDocument::save_to_bytes()] functions,
-    /// both of which are available when compiling to WASM.
+    ///   both of which are available when compiling to WASM.
     /// * Use the [PdfDocument::save_to_blob()] function to save document data directly into a new
-    /// Javascript `Blob` object. This function is only available when compiling to WASM.
+    ///   Javascript `Blob` object. This function is only available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
         self.save_to_writer(&mut File::create(path).map_err(PdfiumError::IoError)?)

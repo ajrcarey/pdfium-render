@@ -705,14 +705,14 @@ pub trait PdfPageObjectCommon<'a> {
     /// Not all page objects can be successfully copied. The following restrictions apply:
     ///
     /// * For path objects, it is not possible to copy a path object that contains a Bézier path
-    /// segment, because Pdfium does not currently provide any way to retrieve the control points of a
-    /// Bézier curve of an existing path object.
+    ///   segment, because Pdfium does not currently provide any way to retrieve the control points of a
+    ///   Bézier curve of an existing path object.
     /// * For text objects, the font used by the object must be present in the destination document,
-    /// or text rendering behaviour will be unpredictable. While text objects refer to fonts,
-    /// font data is embedded into documents separately from text objects.
+    ///   or text rendering behaviour will be unpredictable. While text objects refer to fonts,
+    ///   font data is embedded into documents separately from text objects.
     /// * For image objects, Pdfium allows iterating over the list of image filters applied
-    /// to an image object, but currently provides no way to set a new object's image filters.
-    /// As a result, it is not possible to copy an image object that has any image filters applied.
+    ///   to an image object, but currently provides no way to set a new object's image filters.
+    ///   As a result, it is not possible to copy an image object that has any image filters applied.
     ///
     /// Pdfium currently allows setting the blend mode for a page object, but provides no way
     /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
@@ -725,14 +725,14 @@ pub trait PdfPageObjectCommon<'a> {
     /// Not all page objects can be successfully copied. The following restrictions apply:
     ///
     /// * For path objects, it is not possible to copy a path object that contains a Bézier path
-    /// segment, because Pdfium does not currently provide any way to retrieve the control points of a
-    /// Bézier curve of an existing path object.
+    ///   segment, because Pdfium does not currently provide any way to retrieve the control points of a
+    ///   Bézier curve of an existing path object.
     /// * For text objects, the font used by the object must be present in the destination document,
-    /// or text rendering behaviour will be unpredictable. While text objects refer to fonts,
-    /// font data is embedded into documents separately from text objects.
+    ///   or text rendering behaviour will be unpredictable. While text objects refer to fonts,
+    ///   font data is embedded into documents separately from text objects.
     /// * For image objects, Pdfium allows iterating over the list of image filters applied
-    /// to an image object, but currently provides no way to set a new object's image filters.
-    /// As a result, it is not possible to copy an image object that has any image filters applied.
+    ///   to an image object, but currently provides no way to set a new object's image filters.
+    ///   As a result, it is not possible to copy an image object that has any image filters applied.
     ///
     /// Pdfium currently allows setting the blend mode for a page object, but provides no way
     /// to retrieve an object's current blend mode. As a result, the blend mode setting of the

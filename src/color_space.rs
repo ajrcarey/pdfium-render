@@ -18,20 +18,20 @@ use crate::error::PdfiumError;
 /// share the same general characteristics. Families fall into three broad categories:
 ///
 /// * **Device color spaces** directly specify colors or shades of gray that the output
-/// device is to produce. The precise displayed color is device-specific and is not calibrated.
-/// Color space families in this category include [PdfColorSpace::DeviceGray],
-/// [PdfColorSpace::DeviceRGB], and [PdfColorSpace::DeviceCMYK].
+///   device is to produce. The precise displayed color is device-specific and is not calibrated.
+///   Color space families in this category include [PdfColorSpace::DeviceGray],
+///   [PdfColorSpace::DeviceRGB], and [PdfColorSpace::DeviceCMYK].
 /// * **Calibrated color spaces** are based on international standards for specifying human-visible
-/// colors created by the Commission Internationale de l'Éclairage (International Commission on
-/// Illumination) and the International Color Consortium. The precise displayed color is
-/// device-independent; it does not rely on the characteristics of any particular output device.
-/// Color space families in this category include [PdfColorSpace::CalibratedCIEGray],
-/// [PdfColorSpace::CalibratedCIERGB], [PdfColorSpace::CalibratedCIELab], and
-/// [PdfColorSpace::CalibratedICCProfile].
+///   colors created by the Commission Internationale de l'Éclairage (International Commission on
+///   Illumination) and the International Color Consortium. The precise displayed color is
+///   device-independent; it does not rely on the characteristics of any particular output device.
+///   Color space families in this category include [PdfColorSpace::CalibratedCIEGray],
+///   [PdfColorSpace::CalibratedCIERGB], [PdfColorSpace::CalibratedCIELab], and
+///   [PdfColorSpace::CalibratedICCProfile].
 /// * **Special color spaces** add features or properties to another color space, such as
-/// patterns, color mapping, separations, and high-fidelity and/or multi-tone color.
-/// Color space families in this category include [PdfColorSpace::Pattern],
-/// [PdfColorSpace::Indexed], [PdfColorSpace::Separation], and [PdfColorSpace::DeviceN].
+///   patterns, color mapping, separations, and high-fidelity and/or multi-tone color.
+///   Color space families in this category include [PdfColorSpace::Pattern],
+///   [PdfColorSpace::Indexed], [PdfColorSpace::Separation], and [PdfColorSpace::DeviceN].
 ///
 /// Non-RGB color spaces typically define a transform that enables color values in the color
 /// space to be converted to an RGB approximation for on-screen display.

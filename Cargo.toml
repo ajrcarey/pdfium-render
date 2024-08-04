@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.8.22"
+version = "0.8.23"
 edition = "2018"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
@@ -36,10 +36,16 @@ console_error_panic_hook = "0"
 js-sys = "0"
 wasm-bindgen = { version = "0", features = ["enable-interning"] }
 wasm-bindgen-futures = { version = "0" }
-web-sys = { version = "0", features = ["TextDecoder", "ImageData", "Window", "Response", "Blob"] }
+web-sys = { version = "0", features = [
+    "TextDecoder",
+    "ImageData",
+    "Window",
+    "Response",
+    "Blob",
+] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libloading = "0"
+libloading = "0.8.1"
 
 [build-dependencies]
 bindgen = { version = "0" }
@@ -47,14 +53,19 @@ bindgen = { version = "0" }
 [dev-dependencies]
 # Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
 # are specified separately in examples/Cargo.toml.
-rand = "0" # Used by examples/create.rs, examples/matrix.rs
+rand = "0"  # Used by examples/create.rs, examples/matrix.rs
 rayon = "1" # Used by examples/thread_safe.rs
 
 [features]
-default = ["image", "thread_safe"] # The image feature is implicit because the image dependency is optional.
+default = [
+    "image",
+    "thread_safe",
+] # The image feature is implicit because the image dependency is optional.
 bindings = []
 static = []
 thread_safe = []
 "libstdc++" = ["static"]
 "libc++" = ["static"]
 sync = ["thread_safe"]
+paragraph = []
+flatten = []

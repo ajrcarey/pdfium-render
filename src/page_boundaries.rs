@@ -39,13 +39,13 @@ impl PdfPageBoundaryBox {
 /// The content of a page can be bounded by up to six different boxes:
 ///
 /// * Media box: the full page size, equivalent to the target paper size when the document is printed.
-/// All other page boundaries must fit inside the Media box.
+///   All other page boundaries must fit inside the Media box.
 /// * Art box: the maximum extent of out-of-bleed page art when offset printing.
-/// Typically cropped out when viewing the document on-screen.
+///   Typically cropped out when viewing the document on-screen.
 /// * Bleed box: the maximum extent of outside-trim page bleeds when offset printing.
-/// Typically cropped out when viewing the document on-screen.
+///   Typically cropped out when viewing the document on-screen.
 /// * Trim box: the maximum extent of page trims when offset printing.
-/// Typically cropped out when viewing the document on-screen.
+///   Typically cropped out when viewing the document on-screen.
 /// * Crop box: the maximum extent of user-visible content when viewing the document on-screen.
 /// * Bounding box ("BBox"): the smallest rectangle that can enclose all the content contained in the page.
 ///

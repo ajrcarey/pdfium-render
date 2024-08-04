@@ -173,9 +173,9 @@ impl<'a> PdfAttachment<'a> {
     /// This function is not available when compiling to WASM. You have several options for
     /// saving attachment data in WASM:
     /// * Use either the [PdfAttachment::save_to_writer()] or the [PdfAttachment::save_to_bytes()] functions,
-    /// both of which are available when compiling to WASM.
+    ///   both of which are available when compiling to WASM.
     /// * Use the [PdfAttachment::save_to_blob()] function to save attachment data directly into a new
-    /// Javascript `Blob` object. This function is only available when compiling to WASM.
+    ///   Javascript `Blob` object. This function is only available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save_to_file(&self, path: &(impl AsRef<Path> + ?Sized)) -> Result<(), PdfiumError> {
         self.save_to_writer(&mut File::create(path).map_err(PdfiumError::IoError)?)

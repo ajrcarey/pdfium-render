@@ -147,7 +147,7 @@ impl PdfRenderConfig {
     /// Applies settings suitable for generating a thumbnail.
     ///
     /// * The source [PdfPage] will be rendered with a maximum width and height of the given
-    /// pixel size.
+    ///   pixel size.
     /// * The page will not be rotated, irrespective of its orientation.
     /// * Image quality settings will be reduced to improve performance.
     /// * Annotations and user-filled form field data will not be rendered.

@@ -158,15 +158,15 @@ impl<'a> PdfAttachments<'a> {
     /// This function is not available when compiling to WASM. You have several options for
     /// loading attachment data in WASM:
     /// * Use the [PdfAttachments::create_attachment_from_fetch()] function to download attachment data
-    /// from a URL using the browser's built-in `fetch()` API. This function is only available when
-    /// compiling to WASM.
+    ///   from a URL using the browser's built-in `fetch()` API. This function is only available when
+    ///   compiling to WASM.
     /// * Use the [PdfAttachments::create_attachment_from_blob()] function to load attachment data
-    /// from a Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
-    /// `<input type="file">` element). This function is only available when compiling to WASM.
+    ///   from a Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
+    ///   `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target attachment over the network,
-    /// then load those bytes into Pdfium using the [PdfAttachments::create_attachment_from_bytes()] function.
+    ///   then load those bytes into Pdfium using the [PdfAttachments::create_attachment_from_bytes()] function.
     /// * Embed the bytes of the target attachment directly into the compiled WASM module
-    /// using the `include_bytes!()` macro.
+    ///   using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn create_attachment_from_file(
         &mut self,

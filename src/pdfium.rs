@@ -256,16 +256,16 @@ impl Pdfium {
     /// This function is not available when compiling to WASM. You have several options for
     /// loading your PDF document data in WASM:
     /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
-    /// URL using the browser's built-in `fetch()` API. This function is only available when
-    /// compiling to WASM.
+    ///   URL using the browser's built-in `fetch()` API. This function is only available when
+    ///   compiling to WASM.
     /// * Use the [Pdfium::load_pdf_from_blob()] function to load document data from a
-    /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
-    /// `<input type="file">` element). This function is only available when compiling to WASM.
+    ///   Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
+    ///   `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
-    /// then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
-    /// function or the [Pdfium::load_pdf_from_byte_vec()] function.
+    ///   then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
+    ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
-    /// using the `include_bytes!()` macro.
+    ///   using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_file<'a>(
         &'a self,
@@ -292,16 +292,16 @@ impl Pdfium {
     /// This function is not available when compiling to WASM. You have several options for
     /// loading your PDF document data in WASM:
     /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
-    /// URL using the browser's built-in `fetch()` API. This function is only available when
-    /// compiling to WASM.
+    ///   URL using the browser's built-in `fetch()` API. This function is only available when
+    ///   compiling to WASM.
     /// * Use the [Pdfium::load_pdf_from_blob()] function to load document data from a
-    /// Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
-    /// `<input type="file">` element). This function is only available when compiling to WASM.
+    ///   Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
+    ///   `<input type="file">` element). This function is only available when compiling to WASM.
     /// * Use another method to retrieve the bytes of the target document over the network,
-    /// then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
-    /// function or the [Pdfium::load_pdf_from_byte_vec()] function.
+    ///   then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
+    ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
-    /// using the `include_bytes!()` macro.
+    ///   using the `include_bytes!()` macro.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
         &'a self,
