@@ -82,7 +82,9 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.23 updates the Pdfium bindings to the latest release, adjusting the implementation of some internal functions in response to upstream changes, deprecates `PdfFont::name()` function in favour of `PdfFont::family()` to match changes in upstream naming, and adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data. The `examples/fonts.rs` example has been updated to demonstrate the new functionality. Deprecated items will be removed in release 0.9.0.
+_Note: release 0.8.23 incorporates changes that track the latest release of Pdfium, release 6611. If you are unable to upgrade your Pdfium library, lock `pdfium-render` to `<0.8.23` in your project's `Cargo.toml`._
+
+Release 0.8.23 updates the Pdfium bindings to the latest upstream release, adds new function `PdfPageTextChar::text_object()` for retrieving the page object containing a specific character in a text page, deprecates the `PdfFont::name()` function in favour of `PdfFont::family()` to match changes in upstream naming, adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data, updates the `examples/fonts.rs` example to demonstrate the new functionality, and adjusts the implementation of some internal functions in response to upstream changes. Deprecated items will be removed in release 0.9.0.
 
 Release 0.8.22 updates all examples and tests that reference functionality from the `image` crate
 to use calls compatible with both `image` 0.25.x and 0.24.x, adds support for static linking to a
