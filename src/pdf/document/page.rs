@@ -44,7 +44,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::{c_double, c_int};
 
 #[cfg(doc)]
-use crate::document::PdfDocument;
+use crate::pdf::document::PdfDocument;
 
 /// The orientation of a [PdfPage].
 #[derive(Copy, Clone, Debug, PartialEq)]

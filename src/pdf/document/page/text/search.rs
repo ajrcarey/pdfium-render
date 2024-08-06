@@ -9,7 +9,7 @@ use crate::pdf::document::page::text::PdfPageText;
 use std::os::raw::c_ulong;
 
 #[cfg(doc)]
-use crate::page::PdfPage;
+use crate::pdf::document::page::PdfPage;
 
 /// Configures the search options that should be applied when creating a new [PdfPageTextSearch] object.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

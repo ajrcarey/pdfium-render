@@ -19,7 +19,7 @@ use crate::pdf::points::PdfPoints;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
-use crate::bitmap::PdfBitmap;
+use crate::pdf::bitmap::PdfBitmap;
 
 // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
 // https://github.com/ajrcarey/pdfium-render/issues/36

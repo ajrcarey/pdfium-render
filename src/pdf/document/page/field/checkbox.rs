@@ -7,13 +7,11 @@ use crate::error::PdfiumError;
 use crate::pdf::document::page::field::private::internal::PdfFormFieldPrivate;
 
 #[cfg(doc)]
-use crate::form_field::{PdfFormField, PdfFormFieldType};
-
-#[cfg(doc)]
-use crate::page_annotation::PdfPageAnnotationType;
-
-#[cfg(doc)]
-use crate::form::PdfForm;
+use {
+    crate::pdf::document::form::PdfForm,
+    crate::pdf::document::page::annotation::PdfPageAnnotationType,
+    crate::pdf::document::page::field::{PdfFormField, PdfFormFieldType},
+};
 
 /// A single [PdfFormField] of type [PdfFormFieldType::Checkbox]. The form field object defines
 /// an interactive checkbox widget that can be toggled by the user.

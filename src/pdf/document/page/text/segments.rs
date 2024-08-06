@@ -11,10 +11,10 @@ use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
 #[cfg(doc)]
-use crate::page::PdfPage;
-
-#[cfg(doc)]
-use crate::page_object_text::PdfPageTextObject;
+use {
+    crate::pdf::document::page::object::text::PdfPageTextObject,
+    crate::pdf::document::page::PdfPage,
+};
 
 pub type PdfPageTextSegmentIndex = usize;
 

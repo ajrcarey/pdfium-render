@@ -11,13 +11,10 @@ use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::os::raw::c_void;
 
 #[cfg(doc)]
-use crate::bookmarks::PdfBookmarks;
-
-#[cfg(doc)]
-use crate::document::PdfDocument;
-
-#[cfg(doc)]
-use crate::action::PdfActionType;
+use {
+    crate::pdf::action::PdfActionType, crate::pdf::document::bookmarks::PdfBookmarks,
+    crate::pdf::document::PdfDocument,
+};
 
 pub struct PdfBookmark<'a> {
     bookmark_handle: FPDF_BOOKMARK,

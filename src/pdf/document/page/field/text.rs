@@ -8,9 +8,9 @@ use crate::pdf::document::page::field::private::internal::PdfFormFieldPrivate;
 
 #[cfg(doc)]
 use {
-    crate::form::PdfForm,
-    crate::form_field::{PdfFormField, PdfFormFieldType},
-    crate::page_annotation::PdfPageAnnotationType,
+    crate::pdf::document::form::PdfForm,
+    crate::pdf::document::page::annotation::PdfPageAnnotationType,
+    crate::pdf::document::page::field::{PdfFormField, PdfFormFieldType},
 };
 
 /// A single [PdfFormField] of type [PdfFormFieldType::Text]. The form field object defines

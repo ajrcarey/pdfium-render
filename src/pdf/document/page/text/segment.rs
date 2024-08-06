@@ -8,10 +8,9 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 
 #[cfg(doc)]
-use crate::page::PdfPage;
-
-#[cfg(doc)]
-use crate::page_text_char::PdfPageTextChar;
+use {
+    crate::pdf::document::page::text::char::PdfPageTextChar, crate::pdf::document::page::PdfPage,
+};
 
 /// A single rectangular text segment in a `PdfPageTextSegments` collection.
 ///

@@ -33,7 +33,7 @@ use crate::pdf::document::page::field::unknown::PdfFormUnknownField;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
-use crate::form::PdfForm;
+use crate::pdf::document::form::PdfForm;
 
 /// The widget display type of a single interactive form field in a [PdfForm].
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
