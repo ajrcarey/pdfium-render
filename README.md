@@ -10,13 +10,10 @@ and extract text and images from existing PDF files, and create new PDF files fr
     fn export_pdf_to_jpegs(path: &impl AsRef<Path>, password: Option<&str>) -> Result<(), PdfiumError> {
         // Renders each page in the PDF file at the given path to a separate JPEG file.
 
-        // Bind to a Pdfium library in the same directory as our Rust executable;
-        // failing that, fall back to using a Pdfium library provided by the operating system.
+        // Bind to a Pdfium library in the same directory as our Rust executable.
+        // See the "Dynamic linking" section below.
 
-        let pdfium = Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())?,
-        );
+        let pdfium = Pdfium::default();
 
         // Load the document from the given path...
 
@@ -82,7 +79,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-_Note: release 0.8.23 incorporates changes that track the latest release of Pdfium, release 6611. If you are unable to upgrade your Pdfium library, lock `pdfium-render` to `<0.8.23` in your project's `Cargo.toml`._
+Release 0.8.24 introduces the ability to control the version of the Pdfium API used by `pdfium-render`. By default `pdfium-render` uses the latest released version of the Pdfium API, potentially requiring you to upgrade your Pdfium library if the latest release contains breaking changes. This can be inconvenient! To explicitly use an older API version, select one of the crate's Pdfium version feature flags when taking `pdfium-render` as a dependency in your project's `Cargo.toml`. See the "Crate features" section below for more information.
 
 Release 0.8.23 updates the Pdfium bindings to the latest upstream release, adds new function `PdfPageTextChar::text_object()` for retrieving the page object containing a specific character in a text page, deprecates the `PdfFont::name()` function in favour of `PdfFont::family()` to match changes in upstream naming, adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data, updates the `examples/fonts.rs` example to demonstrate the new functionality, and adjusts the implementation of some internal functions in response to upstream changes. Deprecated items will be removed in release 0.9.0.
 
@@ -96,10 +93,6 @@ excellent contributions from both <https://github.com/DorianRudolph> and <https:
 Release 0.8.21 adds the `PdfFormFieldText::set_value()` function for setting the values of text
 form fields, thanks to an excellent contribution from <https://github.com/liammcdermott>.
 A new `examples/fill_form_field.rs` example demonstrates the new functionality.
-
-Release 0.8.20 adds support for creating new annotations, positioning those annotations,
-associating them with page objects, and retrieving and setting more annotation properties for each
-annotation type. A new `examples/create_annotations.rs` example demonstrates the extended functionality.
 
 ## Binding to Pdfium
 
@@ -283,13 +276,19 @@ This crate provides the following optional features:
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above.
 
-The `image` and `thread_safe` features are enabled by default. All other features are disabled by default.
+Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`:
+
+* `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes. Automatically activates the `bindings` feature.
+* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases>, currently 6611.
+* `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
+
+The `image`, `thread_safe`, and `pdfium_latest` features are enabled by default. All other features are disabled by default.
 
 ## Porting existing Pdfium code from other languages
 
 The high-level idiomatic Rust interface provided by `pdfium-render` is built on top of 
-raw FFI bindings defined in the `PdfiumLibraryBindings` trait. It is completely feasible to use
-these raw FFI bindings directly if you wish, making porting existing code that calls `FPDF_*` functions
+raw FFI bindings to the Pdfium API defined in the `PdfiumLibraryBindings` trait. It is completely feasible to use
+these raw FFI bindings directly if you wish, making porting existing code that uses the Pdfium API
 trivial while still gaining the benefits of late binding and WASM compatibility.
 For instance, the following code snippet (taken from a C++ sample):
 
@@ -355,7 +354,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 377 `FPDF_*` functions in the Pdfium API. As of version 0.8.23, 334 (89%) have
+There are 377 `FPDF_*` functions in the Pdfium API. As of version 0.8.24, 334 (89%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -368,6 +367,11 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
+* 0.8.24: introduced crate feature flags for selecting Pdfium API versions to use in
+  `PdfiumLibraryBindings`; reworked `build.rs` to output bindings for multiple sets of Pdfium header
+  files; reworked bindings implementations to differentiate between API versions that include the
+  `FPDFFont_*` and `FPDFText_GetTextObject()` functions added in 0.8.23, and API versions that do not;
+  internally reorganize source code layout to make the code structure clearer. 
 * 0.8.23: synchronized Pdfium API header files against mainline; removes binding for function
   `FPDFText_GetTextRenderMode()` in response to upstream change described at
   <https://github.com/ajrcarey/pdfium-render/issues/151>; adds bindings for `FPDFText_GetTextObject()`,

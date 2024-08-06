@@ -83,7 +83,7 @@ pub fn main() -> Result<(), PdfiumError> {
                 if let Some(object) = object.as_text_object() {
                     println!(
                         "Text: {} {}-pt {:?}: \"{}\"",
-                        object.font().name(),
+                        object.font().family(),
                         object.unscaled_font_size().value,
                         object.font().weight()?,
                         object.text()
