@@ -1,10 +1,42 @@
-//! Defines the [PdfiumLibraryBindings] trait, containing run-time bindings to the FPDF_* functions
-//! exported by the Pdfium library.
+//! Defines the [PdfiumLibraryBindings] trait, containing run-time bindings to the FPDF_*
+//! functions exported by the Pdfium library.
+//!
+//! By default, `pdfium-render` attempts to bind against the latest released version
+//! of the Pdfium API. To explicitly bind against an older version, select one of the
+//! crate's Pdfium version feature flags when taking `pdfium-render` as a dependency
+//! in your project's `Cargo.toml`.
 //!
 //! Doc comments on functions in this trait are taken directly from the Pdfium header files
 //! and as such are copyright by the Pdfium authors and Google. They are reproduced here
 //! as a courtesy for API consumers. The original comments can be found in the Pdfium repository at:
 //! <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/>
+
+// Include the appropriate implementation of the PdfiumLibraryBindings trait for the
+// target architecture and threading model.
+
+// Conditional compilation is used to compile different implementations of
+// the PdfiumLibraryBindings trait depending on whether we are compiling to a WASM module,
+// a native shared library, or a statically linked library.
+
+#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "static"))]
+pub(crate) mod dynamic;
+
+#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "static")]
+pub(crate) mod static_bindings;
+
+#[cfg(target_arch = "wasm32")]
+pub(crate) mod wasm;
+
+// These implementations are all single-threaded (because Pdfium itself is single-threaded).
+// Any of them can be wrapped by thread_safe::ThreadSafePdfiumBindings to
+// create a thread-safe architecture-specific implementation of the PdfiumLibraryBindings trait.
+
+#[cfg(feature = "thread_safe")]
+pub(crate) mod thread_safe;
+
+pub mod version;
 
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
@@ -16,11 +48,12 @@ use crate::bindgen::{
     FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
 };
-use crate::document::PdfDocument;
+use crate::bindings::version::PdfiumApiVersion;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page::PdfPage;
-use crate::page_object::PdfPageObject;
-use crate::page_object_private::internal::PdfPageObjectPrivate;
+use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
+use crate::pdf::document::page::object::PdfPageObject;
+use crate::pdf::document::page::PdfPage;
+use crate::pdf::document::PdfDocument;
 use crate::utils::pixels::{
     bgra_to_rgba, rgba_to_bgra, unaligned_bgr_to_rgba, unaligned_rgb_to_bgra,
 };
@@ -164,6 +197,17 @@ pub trait PdfiumLibraryBindings {
     #[inline]
     fn get_handle_from_object(&self, object: &PdfPageObject) -> FPDF_PAGEOBJECT {
         object.get_object_handle()
+    }
+
+    /// Returns the API version of the Pdfium FPDF_* API currently in use.
+    ///
+    /// By default, `pdfium-render` attempts to bind against the latest released version
+    /// of the Pdfium API. To explicitly bind against an older version, select one of the
+    /// crate's Pdfium version feature flags when taking `pdfium-render` as a dependency
+    /// in your project's `Cargo.toml`.
+    #[inline]
+    fn version(&self) -> PdfiumApiVersion {
+        PdfiumApiVersion::current()
     }
 
     #[allow(non_snake_case)]
@@ -2441,6 +2485,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint;
 
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT;
 
@@ -2459,6 +2504,29 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
+
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFText_GetTextRenderMode(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+    ) -> FPDF_TEXT_RENDERMODE;
 
     #[allow(non_snake_case)]
     fn FPDFText_GetFillColor(
@@ -3192,14 +3260,18 @@ pub trait PdfiumLibraryBindings {
 
     // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
     // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    // #[allow(non_snake_case)]
-    // fn FPDFFont_GetBaseFontName(
-    //     &self,
-    //     font: FPDF_FONT,
-    //     buffer: *mut c_char,
-    //     length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
-    // ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetBaseFontName(
+        &self,
+        font: FPDF_FONT,
+        buffer: *mut c_char,
+        length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
+    ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
 
+    // TODO: AJRC - 4-Aug-2024 - pointer type updated in FPDFFont_GetBaseFontName() definition,
+    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+    #[cfg(feature = "pdfium_future")]
     #[allow(non_snake_case)]
     fn FPDFFont_GetFamilyName(
         &self,
@@ -3207,6 +3279,39 @@ pub trait PdfiumLibraryBindings {
         buffer: *mut c_char,
         length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
     ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+
+    #[cfg(feature = "pdfium_6611")]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFamilyName(
+        &self,
+        font: FPDF_FONT,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong;
+
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFFont_GetFontName(
+        &self,
+        font: FPDF_FONT,
+        buffer: *mut c_char,
+        length: c_ulong,
+    ) -> c_ulong;
 
     #[allow(non_snake_case)]
     fn FPDFFont_GetFontData(

@@ -1,5 +1,5 @@
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
-use crate::pages::PdfPageIndex;
+use crate::pdf::document::pages::PdfPageIndex;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
@@ -227,10 +227,8 @@ unsafe impl Sync for PdfPageIndexCache {}
 
 #[cfg(test)]
 mod tests {
-    use crate::error::PdfiumError;
     use crate::page_index_cache::PdfPageIndexCache;
-    use crate::page_size::PdfPagePaperSize;
-    use crate::pages::PdfPageIndex;
+    use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
 
     #[test]

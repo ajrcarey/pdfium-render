@@ -5,111 +5,65 @@ mod bindgen {
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
     #![allow(dead_code)]
-    include!("bindgen.rs");
+
+    // Select the Pdfium FPDF_* API version to use based on crate feature flags.
+
+    #[cfg(feature = "pdfium_future")]
+    include!("bindgen/pdfium_future.rs");
+
+    #[cfg(feature = "pdfium_6611")]
+    include!("bindgen/pdfium_6611.rs");
+
+    #[cfg(feature = "pdfium_6569")]
+    include!("bindgen/pdfium_6569.rs");
+
+    #[cfg(feature = "pdfium_6555")]
+    include!("bindgen/pdfium_6555.rs");
+
+    #[cfg(feature = "pdfium_6490")]
+    include!("bindgen/pdfium_6490.rs");
+
+    #[cfg(feature = "pdfium_6406")]
+    include!("bindgen/pdfium_6406.rs");
+
+    #[cfg(feature = "pdfium_6337")]
+    include!("bindgen/pdfium_6337.rs");
+
+    #[cfg(feature = "pdfium_6295")]
+    include!("bindgen/pdfium_6295.rs");
+
+    #[cfg(feature = "pdfium_6259")]
+    include!("bindgen/pdfium_6259.rs");
+
+    #[cfg(feature = "pdfium_6164")]
+    include!("bindgen/pdfium_6164.rs");
+
+    #[cfg(feature = "pdfium_6124")]
+    include!("bindgen/pdfium_6124.rs");
+
+    #[cfg(feature = "pdfium_6110")]
+    include!("bindgen/pdfium_6110.rs");
+
+    #[cfg(feature = "pdfium_6084")]
+    include!("bindgen/pdfium_6084.rs");
+
+    #[cfg(feature = "pdfium_6043")]
+    include!("bindgen/pdfium_6043.rs");
+
+    #[cfg(feature = "pdfium_6015")]
+    include!("bindgen/pdfium_6015.rs");
+
+    #[cfg(feature = "pdfium_5961")]
+    include!("bindgen/pdfium_5961.rs");
 
     pub type size_t = usize;
 }
 
-pub mod action;
-pub mod action_embedded_destination;
-pub mod action_launch;
-pub mod action_local_destination;
-mod action_private; // Keep private so that the PdfActionPrivate trait is not exposed.
-pub mod action_remote_destination;
-pub mod action_unsupported;
-pub mod action_uri;
-pub mod appearance_mode;
-pub mod attachment;
-pub mod attachments;
 pub mod bindings;
-pub mod bitmap;
-pub mod bookmark;
-pub mod bookmarks;
-mod clip_path; // Keep private while PdfClipPath is still in development.
-pub mod color;
-pub mod color_space;
-pub mod destination;
-pub mod document;
 pub mod error;
-mod flatten; // Keep internal flatten operation private.
-pub mod font;
-pub mod font_glyph;
-pub mod font_glyphs;
-pub mod fonts;
-pub mod form;
-pub mod form_field;
-pub mod form_field_button;
-pub mod form_field_checkbox;
-pub mod form_field_combo;
-pub mod form_field_list;
-pub mod form_field_option;
-pub mod form_field_options;
-mod form_field_private; // Keep private so that the PdfFormFieldPrivate trait is not exposed.
-pub mod form_field_radio;
-pub mod form_field_signature;
-pub mod form_field_text;
-pub mod form_field_unknown;
-pub mod link;
-pub mod matrix;
-pub mod metadata;
-pub mod page;
-pub mod page_annotation;
-pub mod page_annotation_attachment_points;
-pub mod page_annotation_circle;
-pub mod page_annotation_free_text;
-pub mod page_annotation_highlight;
-pub mod page_annotation_ink;
-pub mod page_annotation_link;
-pub mod page_annotation_objects;
-pub mod page_annotation_popup;
-mod page_annotation_private; // Keep private so that the PdfPageAnnotationPrivate trait is not exposed.
-pub mod page_annotation_redacted;
-pub mod page_annotation_square;
-pub mod page_annotation_squiggly;
-pub mod page_annotation_stamp;
-pub mod page_annotation_strikeout;
-pub mod page_annotation_text;
-pub mod page_annotation_underline;
-pub mod page_annotation_unsupported;
-pub mod page_annotation_widget;
-pub mod page_annotation_xfa_widget;
-pub mod page_annotations;
-pub mod page_boundaries;
 mod page_index_cache; // Keep private since PdfPageIndexCache is not part of the public API.
-pub mod page_links;
-pub mod page_object;
-pub mod page_object_group;
-pub mod page_object_image;
-pub mod page_object_path;
-mod page_object_private; // Keep private so that the PdfPageObjectPrivate trait is not exposed.
-pub mod page_object_shading;
-pub mod page_object_text;
-pub mod page_object_unsupported;
-pub mod page_object_x_object_form;
-pub mod page_objects;
-pub mod page_objects_common;
-mod page_objects_private; // Keep private so that the PdfPageObjectsPrivate trait is not exposed.
-pub mod page_size;
-pub mod page_text;
-pub mod page_text_char;
-pub mod page_text_chars;
-pub mod page_text_search;
-pub mod page_text_segment;
-pub mod page_text_segments;
-pub mod pages;
-#[cfg(feature = "paragraph")]
-pub mod paragraph;
-pub mod path_segment;
-pub mod path_segments;
+pub mod pdf;
 pub mod pdfium;
-pub mod permissions;
-pub mod points;
-pub mod quad_points;
-pub mod rect;
-pub mod render_config;
-pub mod signature;
-pub mod signatures;
-mod transform; // Keep private so that internal macros are not exposed.
 mod utils; // Keep internal utility functions private.
 
 /// A prelude for conveniently importing all public `pdfium-render` definitions at once.
@@ -119,54 +73,103 @@ mod utils; // Keep internal utility functions private.
 /// use pdfium_render::prelude::*;
 /// ```
 pub mod prelude {
-    pub use super::{
-        action::*, appearance_mode::*, attachment::*, attachments::*, bindings::*, bitmap::*,
-        bookmark::*, bookmarks::*, clip_path::*, color::*, color_space::*, destination::*,
-        document::*, error::*, font::*, font_glyph::*, font_glyphs::*, fonts::*, form::*,
-        form_field::*, form_field_button::*, form_field_checkbox::*, form_field_combo::*,
-        form_field_list::*, form_field_option::*, form_field_options::*, form_field_radio::*,
-        form_field_signature::*, form_field_text::*, form_field_unknown::*, link::*, matrix::*,
-        metadata::*, page::*, page_annotation::*, page_annotation_attachment_points::*,
-        page_annotation_circle::*, page_annotation_free_text::*, page_annotation_highlight::*,
-        page_annotation_ink::*, page_annotation_link::*, page_annotation_objects::*,
-        page_annotation_popup::*, page_annotation_redacted::*, page_annotation_square::*,
-        page_annotation_squiggly::*, page_annotation_stamp::*, page_annotation_strikeout::*,
-        page_annotation_text::*, page_annotation_underline::*, page_annotation_unsupported::*,
-        page_annotation_widget::*, page_annotation_xfa_widget::*, page_annotations::*,
-        page_boundaries::*, page_links::*, page_object::*, page_object_group::*,
-        page_object_image::*, page_object_path::*, page_object_shading::*, page_object_text::*,
-        page_object_unsupported::*, page_object_x_object_form::*, page_objects::*,
-        page_objects_common::*, page_size::*, page_text::*, page_text_char::*, page_text_chars::*,
-        page_text_search::*, page_text_segment::*, page_text_segments::*, pages::*,
-        path_segment::*, path_segments::*, pdfium::*, permissions::*, points::*, quad_points::*,
-        rect::*, render_config::*, signature::*, signatures::*,
+    #[allow(deprecated)]
+    // TODO: AJRC - 5-Aug-24 - deprecated items will be removed in release 0.9.0. Tracking issue:
+    // https://github.com/ajrcarey/pdfium-render/issues/36
+    pub use crate::{
+        bindings::*,
+        error::*,
+        pdf::action::*,
+        pdf::appearance_mode::*,
+        pdf::bitmap::*,
+        pdf::color::*,
+        pdf::color_space::*,
+        pdf::destination::*,
+        pdf::document::attachment::*,
+        pdf::document::attachments::*,
+        pdf::document::bookmark::*,
+        pdf::document::bookmarks::*,
+        pdf::document::fonts::*,
+        pdf::document::form::*,
+        pdf::document::metadata::*,
+        pdf::document::page::annotation::attachment_points::*,
+        pdf::document::page::annotation::circle::*,
+        pdf::document::page::annotation::free_text::*,
+        pdf::document::page::annotation::highlight::*,
+        pdf::document::page::annotation::ink::*,
+        pdf::document::page::annotation::link::*,
+        pdf::document::page::annotation::objects::*,
+        pdf::document::page::annotation::popup::*,
+        pdf::document::page::annotation::redacted::*,
+        pdf::document::page::annotation::square::*,
+        pdf::document::page::annotation::squiggly::*,
+        pdf::document::page::annotation::stamp::*,
+        pdf::document::page::annotation::strikeout::*,
+        pdf::document::page::annotation::text::*,
+        pdf::document::page::annotation::underline::*,
+        pdf::document::page::annotation::unsupported::*,
+        pdf::document::page::annotation::widget::*,
+        pdf::document::page::annotation::xfa_widget::*,
+        pdf::document::page::annotation::{
+            PdfPageAnnotation, PdfPageAnnotationCommon, PdfPageAnnotationType,
+        },
+        pdf::document::page::annotations::*,
+        pdf::document::page::boundaries::*,
+        pdf::document::page::field::button::*,
+        pdf::document::page::field::checkbox::*,
+        pdf::document::page::field::combo::*,
+        pdf::document::page::field::list::*,
+        pdf::document::page::field::option::*,
+        pdf::document::page::field::options::*,
+        pdf::document::page::field::radio::*,
+        pdf::document::page::field::signature::*,
+        pdf::document::page::field::text::*,
+        pdf::document::page::field::unknown::*,
+        pdf::document::page::field::{PdfFormField, PdfFormFieldCommon, PdfFormFieldType},
+        pdf::document::page::links::*,
+        pdf::document::page::object::group::*,
+        pdf::document::page::object::image::*,
+        pdf::document::page::object::path::*,
+        pdf::document::page::object::shading::*,
+        pdf::document::page::object::text::*,
+        pdf::document::page::object::unsupported::*,
+        pdf::document::page::object::x_object_form::*,
+        pdf::document::page::object::{
+            PdfPageObject, PdfPageObjectBlendMode, PdfPageObjectCommon, PdfPageObjectLineCap,
+            PdfPageObjectLineJoin, PdfPageObjectType,
+        },
+        pdf::document::page::objects::common::*,
+        pdf::document::page::objects::*,
+        pdf::document::page::render_config::*,
+        pdf::document::page::size::*,
+        pdf::document::page::text::char::*,
+        pdf::document::page::text::chars::*,
+        pdf::document::page::text::search::*,
+        pdf::document::page::text::segment::*,
+        pdf::document::page::text::segments::*,
+        pdf::document::page::text::*,
+        pdf::document::page::{
+            PdfBitmapRotation, PdfPage, PdfPageContentRegenerationStrategy, PdfPageOrientation,
+            PdfPageRenderRotation,
+        },
+        pdf::document::pages::*,
+        pdf::document::permissions::*,
+        pdf::document::signature::*,
+        pdf::document::signatures::*,
+        pdf::document::{PdfDocument, PdfDocumentVersion},
+        pdf::font::glyph::*,
+        pdf::font::glyphs::*,
+        pdf::font::*,
+        pdf::link::*,
+        pdf::matrix::*,
+        pdf::path::segment::*,
+        pdf::path::segments::*,
+        pdf::points::*,
+        pdf::quad_points::*,
+        pdf::rect::*,
+        pdfium::*,
     };
 }
-
-// Include the appropriate implementation of the PdfiumLibraryBindings trait for the
-// target architecture and threading model.
-
-// Conditional compilation is used to compile different implementations of
-// the PdfiumLibraryBindings trait depending on whether we are compiling to a WASM module,
-// a native shared library, or a statically linked library.
-
-#[cfg(not(target_arch = "wasm32"))]
-#[cfg(not(feature = "static"))]
-mod native;
-
-#[cfg(not(target_arch = "wasm32"))]
-#[cfg(feature = "static")]
-mod linked;
-
-#[cfg(target_arch = "wasm32")]
-mod wasm;
-
-// These implementations are all single-threaded (because Pdfium itself is single-threaded).
-// Any of them can be wrapped by thread_safe::ThreadSafePdfiumBindings to
-// create a thread-safe architecture-specific implementation of the PdfiumLibraryBindings trait.
-
-#[cfg(feature = "thread_safe")]
-mod thread_safe;
 
 #[cfg(test)]
 mod tests {
