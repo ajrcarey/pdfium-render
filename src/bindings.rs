@@ -3266,8 +3266,8 @@ pub trait PdfiumLibraryBindings {
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
-        length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
-    ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+        length: size_t,
+    ) -> size_t;
 
     // TODO: AJRC - 4-Aug-2024 - pointer type updated in FPDFFont_GetBaseFontName() definition,
     // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
@@ -3277,8 +3277,8 @@ pub trait PdfiumLibraryBindings {
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
-        length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
-    ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+        length: size_t,
+    ) -> size_t;
 
     #[cfg(feature = "pdfium_6611")]
     #[allow(non_snake_case)]
@@ -3318,8 +3318,8 @@ pub trait PdfiumLibraryBindings {
         &self,
         font: FPDF_FONT,
         buffer: *mut u8,
-        buflen: usize,
-        out_buflen: *mut usize,
+        buflen: size_t,
+        out_buflen: *mut size_t,
     ) -> FPDF_BOOL;
 
     #[allow(non_snake_case)]

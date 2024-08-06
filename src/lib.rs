@@ -59,12 +59,12 @@ mod bindgen {
     pub type size_t = usize;
 }
 
-pub mod bindings;
-pub mod error;
-mod page_index_cache; // Keep private since PdfPageIndexCache is not part of the public API.
-pub mod pdf;
-pub mod pdfium;
-mod utils; // Keep internal utility functions private.
+mod bindings;
+mod error;
+mod page_index_cache;
+mod pdf;
+mod pdfium;
+mod utils;
 
 /// A prelude for conveniently importing all public `pdfium-render` definitions at once.
 ///
@@ -190,13 +190,10 @@ mod tests {
         ) -> Result<(), PdfiumError> {
             // Renders each page in the given test PDF file to a separate JPEG file.
 
-            // Bind to a Pdfium library in the same directory as our application;
-            // failing that, fall back to using a Pdfium library provided by the operating system.
+            // Bind to a Pdfium library in the same directory as our Rust executable.
+            // See the "Dynamic linking" section below.
 
-            let pdfium = Pdfium::new(
-                Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                    .or_else(|_| Pdfium::bind_to_system_library())?,
-            );
+            let pdfium = Pdfium::default();
 
             // Open the PDF document...
 
