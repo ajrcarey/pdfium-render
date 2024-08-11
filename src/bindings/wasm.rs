@@ -584,6 +584,56 @@ impl PdfiumRenderWasmState {
         self.copy_struct_to_pdfium(ptr as *const T)
     }
 
+    /// Copies the raw bytes of the given `FPDF_WIDESTRING` into Pdfium's WASM memory heap,
+    /// returning a pointer to the copied string at the destination location.
+    ///
+    /// The source `FPDF_WIDESTRING` must be terminated by two null bytes.
+    ///
+    /// WASM modules are isolated from one another and cannot directly share memory. We must
+    /// therefore copy buffers from our own memory heap across into Pdfium's memory heap, and vice versa.
+    #[inline]
+    fn copy_string_to_pdfium(&self, str: FPDF_WIDESTRING) -> usize {
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): entering");
+
+        // Copying the FPDF_WIDESTRING using copy_struct_to_pdfium() will only copy the
+        // two-byte pointer, not the string data itself. We must scan the source memory
+        // location for two null bytes to find the correct data length.
+
+        let mut len = 0;
+        let mut last_byte = None;
+
+        log::debug!(
+            "pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): FPDF_WIDESTRING is at heap offset {}",
+            str as usize as u32,
+        );
+
+        loop {
+            let this_byte =
+                unsafe { Uint8Array::view_mut_raw((str as *mut u8).add(len), 1) }.get_index(0);
+
+            len += 1;
+
+            if this_byte == 0 && last_byte == Some(0) {
+                // We have found two sequential null bytes. This is the end of the string.
+
+                break;
+            }
+
+            last_byte = Some(this_byte);
+        }
+
+        log::debug!(
+            "pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): FPDF_WIDESTRING has data length {} bytes",
+            len,
+        );
+
+        let result = self.copy_ptr_with_len_to_pdfium(str, len);
+
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): leaving");
+
+        result
+    }
+
     /// Copies bytes from the given pointer address in Pdfium's memory heap into our memory
     /// heap, returning an address to the location in our memory heap where the first copied
     /// byte was placed.
@@ -5047,7 +5097,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let key_ptr = state.copy_bytes_to_pdfium(&c_key.into_bytes_with_nul());
 
-        let value_ptr = state.copy_struct_to_pdfium(value);
+        let value_ptr = state.copy_string_to_pdfium(value);
 
         let result = state
             .call(
@@ -5199,7 +5249,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let value_ptr = state.copy_struct_to_pdfium(value);
+        let value_ptr = state.copy_string_to_pdfium(value);
 
         let result = state
             .call(
@@ -6338,7 +6388,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let title_ptr = state.copy_struct_to_pdfium(title);
+        let title_ptr = state.copy_string_to_pdfium(title);
 
         let result = state
             .call(
@@ -7952,12 +8002,12 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let findwhat_ptr = state.copy_struct_to_pdfium(findwhat);
+        let findwhat_ptr = state.copy_string_to_pdfium(findwhat);
 
         let result = state
             .call(
                 "FPDFText_FindStart",
-                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Pointer,
                 Some(vec![
                     JsFunctionArgumentType::Pointer,
                     JsFunctionArgumentType::Pointer,
@@ -8932,7 +8982,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let text_ptr = state.copy_struct_to_pdfium(text);
+        let text_ptr = state.copy_string_to_pdfium(text);
 
         let result = state
             .call(
@@ -11988,7 +12038,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let name_ptr = state.copy_struct_to_pdfium(name);
+        let name_ptr = state.copy_string_to_pdfium(name);
 
         let result = state
             .call(
@@ -12188,7 +12238,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let key_ptr = state.copy_bytes_to_pdfium(&c_key.into_bytes_with_nul());
 
-        let value_ptr = state.copy_struct_to_pdfium(value);
+        let value_ptr = state.copy_string_to_pdfium(value);
 
         let result = state
             .call(
