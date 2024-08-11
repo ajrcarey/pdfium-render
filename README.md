@@ -79,7 +79,7 @@ available at <https://github.com/ajrcarey/pdfium-render/tree/master/examples>. T
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.24 introduces the ability to control the version of the Pdfium API used by `pdfium-render`. By default `pdfium-render` uses the latest released version of the Pdfium API, potentially requiring you to upgrade your Pdfium library if the latest release contains breaking changes. This can be inconvenient! To explicitly use an older API version, select one of the crate's Pdfium version feature flags when taking `pdfium-render` as a dependency in your project's `Cargo.toml`. See the "Crate features" section below for more information.
+Release 0.8.24 fixes a bug in certain string handling operations in the WASM bindings implementation, and introduces the ability to control the version of the Pdfium API used by `pdfium-render`. By default `pdfium-render` uses the latest released version of the Pdfium API, potentially requiring you to upgrade your Pdfium library if the latest release contains breaking changes. This can be inconvenient! To explicitly use an older API version, select one of the crate's Pdfium version feature flags when taking `pdfium-render` as a dependency in your project's `Cargo.toml`. See the "Crate features" section below for more information.
 
 Release 0.8.23 updates the Pdfium bindings to the latest upstream release, adds new function `PdfPageTextChar::text_object()` for retrieving the page object containing a specific character in a text page, deprecates the `PdfFont::name()` function in favour of `PdfFont::family()` to match changes in upstream naming, adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data, updates the `examples/fonts.rs` example to demonstrate the new functionality, and adjusts the implementation of some internal functions in response to upstream changes. Deprecated items will be removed in release 0.9.0.
 
@@ -378,8 +378,8 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
   `FPDFFont_GetFamilyName()`, `FPDFFont_GetIsEmbedded()`, and `FPDFFont_GetFontData()` functions;
   deprecates `PdfFont::name()` function in favour of `PdfFont::family()` to match upstream naming
   changes; adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data; updates `examples/fonts.rs` example; adds new function `PdfPageTextChar::text_object()`
-  for retrieving the page object containing a specific character. Deprecated items will be removed
-  in release 0.9.0.
+  for retrieving the page object containing a specific character; adds WASM bindings utility function
+  `copy_string_to_pdfium()` to correctly copy the string data of an `FPDF_WIDESTRING` to Pdfium's WASM memory module, instead of just the pointer location. Deprecated items will be removed in release 0.9.0.
 * 0.8.22: adds bindings for `FPDFPage_TransformAnnots()`, thanks to an excellent contribution from
   <https://github.com/liammcdermott>; adds bindings for `FPDF_GetPageSizeByIndexF()`, thanks to an excellent
   contribution from <https://github.com/DorianRudolph>; updates all examples and tests that reference
