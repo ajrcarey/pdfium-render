@@ -696,6 +696,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPage_TransformAnnots(
@@ -1328,6 +1329,63 @@ pub trait PdfiumLibraryBindings {
         border_width: *mut c_float,
     ) -> FPDF_BOOL;
 
+    /// Get the JavaScript of an event of the annotation's additional actions.
+    ///
+    /// `buffer` is only modified if `buflen` is large enough to hold the whole
+    /// JavaScript string. If `buflen` is smaller, the total size of the JavaScript
+    /// is still returned, but nothing is copied.  If there is no JavaScript for
+    /// `event` in `annot`, an empty string is written to `buf` and 2 is returned,
+    /// denoting the size of the null terminator in the buffer. On other errors,
+    /// nothing is written to `buffer` and 0 is returned.
+    ///
+    ///   `hHandle`     -   handle to the form fill module, returned by
+    ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment()].
+    ///
+    ///   `annot`       -   handle to an interactive form annotation.
+    ///
+    ///   `event`       -   event type, one of the `FPDF_ANNOT_AACTION_*` values.
+    ///
+    ///   `buffer`      -   buffer for holding the value string, encoded in UTF-16LE.
+    ///
+    ///   `buflen`     -   length of the buffer in bytes.
+    ///
+    /// Returns the length of the string value in bytes, including the 2-byte null terminator.
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormAdditionalActionJavaScript(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        event: c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    /// Gets the alternate name of `annot`, which is an interactive form annotation.
+    ///
+    /// `buffer` is only modified if `buflen` is longer than the length of contents.
+    /// In case of error, nothing will be added to `buffer` and the return value will be 0.
+    /// Note that return value of empty string is 2 for `\0\0`.
+    ///
+    ///   `hHandle`     -   handle to the form fill module, returned by
+    ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment()].
+    ///
+    ///   `annot`       -   handle to an interactive form annotation.
+    ///
+    ///   `buffer`      -   buffer for holding the alternate name string, encoded in
+    ///                     UTF-16LE.
+    ///
+    ///   `buflen`     -   length of the buffer in bytes.
+    ///
+    /// Returns the length of the string value in bytes.
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldAlternateName(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
     /// Check if `annot`'s dictionary has `key` as a key.
     ///
     ///   `annot`  - handle to an annotation.
@@ -1894,6 +1952,80 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
 
+    /// Get the attachment from `annot`.
+    ///
+    ///   `annot`  - handle to a file annotation.
+    ///
+    /// Returns the handle to the attachment object, or NULL on failure.
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT;
+
+    /// Add an embedded file with `name` to `annot`.
+    ///
+    ///   `annot`    - handle to a file annotation.
+    ///
+    ///   `name`     - name of the new attachment.
+    ///
+    /// Returns a handle to the new attachment object, or NULL on failure.
+    ///
+    /// A [&str]-friendly helper function is available for this function.
+    /// See [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment_str].
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AddFileAttachment(
+        &self,
+        annot: FPDF_ANNOTATION,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT;
+
+    /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment].
+    ///
+    /// Add an embedded file with `name` to `annot`.
+    ///
+    ///   `annot`    - handle to a file annotation.
+    ///
+    ///   `name`     - name of the new attachment.
+    ///
+    /// Returns a handle to the new attachment object, or NULL on failure.
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AddFileAttachment_str(
+        &self,
+        annot: FPDF_ANNOTATION,
+        name: &str,
+    ) -> FPDF_ATTACHMENT {
+        self.FPDFAnnot_AddFileAttachment(
+            annot,
+            get_pdfium_utf16le_bytes_from_str(name).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
     ///  Initializes the form fill environment.
     ///
     ///    `document` - Handle to document from [PdfiumLibraryBindings::FPDF_LoadDocument].
@@ -1929,6 +2061,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `hHandle`   -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
@@ -1939,6 +2072,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `hHandle`   -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
@@ -2042,6 +2176,7 @@ pub trait PdfiumLibraryBindings {
     /// (open state). If the value is negative, child items shall be hidden by
     /// default (closed state). Please refer to PDF 32000-1:2008, Table 153.
     /// Returns 0 if the bookmark has no children or is invalid.
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int;
 
@@ -2388,6 +2523,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   If this function returns a valid handle, it is valid as long as `page` is
     ///   valid.
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION;
 
@@ -3659,6 +3795,7 @@ pub trait PdfiumLibraryBindings {
     ///    `document` - handle to a document.
     ///
     /// Returns `true` if `document` is a tagged PDF.
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 }

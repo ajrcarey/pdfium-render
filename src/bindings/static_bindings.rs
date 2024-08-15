@@ -1137,6 +1137,37 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormAdditionalActionJavaScript(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        event: c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe {
+            crate::bindgen::FPDFAnnot_GetFormAdditionalActionJavaScript(
+                hHandle, annot, event, buffer, buflen,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldAlternateName(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe {
+            crate::bindgen::FPDFAnnot_GetFormFieldAlternateName(hHandle, annot, buffer, buflen)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL {
         let c_key = CString::new(key).unwrap();
 
@@ -1408,6 +1439,40 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         let c_uri = CString::new(uri).unwrap();
 
         unsafe { crate::bindgen::FPDFAnnot_SetURI(annot, c_uri.as_ptr()) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT {
+        unsafe { crate::bindgen::FPDFAnnot_GetFileAttachment(annot) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AddFileAttachment(
+        &self,
+        annot: FPDF_ANNOTATION,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT {
+        unsafe { crate::bindgen::FPDFAnnot_AddFileAttachment(annot, name) }
     }
 
     #[inline]

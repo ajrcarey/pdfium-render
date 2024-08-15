@@ -354,7 +354,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 377 `FPDF_*` functions in the Pdfium API. As of version 0.8.24, 334 (89%) have
+There are 377 `FPDF_*` functions in the Pdfium API. As of version 0.8.25, 338 (90%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -367,19 +367,25 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 
 ## Version history
 
-* 0.8.24: introduced crate feature flags for selecting Pdfium API versions to use in
+* 0.8.25: adds bindings for `FPDFAnnot_GetFormAdditionalActionJavaScript()`,
+  `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`, and
+  `FPDFAnnot_AddFileAttachment()`.
+* 0.8.24: introduces crate feature flags for selecting Pdfium API versions to use in
   `PdfiumLibraryBindings`; reworked `build.rs` to output bindings for multiple sets of Pdfium header
-  files; reworked bindings implementations to differentiate between API versions that include the
+  files; reworks bindings implementations to differentiate between API versions that include the
   `FPDFFont_*` and `FPDFText_GetTextObject()` functions added in 0.8.23, and API versions that do not;
-  internally reorganize source code layout to make the code structure clearer. 
-* 0.8.23: synchronized Pdfium API header files against mainline; removes binding for function
+  adds WASM bindings utility function `copy_string_to_pdfium()` to correctly copy the string data of an
+  `FPDF_WIDESTRING` to Pdfium's WASM memory module, instead of just the pointer location;
+  adds `PdfiumLibraryBindings::version()` function for reporting the currently configured API version;
+  internally reorganized source code layout to make the code structure clearer. 
+* 0.8.23: synchronizes Pdfium API header files against mainline; removes binding for function
   `FPDFText_GetTextRenderMode()` in response to upstream change described at
   <https://github.com/ajrcarey/pdfium-render/issues/151>; adds bindings for `FPDFText_GetTextObject()`,
   `FPDFFont_GetFamilyName()`, `FPDFFont_GetIsEmbedded()`, and `FPDFFont_GetFontData()` functions;
   deprecates `PdfFont::name()` function in favour of `PdfFont::family()` to match upstream naming
   changes; adds new functions `PdfFont::is_embedded()` and `PdfFont::data()` for retrieving embedded font data; updates `examples/fonts.rs` example; adds new function `PdfPageTextChar::text_object()`
-  for retrieving the page object containing a specific character; adds WASM bindings utility function
-  `copy_string_to_pdfium()` to correctly copy the string data of an `FPDF_WIDESTRING` to Pdfium's WASM memory module, instead of just the pointer location. Deprecated items will be removed in release 0.9.0.
+  for retrieving the page object containing a specific character. Deprecated items will be removed
+  in release 0.9.0.
 * 0.8.22: adds bindings for `FPDFPage_TransformAnnots()`, thanks to an excellent contribution from
   <https://github.com/liammcdermott>; adds bindings for `FPDF_GetPageSizeByIndexF()`, thanks to an excellent
   contribution from <https://github.com/DorianRudolph>; updates all examples and tests that reference

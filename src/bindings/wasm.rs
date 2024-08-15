@@ -5021,6 +5021,128 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormAdditionalActionJavaScript(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        event: c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormAdditionalActionJavaScript(): entering");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormAdditionalActionJavaScript(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormAdditionalActionJavaScript(): calling FPDFAnnot_GetFormAdditionalActionJavaScript()"
+        );
+
+        let result = state
+            .call(
+                "FPDFAnnot_GetFormAdditionalActionJavaScript",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of5(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_annotation(annot),
+                    &JsValue::from_f64(event as f64),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormAdditionalActionJavaScript(): leaving");
+
+        result as c_ulong
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldAlternateName(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldAlternateName(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldAlternateName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldAlternateName(): calling FPDFAnnot_GetFormFieldAlternateName()"
+        );
+
+        let result = state
+            .call(
+                "FPDFAnnot_GetFormFieldAlternateName",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_annotation(annot),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldAlternateName(): leaving"
+        );
+
+        result as c_ulong
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_HasKey()");
 
@@ -6015,10 +6137,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         state.free(buffer_ptr);
 
-        log::debug!(
-            "pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldExportValue(): leaving"
-        );
-
         result as c_ulong
     }
 
@@ -6049,6 +6167,71 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_BOOL;
 
         state.free(uri_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFileAttachment()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFAnnot_GetFileAttachment",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_annotation(
+                    annot,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_ATTACHMENT
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AddFileAttachment(
+        &self,
+        annot: FPDF_ANNOTATION,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let name_ptr = state.copy_string_to_pdfium(name);
+
+        let result = state
+            .call(
+                "FPDFAnnot_AddFileAttachment",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_annotation(annot),
+                    &Self::js_value_from_offset(name_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_ATTACHMENT;
+
+        state.free(name_ptr);
 
         result
     }

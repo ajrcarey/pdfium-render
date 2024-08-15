@@ -460,6 +460,19 @@ pub(crate) struct DynamicPdfiumBindings {
         vertical_radius: *mut f32,
         border_width: *mut f32,
     ) -> FPDF_BOOL,
+    extern_FPDFAnnot_GetFormAdditionalActionJavaScript: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        event: c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong,
+    extern_FPDFAnnot_GetFormFieldAlternateName: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong,
     extern_FPDFAnnot_HasKey:
         unsafe extern "C" fn(annot: FPDF_ANNOTATION, key: FPDF_BYTESTRING) -> FPDF_BOOL,
     extern_FPDFAnnot_GetValueType:
@@ -563,6 +576,28 @@ pub(crate) struct DynamicPdfiumBindings {
     ) -> c_ulong,
     extern_FPDFAnnot_SetURI:
         unsafe extern "C" fn(annot: FPDF_ANNOTATION, uri: *const c_char) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDFAnnot_GetFileAttachment:
+        unsafe extern "C" fn(annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT,
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDFAnnot_AddFileAttachment:
+        unsafe extern "C" fn(annot: FPDF_ANNOTATION, name: FPDF_WIDESTRING) -> FPDF_ATTACHMENT,
     extern_FPDFDOC_InitFormFillEnvironment: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         form_info: *mut FPDF_FORMFILLINFO,
@@ -1376,6 +1411,10 @@ impl DynamicPdfiumBindings {
                 extern_FPDFAnnot_GetLine: *(library.get(b"FPDFAnnot_GetLine\0")?),
                 extern_FPDFAnnot_SetBorder: *(library.get(b"FPDFAnnot_SetBorder\0")?),
                 extern_FPDFAnnot_GetBorder: *(library.get(b"FPDFAnnot_GetBorder\0")?),
+                extern_FPDFAnnot_GetFormAdditionalActionJavaScript: *(library
+                    .get(b"FPDFAnnot_GetFormAdditionalActionJavaScript\0")?),
+                extern_FPDFAnnot_GetFormFieldAlternateName: *(library
+                    .get(b"FPDFAnnot_GetFormFieldAlternateName\0")?),
                 extern_FPDFAnnot_HasKey: *(library.get(b"FPDFAnnot_HasKey\0")?),
                 extern_FPDFAnnot_GetValueType: *(library.get(b"FPDFAnnot_GetValueType\0")?),
                 extern_FPDFAnnot_SetStringValue: *(library.get(b"FPDFAnnot_SetStringValue\0")?),
@@ -1416,6 +1455,28 @@ impl DynamicPdfiumBindings {
                 extern_FPDFAnnot_GetFormFieldExportValue: *(library
                     .get(b"FPDFAnnot_GetFormFieldExportValue\0")?),
                 extern_FPDFAnnot_SetURI: *(library.get(b"FPDFAnnot_SetURI\0")?),
+                #[cfg(any(
+                    feature = "pdfium_6337",
+                    feature = "pdfium_6406",
+                    feature = "pdfium_6490",
+                    feature = "pdfium_6555",
+                    feature = "pdfium_6569",
+                    feature = "pdfium_6611",
+                    feature = "pdfium_future"
+                ))]
+                extern_FPDFAnnot_GetFileAttachment: *(library
+                    .get(b"FPDFAnnot_GetFileAttachment\0")?),
+                #[cfg(any(
+                    feature = "pdfium_6337",
+                    feature = "pdfium_6406",
+                    feature = "pdfium_6490",
+                    feature = "pdfium_6555",
+                    feature = "pdfium_6569",
+                    feature = "pdfium_6611",
+                    feature = "pdfium_future"
+                ))]
+                extern_FPDFAnnot_AddFileAttachment: *(library
+                    .get(b"FPDFAnnot_AddFileAttachment\0")?),
                 extern_FPDFDOC_InitFormFillEnvironment: *(library
                     .get(b"FPDFDOC_InitFormFillEnvironment\0")?),
                 extern_FPDFDOC_ExitFormFillEnvironment: *(library
@@ -2841,6 +2902,35 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormAdditionalActionJavaScript(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        event: c_int,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe {
+            (self.extern_FPDFAnnot_GetFormAdditionalActionJavaScript)(
+                hHandle, annot, event, buffer, buflen,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFormFieldAlternateName(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldAlternateName)(hHandle, annot, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL {
         let c_key = CString::new(key).unwrap();
 
@@ -3112,6 +3202,40 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         let c_uri = CString::new(uri).unwrap();
 
         unsafe { (self.extern_FPDFAnnot_SetURI)(annot, c_uri.as_ptr()) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT {
+        unsafe { (self.extern_FPDFAnnot_GetFileAttachment)(annot) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_AddFileAttachment(
+        &self,
+        annot: FPDF_ANNOTATION,
+        name: FPDF_WIDESTRING,
+    ) -> FPDF_ATTACHMENT {
+        unsafe { (self.extern_FPDFAnnot_AddFileAttachment)(annot, name) }
     }
 
     #[inline]
