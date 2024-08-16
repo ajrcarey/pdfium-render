@@ -694,6 +694,7 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFText_CountChars: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE) -> c_int,
     extern_FPDFText_GetUnicode:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint,
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
     extern_FPDFText_GetTextObject:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT,
     extern_FPDFText_GetFontSize:
@@ -3547,6 +3548,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetUnicode)(text_page, index) }
     }
 
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
