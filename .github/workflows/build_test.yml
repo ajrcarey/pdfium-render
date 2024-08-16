@@ -37,3 +37,33 @@ jobs:
       run: cargo install wasm-pack && wasm-pack build examples/ --target no-modules
     - name: Generate documentation
       run: cargo doc
+    - name: Check backward compatibility with pdfium_5961
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_5961"
+    - name: Check backward compatibility with pdfium_6015
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6015"
+    - name: Check backward compatibility with pdfium_6043
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6043"
+    - name: Check backward compatibility with pdfium_6084
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6084"
+    - name: Check backward compatibility with pdfium_6110
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6110"
+    - name: Check backward compatibility with pdfium_6124
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6124"
+    - name: Check backward compatibility with pdfium_6164
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6164"
+    - name: Check backward compatibility with pdfium_6259
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6259"
+    - name: Check backward compatibility with pdfium_6295
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6295"
+    - name: Check backward compatibility with pdfium_6337
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6337"
+    - name: Check backward compatibility with pdfium_6406
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6406"
+    - name: Check backward compatibility with pdfium_6490
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6490"
+    - name: Check backward compatibility with pdfium_6555
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6555"
+    - name: Check backward compatibility with pdfium_6569
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6569"
+    - name: Check backward compatibility with pdfium_6611
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_6611"

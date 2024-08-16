@@ -696,7 +696,6 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPage_TransformAnnots(
@@ -2061,7 +2060,6 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `hHandle`   -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
@@ -2072,7 +2070,6 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `hHandle`   -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
@@ -2176,7 +2173,6 @@ pub trait PdfiumLibraryBindings {
     /// (open state). If the value is negative, child items shall be hidden by
     /// default (closed state). Please refer to PDF 32000-1:2008, Table 153.
     /// Returns 0 if the bookmark has no children or is invalid.
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int;
 
@@ -2523,7 +2519,6 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   If this function returns a valid handle, it is valid as long as `page` is
     ///   valid.
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION;
 
@@ -3795,7 +3790,6 @@ pub trait PdfiumLibraryBindings {
     ///    `document` - handle to a document.
     ///
     /// Returns `true` if `document` is a tagged PDF.
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 }
