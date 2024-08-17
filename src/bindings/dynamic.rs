@@ -1,13 +1,13 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
     FPDF_BYTESTRING, FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD,
     FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
     FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
     FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
     FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT,
     FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
-    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
+    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use libloading::Library;
@@ -50,6 +50,24 @@ pub(crate) struct DynamicPdfiumBindings {
         flags: FPDF_DWORD,
         fileVersion: c_int,
     ) -> FPDF_BOOL,
+    extern_FPDFAvail_Create: unsafe extern "C" fn(
+        file_avail: *mut FX_FILEAVAIL,
+        file: *mut FPDF_FILEACCESS,
+    ) -> FPDF_AVAIL,
+    extern_FPDFAvail_Destroy: unsafe extern "C" fn(avail: FPDF_AVAIL),
+    extern_FPDFAvail_IsDocAvail:
+        unsafe extern "C" fn(avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int,
+    extern_FPDFAvail_GetDocument:
+        unsafe extern "C" fn(avail: FPDF_AVAIL, password: FPDF_BYTESTRING) -> FPDF_DOCUMENT,
+    extern_FPDFAvail_GetFirstPageNum: unsafe extern "C" fn(doc: FPDF_DOCUMENT) -> c_int,
+    extern_FPDFAvail_IsPageAvail: unsafe extern "C" fn(
+        avail: FPDF_AVAIL,
+        page_index: c_int,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int,
+    extern_FPDFAvail_IsFormAvail:
+        unsafe extern "C" fn(avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int,
+    extern_FPDFAvail_IsLinearized: unsafe extern "C" fn(avail: FPDF_AVAIL) -> c_int,
     extern_FPDF_CloseDocument: unsafe extern "C" fn(document: FPDF_DOCUMENT),
     extern_FPDF_DeviceToPage: unsafe extern "C" fn(
         page: FPDF_PAGE,
@@ -1272,6 +1290,14 @@ impl DynamicPdfiumBindings {
                 extern_FPDF_LoadCustomDocument: *(library.get(b"FPDF_LoadCustomDocument\0")?),
                 extern_FPDF_SaveAsCopy: *(library.get(b"FPDF_SaveAsCopy\0")?),
                 extern_FPDF_SaveWithVersion: *(library.get(b"FPDF_SaveWithVersion\0")?),
+                extern_FPDFAvail_Create: *(library.get(b"FPDFAvail_Create\0")?),
+                extern_FPDFAvail_Destroy: *(library.get(b"FPDFAvail_Destroy\0")?),
+                extern_FPDFAvail_IsDocAvail: *(library.get(b"FPDFAvail_IsDocAvail\0")?),
+                extern_FPDFAvail_GetDocument: *(library.get(b"FPDFAvail_GetDocument\0")?),
+                extern_FPDFAvail_GetFirstPageNum: *(library.get(b"FPDFAvail_GetFirstPageNum\0")?),
+                extern_FPDFAvail_IsPageAvail: *(library.get(b"FPDFAvail_IsPageAvail\0")?),
+                extern_FPDFAvail_IsFormAvail: *(library.get(b"FPDFAvail_IsFormAvail\0")?),
+                extern_FPDFAvail_IsLinearized: *(library.get(b"FPDFAvail_IsLinearized\0")?),
                 extern_FPDF_CloseDocument: *(library.get(b"FPDF_CloseDocument\0")?),
                 extern_FPDF_DeviceToPage: *(library.get(b"FPDF_DeviceToPage\0")?),
                 extern_FPDF_PageToDevice: *(library.get(b"FPDF_PageToDevice\0")?),
@@ -1842,6 +1868,65 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         fileVersion: c_int,
     ) -> FPDF_BOOL {
         unsafe { (self.extern_FPDF_SaveWithVersion)(document, pFileWrite, flags, fileVersion) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Create(
+        &self,
+        file_avail: *mut FX_FILEAVAIL,
+        file: *mut FPDF_FILEACCESS,
+    ) -> FPDF_AVAIL {
+        unsafe { (self.extern_FPDFAvail_Create)(file_avail, file) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL) {
+        unsafe { (self.extern_FPDFAvail_Destroy)(avail) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+        unsafe { (self.extern_FPDFAvail_IsDocAvail)(avail, hints) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT {
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
+
+        unsafe { (self.extern_FPDFAvail_GetDocument)(avail, c_password.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int {
+        unsafe { (self.extern_FPDFAvail_GetFirstPageNum)(doc) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsPageAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        page_index: c_int,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int {
+        unsafe { (self.extern_FPDFAvail_IsPageAvail)(avail, page_index, hints) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+        unsafe { (self.extern_FPDFAvail_IsFormAvail)(avail, hints) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int {
+        unsafe { (self.extern_FPDFAvail_IsLinearized)(avail) }
     }
 
     #[inline]

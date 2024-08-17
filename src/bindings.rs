@@ -40,13 +40,14 @@ pub mod version;
 
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
     FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
     FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
     FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
+    FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::version::PdfiumApiVersion;
 use crate::error::{PdfiumError, PdfiumInternalError};
@@ -263,6 +264,161 @@ pub trait PdfiumLibraryBindings {
         flags: FPDF_DWORD,
         fileVersion: c_int,
     ) -> FPDF_BOOL;
+
+    /// Create a document availability provider.
+    ///
+    ///   `file_avail` - pointer to file availability interface.
+    ///
+    ///   `file`       - pointer to a file access interface.
+    ///
+    /// Returns a handle to the document availability provider, or `NULL` on error.
+    ///
+    /// [PdfiumLibraryBindings::FPDFAvail_Destroy] must be called when done with the
+    /// availability provider.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Create(
+        &self,
+        file_avail: *mut FX_FILEAVAIL,
+        file: *mut FPDF_FILEACCESS,
+    ) -> FPDF_AVAIL;
+
+    /// Destroy the `avail` document availability provider.
+    ///
+    ///   `avail` - handle to document availability provider to be destroyed.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL);
+
+    /// Checks if the document is ready for loading; if not, gets download hints.
+    ///
+    ///   `avail` - handle to document availability provider.
+    ///
+    ///   `hints` - pointer to a download hints interface.
+    ///
+    /// Returns one of:
+    ///
+    ///   `PDF_DATA_ERROR`: A common error is returned. Data availability unknown.
+    ///
+    ///   `PDF_DATA_NOTAVAIL`: Data not yet available.
+    ///
+    ///   `PDF_DATA_AVAIL`: Data available.
+    ///
+    /// Applications should call this function whenever new data arrives, and process
+    /// all the generated download hints, if any, until the function returns
+    /// `PDF_DATA_ERROR` or `PDF_DATA_AVAIL`.
+    ///
+    /// If `hints` is `NULL`, the function just checks current document availability.
+    ///
+    /// Once all data is available, call [PdfiumLibraryBindings::FPDFAvail_GetDocument] to get
+    /// a document handle.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int;
+
+    /// Get document from the availability provider.
+    ///
+    ///   `avail`    - handle to document availability provider.
+    ///
+    ///   `password` - password for decrypting the PDF file. Optional.
+    ///
+    /// Returns a handle to the document.
+    ///
+    /// When [PdfiumLibraryBindings::FPDFAvail_IsDocAvail] returns `TRUE`, call
+    /// [PdfiumLibraryBindings::FPDFAvail_GetDocument] to\n retrieve the document handle.
+    /// See the comments for [PdfiumLibraryBindings::FPDF_LoadDocument] regarding the encoding
+    /// for `password`.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT;
+
+    /// Get the page number for the first available page in a linearized PDF.
+    ///
+    ///   `doc` - document handle.
+    ///
+    /// Returns the zero-based index for the first available page.
+    ///
+    /// For most linearized PDFs, the first available page will be the first page,
+    /// however, some PDFs might make another page the first available page.
+    ///
+    /// For non-linearized PDFs, this function will always return zero.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int;
+
+    /// Check if `page_index` is ready for loading, if not, get the `FX_DOWNLOADHINTS`.
+    ///
+    ///   `avail`      - handle to document availability provider.
+    ///
+    ///   `page_index` - index number of the page. Zero for the first page.
+    ///
+    ///   `hints`      - pointer to a download hints interface. Populated if
+    ///                  `page_index` is not available.
+    ///
+    /// Returns one of:
+    ///
+    ///   `PDF_DATA_ERROR`: A common error is returned. Data availability unknown.
+    ///
+    ///   `PDF_DATA_NOTAVAIL`: Data not yet available.
+    ///
+    ///   `PDF_DATA_AVAIL`: Data available.
+    ///
+    /// This function can be called only after [PdfiumLibraryBindings::FPDFAvail_GetDocument]
+    /// is called. Applications should call this function whenever new data arrives and process
+    /// all the generated download `hints`, if any, until this function returns `PDF_DATA_ERROR`
+    /// or `PDF_DATA_AVAIL`. Applications can then perform page loading.
+    ///
+    /// If `hints` is `NULL`, the function just check current availability of specified page.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsPageAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        page_index: c_int,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int;
+
+    /// Check if form data is ready for initialization; if not, get the `FX_DOWNLOADHINTS`.
+    ///
+    ///   `avail` - handle to document availability provider.
+    ///
+    ///   `hints` - pointer to a download hints interface. Populated if form is not
+    ///             ready for initialization.
+    ///
+    /// Returns one of:
+    ///
+    ///   `PDF_FORM_ERROR`: A common error, in general incorrect parameters.
+    ///
+    ///   `PDF_FORM_NOTAVAIL`: Data not available.
+    ///
+    ///   `PDF_FORM_AVAIL`: Data available.
+    ///
+    ///   `PDF_FORM_NOTEXIST`: No form data.
+    ///
+    /// This function can be called only after [PdfiumLibraryBindings::FPDFAvail_GetDocument]
+    /// is called. The application should call this function whenever new data arrives and
+    /// process all the generated download `hints`, if any, until the function returns
+    /// `PDF_FORM_ERROR`, `PDF_FORM_AVAIL` or `PDF_FORM_NOTEXIST`.
+    ///
+    /// If `hints` is `NULL`, the function just check current form availability.
+    ///
+    /// Applications can then perform page loading. It is recommend to call
+    /// [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment] when `PDF_FORM_AVAIL` is returned.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int;
+
+    /// Check whether a document is a linearized PDF.
+    ///
+    ///   `avail` - handle to document availability provider.
+    ///
+    /// Returns one of:
+    ///
+    ///   `PDF_LINEARIZED`
+    ///
+    ///   `PDF_NOT_LINEARIZED`
+    ///
+    ///   `PDF_LINEARIZATION_UNKNOWN`
+    ///
+    /// [PdfiumLibraryBindings::FPDFAvail_IsLinearized] will return `PDF_LINEARIZED` or
+    /// `PDF_NOT_LINEARIZED` once we have received 1kb of data. If the file's size is less
+    /// than 1kb, it returns `PDF_LINEARIZATION_UNKNOWN` as there is insufficient information
+    // to determine if the PDF is linearlized.
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);

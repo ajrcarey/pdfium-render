@@ -1,12 +1,13 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
     FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
     FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
     FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
+    FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::CString;
@@ -113,6 +114,65 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         fileVersion: c_int,
     ) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDF_SaveWithVersion(document, pFileWrite, flags, fileVersion) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Create(
+        &self,
+        file_avail: *mut FX_FILEAVAIL,
+        file: *mut FPDF_FILEACCESS,
+    ) -> FPDF_AVAIL {
+        unsafe { crate::bindgen::FPDFAvail_Create(file_avail, file) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL) {
+        unsafe { crate::bindgen::FPDFAvail_Destroy(avail) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+        unsafe { crate::bindgen::FPDFAvail_IsDocAvail(avail, hints) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT {
+        let c_password = CString::new(password.unwrap_or("")).unwrap();
+
+        unsafe { crate::bindgen::FPDFAvail_GetDocument(avail, c_password.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int {
+        unsafe { crate::bindgen::FPDFAvail_GetFirstPageNum(doc) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsPageAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        page_index: c_int,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int {
+        unsafe { crate::bindgen::FPDFAvail_IsPageAvail(avail, page_index, hints) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+        unsafe { crate::bindgen::FPDFAvail_IsFormAvail(avail, hints) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int {
+        unsafe { crate::bindgen::FPDFAvail_IsLinearized(avail) }
     }
 
     #[inline]

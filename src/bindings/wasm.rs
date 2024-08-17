@@ -1,12 +1,13 @@
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
+    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
     FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
     FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
     FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
     FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
+    FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -1305,6 +1306,12 @@ impl WasmPdfiumBindings {
         Self::js_value_from_offset(clip_path as usize)
     }
 
+    /// Converts a pointer to an `FPDF_AVAIL` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_avail(avail: FPDF_AVAIL) -> JsValue {
+        Self::js_value_from_offset(avail as usize)
+    }
+
     /// Converts a WASM memory heap offset to a [JsValue].
     #[inline]
     fn js_value_from_offset(offset: usize) -> JsValue {
@@ -1727,6 +1734,241 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         }
 
         result
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Create(
+        &self,
+        file_avail: *mut FX_FILEAVAIL,
+        file: *mut FPDF_FILEACCESS,
+    ) -> FPDF_AVAIL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_Create()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let out_file_avail_length = size_of::<FX_FILEAVAIL>();
+
+        let out_file_avail_ptr = state.copy_struct_to_pdfium(file_avail);
+
+        let out_file_length = size_of::<FPDF_FILEACCESS>();
+
+        let out_file_ptr = state.copy_struct_to_pdfium(file);
+
+        let result = state
+            .call(
+                "FPDFAvail_Create",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_offset(out_file_avail_ptr),
+                    &Self::js_value_from_offset(out_file_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_AVAIL;
+
+        state.copy_struct_from_pdfium(out_file_avail_ptr, out_file_avail_length, file_avail);
+        state.copy_struct_from_pdfium(out_file_ptr, out_file_length, file);
+
+        state.free(out_file_avail_ptr);
+        state.free(out_file_ptr);
+
+        result
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL) {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_Destroy()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDFAvail_Destroy",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_avail(
+                avail,
+            )))),
+        );
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsDocAvail()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let out_hints_length = size_of::<FX_DOWNLOADHINTS>();
+
+        let out_hints_ptr = state.copy_struct_to_pdfium(hints);
+
+        let result = state
+            .call(
+                "FPDFAvail_IsDocAvail",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_avail(avail),
+                    &Self::js_value_from_offset(out_hints_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int;
+
+        state.copy_struct_from_pdfium(out_hints_ptr, out_hints_length, hints);
+
+        state.free(out_hints_ptr);
+
+        result
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_GetDocument(): entering");
+
+        let result = PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFAvail_GetDocument",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::String,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_avail(avail),
+                    &JsValue::from(password.unwrap_or("")),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_DOCUMENT;
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAvail_GetDocument(): FPDF_DOCUMENT = {:#?}",
+            result
+        );
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_GetDocument(): leaving");
+
+        result
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_GetFirstPageNum()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFAvail_GetFirstPageNum",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
+                    doc,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsPageAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        page_index: c_int,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsPageAvail()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let out_hints_length = size_of::<FX_DOWNLOADHINTS>();
+
+        let out_hints_ptr = state.copy_struct_to_pdfium(hints);
+
+        let result = state
+            .call(
+                "FPDFAvail_IsPageAvail",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_avail(avail),
+                    &JsValue::from(page_index),
+                    &Self::js_value_from_offset(out_hints_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int;
+
+        state.copy_struct_from_pdfium(out_hints_ptr, out_hints_length, hints);
+
+        state.free(out_hints_ptr);
+
+        result
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsFormAvail()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let out_hints_length = size_of::<FX_DOWNLOADHINTS>();
+
+        let out_hints_ptr = state.copy_struct_to_pdfium(hints);
+
+        let result = state
+            .call(
+                "FPDFAvail_IsFormAvail",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_avail(avail),
+                    &Self::js_value_from_offset(out_hints_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int;
+
+        state.copy_struct_from_pdfium(out_hints_ptr, out_hints_length, hints);
+
+        state.free(out_hints_ptr);
+
+        result
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsLinearized()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFAvail_IsLinearized",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_avail(
+                    avail,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]

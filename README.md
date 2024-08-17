@@ -354,7 +354,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 377 `FPDF_*` functions in the Pdfium API. As of version 0.8.25, 338 (90%) have
+There are 408 `FPDF_*` functions in the Pdfium API. As of version 0.8.25, 346 (85%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -368,8 +368,10 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 ## Version history
 
 * 0.8.25: adds bindings for `FPDFAnnot_GetFormAdditionalActionJavaScript()`,
-  `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`, and
-  `FPDFAnnot_AddFileAttachment()`.
+  `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`,
+  `FPDFAnnot_AddFileAttachment()`, `FPDFAvail_Create()`, `FPDFAvail_Destroy()`,
+  `FPDFAvail_IsDocAvail()`, `FPDFAvail_GetDocument()`, `FPDFAvail_GetFirstPageNum()`,
+  `FPDFAvail_IsPageAvail()`, `FPDFAvail_IsFormAvail()`, and `FPDFAvail_IsLinearized()` functions.
 * 0.8.24: introduces crate feature flags for selecting Pdfium API versions to use in
   `PdfiumLibraryBindings`; reworked `build.rs` to output bindings for multiple sets of Pdfium header
   files; reworks bindings implementations to differentiate between API versions that include the
