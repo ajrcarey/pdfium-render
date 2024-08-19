@@ -49,9 +49,14 @@ pub enum PdfiumError {
     #[cfg(target_arch = "wasm32")]
     PdfiumWASMModuleNotConfigured,
 
-    /// The external Pdfium library could not be loaded.
+    /// An error occurred during dynamic binding to an external Pdfium library.
     #[cfg(not(target_arch = "wasm32"))]
     LoadLibraryError(libloading::Error),
+
+    /// An error occurred during dynamic binding while converting an FPDF_* function name
+    /// to a C string. The wrapped string value contains more information.
+    #[cfg(not(target_arch = "wasm32"))]
+    LoadLibraryFunctionNameError(String),
 
     UnrecognizedPath,
     PageIndexOutOfBounds,
@@ -109,7 +114,7 @@ pub enum PdfiumError {
     NoAttachmentPointsInPageAnnotation,
     CoordinateConversionFunctionIndicatedError,
 
-    /// A call to `FPDFDest_GetView()` returned a valid FPDFDEST_VIEW_* value, but the number
+    /// A call to `FPDFDest_GetView()` returned a valid `FPDFDEST_VIEW_*` value, but the number
     /// of view parameters returned does not match the PDF specification.
     PdfDestinationViewInvalidParameters,
 
@@ -122,10 +127,10 @@ pub enum PdfiumError {
     ParseHexadecimalColorUnexpectedLength,
 
     /// The leading `#` character was not found while attempting to parse a `PdfColor` from
-    /// a hexidecimal string in `PdfColor::from_hex()`.
+    /// a hexadecimal string in `PdfColor::from_hex()`.
     ParseHexadecimalColorMissingLeadingHash,
 
-    /// An error occurred converting a byte stream into a CString.
+    /// An error occurred converting a byte stream into a `CString`.
     CStringConversionError(IntoStringError),
 
     /// Two data buffers are expected to have the same size, but they do not.
@@ -152,42 +157,42 @@ pub enum PdfiumError {
     /// The browser's built-in `Window` object could not be retrieved.
     WebSysWindowObjectNotAvailable,
 
+    #[cfg(target_arch = "wasm32")]
     /// A JsValue returned from a function call was set to JsValue::UNDEFINED instead of
     /// a valid value of the expected type.
-    #[cfg(target_arch = "wasm32")]
     JsValueUndefined,
 
-    /// An error was returned when attempting to use the browser's built-in `fetch()` API.
     #[cfg(target_arch = "wasm32")]
+    /// An error was returned when attempting to use the browser's built-in `fetch()` API.
     WebSysFetchError(JsValue),
 
-    /// An invalid Response object was returned when attempting to use the browser's built-in `fetch()` API.
     #[cfg(target_arch = "wasm32")]
+    /// An invalid Response object was returned when attempting to use the browser's built-in `fetch()` API.
     WebSysInvalidResponseError,
 
-    /// An error was returned when attempting to construct a `Blob` object from a byte buffer.
     #[cfg(target_arch = "wasm32")]
+    /// An error was returned when attempting to construct a `Blob` object from a byte buffer.
     JsSysErrorConstructingBlobFromBytes,
 
+    #[cfg(target_arch = "wasm32")]
     /// An error occurred when attempting to retrieve the function table for the compiled
     /// Pdfium WASM module.
-    #[cfg(target_arch = "wasm32")]
     JsSysErrorRetrievingFunctionTable(JsValue),
 
+    #[cfg(target_arch = "wasm32")]
     /// An error occurred when attempting to retrieve an exported function from
     /// `pdfium-render`'s WASM module.
-    #[cfg(target_arch = "wasm32")]
     JsSysErrorRetrievingFunction(JsValue),
 
-    /// An error occurred when attempting to update an entry in Pdfium's WASM function table.
     #[cfg(target_arch = "wasm32")]
+    /// An error occurred when attempting to update an entry in Pdfium's WASM function table.
     JsSysErrorPatchingFunctionTable(JsValue),
 
+    #[cfg(target_arch = "wasm32")]
     /// No previously cached function was available for a WASM function table restore operation.
     ///
     /// This error should never occur; if it does, it indicates a programming error in pdfium-render.
     /// Please file an issue: https://github.com/ajrcarey/pdfium-render/issues
-    #[cfg(target_arch = "wasm32")]
     NoPreviouslyCachedFunctionSet,
 
     /// An error occurred during an image processing operation.

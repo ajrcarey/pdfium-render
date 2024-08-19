@@ -38,6 +38,14 @@ pub(crate) mod thread_safe;
 
 pub mod version;
 
+#[cfg(any(
+    feature = "pdfium_6490",
+    feature = "pdfium_6555",
+    feature = "pdfium_6569",
+    feature = "pdfium_6611",
+    feature = "pdfium_future"
+))]
+use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
@@ -45,9 +53,9 @@ use crate::bindgen::{
     FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
-    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
-    FX_DOWNLOADHINTS, FX_FILEAVAIL,
+    FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF, FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::version::PdfiumApiVersion;
 use crate::error::{PdfiumError, PdfiumInternalError};
@@ -78,18 +86,18 @@ use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c
 /// Pdfium. Examples of functions with additional `_str()` helpers include `FPDFBookmark_Find()`,
 /// `FPDFAnnot_SetStringValue()`, and `FPDFText_SetText()`.
 ///
-/// The [PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()] and
-/// [PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes()] functions are provided
+/// The [PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str] and
+/// [PdfiumLibraryBindings::get_string_from_pdfium_utf16le_bytes] functions are provided
 /// for converting to and from UTF-16LE in your own code.
 ///
 /// The following Pdfium functions have different signatures in this trait compared to their
 /// native function signatures in Pdfium:
-/// * [PdfiumLibraryBindings::FPDF_LoadDocument()]: this function is not available when compiling to WASM.
-/// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()]: the return type of this function is modified
+/// * [PdfiumLibraryBindings::FPDF_LoadDocument]: this function is not available when compiling to WASM.
+/// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer]: the return type of this function is modified
 ///   when compiling to WASM. Instead of returning `*mut c_void`, it returns `*const c_void`.
 ///   This is to encourage callers to avoid directly mutating the returned buffer, as this is not
 ///   supported when compiling to WASM. Instead, callers should use the provided
-///   [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()] convenience function to apply modified pixel data
+///   [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] convenience function to apply modified pixel data
 ///   to a bitmap.
 pub trait PdfiumLibraryBindings {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
@@ -592,15 +600,44 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint;
 
+    /// Gets the structure tree for a page.
+    ///
+    ///   `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Return value: a handle to the structure tree, or `NULL` on error. The caller owns the
+    /// returned handle and must use [PdfiumLibraryBindings::FPDF_StructTree_Close] to release it.
+    ///
+    /// The handle should be released before `page` is released.
     #[allow(non_snake_case)]
     fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE;
 
+    /// Releases a resource allocated by [PdfiumLibraryBindings::FPDF_StructTree_GetForPage].
+    ///
+    ///   `struct_tree` -   Handle to the structure tree, as returned by
+    ///                     [PdfiumLibraryBindings::FPDF_StructTree_GetForPage].
     #[allow(non_snake_case)]
     fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE);
 
+    /// Counts the number of children for the structure tree.
+    ///
+    ///   `struct_tree` -   Handle to the structure tree, as returned by
+    ///                     [PdfiumLibraryBindings::FPDF_StructTree_GetForPage].
+    ///
+    /// Return value: the number of children, or -1 on error.
     #[allow(non_snake_case)]
     fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int;
 
+    /// Gets a child in the structure tree.
+    ///
+    ///   `struct_tree` -   Handle to the structure tree, as returned by
+    ///                     [PdfiumLibraryBindings::FPDF_StructTree_GetForPage].
+    ///
+    ///   `index`       -   The index for the child, 0-based.
+    ///
+    /// Return value: the child at the n-th index or `NULL` on error. The caller does not
+    /// own the handle. The handle remains valid as long as `struct_tree` remains valid.
+    ///
+    /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructTree_CountChildren] return value.
     #[allow(non_snake_case)]
     fn FPDF_StructTree_GetChildAtIndex(
         &self,
@@ -608,6 +645,20 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_STRUCTELEMENT;
 
+    /// Gets the alt text for a given element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `buffer`         -   A buffer for output the alt text. May be `NULL`.
+    ///
+    ///   `buflen`         -   The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the alt text, including the terminating `NUL` character.
+    /// The number of bytes is returned regardless of the `buffer` and `buflen` parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetAltText(
         &self,
@@ -616,6 +667,43 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the actual text for a given element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `buffer`         -   A buffer for output the actual text. May be `NULL`.
+    ///
+    ///   `buflen`         -   The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the actual text, including the terminating `NUL` character.
+    /// The number of bytes is returned regardless of the `buffer` and `buflen` parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetActualText(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    /// Gets the ID for a given element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `buffer`         -   A buffer for output the ID string. May be `NULL`.
+    ///
+    ///   `buflen`         -   The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the ID string, including the terminating `NUL`
+    /// character. The number of bytes is returned regardless of the `buffer` and `buflen`
+    /// parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetID(
         &self,
@@ -624,6 +712,21 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the case-insensitive IETF BCP 47 language code for an element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `buffer`         -   A buffer for output the lang string. May be `NULL`.
+    ///
+    ///   `buflen`         -   The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the ID string, including the terminating `NUL`
+    /// character. The number of bytes is returned regardless of the `buffer` and `buflen`
+    /// parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetLang(
         &self,
@@ -632,6 +735,23 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets a struct element attribute of type `name` or `string`.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `attr_name`      -   The name of the attribute to retrieve.
+    ///
+    ///   `buffer`         -   A buffer for output. May be `NULL`.
+    ///
+    ///   `buflen`         -   The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the attribute value, including the terminating `NUL`
+    /// character. The number of bytes is returned regardless of the `buffer` and `buflen`
+    /// parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetStringAttribute(
         &self,
@@ -641,9 +761,33 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the marked content ID for a given element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    /// Returns the marked content ID of the element. If no ID exists, returns 1.
+    ///
+    /// [PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentIdAtIndex] may be able to
+    /// extract more marked content IDs out of `struct_element`. This API may be deprecated
+    /// in the future.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
 
+    /// Gets the type (/S) for a given element.
+    ///
+    ///   `struct_element` - Handle to the struct element.
+    ///
+    ///   `buffer`         - A buffer for output. May be `NULL`.
+    ///
+    ///   `buflen`         - The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the type, including the terminating `NUL`
+    /// character. The number of bytes is returned regardless of the `buffer` and `buflen`
+    /// parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetType(
         &self,
@@ -652,6 +796,43 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Gets the object type (/Type) for a given element.
+    ///
+    ///   `struct_element` - Handle to the struct element.
+    ///
+    ///   `buffer`         - A buffer for output. May be `NULL`.
+    ///
+    ///   `buflen`         - The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the object type, including the terminating `NUL`
+    /// character. The number of bytes is returned regardless of the `buffer` and `buflen`
+    /// parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetObjType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
+    /// Gets the title (/T) for a given element.
+    ///
+    ///   `struct_element` - Handle to the struct element.
+    ///
+    ///   `buffer`         - A buffer for output. May be `NULL`.
+    ///
+    ///   `buflen`         - The length of the buffer, in bytes. May be 0.
+    ///
+    /// Returns the number of bytes in the title, including the terminating `NUL` character.
+    /// The number of bytes is returned regardless of the `buffer` and `buflen` parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding.
+    /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
+    /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetTitle(
         &self,
@@ -660,15 +841,552 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    /// Counts the number of children for the structure element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    /// Returns the number of children, or -1 on error.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
 
+    /// Gets a child in the structure element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `index`          -   The index for the child, 0-based.
+    ///
+    /// Returns the child at the n-th index, or `NULL` on error.
+    ///
+    /// If the child exists but is not an element, then this function will return `NULL`.
+    /// This will also return `NULL` for out-of-bounds indices.
+    ///
+    /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_CountChildren]
+    /// return value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetChildAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
     ) -> FPDF_STRUCTELEMENT;
+
+    #[cfg(any(
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the child's content id.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `index`          -   The index for the child, 0-based.
+    ///
+    /// Returns the marked content ID of the child. If no ID exists, returns -1.
+    ///
+    /// If the child exists but is not a stream or object, then this function will return -1.
+    /// This will also return -1 for out of bounds indices. Compared to
+    /// [PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentIdAtIndex],
+    /// it is scoped to the current page.
+    ///
+    /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_CountChildren]
+    /// return value.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetChildMarkedContentID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int;
+
+    /// Gets the parent of the structure element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    /// Returns the parent structure element, or `NULL` on error.
+    ///
+    /// If structure element is StructTreeRoot, then this function will return `NULL`.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetParent(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> FPDF_STRUCTELEMENT;
+
+    /// Counts the number of attributes for the structure element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    /// Returns the number of attributes, or -1 on error.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeCount(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
+
+    /// Gets an attribute object in the structure element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `index`          -   The index for the attribute object, 0-based.
+    ///
+    /// Returns the attribute object at the n-th index, or `NULL` on error.
+    ///
+    /// If the attribute object exists but is not a dict, then this function will return `NULL`.
+    /// This will also return `NULL` for out-of-bounds indices. The caller does not own the handle.
+    /// The handle remains valid as long as `struct_element` remains valid.
+    ///
+    /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_GetAttributeCount]
+    /// return value.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR;
+
+    /// Counts the number of attributes in a structure element attribute map.
+    ///
+    ///   `struct_attribute` - Handle to the struct element attribute.
+    ///
+    /// Returns the number of attributes, or -1 on error.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetCount(&self, struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int;
+
+    /// Gets the name of an attribute in a structure element attribute map.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `index`              - The index of attribute in the map.
+    ///
+    ///   `buffer`             - A buffer for output. May be `NULL`. This is only
+    ///                          modified if `buflen` is longer than the length
+    ///                          of the key. Optional, pass `NULL` to just
+    ///                          retrieve the size of the buffer needed.
+    ///
+    ///   `buflen`             - The length of the buffer.
+    ///
+    ///   `out_buflen`         - A pointer to variable that will receive the
+    ///                          minimum buffer size to contain the key. Not
+    ///                          filled if `FALSE` is returned.
+    ///
+    /// Returns `TRUE` if the operation was successful, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetName(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets a handle to a value for an attribute in a structure element attribute map.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `name`               - The attribute name.
+    ///
+    /// Returns a handle to the value associated with the input, if any. Returns `NULL`
+    /// on failure. The caller does not own the handle.
+    ///
+    /// The handle remains valid as long as `struct_attribute` remains valid.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE;
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    /// Gets the type of an attribute in a structure element attribute map.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `name`               - The attribute name.
+    ///
+    /// Returns the type of the value, or `FPDF_OBJECT_UNKNOWN` in case of failure.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_OBJECT_TYPE;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the type of an attribute in a structure element attribute map.
+    ///
+    ///   `value` - Handle to the value.
+    ///
+    /// Returns the type of the value, or `FPDF_OBJECT_UNKNOWN` in case of failure. Note that
+    /// this will never return `FPDF_OBJECT_REFERENCE`, as references are always dereferenced.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> FPDF_OBJECT_TYPE;
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    /// Gets the value of a boolean attribute in an attribute map by name as `FPDF_BOOL`.
+    /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
+    /// `FPDF_OBJECT_BOOLEAN` for this property.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `name`               - The attribute name.
+    ///
+    ///   `out_value`          - A pointer to variable that will receive the
+    ///                          value. Not filled if `FALSE` is returned.
+    ///
+    /// Returns `TRUE` if the name maps to a boolean value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the value of a boolean attribute in an attribute map as `FPDF_BOOL`.
+    /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
+    /// `FPDF_OBJECT_BOOLEAN` for this property.
+    ///
+    ///   `value`     - Handle to the value.
+    ///
+    ///   `out_value` - A pointer to variable that will receive the value. Not
+    ///                 filled if false is returned.
+    ///
+    /// Returns `TRUE` if the attribute maps to a boolean value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    /// Gets the value of a number attribute in an attribute map by name as float.
+    /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
+    /// `FPDF_OBJECT_NUMBER` for this property.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `name`               - The attribute name.
+    ///
+    ///   `out_value`          - A pointer to variable that will receive the
+    ///                          value. Not filled if `FALSE` is returned.
+    ///
+    /// Returns `TRUE` if the name maps to a number value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the value of a number attribute in an attribute map as float.
+    /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
+    /// `FPDF_OBJECT_NUMBER` for this property.
+    ///
+    ///   `value`     - Handle to the value.
+    ///
+    ///   `out_value` - A pointer to variable that will receive the value. Not
+    ///                 filled if false is returned.
+    ///
+    /// Returns `TRUE` if the attribute maps to a number value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    /// Gets the value of a string attribute in an attribute map by name as string.
+    /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
+    /// `FPDF_OBJECT_STRING` or `FPDF_OBJECT_NAME` for this property.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `name`               - The attribute name.
+    ///
+    ///   `buffer`             - A buffer for holding the returned key in
+    ///                          UTF-16LE. This is only modified if `buflen` is
+    ///                          longer than the length of the key. Optional,
+    ///                          pass `NULL` to just retrieve the size of the
+    ///                          buffer needed.
+    ///
+    ///   `buflen`             - The length of the buffer.
+    ///
+    ///   `out_buflen`         - A pointer to variable that will receive the
+    ///                          minimum buffer size to contain the key. Not
+    ///                          filled if `FALSE` is returned.
+    ///
+    /// Returns `TRUE` if the name maps to a string value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the value of a string attribute in an attribute map as string.
+    /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
+    /// `FPDF_OBJECT_STRING` or `FPDF_OBJECT_NAME` for this property.
+    ///
+    ///   `value`      - Handle to the value.
+    ///
+    ///   `buffer`     - A buffer for holding the returned key in UTF-16LE.
+    ///                  This is only modified if `buflen` is longer than the
+    ///                  length of the key. Optional, pass `NULL` to just
+    ///                  retrieve the size of the buffer needed.
+    ///
+    ///   `buflen`     - The length of the buffer.
+    ///
+    ///   `out_buflen` - A pointer to variable that will receive the minimum
+    ///                  buffer size to contain the key. Not filled if `FALSE` is
+    ///                  returned.
+    ///
+    /// Returns `TRUE` if the attribute maps to a string value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    /// Gets the value of a blob attribute in an attribute map by name as string.
+    ///
+    ///   `struct_attribute`   - Handle to the struct element attribute.
+    ///
+    ///   `name`               - The attribute name.
+    ///
+    ///   `buffer`             - A buffer for holding the returned value. This
+    ///                          is only modified if |buflen| is at least as
+    ///                          long as the length of the value. Optional, pass
+    ///                          `NULL` to just retrieve the size of the buffer
+    ///                          needed.
+    ///
+    ///   `buflen`             - The length of the buffer.
+    ///
+    ///   `out_buflen`         - A pointer to variable that will receive the
+    ///                          minimum buffer size to contain the key. Not
+    ///                          filled if `FALSE` is returned.
+    ///
+    /// Returns `TRUE` if the name maps to a string value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the value of a blob attribute in an attribute map as string.
+    ///
+    ///   `value`      - Handle to the value.
+    ///
+    ///   `buffer`     - A buffer for holding the returned value. This is only
+    ///                  modified if `buflen` is at least as long as the length
+    ///                  of the value. Optional, pass `NULL` to just retrieve the
+    ///                  size of the buffer needed.
+    ///
+    ///   `buflen`     - The length of the buffer.
+    ///
+    ///   `out_buflen` - A pointer to variable that will receive the minimum buffer size
+    ///                  to contain the key. Not filled if `FALSE` is returned.
+    ///
+    /// Returns `TRUE` if the attribute maps to a string value, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Counts the number of children values in an attribute.
+    ///
+    ///   `value` - Handle to the value.
+    ///
+    /// Returns the number of children, or -1 on error.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int;
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets a child from an attribute.
+    ///
+    ///   `value` - Handle to the value.
+    ///
+    ///   `index` - The index for the child, 0-based.
+    ///
+    /// Returns the child at the n-th index, or `NULL` on error.
+    ///
+    /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_Attr_CountChildren]
+    /// return value.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetChildAtIndex(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE;
+
+    /// Gets the count of marked content ids for a given element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    /// Returns the count of marked content ids or -1 if none exists.
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdCount(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int;
+
+    /// Gets the marked content id at a given index for a given element.
+    ///
+    ///   `struct_element` -   Handle to the struct element.
+    ///
+    ///   `index`          -   The index of the marked content id, 0-based.
+    ///
+    /// Returns the marked content ID of the element. If no ID exists, returns -1.
+    ///
+    /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentIdCount]
+    /// return value.
+    ///
+    /// This function will likely supersede [PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentID].
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDFPage_New(
@@ -865,6 +1583,67 @@ pub trait PdfiumLibraryBindings {
         f: f64,
     );
 
+    /// Creates a device independent bitmap (FXDIB).
+    ///
+    ///   `width`       -   The number of pixels in width for the bitmap.
+    ///                     Must be greater than 0.
+    ///
+    ///   `height`      -   The number of pixels in height for the bitmap.
+    ///                     Must be greater than 0.
+    ///
+    ///   `alpha`       -   A flag indicating whether the alpha channel is used.
+    ///                     Non-zero for using alpha, zero for not using.
+    ///
+    /// Returns the created bitmap handle, or `NULL` if a parameter error or out of
+    /// memory.
+    ///
+    /// The bitmap always uses 4 bytes per pixel. The first byte is always double word aligned.
+    /// The byte order is BGRx (the last byte unused if no alpha channel) or BGRA.
+    /// The pixels in a horizontal line are stored side by side, with the left most pixel
+    /// stored first (with lower memory address). Each line uses `width * 4` bytes.
+    /// Lines are stored one after another, with the top most line stored first.
+    /// There is no gap between adjacent lines.
+    ///
+    /// This function allocates enough memory for holding all pixels in the bitmap,
+    /// but it doesn't initialize the buffer. Applications can use [PdfiumLibraryBindings::FPDFBitmap_FillRect]
+    /// to fill the bitmap using any color. If the OS allows it, this function can allocate
+    /// up to 4 GB of memory.
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP;
+
+    /// Creates a device independent bitmap (FXDIB).
+    ///
+    ///   `width`       -   The number of pixels in width for the bitmap.
+    ///                     Must be greater than 0.
+    ///
+    ///   `height`      -   The number of pixels in height for the bitmap.
+    ///                     Must be greater than 0.
+    ///
+    ///   `format`      -   A number indicating for bitmap format, as defined above.
+    ///
+    ///   `first_scan`  -   A pointer to the first byte of the first line if
+    ///                     using an external buffer. If this parameter is `NULL`,
+    ///                     then a new buffer will be created.
+    ///
+    ///   `stride`      -   Number of bytes for each scan line. The value must
+    ///                     be 0 or greater. When the value is 0,
+    ///                     `FPDFBitmap_CreateEx()` will automatically calculate
+    ///                     the appropriate value using `width` and `format`.
+    ///                     When using an external buffer, it is recommended for the caller
+    ///                     to pass in the value. When not using an external buffer, it is
+    ///                     recommended for the caller to pass in 0.
+    ///
+    /// Returns the bitmap handle, or `NULL` if parameter error or out of memory.
+    ///
+    /// Similar to [PdfiumLibraryBindings::FPDFBitmap_Create] function, but allows for more
+    /// formats and an external buffer is supported. The bitmap created by this function
+    /// can be used in any place that a `FPDF_BITMAP` handle is required.
+    ///
+    /// If an external buffer is used, then the caller should destroy the buffer.
+    /// [PdfiumLibraryBindings::FPDFBitmap_Destroy] will not destroy the buffer.
+    ///
+    /// It is recommended to use [PdfiumLibraryBindings::FPDFBitmap_GetStride to get the stride
+    /// value.
     #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
@@ -875,12 +1654,56 @@ pub trait PdfiumLibraryBindings {
         stride: c_int,
     ) -> FPDF_BITMAP;
 
-    #[allow(non_snake_case)]
-    fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP);
-
+    /// Gets the format of the bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns the format of the bitmap.
+    ///
+    /// Only formats supported by [PdfiumLibraryBindings::FPDFBitmap_CreateEx] are supported by this
+    /// function; see the list of such formats above.
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int;
 
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
+    /// Fills a rectangle in a bitmap.
+    ///
+    ///   `bitmap`      -   The handle to the bitmap. Returned by
+    ///                     [PdfiumLibraryBindings::FPDFBitmap_Create].
+    ///
+    ///   `left`        -   The left position. Starting from 0 at the left-most pixel.
+    ///
+    ///   `top`         -   The top position. Starting from 0 at the top-most line.
+    ///
+    ///   `width`       -   Width in pixels to be filled.
+    ///
+    ///   `height`      -   Height in pixels to be filled.
+    ///
+    ///   `color`       -   A 32-bit value specifying the color, in 8888 ARGB format.
+    ///
+    /// This function sets the color and (optionally) alpha value in the specified region
+    /// of the bitmap.
+    ///
+    /// Note: If the alpha channel is used, this function does _not_ composite the background
+    /// with the source color, instead the background will be replaced by the source color
+    /// and the alpha. If the alpha channel is not used, the alpha parameter is ignored.
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
         &self,
@@ -891,6 +1714,41 @@ pub trait PdfiumLibraryBindings {
         height: c_int,
         color: FPDF_DWORD,
     );
+
+    #[cfg(feature = "pdfium_future")]
+    /// Fills a rectangle in a bitmap.
+    ///
+    ///   `bitmap`      -   The handle to the bitmap. Returned by
+    ///                     [PdfiumLibraryBindings::FPDFBitmap_Create].
+    ///
+    ///   `left`        -   The left position. Starting from 0 at the left-most pixel.
+    ///
+    ///   `top`         -   The top position. Starting from 0 at the top-most line.
+    ///
+    ///   `width`       -   Width in pixels to be filled.
+    ///
+    ///   `height`      -   Height in pixels to be filled.
+    ///
+    ///   `color`       -   A 32-bit value specifying the color, in 8888 ARGB format.
+    ///
+    /// Returns whether the operation succeeded or not.
+    ///
+    /// This function sets the color and (optionally) alpha value in the specified region
+    /// of the bitmap.
+    ///
+    /// Note: If the alpha channel is used, this function does _not_ composite the background
+    /// with the source color, instead the background will be replaced by the source color
+    /// and the alpha. If the alpha channel is not used, the alpha parameter is ignored.
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_FillRect(
+        &self,
+        bitmap: FPDF_BITMAP,
+        left: c_int,
+        top: c_int,
+        width: c_int,
+        height: c_int,
+        color: FPDF_DWORD,
+    ) -> FPDF_BOOL;
 
     /// Note that the return type of this function is modified when compiling to WASM. Instead
     /// of returning `*mut c_void`, it returns `*const c_void`.
@@ -903,9 +1761,23 @@ pub trait PdfiumLibraryBindings {
     /// to the copy across to Pdfium's WASM module.
     ///
     /// To avoid having to maintain different code for different platform targets, it is
-    /// recommended that all callers use the provided [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()]
+    /// recommended that all callers use the provided [PdfiumLibraryBindings::FPDFBitmap_SetBuffer]
     /// convenience function to apply modified pixel data to a bitmap instead of mutating the
     /// buffer returned by this function.
+    ///
+    /// Gets the data buffer of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns the pointer to the first byte of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Applications can use this function to get the bitmap buffer pointer,
+    /// then manipulate any color and/or alpha values for any pixels in the bitmap.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     #[allow(non_snake_case)]
     #[cfg(not(target_arch = "wasm32"))]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void;
@@ -921,15 +1793,29 @@ pub trait PdfiumLibraryBindings {
     /// to the copy across to Pdfium's WASM module.
     ///
     /// **Do not mutate the pixel data in the buffer returned by this function.** Instead, use the
-    /// [PdfiumLibraryBindings::FPDFBitmap_SetBuffer()] function to apply a new pixel data
+    /// [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] function to apply a new pixel data
     /// buffer to the bitmap.
+    ///
+    /// Gets the data buffer of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns the pointer to the first byte of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Applications can use this function to get the bitmap buffer pointer,
+    /// then manipulate any color and/or alpha values for any pixels in the bitmap.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     #[allow(non_snake_case)]
     #[cfg(target_arch = "wasm32")]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
 
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
-    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
     ///
     /// Replaces all pixel data for the given bitmap with the pixel data in the given buffer,
     /// returning `true` once the new pixel data has been applied. If the given buffer
@@ -957,7 +1843,7 @@ pub trait PdfiumLibraryBindings {
 
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
-    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
     ///
     /// Replaces all pixel data of the given bitmap with the pixel data in the given buffer,
     /// returning `true` once the new pixel data has been applied. If the given buffer
@@ -968,23 +1854,53 @@ pub trait PdfiumLibraryBindings {
     fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool;
 
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as a
-    /// more performant WASM-specific variant of [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    /// more performant WASM-specific variant of [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
     /// Since it avoids a (potentially large) bitmap allocation and copy, it is both faster and
-    /// more memory efficient than [PdfiumLibraryBindings::FPDFBitmap_GetBuffer()].
+    /// more memory efficient than [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
     ///
     /// This function is only available when compiling to WASM.
     #[allow(non_snake_case)]
     #[cfg(target_arch = "wasm32")]
     fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
 
+    /// Gets the width of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns the width of the bitmap in pixels.
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int;
 
+    /// Gets the height of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns the height of the bitmap in pixels.
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> c_int;
 
+    /// Gets the number of bytes for each line in the bitmap buffer.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns the number of bytes for each line in the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> c_int;
+
+    /// Destroys a bitmap and releases all related buffers.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// This function will not destroy any external buffers provided when
+    /// the bitmap was created.
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP);
 
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
@@ -1953,6 +2869,33 @@ pub trait PdfiumLibraryBindings {
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Gets the RGB value of the font color for an `annot` with variable text.
+    ///
+    ///   `hHandle`  - handle to the form fill module, returned by
+    ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///   `annot`    - handle to an annotation.
+    ///
+    ///   `R`, `G`, `B`  - buffer to hold the RGB value of the color. Ranges from 0 to 255.
+    ///
+    /// Returns `true` if the font color was set, `false` on error or if the font color
+    /// was not provided.
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFontColor(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
     ) -> FPDF_BOOL;
 
     /// Determines if `annot` is a form widget that is checked. Intended for use with
@@ -3188,6 +4131,26 @@ pub trait PdfiumLibraryBindings {
         f: c_double,
     );
 
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    /// Transform `page_object` by the given matrix.
+    ///
+    ///   `page_object` - handle to a page object.
+    ///
+    ///   `matrix`      - the transform matrix.
+    ///
+    /// Returns `TRUE` on success.
+    ///
+    /// This can be used to scale, rotate, shear and translate the `page_object`.
+    /// It is an improved version of [PdfiumLibraryBindings::FPDFPageObj_Transform]
+    /// that does not do unnecessary double to float conversions, and only uses 1 parameter
+    /// for the matrix. It also returns whether the operation succeeded or not.
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformF(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL;
+
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMatrix(
         &self,
@@ -3200,6 +4163,15 @@ pub trait PdfiumLibraryBindings {
 
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
+
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    /// Get the marked content ID for the object.
+    ///
+    ///   `page_object` - handle to a page object.
+    ///
+    /// Returns the page object's marked content ID, or -1 on error.
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     #[allow(non_snake_case)]
     fn FPDFPageObj_CountMarks(&self, page_object: FPDF_PAGEOBJECT) -> c_int;

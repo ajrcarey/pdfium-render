@@ -77,8 +77,7 @@ impl Pdfium {
         let bindings = DynamicPdfiumBindings::new(
             unsafe { Library::new(Self::pdfium_platform_library_name()) }
                 .map_err(PdfiumError::LoadLibraryError)?,
-        )
-        .map_err(PdfiumError::LoadLibraryError)?;
+        )?;
 
         #[cfg(feature = "thread_safe")]
         let bindings = ThreadSafePdfiumBindings::new(bindings);
@@ -120,8 +119,7 @@ impl Pdfium {
         let bindings = DynamicPdfiumBindings::new(
             unsafe { Library::new(path.as_ref().as_os_str()) }
                 .map_err(PdfiumError::LoadLibraryError)?,
-        )
-        .map_err(PdfiumError::LoadLibraryError)?;
+        )?;
 
         #[cfg(feature = "thread_safe")]
         let bindings = ThreadSafePdfiumBindings::new(bindings);
@@ -453,17 +451,27 @@ impl Default for Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     #[inline]
     fn default() -> Self {
-        Pdfium::new(
-            Pdfium::bind_to_library(
-                // Attempt to bind to a pdfium library in the current working directory...
-                Pdfium::pdfium_platform_library_name_at_path("./"),
-            )
-            .or_else(
-                // ... and fall back to binding to a system-provided pdfium library.
-                |_| Pdfium::bind_to_system_library(),
-            )
-            .unwrap(),
-        )
+        let bindings = match Pdfium::bind_to_library(
+            // Attempt to bind to a Pdfium library in the current working directory...
+            Pdfium::pdfium_platform_library_name_at_path("./"),
+        ) {
+            Ok(bindings) => Ok(bindings),
+            Err(PdfiumError::LoadLibraryError(err)) => {
+                match err {
+                    libloading::Error::DlOpen { desc: _ } => {
+                        // For DlOpen errors specifically, indicating the Pdfium library in the
+                        // current working directory does not exist or is corrupted, we attempt
+                        // to fall back to a system-provided library.
+
+                        Pdfium::bind_to_system_library()
+                    }
+                    _ => Err(PdfiumError::LoadLibraryError(err)),
+                }
+            }
+            Err(err) => Err(err),
+        };
+
+        Pdfium::new(bindings.unwrap())
     }
 
     /// Binds to an external Pdfium library by attempting to a system-provided library.

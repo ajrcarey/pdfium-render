@@ -82,7 +82,6 @@ flatten = []
 
 pdfium_latest = ["pdfium_6611"]
 pdfium_future = [
-    "bindings",
 ] # For testing changes in Pdfium source control that are yet to be released
 pdfium_6611 = []
 pdfium_6569 = []

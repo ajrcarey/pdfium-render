@@ -278,7 +278,7 @@ This crate provides the following optional features:
 
 Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`:
 
-* `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes. Automatically activates the `bindings` feature.
+* `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes.
 * `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases>, currently 6611.
 * `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
 
@@ -354,7 +354,7 @@ functions specific to interactive scripting, user interaction, and printing.
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-There are 408 `FPDF_*` functions in the Pdfium API. As of version 0.8.25, 346 (85%) have
+There are 408 `FPDF_*` functions in the Pdfium API. As of version 0.8.25, 368 (90%) have
 bindings available in `PdfiumLibraryBindings`, with the functionality of the majority of these
 available via the `pdfium-render` high-level interface.
 
@@ -368,14 +368,24 @@ at <https://github.com/ajrcarey/pdfium-render/issues>.
 ## Version history
 
 * 0.8.25: adds bindings for `FPDFAnnot_GetFormAdditionalActionJavaScript()`,
-  `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`,
+  `FPDFBitmap_Create()`, `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`,
   `FPDFAnnot_AddFileAttachment()`, `FPDFAvail_Create()`, `FPDFAvail_Destroy()`,
   `FPDFAvail_IsDocAvail()`, `FPDFAvail_GetDocument()`, `FPDFAvail_GetFirstPageNum()`,
-  `FPDFAvail_IsPageAvail()`, `FPDFAvail_IsFormAvail()`, and `FPDFAvail_IsLinearized()` functions.
+  `FPDFAvail_IsPageAvail()`, `FPDFAvail_IsFormAvail()`, `FPDFAvail_IsLinearized()`,
+  `FPDFAnnot_GetFontColor()`, `FPDFPageObj_TransformF()`, `FPDFPageObj_GetMarkedContentID()`
+  `FPDF_StructElement_GetActualText()`, `FPDF_StructElement_GetObjType()`,
+  `FPDF_StructElement_GetChildMarkedContentID()`, `FPDF_StructElement_GetAttributeAtIndex()`,
+  `FPDF_StructElement_Attr_GetName()`, `FPDF_StructElement_Attr_GetValue()`,
+  `FPDF_StructElement_Attr_GetType()`, `FPDF_StructElement_Attr_GetBooleanValue()`,
+  `FPDF_StructElement_Attr_GetNumberValue()`, `FPDF_StructElement_Attr_GetStringValue()`,
+  `FPDF_StructElement_Attr_GetBlobValue()`, `FPDF_StructElement_Attr_GetChildAtIndex()`,
+  `FPDF_StructElement_GetMarkedContentIdCount()`, and `FPDF_StructElement_GetMarkedContentIdAtIndex()`
+  functions.
 * 0.8.24: introduces crate feature flags for selecting Pdfium API versions to use in
   `PdfiumLibraryBindings`; reworked `build.rs` to output bindings for multiple sets of Pdfium header
   files; reworks bindings implementations to differentiate between API versions that include the
   `FPDFFont_*` and `FPDFText_GetTextObject()` functions added in 0.8.23, and API versions that do not;
+  reinstates `FPDFText_GetTextRenderMode()` function removed in 0.8.23 behind feature flags;
   adds WASM bindings utility function `copy_string_to_pdfium()` to correctly copy the string data of an
   `FPDF_WIDESTRING` to Pdfium's WASM memory module, instead of just the pointer location;
   adds `PdfiumLibraryBindings::version()` function for reporting the currently configured API version;

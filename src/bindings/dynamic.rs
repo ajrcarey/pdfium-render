@@ -1,3 +1,11 @@
+#[cfg(any(
+    feature = "pdfium_6490",
+    feature = "pdfium_6555",
+    feature = "pdfium_6569",
+    feature = "pdfium_6611",
+    feature = "pdfium_future"
+))]
+use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
@@ -6,11 +14,13 @@ use crate::bindgen::{
     FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
     FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
     FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT,
-    FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL,
+    FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
+    FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use libloading::Library;
+use crate::error::PdfiumError;
+use libloading::{Library, Symbol};
 use std::ffi::CString;
 use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 
@@ -193,6 +203,11 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong,
+    extern_FPDF_StructElement_GetActualText: unsafe extern "C" fn(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong,
     extern_FPDF_StructElement_GetID: unsafe extern "C" fn(
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -216,6 +231,11 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong,
+    extern_FPDF_StructElement_GetObjType: unsafe extern "C" fn(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong,
     extern_FPDF_StructElement_GetTitle: unsafe extern "C" fn(
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -227,6 +247,228 @@ pub(crate) struct DynamicPdfiumBindings {
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
     ) -> FPDF_STRUCTELEMENT,
+    #[cfg(any(
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_GetChildMarkedContentID:
+        unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, index: c_int) -> c_int,
+    extern_FPDF_StructElement_GetParent:
+        unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> FPDF_STRUCTELEMENT,
+    extern_FPDF_StructElement_GetAttributeCount:
+        unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> c_int,
+    extern_FPDF_StructElement_GetAttributeAtIndex: unsafe extern "C" fn(
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    )
+        -> FPDF_STRUCTELEMENT_ATTR,
+    extern_FPDF_StructElement_Attr_GetCount:
+        unsafe extern "C" fn(struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int,
+    extern_FPDF_StructElement_Attr_GetName: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetValue: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: FPDF_BYTESTRING,
+    )
+        -> FPDF_STRUCTELEMENT_ATTR_VALUE,
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    extern_FPDF_StructElement_Attr_GetType: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: FPDF_BYTESTRING,
+    ) -> FPDF_OBJECT_TYPE,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetType:
+        unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> FPDF_OBJECT_TYPE,
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    extern_FPDF_StructElement_Attr_GetBooleanValue: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: FPDF_BYTESTRING,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetBooleanValue: unsafe extern "C" fn(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    extern_FPDF_StructElement_Attr_GetNumberValue: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: FPDF_BYTESTRING,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetNumberValue: unsafe extern "C" fn(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    extern_FPDF_StructElement_Attr_GetStringValue: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: FPDF_BYTESTRING,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetStringValue: unsafe extern "C" fn(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    extern_FPDF_StructElement_Attr_GetBlobValue: unsafe extern "C" fn(
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: FPDF_BYTESTRING,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetBlobValue: unsafe extern "C" fn(
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_CountChildren:
+        unsafe extern "C" fn(value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int,
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_StructElement_Attr_GetChildAtIndex:
+        unsafe extern "C" fn(
+            value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+            index: c_int,
+        ) -> FPDF_STRUCTELEMENT_ATTR_VALUE,
+    extern_FPDF_StructElement_GetMarkedContentIdCount:
+        unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT) -> c_int,
+    extern_FPDF_StructElement_GetMarkedContentIdAtIndex:
+        unsafe extern "C" fn(struct_element: FPDF_STRUCTELEMENT, index: c_int) -> c_int,
     extern_FPDFPage_New: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -345,6 +587,8 @@ pub(crate) struct DynamicPdfiumBindings {
         e: c_double,
         f: c_double,
     ),
+    extern_FPDFBitmap_Create:
+        unsafe extern "C" fn(width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP,
     extern_FPDFBitmap_CreateEx: unsafe extern "C" fn(
         width: c_int,
         height: c_int,
@@ -354,6 +598,23 @@ pub(crate) struct DynamicPdfiumBindings {
     ) -> FPDF_BITMAP,
     extern_FPDFBitmap_Destroy: unsafe extern "C" fn(bitmap: FPDF_BITMAP),
     extern_FPDFBitmap_GetFormat: unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int,
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
     extern_FPDFBitmap_FillRect: unsafe extern "C" fn(
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -362,6 +623,15 @@ pub(crate) struct DynamicPdfiumBindings {
         height: c_int,
         color: FPDF_DWORD,
     ),
+    #[cfg(feature = "pdfium_future")]
+    extern_FPDFBitmap_FillRect: unsafe extern "C" fn(
+        bitmap: FPDF_BITMAP,
+        left: c_int,
+        top: c_int,
+        width: c_int,
+        height: c_int,
+        color: FPDF_DWORD,
+    ) -> FPDF_BOOL,
     extern_FPDFBitmap_GetBuffer: unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> *mut c_void,
     extern_FPDFBitmap_GetWidth: unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int,
     extern_FPDFBitmap_GetHeight: unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int,
@@ -566,6 +836,19 @@ pub(crate) struct DynamicPdfiumBindings {
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut f32,
+    ) -> FPDF_BOOL,
+    #[cfg(any(
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDFAnnot_GetFontColor: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
     ) -> FPDF_BOOL,
     extern_FPDFAnnot_IsChecked:
         unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL,
@@ -946,12 +1229,18 @@ pub(crate) struct DynamicPdfiumBindings {
         e: c_double,
         f: c_double,
     ),
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    extern_FPDFPageObj_TransformF:
+        unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_GetMatrix:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, matrix: *mut FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_SetMatrix:
         unsafe extern "C" fn(path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_NewImageObj:
         unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT,
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    extern_FPDFPageObj_GetMarkedContentID:
+        unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFPageObj_CountMarks: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFPageObj_GetMark:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, index: c_ulong) -> FPDF_PAGEOBJECTMARK,
@@ -1278,508 +1567,835 @@ pub(crate) struct DynamicPdfiumBindings {
 }
 
 impl DynamicPdfiumBindings {
-    pub fn new(library: Library) -> Result<Self, libloading::Error> {
-        let result = unsafe {
-            DynamicPdfiumBindings {
-                extern_FPDF_InitLibrary: *(library.get(b"FPDF_InitLibrary\0")?),
-                extern_FPDF_DestroyLibrary: *(library.get(b"FPDF_DestroyLibrary\0")?),
-                extern_FPDF_GetLastError: *(library.get(b"FPDF_GetLastError\0")?),
-                extern_FPDF_CreateNewDocument: *(library.get(b"FPDF_CreateNewDocument\0")?),
-                extern_FPDF_LoadDocument: *(library.get(b"FPDF_LoadDocument\0")?),
-                extern_FPDF_LoadMemDocument64: *(library.get(b"FPDF_LoadMemDocument64\0")?),
-                extern_FPDF_LoadCustomDocument: *(library.get(b"FPDF_LoadCustomDocument\0")?),
-                extern_FPDF_SaveAsCopy: *(library.get(b"FPDF_SaveAsCopy\0")?),
-                extern_FPDF_SaveWithVersion: *(library.get(b"FPDF_SaveWithVersion\0")?),
-                extern_FPDFAvail_Create: *(library.get(b"FPDFAvail_Create\0")?),
-                extern_FPDFAvail_Destroy: *(library.get(b"FPDFAvail_Destroy\0")?),
-                extern_FPDFAvail_IsDocAvail: *(library.get(b"FPDFAvail_IsDocAvail\0")?),
-                extern_FPDFAvail_GetDocument: *(library.get(b"FPDFAvail_GetDocument\0")?),
-                extern_FPDFAvail_GetFirstPageNum: *(library.get(b"FPDFAvail_GetFirstPageNum\0")?),
-                extern_FPDFAvail_IsPageAvail: *(library.get(b"FPDFAvail_IsPageAvail\0")?),
-                extern_FPDFAvail_IsFormAvail: *(library.get(b"FPDFAvail_IsFormAvail\0")?),
-                extern_FPDFAvail_IsLinearized: *(library.get(b"FPDFAvail_IsLinearized\0")?),
-                extern_FPDF_CloseDocument: *(library.get(b"FPDF_CloseDocument\0")?),
-                extern_FPDF_DeviceToPage: *(library.get(b"FPDF_DeviceToPage\0")?),
-                extern_FPDF_PageToDevice: *(library.get(b"FPDF_PageToDevice\0")?),
-                extern_FPDF_GetFileVersion: *(library.get(b"FPDF_GetFileVersion\0")?),
-                extern_FPDF_GetFileIdentifier: *(library.get(b"FPDF_GetFileIdentifier\0")?),
-                extern_FPDF_GetMetaText: *(library.get(b"FPDF_GetMetaText\0")?),
-                extern_FPDF_GetDocPermissions: *(library.get(b"FPDF_GetDocPermissions\0")?),
-                extern_FPDF_GetSecurityHandlerRevision: *(library
-                    .get(b"FPDF_GetSecurityHandlerRevision\0")?),
-                extern_FPDF_GetPageCount: *(library.get(b"FPDF_GetPageCount\0")?),
-                extern_FPDF_LoadPage: *(library.get(b"FPDF_LoadPage\0")?),
-                extern_FPDF_ClosePage: *(library.get(b"FPDF_ClosePage\0")?),
-                extern_FPDF_ImportPagesByIndex: *(library.get(b"FPDF_ImportPagesByIndex\0")?),
-                extern_FPDF_ImportPages: *(library.get(b"FPDF_ImportPages\0")?),
-                extern_FPDF_ImportNPagesToOne: *(library.get(b"FPDF_ImportNPagesToOne\0")?),
-                extern_FPDF_GetPageLabel: *(library.get(b"FPDF_GetPageLabel\0")?),
-                extern_FPDF_GetPageBoundingBox: *(library.get(b"FPDF_GetPageBoundingBox\0")?),
-                extern_FPDF_GetPageSizeByIndexF: *(library.get(b"FPDF_GetPageSizeByIndexF\0")?),
-                extern_FPDF_GetPageWidthF: *(library.get(b"FPDF_GetPageWidthF\0")?),
-                extern_FPDF_GetPageHeightF: *(library.get(b"FPDF_GetPageHeightF\0")?),
-                extern_FPDFText_GetCharIndexFromTextIndex: *(library
-                    .get(b"FPDFText_GetCharIndexFromTextIndex\0")?),
-                extern_FPDFText_GetTextIndexFromCharIndex: *(library
-                    .get(b"FPDFText_GetTextIndexFromCharIndex\0")?),
-                extern_FPDF_GetSignatureCount: *(library.get(b"FPDF_GetSignatureCount\0")?),
-                extern_FPDF_GetSignatureObject: *(library.get(b"FPDF_GetSignatureObject\0")?),
-                extern_FPDFSignatureObj_GetContents: *(library
-                    .get(b"FPDFSignatureObj_GetContents\0")?),
-                extern_FPDFSignatureObj_GetByteRange: *(library
-                    .get(b"FPDFSignatureObj_GetByteRange\0")?),
-                extern_FPDFSignatureObj_GetSubFilter: *(library
-                    .get(b"FPDFSignatureObj_GetSubFilter\0")?),
-                extern_FPDFSignatureObj_GetReason: *(library
-                    .get(b"FPDFSignatureObj_GetReason\0")?),
-                extern_FPDFSignatureObj_GetTime: *(library.get(b"FPDFSignatureObj_GetTime\0")?),
-                extern_FPDFSignatureObj_GetDocMDPPermission: *(library
-                    .get(b"FPDFSignatureObj_GetDocMDPPermission\0")?),
-                extern_FPDF_StructTree_GetForPage: *(library
-                    .get(b"FPDF_StructTree_GetForPage\0")?),
-                extern_FPDF_StructTree_Close: *(library.get(b"FPDF_StructTree_Close\0")?),
-                extern_FPDF_StructTree_CountChildren: *(library
-                    .get(b"FPDF_StructTree_CountChildren\0")?),
-                extern_FPDF_StructTree_GetChildAtIndex: *(library
-                    .get(b"FPDF_StructTree_GetChildAtIndex\0")?),
-                extern_FPDF_StructElement_GetAltText: *(library
-                    .get(b"FPDF_StructElement_GetAltText\0")?),
-                extern_FPDF_StructElement_GetID: *(library.get(b"FPDF_StructElement_GetID\0")?),
-                extern_FPDF_StructElement_GetLang: *(library
-                    .get(b"FPDF_StructElement_GetLang\0")?),
-                extern_FPDF_StructElement_GetStringAttribute: *(library
-                    .get(b"FPDF_StructElement_GetStringAttribute\0")?),
-                extern_FPDF_StructElement_GetMarkedContentID: *(library
-                    .get(b"FPDF_StructElement_GetMarkedContentID\0")?),
-                extern_FPDF_StructElement_GetType: *(library
-                    .get(b"FPDF_StructElement_GetType\0")?),
-                extern_FPDF_StructElement_GetTitle: *(library
-                    .get(b"FPDF_StructElement_GetTitle\0")?),
-                extern_FPDF_StructElement_CountChildren: *(library
-                    .get(b"FPDF_StructElement_CountChildren\0")?),
-                extern_FPDF_StructElement_GetChildAtIndex: *(library
-                    .get(b"FPDF_StructElement_GetChildAtIndex\0")?),
-                extern_FPDFPage_New: *(library.get(b"FPDFPage_New\0")?),
-                extern_FPDFPage_Delete: *(library.get(b"FPDFPage_Delete\0")?),
-                extern_FPDFPage_GetRotation: *(library.get(b"FPDFPage_GetRotation\0")?),
-                extern_FPDFPage_SetRotation: *(library.get(b"FPDFPage_SetRotation\0")?),
-                extern_FPDFPage_GetMediaBox: *(library.get(b"FPDFPage_GetMediaBox\0")?),
-                extern_FPDFPage_GetCropBox: *(library.get(b"FPDFPage_GetCropBox\0")?),
-                extern_FPDFPage_GetBleedBox: *(library.get(b"FPDFPage_GetBleedBox\0")?),
-                extern_FPDFPage_GetTrimBox: *(library.get(b"FPDFPage_GetTrimBox\0")?),
-                extern_FPDFPage_GetArtBox: *(library.get(b"FPDFPage_GetArtBox\0")?),
-                extern_FPDFPage_SetMediaBox: *(library.get(b"FPDFPage_SetMediaBox\0")?),
-                extern_FPDFPage_SetCropBox: *(library.get(b"FPDFPage_SetCropBox\0")?),
-                extern_FPDFPage_SetBleedBox: *(library.get(b"FPDFPage_SetBleedBox\0")?),
-                extern_FPDFPage_SetTrimBox: *(library.get(b"FPDFPage_SetTrimBox\0")?),
-                extern_FPDFPage_SetArtBox: *(library.get(b"FPDFPage_SetArtBox\0")?),
-                extern_FPDFPage_TransFormWithClip: *(library
-                    .get(b"FPDFPage_TransFormWithClip\0")?),
-                extern_FPDFPageObj_TransformClipPath: *(library
-                    .get(b"FPDFPageObj_TransformClipPath\0")?),
-                extern_FPDFPageObj_GetClipPath: *(library.get(b"FPDFPageObj_GetClipPath\0")?),
-                extern_FPDFClipPath_CountPaths: *(library.get(b"FPDFClipPath_CountPaths\0")?),
-                extern_FPDFClipPath_CountPathSegments: *(library
-                    .get(b"FPDFClipPath_CountPathSegments\0")?),
-                extern_FPDFClipPath_GetPathSegment: *(library
-                    .get(b"FPDFClipPath_GetPathSegment\0")?),
-                extern_FPDF_CreateClipPath: *(library.get(b"FPDF_CreateClipPath\0")?),
-                extern_FPDF_DestroyClipPath: *(library.get(b"FPDF_DestroyClipPath\0")?),
-                extern_FPDFPage_InsertClipPath: *(library.get(b"FPDFPage_InsertClipPath\0")?),
-                extern_FPDFPage_HasTransparency: *(library.get(b"FPDFPage_HasTransparency\0")?),
-                extern_FPDFPage_GenerateContent: *(library.get(b"FPDFPage_GenerateContent\0")?),
-                extern_FPDFPage_TransformAnnots: *(library.get(b"FPDFPage_TransformAnnots\0")?),
-                extern_FPDFBitmap_CreateEx: *(library.get(b"FPDFBitmap_CreateEx\0")?),
-                extern_FPDFBitmap_Destroy: *(library.get(b"FPDFBitmap_Destroy\0")?),
-                extern_FPDFBitmap_GetFormat: *(library.get(b"FPDFBitmap_GetFormat\0")?),
-                extern_FPDFBitmap_FillRect: *(library.get(b"FPDFBitmap_FillRect\0")?),
-                extern_FPDFBitmap_GetBuffer: *(library.get(b"FPDFBitmap_GetBuffer\0")?),
-                extern_FPDFBitmap_GetWidth: *(library.get(b"FPDFBitmap_GetWidth\0")?),
-                extern_FPDFBitmap_GetHeight: *(library.get(b"FPDFBitmap_GetHeight\0")?),
-                extern_FPDFBitmap_GetStride: *(library.get(b"FPDFBitmap_GetStride\0")?),
-                extern_FPDF_RenderPageBitmap: *(library.get(b"FPDF_RenderPageBitmap\0")?),
-                extern_FPDF_RenderPageBitmapWithMatrix: *(library
-                    .get(b"FPDF_RenderPageBitmapWithMatrix\0")?),
-                extern_FPDFAnnot_IsSupportedSubtype: *(library
-                    .get(b"FPDFAnnot_IsSupportedSubtype\0")?),
-                extern_FPDFPage_CreateAnnot: *(library.get(b"FPDFPage_CreateAnnot\0")?),
-                extern_FPDFPage_GetAnnotCount: *(library.get(b"FPDFPage_GetAnnotCount\0")?),
-                extern_FPDFPage_GetAnnot: *(library.get(b"FPDFPage_GetAnnot\0")?),
-                extern_FPDFPage_GetAnnotIndex: *(library.get(b"FPDFPage_GetAnnotIndex\0")?),
-                extern_FPDFPage_CloseAnnot: *(library.get(b"FPDFPage_CloseAnnot\0")?),
-                extern_FPDFPage_RemoveAnnot: *(library.get(b"FPDFPage_RemoveAnnot\0")?),
-                extern_FPDFAnnot_GetSubtype: *(library.get(b"FPDFAnnot_GetSubtype\0")?),
-                extern_FPDFAnnot_IsObjectSupportedSubtype: *(library
-                    .get(b"FPDFAnnot_IsObjectSupportedSubtype\0")?),
-                extern_FPDFAnnot_UpdateObject: *(library.get(b"FPDFAnnot_UpdateObject\0")?),
-                extern_FPDFAnnot_AddInkStroke: *(library.get(b"FPDFAnnot_AddInkStroke\0")?),
-                extern_FPDFAnnot_RemoveInkList: *(library.get(b"FPDFAnnot_RemoveInkList\0")?),
-                extern_FPDFAnnot_AppendObject: *(library.get(b"FPDFAnnot_AppendObject\0")?),
-                extern_FPDFAnnot_GetObjectCount: *(library.get(b"FPDFAnnot_GetObjectCount\0")?),
-                extern_FPDFAnnot_GetObject: *(library.get(b"FPDFAnnot_GetObject\0")?),
-                extern_FPDFAnnot_RemoveObject: *(library.get(b"FPDFAnnot_RemoveObject\0")?),
-                extern_FPDFAnnot_SetColor: *(library.get(b"FPDFAnnot_SetColor\0")?),
-                extern_FPDFAnnot_GetColor: *(library.get(b"FPDFAnnot_GetColor\0")?),
-                extern_FPDFAnnot_HasAttachmentPoints: *(library
-                    .get(b"FPDFAnnot_HasAttachmentPoints\0")?),
-                extern_FPDFAnnot_SetAttachmentPoints: *(library
-                    .get(b"FPDFAnnot_SetAttachmentPoints\0")?),
-                extern_FPDFAnnot_AppendAttachmentPoints: *(library
-                    .get(b"FPDFAnnot_AppendAttachmentPoints\0")?),
-                extern_FPDFAnnot_CountAttachmentPoints: *(library
-                    .get(b"FPDFAnnot_CountAttachmentPoints\0")?),
-                extern_FPDFAnnot_GetAttachmentPoints: *(library
-                    .get(b"FPDFAnnot_GetAttachmentPoints\0")?),
-                extern_FPDFAnnot_SetRect: *(library.get(b"FPDFAnnot_SetRect\0")?),
-                extern_FPDFAnnot_GetRect: *(library.get(b"FPDFAnnot_GetRect\0")?),
-                extern_FPDFAnnot_GetVertices: *(library.get(b"FPDFAnnot_GetVertices\0")?),
-                extern_FPDFAnnot_GetInkListCount: *(library.get(b"FPDFAnnot_GetInkListCount\0")?),
-                extern_FPDFAnnot_GetInkListPath: *(library.get(b"FPDFAnnot_GetInkListPath\0")?),
-                extern_FPDFAnnot_GetLine: *(library.get(b"FPDFAnnot_GetLine\0")?),
-                extern_FPDFAnnot_SetBorder: *(library.get(b"FPDFAnnot_SetBorder\0")?),
-                extern_FPDFAnnot_GetBorder: *(library.get(b"FPDFAnnot_GetBorder\0")?),
-                extern_FPDFAnnot_GetFormAdditionalActionJavaScript: *(library
-                    .get(b"FPDFAnnot_GetFormAdditionalActionJavaScript\0")?),
-                extern_FPDFAnnot_GetFormFieldAlternateName: *(library
-                    .get(b"FPDFAnnot_GetFormFieldAlternateName\0")?),
-                extern_FPDFAnnot_HasKey: *(library.get(b"FPDFAnnot_HasKey\0")?),
-                extern_FPDFAnnot_GetValueType: *(library.get(b"FPDFAnnot_GetValueType\0")?),
-                extern_FPDFAnnot_SetStringValue: *(library.get(b"FPDFAnnot_SetStringValue\0")?),
-                extern_FPDFAnnot_GetStringValue: *(library.get(b"FPDFAnnot_GetStringValue\0")?),
-                extern_FPDFAnnot_GetNumberValue: *(library.get(b"FPDFAnnot_GetNumberValue\0")?),
-                extern_FPDFAnnot_SetAP: *(library.get(b"FPDFAnnot_SetAP\0")?),
-                extern_FPDFAnnot_GetAP: *(library.get(b"FPDFAnnot_GetAP\0")?),
-                extern_FPDFAnnot_GetLinkedAnnot: *(library.get(b"FPDFAnnot_GetLinkedAnnot\0")?),
-                extern_FPDFAnnot_GetFlags: *(library.get(b"FPDFAnnot_GetFlags\0")?),
-                extern_FPDFAnnot_SetFlags: *(library.get(b"FPDFAnnot_SetFlags\0")?),
-                extern_FPDFAnnot_GetFormFieldFlags: *(library
-                    .get(b"FPDFAnnot_GetFormFieldFlags\0")?),
-                extern_FPDFAnnot_GetFormFieldAtPoint: *(library
-                    .get(b"FPDFAnnot_GetFormFieldAtPoint\0")?),
-                extern_FPDFAnnot_GetFormFieldName: *(library
-                    .get(b"FPDFAnnot_GetFormFieldName\0")?),
-                extern_FPDFAnnot_GetFormFieldType: *(library
-                    .get(b"FPDFAnnot_GetFormFieldType\0")?),
-                extern_FPDFAnnot_GetFormFieldValue: *(library
-                    .get(b"FPDFAnnot_GetFormFieldValue\0")?),
-                extern_FPDFAnnot_GetOptionCount: *(library.get(b"FPDFAnnot_GetOptionCount\0")?),
-                extern_FPDFAnnot_GetOptionLabel: *(library.get(b"FPDFAnnot_GetOptionLabel\0")?),
-                extern_FPDFAnnot_IsOptionSelected: *(library
-                    .get(b"FPDFAnnot_IsOptionSelected\0")?),
-                extern_FPDFAnnot_GetFontSize: *(library.get(b"FPDFAnnot_GetFontSize\0")?),
-                extern_FPDFAnnot_IsChecked: *(library.get(b"FPDFAnnot_IsChecked\0")?),
-                extern_FPDFAnnot_SetFocusableSubtypes: *(library
-                    .get(b"FPDFAnnot_SetFocusableSubtypes\0")?),
-                extern_FPDFAnnot_GetFocusableSubtypesCount: *(library
-                    .get(b"FPDFAnnot_GetFocusableSubtypesCount\0")?),
-                extern_FPDFAnnot_GetFocusableSubtypes: *(library
-                    .get(b"FPDFAnnot_GetFocusableSubtypes\0")?),
-                extern_FPDFAnnot_GetLink: *(library.get(b"FPDFAnnot_GetLink\0")?),
-                extern_FPDFAnnot_GetFormControlCount: *(library
-                    .get(b"FPDFAnnot_GetFormControlCount\0")?),
-                extern_FPDFAnnot_GetFormControlIndex: *(library
-                    .get(b"FPDFAnnot_GetFormControlIndex\0")?),
-                extern_FPDFAnnot_GetFormFieldExportValue: *(library
-                    .get(b"FPDFAnnot_GetFormFieldExportValue\0")?),
-                extern_FPDFAnnot_SetURI: *(library.get(b"FPDFAnnot_SetURI\0")?),
-                #[cfg(any(
-                    feature = "pdfium_6337",
-                    feature = "pdfium_6406",
-                    feature = "pdfium_6490",
-                    feature = "pdfium_6555",
-                    feature = "pdfium_6569",
-                    feature = "pdfium_6611",
-                    feature = "pdfium_future"
-                ))]
-                extern_FPDFAnnot_GetFileAttachment: *(library
-                    .get(b"FPDFAnnot_GetFileAttachment\0")?),
-                #[cfg(any(
-                    feature = "pdfium_6337",
-                    feature = "pdfium_6406",
-                    feature = "pdfium_6490",
-                    feature = "pdfium_6555",
-                    feature = "pdfium_6569",
-                    feature = "pdfium_6611",
-                    feature = "pdfium_future"
-                ))]
-                extern_FPDFAnnot_AddFileAttachment: *(library
-                    .get(b"FPDFAnnot_AddFileAttachment\0")?),
-                extern_FPDFDOC_InitFormFillEnvironment: *(library
-                    .get(b"FPDFDOC_InitFormFillEnvironment\0")?),
-                extern_FPDFDOC_ExitFormFillEnvironment: *(library
-                    .get(b"FPDFDOC_ExitFormFillEnvironment\0")?),
-                extern_FORM_OnAfterLoadPage: *(library.get(b"FORM_OnAfterLoadPage\0")?),
-                extern_FORM_OnBeforeClosePage: *(library.get(b"FORM_OnBeforeClosePage\0")?),
-                extern_FPDFDoc_GetPageMode: *(library.get(b"FPDFDoc_GetPageMode\0")?),
-                extern_FPDFPage_Flatten: *(library.get(b"FPDFPage_Flatten\0")?),
-                extern_FPDF_SetFormFieldHighlightColor: *(library
-                    .get(b"FPDF_SetFormFieldHighlightColor\0")?),
-                extern_FPDF_SetFormFieldHighlightAlpha: *(library
-                    .get(b"FPDF_SetFormFieldHighlightAlpha\0")?),
-                extern_FPDF_FFLDraw: *(library.get(b"FPDF_FFLDraw\0")?),
-                extern_FPDF_GetFormType: *(library.get(b"FPDF_GetFormType\0")?),
-                extern_FPDFBookmark_GetFirstChild: *(library
-                    .get(b"FPDFBookmark_GetFirstChild\0")?),
-                extern_FPDFBookmark_GetNextSibling: *(library
-                    .get(b"FPDFBookmark_GetNextSibling\0")?),
-                extern_FPDFBookmark_GetTitle: *(library.get(b"FPDFBookmark_GetTitle\0")?),
-                extern_FPDFBookmark_GetCount: *(library.get(b"FPDFBookmark_GetCount\0")?),
-                extern_FPDFBookmark_Find: *(library.get(b"FPDFBookmark_Find\0")?),
-                extern_FPDFBookmark_GetDest: *(library.get(b"FPDFBookmark_GetDest\0")?),
-                extern_FPDFBookmark_GetAction: *(library.get(b"FPDFBookmark_GetAction\0")?),
-                extern_FPDFAction_GetType: *(library.get(b"FPDFAction_GetType\0")?),
-                extern_FPDFAction_GetDest: *(library.get(b"FPDFAction_GetDest\0")?),
-                extern_FPDFAction_GetFilePath: *(library.get(b"FPDFAction_GetFilePath\0")?),
-                extern_FPDFAction_GetURIPath: *(library.get(b"FPDFAction_GetURIPath\0")?),
-                extern_FPDFDest_GetDestPageIndex: *(library.get(b"FPDFDest_GetDestPageIndex\0")?),
-                extern_FPDFDest_GetView: *(library.get(b"FPDFDest_GetView\0")?),
-                extern_FPDFDest_GetLocationInPage: *(library
-                    .get(b"FPDFDest_GetLocationInPage\0")?),
-                extern_FPDFLink_GetLinkAtPoint: *(library.get(b"FPDFLink_GetLinkAtPoint\0")?),
-                extern_FPDFLink_GetLinkZOrderAtPoint: *(library
-                    .get(b"FPDFLink_GetLinkZOrderAtPoint\0")?),
-                extern_FPDFLink_GetDest: *(library.get(b"FPDFLink_GetDest\0")?),
-                extern_FPDFLink_GetAction: *(library.get(b"FPDFLink_GetAction\0")?),
-                extern_FPDFLink_Enumerate: *(library.get(b"FPDFLink_Enumerate\0")?),
-                extern_FPDFLink_GetAnnot: *(library.get(b"FPDFLink_GetAnnot\0")?),
-                extern_FPDFLink_GetAnnotRect: *(library.get(b"FPDFLink_GetAnnotRect\0")?),
-                extern_FPDFLink_CountQuadPoints: *(library.get(b"FPDFLink_CountQuadPoints\0")?),
-                extern_FPDFLink_GetQuadPoints: *(library.get(b"FPDFLink_GetQuadPoints\0")?),
-                extern_FPDF_GetPageAAction: *(library.get(b"FPDF_GetPageAAction\0")?),
-                extern_FPDFText_LoadPage: *(library.get(b"FPDFText_LoadPage\0")?),
-                extern_FPDFText_ClosePage: *(library.get(b"FPDFText_ClosePage\0")?),
-                extern_FPDFText_CountChars: *(library.get(b"FPDFText_CountChars\0")?),
-                extern_FPDFText_GetUnicode: *(library.get(b"FPDFText_GetUnicode\0")?),
-                #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
-                extern_FPDFText_GetTextObject: *(library.get(b"FPDFText_GetTextObject\0")?),
-                extern_FPDFText_GetFontSize: *(library.get(b"FPDFText_GetFontSize\0")?),
-                extern_FPDFText_GetFontInfo: *(library.get(b"FPDFText_GetFontInfo\0")?),
-                extern_FPDFText_GetFontWeight: *(library.get(b"FPDFText_GetFontWeight\0")?),
-                #[cfg(any(
-                    feature = "pdfium_6569",
-                    feature = "pdfium_6555",
-                    feature = "pdfium_6490",
-                    feature = "pdfium_6406",
-                    feature = "pdfium_6337",
-                    feature = "pdfium_6295",
-                    feature = "pdfium_6259",
-                    feature = "pdfium_6164",
-                    feature = "pdfium_6124",
-                    feature = "pdfium_6110",
-                    feature = "pdfium_6084",
-                    feature = "pdfium_6043",
-                    feature = "pdfium_6015",
-                    feature = "pdfium_5961"
-                ))]
-                extern_FPDFText_GetTextRenderMode: *(library
-                    .get(b"FPDFText_GetTextRenderMode\0")?),
-                extern_FPDFText_GetFillColor: *(library.get(b"FPDFText_GetFillColor\0")?),
-                extern_FPDFText_GetStrokeColor: *(library.get(b"FPDFText_GetStrokeColor\0")?),
-                extern_FPDFText_GetCharAngle: *(library.get(b"FPDFText_GetCharAngle\0")?),
-                extern_FPDFText_GetCharBox: *(library.get(b"FPDFText_GetCharBox\0")?),
-                extern_FPDFText_GetLooseCharBox: *(library.get(b"FPDFText_GetLooseCharBox\0")?),
-                extern_FPDFText_GetMatrix: *(library.get(b"FPDFText_GetMatrix\0")?),
-                extern_FPDFText_GetCharOrigin: *(library.get(b"FPDFText_GetCharOrigin\0")?),
-                extern_FPDFText_GetCharIndexAtPos: *(library
-                    .get(b"FPDFText_GetCharIndexAtPos\0")?),
-                extern_FPDFText_GetText: *(library.get(b"FPDFText_GetText\0")?),
-                extern_FPDFText_CountRects: *(library.get(b"FPDFText_CountRects\0")?),
-                extern_FPDFText_GetRect: *(library.get(b"FPDFText_GetRect\0")?),
-                extern_FPDFText_GetBoundedText: *(library.get(b"FPDFText_GetBoundedText\0")?),
-                extern_FPDFText_FindStart: *(library.get(b"FPDFText_FindStart\0")?),
-                extern_FPDFText_FindNext: *(library.get(b"FPDFText_FindNext\0")?),
-                extern_FPDFText_FindPrev: *(library.get(b"FPDFText_FindPrev\0")?),
-                extern_FPDFText_GetSchResultIndex: *(library
-                    .get(b"FPDFText_GetSchResultIndex\0")?),
-                extern_FPDFText_GetSchCount: *(library.get(b"FPDFText_GetSchCount\0")?),
-                extern_FPDFText_FindClose: *(library.get(b"FPDFText_FindClose\0")?),
-                extern_FPDFLink_LoadWebLinks: *(library.get(b"FPDFLink_LoadWebLinks\0")?),
-                extern_FPDFLink_CountWebLinks: *(library.get(b"FPDFLink_CountWebLinks\0")?),
-                extern_FPDFLink_GetURL: *(library.get(b"FPDFLink_GetURL\0")?),
-                extern_FPDFLink_CountRects: *(library.get(b"FPDFLink_CountRects\0")?),
-                extern_FPDFLink_GetRect: *(library.get(b"FPDFLink_GetRect\0")?),
-                extern_FPDFLink_GetTextRange: *(library.get(b"FPDFLink_GetTextRange\0")?),
-                extern_FPDFLink_CloseWebLinks: *(library.get(b"FPDFLink_CloseWebLinks\0")?),
-                extern_FPDFPage_GetDecodedThumbnailData: *(library
-                    .get(b"FPDFPage_GetDecodedThumbnailData\0")?),
-                extern_FPDFPage_GetRawThumbnailData: *(library
-                    .get(b"FPDFPage_GetRawThumbnailData\0")?),
-                extern_FPDFPage_GetThumbnailAsBitmap: *(library
-                    .get(b"FPDFPage_GetThumbnailAsBitmap\0")?),
-                extern_FPDFFormObj_CountObjects: *(library.get(b"FPDFFormObj_CountObjects\0")?),
-                extern_FPDFFormObj_GetObject: *(library.get(b"FPDFFormObj_GetObject\0")?),
-                extern_FPDFPageObj_CreateTextObj: *(library.get(b"FPDFPageObj_CreateTextObj\0")?),
-                extern_FPDFTextObj_GetTextRenderMode: *(library
-                    .get(b"FPDFTextObj_GetTextRenderMode\0")?),
-                extern_FPDFTextObj_SetTextRenderMode: *(library
-                    .get(b"FPDFTextObj_SetTextRenderMode\0")?),
-                extern_FPDFTextObj_GetText: *(library.get(b"FPDFTextObj_GetText\0")?),
-                extern_FPDFTextObj_GetFont: *(library.get(b"FPDFTextObj_GetFont\0")?),
-                extern_FPDFTextObj_GetFontSize: *(library.get(b"FPDFTextObj_GetFontSize\0")?),
-                extern_FPDFPageObj_NewTextObj: *(library.get(b"FPDFPageObj_NewTextObj\0")?),
-                extern_FPDFText_SetText: *(library.get(b"FPDFText_SetText\0")?),
-                extern_FPDFText_SetCharcodes: *(library.get(b"FPDFText_SetCharcodes\0")?),
-                extern_FPDFText_LoadFont: *(library.get(b"FPDFText_LoadFont\0")?),
-                extern_FPDFText_LoadStandardFont: *(library.get(b"FPDFText_LoadStandardFont\0")?),
-                extern_FPDFFont_Close: *(library.get(b"FPDFFont_Close\0")?),
-                extern_FPDFPath_MoveTo: *(library.get(b"FPDFPath_MoveTo\0")?),
-                extern_FPDFPath_LineTo: *(library.get(b"FPDFPath_LineTo\0")?),
-                extern_FPDFPath_BezierTo: *(library.get(b"FPDFPath_BezierTo\0")?),
-                extern_FPDFPath_Close: *(library.get(b"FPDFPath_Close\0")?),
-                extern_FPDFPath_SetDrawMode: *(library.get(b"FPDFPath_SetDrawMode\0")?),
-                extern_FPDFPath_GetDrawMode: *(library.get(b"FPDFPath_GetDrawMode\0")?),
-                extern_FPDFPage_InsertObject: *(library.get(b"FPDFPage_InsertObject\0")?),
-                extern_FPDFPage_RemoveObject: *(library.get(b"FPDFPage_RemoveObject\0")?),
-                extern_FPDFPage_CountObjects: *(library.get(b"FPDFPage_CountObjects\0")?),
-                extern_FPDFPage_GetObject: *(library.get(b"FPDFPage_GetObject\0")?),
-                extern_FPDFPageObj_Destroy: *(library.get(b"FPDFPageObj_Destroy\0")?),
-                extern_FPDFPageObj_HasTransparency: *(library
-                    .get(b"FPDFPageObj_HasTransparency\0")?),
-                extern_FPDFPageObj_GetType: *(library.get(b"FPDFPageObj_GetType\0")?),
-                extern_FPDFPageObj_Transform: *(library.get(b"FPDFPageObj_Transform\0")?),
-                extern_FPDFPageObj_GetMatrix: *(library.get(b"FPDFPageObj_GetMatrix\0")?),
-                extern_FPDFPageObj_SetMatrix: *(library.get(b"FPDFPageObj_SetMatrix\0")?),
-                extern_FPDFPageObj_NewImageObj: *(library.get(b"FPDFPageObj_NewImageObj\0")?),
-                extern_FPDFPageObj_CountMarks: *(library.get(b"FPDFPageObj_CountMarks\0")?),
-                extern_FPDFPageObj_GetMark: *(library.get(b"FPDFPageObj_GetMark\0")?),
-                extern_FPDFPageObj_AddMark: *(library.get(b"FPDFPageObj_AddMark\0")?),
-                extern_FPDFPageObj_RemoveMark: *(library.get(b"FPDFPageObj_RemoveMark\0")?),
-                extern_FPDFPageObjMark_GetName: *(library.get(b"FPDFPageObjMark_GetName\0")?),
-                extern_FPDFPageObjMark_CountParams: *(library
-                    .get(b"FPDFPageObjMark_CountParams\0")?),
-                extern_FPDFPageObjMark_GetParamKey: *(library
-                    .get(b"FPDFPageObjMark_GetParamKey\0")?),
-                extern_FPDFPageObjMark_GetParamValueType: *(library
-                    .get(b"FPDFPageObjMark_GetParamValueType\0")?),
-                extern_FPDFPageObjMark_GetParamIntValue: *(library
-                    .get(b"FPDFPageObjMark_GetParamIntValue\0")?),
-                extern_FPDFPageObjMark_GetParamStringValue: *(library
-                    .get(b"FPDFPageObjMark_GetParamStringValue\0")?),
-                extern_FPDFPageObjMark_GetParamBlobValue: *(library
-                    .get(b"FPDFPageObjMark_GetParamBlobValue\0")?),
-                extern_FPDFPageObjMark_SetIntParam: *(library
-                    .get(b"FPDFPageObjMark_SetIntParam\0")?),
-                extern_FPDFPageObjMark_SetStringParam: *(library
-                    .get(b"FPDFPageObjMark_SetStringParam\0")?),
-                extern_FPDFPageObjMark_SetBlobParam: *(library
-                    .get(b"FPDFPageObjMark_SetBlobParam\0")?),
-                extern_FPDFPageObjMark_RemoveParam: *(library
-                    .get(b"FPDFPageObjMark_RemoveParam\0")?),
-                extern_FPDFImageObj_LoadJpegFile: *(library.get(b"FPDFImageObj_LoadJpegFile\0")?),
-                extern_FPDFImageObj_LoadJpegFileInline: *(library
-                    .get(b"FPDFImageObj_LoadJpegFileInline\0")?),
-                extern_FPDFImageObj_SetMatrix: *(library.get(b"FPDFImageObj_SetMatrix\0")?),
-                extern_FPDFImageObj_SetBitmap: *(library.get(b"FPDFImageObj_SetBitmap\0")?),
-                extern_FPDFImageObj_GetBitmap: *(library.get(b"FPDFImageObj_GetBitmap\0")?),
-                extern_FPDFImageObj_GetRenderedBitmap: *(library
-                    .get(b"FPDFImageObj_GetRenderedBitmap\0")?),
-                extern_FPDFImageObj_GetImageDataDecoded: *(library
-                    .get(b"FPDFImageObj_GetImageDataDecoded\0")?),
-                extern_FPDFImageObj_GetImageDataRaw: *(library
-                    .get(b"FPDFImageObj_GetImageDataRaw\0")?),
-                extern_FPDFImageObj_GetImageFilterCount: *(library
-                    .get(b"FPDFImageObj_GetImageFilterCount\0")?),
-                extern_FPDFImageObj_GetImageFilter: *(library
-                    .get(b"FPDFImageObj_GetImageFilter\0")?),
-                extern_FPDFImageObj_GetImageMetadata: *(library
-                    .get(b"FPDFImageObj_GetImageMetadata\0")?),
-                extern_FPDFPageObj_CreateNewPath: *(library.get(b"FPDFPageObj_CreateNewPath\0")?),
-                extern_FPDFPageObj_CreateNewRect: *(library.get(b"FPDFPageObj_CreateNewRect\0")?),
-                extern_FPDFPageObj_GetBounds: *(library.get(b"FPDFPageObj_GetBounds\0")?),
-                extern_FPDFPageObj_SetBlendMode: *(library.get(b"FPDFPageObj_SetBlendMode\0")?),
-                extern_FPDFPageObj_SetStrokeColor: *(library
-                    .get(b"FPDFPageObj_SetStrokeColor\0")?),
-                extern_FPDFPageObj_GetStrokeColor: *(library
-                    .get(b"FPDFPageObj_GetStrokeColor\0")?),
-                extern_FPDFPageObj_SetStrokeWidth: *(library
-                    .get(b"FPDFPageObj_SetStrokeWidth\0")?),
-                extern_FPDFPageObj_GetStrokeWidth: *(library
-                    .get(b"FPDFPageObj_GetStrokeWidth\0")?),
-                extern_FPDFPageObj_GetLineJoin: *(library.get(b"FPDFPageObj_GetLineJoin\0")?),
-                extern_FPDFPageObj_SetLineJoin: *(library.get(b"FPDFPageObj_SetLineJoin\0")?),
-                extern_FPDFPageObj_GetLineCap: *(library.get(b"FPDFPageObj_GetLineCap\0")?),
-                extern_FPDFPageObj_SetLineCap: *(library.get(b"FPDFPageObj_SetLineCap\0")?),
-                extern_FPDFPageObj_SetFillColor: *(library.get(b"FPDFPageObj_SetFillColor\0")?),
-                extern_FPDFPageObj_GetFillColor: *(library.get(b"FPDFPageObj_GetFillColor\0")?),
-                extern_FPDFPageObj_GetDashPhase: *(library.get(b"FPDFPageObj_GetDashPhase\0")?),
-                extern_FPDFPageObj_SetDashPhase: *(library.get(b"FPDFPageObj_SetDashPhase\0")?),
-                extern_FPDFPageObj_GetDashCount: *(library.get(b"FPDFPageObj_GetDashCount\0")?),
-                extern_FPDFPageObj_GetDashArray: *(library.get(b"FPDFPageObj_GetDashArray\0")?),
-                extern_FPDFPageObj_SetDashArray: *(library.get(b"FPDFPageObj_SetDashArray\0")?),
-                extern_FPDFPath_CountSegments: *(library.get(b"FPDFPath_CountSegments\0")?),
-                extern_FPDFPath_GetPathSegment: *(library.get(b"FPDFPath_GetPathSegment\0")?),
-                extern_FPDFPathSegment_GetPoint: *(library.get(b"FPDFPathSegment_GetPoint\0")?),
-                extern_FPDFPathSegment_GetType: *(library.get(b"FPDFPathSegment_GetType\0")?),
-                extern_FPDFPathSegment_GetClose: *(library.get(b"FPDFPathSegment_GetClose\0")?),
-                // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
-                // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-                #[cfg(feature = "pdfium_future")]
-                extern_FPDFFont_GetBaseFontName: *(library.get(b"FPDFFont_GetBaseFontName\0")?),
-                #[cfg(any(feature = "pdfium_future", feature = "pdfium_6611"))]
-                extern_FPDFFont_GetFamilyName: *(library.get(b"FPDFFont_GetFamilyName\0")?),
-                #[cfg(any(
-                    feature = "pdfium_6569",
-                    feature = "pdfium_6555",
-                    feature = "pdfium_6490",
-                    feature = "pdfium_6406",
-                    feature = "pdfium_6337",
-                    feature = "pdfium_6295",
-                    feature = "pdfium_6259",
-                    feature = "pdfium_6164",
-                    feature = "pdfium_6124",
-                    feature = "pdfium_6110",
-                    feature = "pdfium_6084",
-                    feature = "pdfium_6043",
-                    feature = "pdfium_6015",
-                    feature = "pdfium_5961"
-                ))]
-                extern_FPDFFont_GetFontName: *(library.get(b"FPDFFont_GetFontName\0")?),
-                extern_FPDFFont_GetFontData: *(library.get(b"FPDFFont_GetFontData\0")?),
-                extern_FPDFFont_GetIsEmbedded: *(library.get(b"FPDFFont_GetIsEmbedded\0")?),
-                extern_FPDFFont_GetFlags: *(library.get(b"FPDFFont_GetFlags\0")?),
-                extern_FPDFFont_GetWeight: *(library.get(b"FPDFFont_GetWeight\0")?),
-                extern_FPDFFont_GetItalicAngle: *(library.get(b"FPDFFont_GetItalicAngle\0")?),
-                extern_FPDFFont_GetAscent: *(library.get(b"FPDFFont_GetAscent\0")?),
-                extern_FPDFFont_GetDescent: *(library.get(b"FPDFFont_GetDescent\0")?),
-                extern_FPDFFont_GetGlyphWidth: *(library.get(b"FPDFFont_GetGlyphWidth\0")?),
-                extern_FPDFFont_GetGlyphPath: *(library.get(b"FPDFFont_GetGlyphPath\0")?),
-                extern_FPDFGlyphPath_CountGlyphSegments: *(library
-                    .get(b"FPDFGlyphPath_CountGlyphSegments\0")?),
-                extern_FPDFGlyphPath_GetGlyphPathSegment: *(library
-                    .get(b"FPDFGlyphPath_GetGlyphPathSegment\0")?),
-                extern_FPDF_VIEWERREF_GetPrintScaling: *(library
-                    .get(b"FPDF_VIEWERREF_GetPrintScaling\0")?),
-                extern_FPDF_VIEWERREF_GetNumCopies: *(library
-                    .get(b"FPDF_VIEWERREF_GetNumCopies\0")?),
-                extern_FPDF_VIEWERREF_GetPrintPageRange: *(library
-                    .get(b"FPDF_VIEWERREF_GetPrintPageRange\0")?),
-                extern_FPDF_VIEWERREF_GetPrintPageRangeCount: *(library
-                    .get(b"FPDF_VIEWERREF_GetPrintPageRangeCount\0")?),
-                extern_FPDF_VIEWERREF_GetPrintPageRangeElement: *(library
-                    .get(b"FPDF_VIEWERREF_GetPrintPageRangeElement\0")?),
-                extern_FPDF_VIEWERREF_GetDuplex: *(library.get(b"FPDF_VIEWERREF_GetDuplex\0")?),
-                extern_FPDF_VIEWERREF_GetName: *(library.get(b"FPDF_VIEWERREF_GetName\0")?),
-                extern_FPDFDoc_GetAttachmentCount: *(library
-                    .get(b"FPDFDoc_GetAttachmentCount\0")?),
-                extern_FPDFDoc_AddAttachment: *(library.get(b"FPDFDoc_AddAttachment\0")?),
-                extern_FPDFDoc_GetAttachment: *(library.get(b"FPDFDoc_GetAttachment\0")?),
-                extern_FPDFDoc_DeleteAttachment: *(library.get(b"FPDFDoc_DeleteAttachment\0")?),
-                extern_FPDFAttachment_GetName: *(library.get(b"FPDFAttachment_GetName\0")?),
-                extern_FPDFAttachment_HasKey: *(library.get(b"FPDFAttachment_HasKey\0")?),
-                extern_FPDFAttachment_GetValueType: *(library
-                    .get(b"FPDFAttachment_GetValueType\0")?),
-                extern_FPDFAttachment_SetStringValue: *(library
-                    .get(b"FPDFAttachment_SetStringValue\0")?),
-                extern_FPDFAttachment_GetStringValue: *(library
-                    .get(b"FPDFAttachment_GetStringValue\0")?),
-                extern_FPDFAttachment_SetFile: *(library.get(b"FPDFAttachment_SetFile\0")?),
-                extern_FPDFAttachment_GetFile: *(library.get(b"FPDFAttachment_GetFile\0")?),
-                extern_FPDFCatalog_IsTagged: *(library.get(b"FPDFCatalog_IsTagged\0")?),
-                library,
-            }
-        };
+    fn bind<'a, T>(library: &'a Library, function: &str) -> Result<Symbol<'a, T>, PdfiumError> {
+        let c_function = CString::new(function).map_err(|err| {
+            PdfiumError::LoadLibraryFunctionNameError(format!(
+                "Error converting function name to CString: {}, message: {}",
+                function,
+                err.to_string()
+            ))
+        })?;
 
-        Ok(result)
+        unsafe {
+            library
+                .get(c_function.as_bytes_with_nul())
+                .map_err(PdfiumError::LoadLibraryError)
+        }
+    }
+
+    pub fn new(library: Library) -> Result<Self, PdfiumError> {
+        Ok(DynamicPdfiumBindings {
+            extern_FPDF_InitLibrary: *(Self::bind(&library, "FPDF_InitLibrary")?),
+            extern_FPDF_DestroyLibrary: *(Self::bind(&library, "FPDF_DestroyLibrary")?),
+            extern_FPDF_GetLastError: *(Self::bind(&library, "FPDF_GetLastError")?),
+            extern_FPDF_CreateNewDocument: *(Self::bind(&library, "FPDF_CreateNewDocument")?),
+            extern_FPDF_LoadDocument: *(Self::bind(&library, "FPDF_LoadDocument")?),
+            extern_FPDF_LoadMemDocument64: *(Self::bind(&library, "FPDF_LoadMemDocument64")?),
+            extern_FPDF_LoadCustomDocument: *(Self::bind(&library, "FPDF_LoadCustomDocument")?),
+            extern_FPDF_SaveAsCopy: *(Self::bind(&library, "FPDF_SaveAsCopy")?),
+            extern_FPDF_SaveWithVersion: *(Self::bind(&library, "FPDF_SaveWithVersion")?),
+            extern_FPDFAvail_Create: *(Self::bind(&library, "FPDFAvail_Create")?),
+            extern_FPDFAvail_Destroy: *(Self::bind(&library, "FPDFAvail_Destroy")?),
+            extern_FPDFAvail_IsDocAvail: *(Self::bind(&library, "FPDFAvail_IsDocAvail")?),
+            extern_FPDFAvail_GetDocument: *(Self::bind(&library, "FPDFAvail_GetDocument")?),
+            extern_FPDFAvail_GetFirstPageNum: *(Self::bind(&library, "FPDFAvail_GetFirstPageNum")?),
+            extern_FPDFAvail_IsPageAvail: *(Self::bind(&library, "FPDFAvail_IsPageAvail")?),
+            extern_FPDFAvail_IsFormAvail: *(Self::bind(&library, "FPDFAvail_IsFormAvail")?),
+            extern_FPDFAvail_IsLinearized: *(Self::bind(&library, "FPDFAvail_IsLinearized")?),
+            extern_FPDF_CloseDocument: *(Self::bind(&library, "FPDF_CloseDocument")?),
+            extern_FPDF_DeviceToPage: *(Self::bind(&library, "FPDF_DeviceToPage")?),
+            extern_FPDF_PageToDevice: *(Self::bind(&library, "FPDF_PageToDevice")?),
+            extern_FPDF_GetFileVersion: *(Self::bind(&library, "FPDF_GetFileVersion")?),
+            extern_FPDF_GetFileIdentifier: *(Self::bind(&library, "FPDF_GetFileIdentifier")?),
+            extern_FPDF_GetMetaText: *(Self::bind(&library, "FPDF_GetMetaText")?),
+            extern_FPDF_GetDocPermissions: *(Self::bind(&library, "FPDF_GetDocPermissions")?),
+            extern_FPDF_GetSecurityHandlerRevision: *(Self::bind(
+                &library,
+                "FPDF_GetSecurityHandlerRevision",
+            )?),
+            extern_FPDF_GetPageCount: *(Self::bind(&library, "FPDF_GetPageCount")?),
+            extern_FPDF_LoadPage: *(Self::bind(&library, "FPDF_LoadPage")?),
+            extern_FPDF_ClosePage: *(Self::bind(&library, "FPDF_ClosePage")?),
+            extern_FPDF_ImportPagesByIndex: *(Self::bind(&library, "FPDF_ImportPagesByIndex")?),
+            extern_FPDF_ImportPages: *(Self::bind(&library, "FPDF_ImportPages")?),
+            extern_FPDF_ImportNPagesToOne: *(Self::bind(&library, "FPDF_ImportNPagesToOne")?),
+            extern_FPDF_GetPageLabel: *(Self::bind(&library, "FPDF_GetPageLabel")?),
+            extern_FPDF_GetPageBoundingBox: *(Self::bind(&library, "FPDF_GetPageBoundingBox")?),
+            extern_FPDF_GetPageSizeByIndexF: *(Self::bind(&library, "FPDF_GetPageSizeByIndexF")?),
+            extern_FPDF_GetPageWidthF: *(Self::bind(&library, "FPDF_GetPageWidthF")?),
+            extern_FPDF_GetPageHeightF: *(Self::bind(&library, "FPDF_GetPageHeightF")?),
+            extern_FPDFText_GetCharIndexFromTextIndex: *(Self::bind(
+                &library,
+                "FPDFText_GetCharIndexFromTextIndex",
+            )?),
+            extern_FPDFText_GetTextIndexFromCharIndex: *(Self::bind(
+                &library,
+                "FPDFText_GetTextIndexFromCharIndex",
+            )?),
+            extern_FPDF_GetSignatureCount: *(Self::bind(&library, "FPDF_GetSignatureCount")?),
+            extern_FPDF_GetSignatureObject: *(Self::bind(&library, "FPDF_GetSignatureObject")?),
+            extern_FPDFSignatureObj_GetContents: *(Self::bind(
+                &library,
+                "FPDFSignatureObj_GetContents",
+            )?),
+            extern_FPDFSignatureObj_GetByteRange: *(Self::bind(
+                &library,
+                "FPDFSignatureObj_GetByteRange",
+            )?),
+            extern_FPDFSignatureObj_GetSubFilter: *(Self::bind(
+                &library,
+                "FPDFSignatureObj_GetSubFilter",
+            )?),
+            extern_FPDFSignatureObj_GetReason: *(Self::bind(
+                &library,
+                "FPDFSignatureObj_GetReason",
+            )?),
+            extern_FPDFSignatureObj_GetTime: *(Self::bind(&library, "FPDFSignatureObj_GetTime")?),
+            extern_FPDFSignatureObj_GetDocMDPPermission: *(Self::bind(
+                &library,
+                "FPDFSignatureObj_GetDocMDPPermission",
+            )?),
+            extern_FPDF_StructTree_GetForPage: *(Self::bind(
+                &library,
+                "FPDF_StructTree_GetForPage",
+            )?),
+            extern_FPDF_StructTree_Close: *(Self::bind(&library, "FPDF_StructTree_Close")?),
+            extern_FPDF_StructTree_CountChildren: *(Self::bind(
+                &library,
+                "FPDF_StructTree_CountChildren",
+            )?),
+            extern_FPDF_StructTree_GetChildAtIndex: *(Self::bind(
+                &library,
+                "FPDF_StructTree_GetChildAtIndex",
+            )?),
+            extern_FPDF_StructElement_GetAltText: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetAltText",
+            )?),
+            extern_FPDF_StructElement_GetID: *(Self::bind(&library, "FPDF_StructElement_GetID")?),
+            extern_FPDF_StructElement_GetLang: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetLang",
+            )?),
+            extern_FPDF_StructElement_GetStringAttribute: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetStringAttribute",
+            )?),
+            extern_FPDF_StructElement_GetMarkedContentID: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetMarkedContentID",
+            )?),
+            extern_FPDF_StructElement_GetType: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetType",
+            )?),
+            extern_FPDF_StructElement_GetTitle: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetTitle",
+            )?),
+            extern_FPDF_StructElement_CountChildren: *(Self::bind(
+                &library,
+                "FPDF_StructElement_CountChildren",
+            )?),
+            extern_FPDF_StructElement_GetChildAtIndex: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetChildAtIndex",
+            )?),
+            extern_FPDF_StructElement_GetActualText: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetActualText",
+            )?),
+            extern_FPDF_StructElement_GetObjType: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetObjType",
+            )?),
+            #[cfg(any(
+                feature = "pdfium_6084",
+                feature = "pdfium_6110",
+                feature = "pdfium_6124",
+                feature = "pdfium_6164",
+                feature = "pdfium_6259",
+                feature = "pdfium_6295",
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_StructElement_GetChildMarkedContentID: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetChildMarkedContentID",
+            )?),
+            extern_FPDF_StructElement_GetParent: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetParent",
+            )?),
+            extern_FPDF_StructElement_GetAttributeCount: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetAttributeCount",
+            )?),
+            extern_FPDF_StructElement_GetAttributeAtIndex: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetAttributeAtIndex",
+            )?),
+            extern_FPDF_StructElement_Attr_GetCount: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetCount",
+            )?),
+            extern_FPDF_StructElement_Attr_GetName: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetName",
+            )?),
+            #[cfg(any(
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_StructElement_Attr_GetValue: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetValue",
+            )?),
+            extern_FPDF_StructElement_Attr_GetType: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetType",
+            )?),
+            extern_FPDF_StructElement_Attr_GetBooleanValue: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetBooleanValue",
+            )?),
+            extern_FPDF_StructElement_Attr_GetNumberValue: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetNumberValue",
+            )?),
+            extern_FPDF_StructElement_Attr_GetStringValue: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetStringValue",
+            )?),
+            extern_FPDF_StructElement_Attr_GetBlobValue: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetBlobValue",
+            )?),
+            #[cfg(any(
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_StructElement_Attr_CountChildren: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_CountChildren",
+            )?),
+            #[cfg(any(
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_StructElement_Attr_GetChildAtIndex: *(Self::bind(
+                &library,
+                "FPDF_StructElement_Attr_GetChildAtIndex",
+            )?),
+            extern_FPDF_StructElement_GetMarkedContentIdCount: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetMarkedContentIdCount",
+            )?),
+            extern_FPDF_StructElement_GetMarkedContentIdAtIndex: *(Self::bind(
+                &library,
+                "FPDF_StructElement_GetMarkedContentIdAtIndex",
+            )?),
+            extern_FPDFPage_New: *(Self::bind(&library, "FPDFPage_New")?),
+            extern_FPDFPage_Delete: *(Self::bind(&library, "FPDFPage_Delete")?),
+            extern_FPDFPage_GetRotation: *(Self::bind(&library, "FPDFPage_GetRotation")?),
+            extern_FPDFPage_SetRotation: *(Self::bind(&library, "FPDFPage_SetRotation")?),
+            extern_FPDFPage_GetMediaBox: *(Self::bind(&library, "FPDFPage_GetMediaBox")?),
+            extern_FPDFPage_GetCropBox: *(Self::bind(&library, "FPDFPage_GetCropBox")?),
+            extern_FPDFPage_GetBleedBox: *(Self::bind(&library, "FPDFPage_GetBleedBox")?),
+            extern_FPDFPage_GetTrimBox: *(Self::bind(&library, "FPDFPage_GetTrimBox")?),
+            extern_FPDFPage_GetArtBox: *(Self::bind(&library, "FPDFPage_GetArtBox")?),
+            extern_FPDFPage_SetMediaBox: *(Self::bind(&library, "FPDFPage_SetMediaBox")?),
+            extern_FPDFPage_SetCropBox: *(Self::bind(&library, "FPDFPage_SetCropBox")?),
+            extern_FPDFPage_SetBleedBox: *(Self::bind(&library, "FPDFPage_SetBleedBox")?),
+            extern_FPDFPage_SetTrimBox: *(Self::bind(&library, "FPDFPage_SetTrimBox")?),
+            extern_FPDFPage_SetArtBox: *(Self::bind(&library, "FPDFPage_SetArtBox")?),
+            extern_FPDFPage_TransFormWithClip: *(Self::bind(
+                &library,
+                "FPDFPage_TransFormWithClip",
+            )?),
+            extern_FPDFPageObj_TransformClipPath: *(Self::bind(
+                &library,
+                "FPDFPageObj_TransformClipPath",
+            )?),
+            extern_FPDFPageObj_GetClipPath: *(Self::bind(&library, "FPDFPageObj_GetClipPath")?),
+            extern_FPDFClipPath_CountPaths: *(Self::bind(&library, "FPDFClipPath_CountPaths")?),
+            extern_FPDFClipPath_CountPathSegments: *(Self::bind(
+                &library,
+                "FPDFClipPath_CountPathSegments",
+            )?),
+            extern_FPDFClipPath_GetPathSegment: *(Self::bind(
+                &library,
+                "FPDFClipPath_GetPathSegment",
+            )?),
+            extern_FPDF_CreateClipPath: *(Self::bind(&library, "FPDF_CreateClipPath")?),
+            extern_FPDF_DestroyClipPath: *(Self::bind(&library, "FPDF_DestroyClipPath")?),
+            extern_FPDFPage_InsertClipPath: *(Self::bind(&library, "FPDFPage_InsertClipPath")?),
+            extern_FPDFPage_HasTransparency: *(Self::bind(&library, "FPDFPage_HasTransparency")?),
+            extern_FPDFPage_GenerateContent: *(Self::bind(&library, "FPDFPage_GenerateContent")?),
+            extern_FPDFPage_TransformAnnots: *(Self::bind(&library, "FPDFPage_TransformAnnots")?),
+            extern_FPDFBitmap_Create: *(Self::bind(&library, "FPDFBitmap_Create")?),
+            extern_FPDFBitmap_CreateEx: *(Self::bind(&library, "FPDFBitmap_CreateEx")?),
+            extern_FPDFBitmap_Destroy: *(Self::bind(&library, "FPDFBitmap_Destroy")?),
+            extern_FPDFBitmap_GetFormat: *(Self::bind(&library, "FPDFBitmap_GetFormat")?),
+            extern_FPDFBitmap_FillRect: *(Self::bind(&library, "FPDFBitmap_FillRect")?),
+            extern_FPDFBitmap_GetBuffer: *(Self::bind(&library, "FPDFBitmap_GetBuffer")?),
+            extern_FPDFBitmap_GetWidth: *(Self::bind(&library, "FPDFBitmap_GetWidth")?),
+            extern_FPDFBitmap_GetHeight: *(Self::bind(&library, "FPDFBitmap_GetHeight")?),
+            extern_FPDFBitmap_GetStride: *(Self::bind(&library, "FPDFBitmap_GetStride")?),
+            extern_FPDF_RenderPageBitmap: *(Self::bind(&library, "FPDF_RenderPageBitmap")?),
+            extern_FPDF_RenderPageBitmapWithMatrix: *(Self::bind(
+                &library,
+                "FPDF_RenderPageBitmapWithMatrix",
+            )?),
+            extern_FPDFAnnot_IsSupportedSubtype: *(Self::bind(
+                &library,
+                "FPDFAnnot_IsSupportedSubtype",
+            )?),
+            extern_FPDFPage_CreateAnnot: *(Self::bind(&library, "FPDFPage_CreateAnnot")?),
+            extern_FPDFPage_GetAnnotCount: *(Self::bind(&library, "FPDFPage_GetAnnotCount")?),
+            extern_FPDFPage_GetAnnot: *(Self::bind(&library, "FPDFPage_GetAnnot")?),
+            extern_FPDFPage_GetAnnotIndex: *(Self::bind(&library, "FPDFPage_GetAnnotIndex")?),
+            extern_FPDFPage_CloseAnnot: *(Self::bind(&library, "FPDFPage_CloseAnnot")?),
+            extern_FPDFPage_RemoveAnnot: *(Self::bind(&library, "FPDFPage_RemoveAnnot")?),
+            extern_FPDFAnnot_GetSubtype: *(Self::bind(&library, "FPDFAnnot_GetSubtype")?),
+            extern_FPDFAnnot_IsObjectSupportedSubtype: *(Self::bind(
+                &library,
+                "FPDFAnnot_IsObjectSupportedSubtype",
+            )?),
+            extern_FPDFAnnot_UpdateObject: *(Self::bind(&library, "FPDFAnnot_UpdateObject")?),
+            extern_FPDFAnnot_AddInkStroke: *(Self::bind(&library, "FPDFAnnot_AddInkStroke")?),
+            extern_FPDFAnnot_RemoveInkList: *(Self::bind(&library, "FPDFAnnot_RemoveInkList")?),
+            extern_FPDFAnnot_AppendObject: *(Self::bind(&library, "FPDFAnnot_AppendObject")?),
+            extern_FPDFAnnot_GetObjectCount: *(Self::bind(&library, "FPDFAnnot_GetObjectCount")?),
+            extern_FPDFAnnot_GetObject: *(Self::bind(&library, "FPDFAnnot_GetObject")?),
+            extern_FPDFAnnot_RemoveObject: *(Self::bind(&library, "FPDFAnnot_RemoveObject")?),
+            extern_FPDFAnnot_SetColor: *(Self::bind(&library, "FPDFAnnot_SetColor")?),
+            extern_FPDFAnnot_GetColor: *(Self::bind(&library, "FPDFAnnot_GetColor")?),
+            extern_FPDFAnnot_HasAttachmentPoints: *(Self::bind(
+                &library,
+                "FPDFAnnot_HasAttachmentPoints",
+            )?),
+            extern_FPDFAnnot_SetAttachmentPoints: *(Self::bind(
+                &library,
+                "FPDFAnnot_SetAttachmentPoints",
+            )?),
+            extern_FPDFAnnot_AppendAttachmentPoints: *(Self::bind(
+                &library,
+                "FPDFAnnot_AppendAttachmentPoints",
+            )?),
+            extern_FPDFAnnot_CountAttachmentPoints: *(Self::bind(
+                &library,
+                "FPDFAnnot_CountAttachmentPoints",
+            )?),
+            extern_FPDFAnnot_GetAttachmentPoints: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetAttachmentPoints",
+            )?),
+            extern_FPDFAnnot_SetRect: *(Self::bind(&library, "FPDFAnnot_SetRect")?),
+            extern_FPDFAnnot_GetRect: *(Self::bind(&library, "FPDFAnnot_GetRect")?),
+            extern_FPDFAnnot_GetVertices: *(Self::bind(&library, "FPDFAnnot_GetVertices")?),
+            extern_FPDFAnnot_GetInkListCount: *(Self::bind(&library, "FPDFAnnot_GetInkListCount")?),
+            extern_FPDFAnnot_GetInkListPath: *(Self::bind(&library, "FPDFAnnot_GetInkListPath")?),
+            extern_FPDFAnnot_GetLine: *(Self::bind(&library, "FPDFAnnot_GetLine")?),
+            extern_FPDFAnnot_SetBorder: *(Self::bind(&library, "FPDFAnnot_SetBorder")?),
+            extern_FPDFAnnot_GetBorder: *(Self::bind(&library, "FPDFAnnot_GetBorder")?),
+            extern_FPDFAnnot_GetFormAdditionalActionJavaScript: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormAdditionalActionJavaScript",
+            )?),
+            extern_FPDFAnnot_GetFormFieldAlternateName: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldAlternateName",
+            )?),
+            extern_FPDFAnnot_HasKey: *(Self::bind(&library, "FPDFAnnot_HasKey")?),
+            extern_FPDFAnnot_GetValueType: *(Self::bind(&library, "FPDFAnnot_GetValueType")?),
+            extern_FPDFAnnot_SetStringValue: *(Self::bind(&library, "FPDFAnnot_SetStringValue")?),
+            extern_FPDFAnnot_GetStringValue: *(Self::bind(&library, "FPDFAnnot_GetStringValue")?),
+            extern_FPDFAnnot_GetNumberValue: *(Self::bind(&library, "FPDFAnnot_GetNumberValue")?),
+            extern_FPDFAnnot_SetAP: *(Self::bind(&library, "FPDFAnnot_SetAP")?),
+            extern_FPDFAnnot_GetAP: *(Self::bind(&library, "FPDFAnnot_GetAP")?),
+            extern_FPDFAnnot_GetLinkedAnnot: *(Self::bind(&library, "FPDFAnnot_GetLinkedAnnot")?),
+            extern_FPDFAnnot_GetFlags: *(Self::bind(&library, "FPDFAnnot_GetFlags")?),
+            extern_FPDFAnnot_SetFlags: *(Self::bind(&library, "FPDFAnnot_SetFlags")?),
+            extern_FPDFAnnot_GetFormFieldFlags: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldFlags",
+            )?),
+            extern_FPDFAnnot_GetFormFieldAtPoint: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldAtPoint",
+            )?),
+            extern_FPDFAnnot_GetFormFieldName: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldName",
+            )?),
+            extern_FPDFAnnot_GetFormFieldType: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldType",
+            )?),
+            extern_FPDFAnnot_GetFormFieldValue: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldValue",
+            )?),
+            extern_FPDFAnnot_GetOptionCount: *(Self::bind(&library, "FPDFAnnot_GetOptionCount")?),
+            extern_FPDFAnnot_GetOptionLabel: *(Self::bind(&library, "FPDFAnnot_GetOptionLabel")?),
+            extern_FPDFAnnot_IsOptionSelected: *(Self::bind(
+                &library,
+                "FPDFAnnot_IsOptionSelected",
+            )?),
+            extern_FPDFAnnot_GetFontSize: *(Self::bind(&library, "FPDFAnnot_GetFontSize")?),
+            #[cfg(any(
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDFAnnot_GetFontColor: *(Self::bind(&library, "FPDFAnnot_GetFontColor")?),
+            extern_FPDFAnnot_IsChecked: *(Self::bind(&library, "FPDFAnnot_IsChecked")?),
+            extern_FPDFAnnot_SetFocusableSubtypes: *(Self::bind(
+                &library,
+                "FPDFAnnot_SetFocusableSubtypes",
+            )?),
+            extern_FPDFAnnot_GetFocusableSubtypesCount: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFocusableSubtypesCount",
+            )?),
+            extern_FPDFAnnot_GetFocusableSubtypes: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFocusableSubtypes",
+            )?),
+            extern_FPDFAnnot_GetLink: *(Self::bind(&library, "FPDFAnnot_GetLink")?),
+            extern_FPDFAnnot_GetFormControlCount: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormControlCount",
+            )?),
+            extern_FPDFAnnot_GetFormControlIndex: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormControlIndex",
+            )?),
+            extern_FPDFAnnot_GetFormFieldExportValue: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFormFieldExportValue",
+            )?),
+            extern_FPDFAnnot_SetURI: *(Self::bind(&library, "FPDFAnnot_SetURI")?),
+            #[cfg(any(
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDFAnnot_GetFileAttachment: *(Self::bind(
+                &library,
+                "FPDFAnnot_GetFileAttachment",
+            )?),
+            #[cfg(any(
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDFAnnot_AddFileAttachment: *(Self::bind(
+                &library,
+                "FPDFAnnot_AddFileAttachment",
+            )?),
+            extern_FPDFDOC_InitFormFillEnvironment: *(Self::bind(
+                &library,
+                "FPDFDOC_InitFormFillEnvironment",
+            )?),
+            extern_FPDFDOC_ExitFormFillEnvironment: *(Self::bind(
+                &library,
+                "FPDFDOC_ExitFormFillEnvironment",
+            )?),
+            extern_FORM_OnAfterLoadPage: *(Self::bind(&library, "FORM_OnAfterLoadPage")?),
+            extern_FORM_OnBeforeClosePage: *(Self::bind(&library, "FORM_OnBeforeClosePage")?),
+            extern_FPDFDoc_GetPageMode: *(Self::bind(&library, "FPDFDoc_GetPageMode")?),
+            extern_FPDFPage_Flatten: *(Self::bind(&library, "FPDFPage_Flatten")?),
+            extern_FPDF_SetFormFieldHighlightColor: *(Self::bind(
+                &library,
+                "FPDF_SetFormFieldHighlightColor",
+            )?),
+            extern_FPDF_SetFormFieldHighlightAlpha: *(Self::bind(
+                &library,
+                "FPDF_SetFormFieldHighlightAlpha",
+            )?),
+            extern_FPDF_FFLDraw: *(Self::bind(&library, "FPDF_FFLDraw")?),
+            extern_FPDF_GetFormType: *(Self::bind(&library, "FPDF_GetFormType")?),
+            extern_FPDFBookmark_GetFirstChild: *(Self::bind(
+                &library,
+                "FPDFBookmark_GetFirstChild",
+            )?),
+            extern_FPDFBookmark_GetNextSibling: *(Self::bind(
+                &library,
+                "FPDFBookmark_GetNextSibling",
+            )?),
+            extern_FPDFBookmark_GetTitle: *(Self::bind(&library, "FPDFBookmark_GetTitle")?),
+            extern_FPDFBookmark_GetCount: *(Self::bind(&library, "FPDFBookmark_GetCount")?),
+            extern_FPDFBookmark_Find: *(Self::bind(&library, "FPDFBookmark_Find")?),
+            extern_FPDFBookmark_GetDest: *(Self::bind(&library, "FPDFBookmark_GetDest")?),
+            extern_FPDFBookmark_GetAction: *(Self::bind(&library, "FPDFBookmark_GetAction")?),
+            extern_FPDFAction_GetType: *(Self::bind(&library, "FPDFAction_GetType")?),
+            extern_FPDFAction_GetDest: *(Self::bind(&library, "FPDFAction_GetDest")?),
+            extern_FPDFAction_GetFilePath: *(Self::bind(&library, "FPDFAction_GetFilePath")?),
+            extern_FPDFAction_GetURIPath: *(Self::bind(&library, "FPDFAction_GetURIPath")?),
+            extern_FPDFDest_GetDestPageIndex: *(Self::bind(&library, "FPDFDest_GetDestPageIndex")?),
+            extern_FPDFDest_GetView: *(Self::bind(&library, "FPDFDest_GetView")?),
+            extern_FPDFDest_GetLocationInPage: *(Self::bind(
+                &library,
+                "FPDFDest_GetLocationInPage",
+            )?),
+            extern_FPDFLink_GetLinkAtPoint: *(Self::bind(&library, "FPDFLink_GetLinkAtPoint")?),
+            extern_FPDFLink_GetLinkZOrderAtPoint: *(Self::bind(
+                &library,
+                "FPDFLink_GetLinkZOrderAtPoint",
+            )?),
+            extern_FPDFLink_GetDest: *(Self::bind(&library, "FPDFLink_GetDest")?),
+            extern_FPDFLink_GetAction: *(Self::bind(&library, "FPDFLink_GetAction")?),
+            extern_FPDFLink_Enumerate: *(Self::bind(&library, "FPDFLink_Enumerate")?),
+            extern_FPDFLink_GetAnnot: *(Self::bind(&library, "FPDFLink_GetAnnot")?),
+            extern_FPDFLink_GetAnnotRect: *(Self::bind(&library, "FPDFLink_GetAnnotRect")?),
+            extern_FPDFLink_CountQuadPoints: *(Self::bind(&library, "FPDFLink_CountQuadPoints")?),
+            extern_FPDFLink_GetQuadPoints: *(Self::bind(&library, "FPDFLink_GetQuadPoints")?),
+            extern_FPDF_GetPageAAction: *(Self::bind(&library, "FPDF_GetPageAAction")?),
+            extern_FPDFText_LoadPage: *(Self::bind(&library, "FPDFText_LoadPage")?),
+            extern_FPDFText_ClosePage: *(Self::bind(&library, "FPDFText_ClosePage")?),
+            extern_FPDFText_CountChars: *(Self::bind(&library, "FPDFText_CountChars")?),
+            extern_FPDFText_GetUnicode: *(Self::bind(&library, "FPDFText_GetUnicode")?),
+            #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+            extern_FPDFText_GetTextObject: *(Self::bind(&library, "FPDFText_GetTextObject")?),
+            extern_FPDFText_GetFontSize: *(Self::bind(&library, "FPDFText_GetFontSize")?),
+            extern_FPDFText_GetFontInfo: *(Self::bind(&library, "FPDFText_GetFontInfo")?),
+            extern_FPDFText_GetFontWeight: *(Self::bind(&library, "FPDFText_GetFontWeight")?),
+            #[cfg(any(
+                feature = "pdfium_6569",
+                feature = "pdfium_6555",
+                feature = "pdfium_6490",
+                feature = "pdfium_6406",
+                feature = "pdfium_6337",
+                feature = "pdfium_6295",
+                feature = "pdfium_6259",
+                feature = "pdfium_6164",
+                feature = "pdfium_6124",
+                feature = "pdfium_6110",
+                feature = "pdfium_6084",
+                feature = "pdfium_6043",
+                feature = "pdfium_6015",
+                feature = "pdfium_5961"
+            ))]
+            extern_FPDFText_GetTextRenderMode: *(Self::bind(
+                &library,
+                "FPDFText_GetTextRenderMode",
+            )?),
+            extern_FPDFText_GetFillColor: *(Self::bind(&library, "FPDFText_GetFillColor")?),
+            extern_FPDFText_GetStrokeColor: *(Self::bind(&library, "FPDFText_GetStrokeColor")?),
+            extern_FPDFText_GetCharAngle: *(Self::bind(&library, "FPDFText_GetCharAngle")?),
+            extern_FPDFText_GetCharBox: *(Self::bind(&library, "FPDFText_GetCharBox")?),
+            extern_FPDFText_GetLooseCharBox: *(Self::bind(&library, "FPDFText_GetLooseCharBox")?),
+            extern_FPDFText_GetMatrix: *(Self::bind(&library, "FPDFText_GetMatrix")?),
+            extern_FPDFText_GetCharOrigin: *(Self::bind(&library, "FPDFText_GetCharOrigin")?),
+            extern_FPDFText_GetCharIndexAtPos: *(Self::bind(
+                &library,
+                "FPDFText_GetCharIndexAtPos",
+            )?),
+            extern_FPDFText_GetText: *(Self::bind(&library, "FPDFText_GetText")?),
+            extern_FPDFText_CountRects: *(Self::bind(&library, "FPDFText_CountRects")?),
+            extern_FPDFText_GetRect: *(Self::bind(&library, "FPDFText_GetRect")?),
+            extern_FPDFText_GetBoundedText: *(Self::bind(&library, "FPDFText_GetBoundedText")?),
+            extern_FPDFText_FindStart: *(Self::bind(&library, "FPDFText_FindStart")?),
+            extern_FPDFText_FindNext: *(Self::bind(&library, "FPDFText_FindNext")?),
+            extern_FPDFText_FindPrev: *(Self::bind(&library, "FPDFText_FindPrev")?),
+            extern_FPDFText_GetSchResultIndex: *(Self::bind(
+                &library,
+                "FPDFText_GetSchResultIndex",
+            )?),
+            extern_FPDFText_GetSchCount: *(Self::bind(&library, "FPDFText_GetSchCount")?),
+            extern_FPDFText_FindClose: *(Self::bind(&library, "FPDFText_FindClose")?),
+            extern_FPDFLink_LoadWebLinks: *(Self::bind(&library, "FPDFLink_LoadWebLinks")?),
+            extern_FPDFLink_CountWebLinks: *(Self::bind(&library, "FPDFLink_CountWebLinks")?),
+            extern_FPDFLink_GetURL: *(Self::bind(&library, "FPDFLink_GetURL")?),
+            extern_FPDFLink_CountRects: *(Self::bind(&library, "FPDFLink_CountRects")?),
+            extern_FPDFLink_GetRect: *(Self::bind(&library, "FPDFLink_GetRect")?),
+            extern_FPDFLink_GetTextRange: *(Self::bind(&library, "FPDFLink_GetTextRange")?),
+            extern_FPDFLink_CloseWebLinks: *(Self::bind(&library, "FPDFLink_CloseWebLinks")?),
+            extern_FPDFPage_GetDecodedThumbnailData: *(Self::bind(
+                &library,
+                "FPDFPage_GetDecodedThumbnailData",
+            )?),
+            extern_FPDFPage_GetRawThumbnailData: *(Self::bind(
+                &library,
+                "FPDFPage_GetRawThumbnailData",
+            )?),
+            extern_FPDFPage_GetThumbnailAsBitmap: *(Self::bind(
+                &library,
+                "FPDFPage_GetThumbnailAsBitmap",
+            )?),
+            extern_FPDFFormObj_CountObjects: *(Self::bind(&library, "FPDFFormObj_CountObjects")?),
+            extern_FPDFFormObj_GetObject: *(Self::bind(&library, "FPDFFormObj_GetObject")?),
+            extern_FPDFPageObj_CreateTextObj: *(Self::bind(&library, "FPDFPageObj_CreateTextObj")?),
+            extern_FPDFTextObj_GetTextRenderMode: *(Self::bind(
+                &library,
+                "FPDFTextObj_GetTextRenderMode",
+            )?),
+            extern_FPDFTextObj_SetTextRenderMode: *(Self::bind(
+                &library,
+                "FPDFTextObj_SetTextRenderMode",
+            )?),
+            extern_FPDFTextObj_GetText: *(Self::bind(&library, "FPDFTextObj_GetText")?),
+            extern_FPDFTextObj_GetFont: *(Self::bind(&library, "FPDFTextObj_GetFont")?),
+            extern_FPDFTextObj_GetFontSize: *(Self::bind(&library, "FPDFTextObj_GetFontSize")?),
+            extern_FPDFPageObj_NewTextObj: *(Self::bind(&library, "FPDFPageObj_NewTextObj")?),
+            extern_FPDFText_SetText: *(Self::bind(&library, "FPDFText_SetText")?),
+            extern_FPDFText_SetCharcodes: *(Self::bind(&library, "FPDFText_SetCharcodes")?),
+            extern_FPDFText_LoadFont: *(Self::bind(&library, "FPDFText_LoadFont")?),
+            extern_FPDFText_LoadStandardFont: *(Self::bind(&library, "FPDFText_LoadStandardFont")?),
+            extern_FPDFFont_Close: *(Self::bind(&library, "FPDFFont_Close")?),
+            extern_FPDFPath_MoveTo: *(Self::bind(&library, "FPDFPath_MoveTo")?),
+            extern_FPDFPath_LineTo: *(Self::bind(&library, "FPDFPath_LineTo")?),
+            extern_FPDFPath_BezierTo: *(Self::bind(&library, "FPDFPath_BezierTo")?),
+            extern_FPDFPath_Close: *(Self::bind(&library, "FPDFPath_Close")?),
+            extern_FPDFPath_SetDrawMode: *(Self::bind(&library, "FPDFPath_SetDrawMode")?),
+            extern_FPDFPath_GetDrawMode: *(Self::bind(&library, "FPDFPath_GetDrawMode")?),
+            extern_FPDFPage_InsertObject: *(Self::bind(&library, "FPDFPage_InsertObject")?),
+            extern_FPDFPage_RemoveObject: *(Self::bind(&library, "FPDFPage_RemoveObject")?),
+            extern_FPDFPage_CountObjects: *(Self::bind(&library, "FPDFPage_CountObjects")?),
+            extern_FPDFPage_GetObject: *(Self::bind(&library, "FPDFPage_GetObject")?),
+            extern_FPDFPageObj_Destroy: *(Self::bind(&library, "FPDFPageObj_Destroy")?),
+            extern_FPDFPageObj_HasTransparency: *(Self::bind(
+                &library,
+                "FPDFPageObj_HasTransparency",
+            )?),
+            extern_FPDFPageObj_GetType: *(Self::bind(&library, "FPDFPageObj_GetType")?),
+            extern_FPDFPageObj_Transform: *(Self::bind(&library, "FPDFPageObj_Transform")?),
+            #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+            extern_FPDFPageObj_TransformF: *(Self::bind(&library, "FPDFPageObj_TransformF")?),
+            extern_FPDFPageObj_GetMatrix: *(Self::bind(&library, "FPDFPageObj_GetMatrix")?),
+            extern_FPDFPageObj_SetMatrix: *(Self::bind(&library, "FPDFPageObj_SetMatrix")?),
+            extern_FPDFPageObj_NewImageObj: *(Self::bind(&library, "FPDFPageObj_NewImageObj")?),
+            #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+            extern_FPDFPageObj_GetMarkedContentID: *(Self::bind(
+                &library,
+                "FPDFPageObj_GetMarkedContentID",
+            )?),
+            extern_FPDFPageObj_CountMarks: *(Self::bind(&library, "FPDFPageObj_CountMarks")?),
+            extern_FPDFPageObj_GetMark: *(Self::bind(&library, "FPDFPageObj_GetMark")?),
+            extern_FPDFPageObj_AddMark: *(Self::bind(&library, "FPDFPageObj_AddMark")?),
+            extern_FPDFPageObj_RemoveMark: *(Self::bind(&library, "FPDFPageObj_RemoveMark")?),
+            extern_FPDFPageObjMark_GetName: *(Self::bind(&library, "FPDFPageObjMark_GetName")?),
+            extern_FPDFPageObjMark_CountParams: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_CountParams",
+            )?),
+            extern_FPDFPageObjMark_GetParamKey: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_GetParamKey",
+            )?),
+            extern_FPDFPageObjMark_GetParamValueType: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_GetParamValueType",
+            )?),
+            extern_FPDFPageObjMark_GetParamIntValue: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_GetParamIntValue",
+            )?),
+            extern_FPDFPageObjMark_GetParamStringValue: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_GetParamStringValue",
+            )?),
+            extern_FPDFPageObjMark_GetParamBlobValue: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_GetParamBlobValue",
+            )?),
+            extern_FPDFPageObjMark_SetIntParam: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_SetIntParam",
+            )?),
+            extern_FPDFPageObjMark_SetStringParam: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_SetStringParam",
+            )?),
+            extern_FPDFPageObjMark_SetBlobParam: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_SetBlobParam",
+            )?),
+            extern_FPDFPageObjMark_RemoveParam: *(Self::bind(
+                &library,
+                "FPDFPageObjMark_RemoveParam",
+            )?),
+            extern_FPDFImageObj_LoadJpegFile: *(Self::bind(&library, "FPDFImageObj_LoadJpegFile")?),
+            extern_FPDFImageObj_LoadJpegFileInline: *(Self::bind(
+                &library,
+                "FPDFImageObj_LoadJpegFileInline",
+            )?),
+            extern_FPDFImageObj_SetMatrix: *(Self::bind(&library, "FPDFImageObj_SetMatrix")?),
+            extern_FPDFImageObj_SetBitmap: *(Self::bind(&library, "FPDFImageObj_SetBitmap")?),
+            extern_FPDFImageObj_GetBitmap: *(Self::bind(&library, "FPDFImageObj_GetBitmap")?),
+            extern_FPDFImageObj_GetRenderedBitmap: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetRenderedBitmap",
+            )?),
+            extern_FPDFImageObj_GetImageDataDecoded: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetImageDataDecoded",
+            )?),
+            extern_FPDFImageObj_GetImageDataRaw: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetImageDataRaw",
+            )?),
+            extern_FPDFImageObj_GetImageFilterCount: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetImageFilterCount",
+            )?),
+            extern_FPDFImageObj_GetImageFilter: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetImageFilter",
+            )?),
+            extern_FPDFImageObj_GetImageMetadata: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetImageMetadata",
+            )?),
+            extern_FPDFPageObj_CreateNewPath: *(Self::bind(&library, "FPDFPageObj_CreateNewPath")?),
+            extern_FPDFPageObj_CreateNewRect: *(Self::bind(&library, "FPDFPageObj_CreateNewRect")?),
+            extern_FPDFPageObj_GetBounds: *(Self::bind(&library, "FPDFPageObj_GetBounds")?),
+            extern_FPDFPageObj_SetBlendMode: *(Self::bind(&library, "FPDFPageObj_SetBlendMode")?),
+            extern_FPDFPageObj_SetStrokeColor: *(Self::bind(
+                &library,
+                "FPDFPageObj_SetStrokeColor",
+            )?),
+            extern_FPDFPageObj_GetStrokeColor: *(Self::bind(
+                &library,
+                "FPDFPageObj_GetStrokeColor",
+            )?),
+            extern_FPDFPageObj_SetStrokeWidth: *(Self::bind(
+                &library,
+                "FPDFPageObj_SetStrokeWidth",
+            )?),
+            extern_FPDFPageObj_GetStrokeWidth: *(Self::bind(
+                &library,
+                "FPDFPageObj_GetStrokeWidth",
+            )?),
+            extern_FPDFPageObj_GetLineJoin: *(Self::bind(&library, "FPDFPageObj_GetLineJoin")?),
+            extern_FPDFPageObj_SetLineJoin: *(Self::bind(&library, "FPDFPageObj_SetLineJoin")?),
+            extern_FPDFPageObj_GetLineCap: *(Self::bind(&library, "FPDFPageObj_GetLineCap")?),
+            extern_FPDFPageObj_SetLineCap: *(Self::bind(&library, "FPDFPageObj_SetLineCap")?),
+            extern_FPDFPageObj_SetFillColor: *(Self::bind(&library, "FPDFPageObj_SetFillColor")?),
+            extern_FPDFPageObj_GetFillColor: *(Self::bind(&library, "FPDFPageObj_GetFillColor")?),
+            extern_FPDFPageObj_GetDashPhase: *(Self::bind(&library, "FPDFPageObj_GetDashPhase")?),
+            extern_FPDFPageObj_SetDashPhase: *(Self::bind(&library, "FPDFPageObj_SetDashPhase")?),
+            extern_FPDFPageObj_GetDashCount: *(Self::bind(&library, "FPDFPageObj_GetDashCount")?),
+            extern_FPDFPageObj_GetDashArray: *(Self::bind(&library, "FPDFPageObj_GetDashArray")?),
+            extern_FPDFPageObj_SetDashArray: *(Self::bind(&library, "FPDFPageObj_SetDashArray")?),
+            extern_FPDFPath_CountSegments: *(Self::bind(&library, "FPDFPath_CountSegments")?),
+            extern_FPDFPath_GetPathSegment: *(Self::bind(&library, "FPDFPath_GetPathSegment")?),
+            extern_FPDFPathSegment_GetPoint: *(Self::bind(&library, "FPDFPathSegment_GetPoint")?),
+            extern_FPDFPathSegment_GetType: *(Self::bind(&library, "FPDFPathSegment_GetType")?),
+            extern_FPDFPathSegment_GetClose: *(Self::bind(&library, "FPDFPathSegment_GetClose")?),
+            // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
+            // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
+            #[cfg(feature = "pdfium_future")]
+            extern_FPDFFont_GetBaseFontName: *(Self::bind(&library, "FPDFFont_GetBaseFontName")?),
+            #[cfg(any(feature = "pdfium_future", feature = "pdfium_6611"))]
+            extern_FPDFFont_GetFamilyName: *(Self::bind(&library, "FPDFFont_GetFamilyName")?),
+            #[cfg(any(
+                feature = "pdfium_6569",
+                feature = "pdfium_6555",
+                feature = "pdfium_6490",
+                feature = "pdfium_6406",
+                feature = "pdfium_6337",
+                feature = "pdfium_6295",
+                feature = "pdfium_6259",
+                feature = "pdfium_6164",
+                feature = "pdfium_6124",
+                feature = "pdfium_6110",
+                feature = "pdfium_6084",
+                feature = "pdfium_6043",
+                feature = "pdfium_6015",
+                feature = "pdfium_5961"
+            ))]
+            extern_FPDFFont_GetFontName: *(Self::bind(&library, "FPDFFont_GetFontName")?),
+            extern_FPDFFont_GetFontData: *(Self::bind(&library, "FPDFFont_GetFontData")?),
+            extern_FPDFFont_GetIsEmbedded: *(Self::bind(&library, "FPDFFont_GetIsEmbedded")?),
+            extern_FPDFFont_GetFlags: *(Self::bind(&library, "FPDFFont_GetFlags")?),
+            extern_FPDFFont_GetWeight: *(Self::bind(&library, "FPDFFont_GetWeight")?),
+            extern_FPDFFont_GetItalicAngle: *(Self::bind(&library, "FPDFFont_GetItalicAngle")?),
+            extern_FPDFFont_GetAscent: *(Self::bind(&library, "FPDFFont_GetAscent")?),
+            extern_FPDFFont_GetDescent: *(Self::bind(&library, "FPDFFont_GetDescent")?),
+            extern_FPDFFont_GetGlyphWidth: *(Self::bind(&library, "FPDFFont_GetGlyphWidth")?),
+            extern_FPDFFont_GetGlyphPath: *(Self::bind(&library, "FPDFFont_GetGlyphPath")?),
+            extern_FPDFGlyphPath_CountGlyphSegments: *(Self::bind(
+                &library,
+                "FPDFGlyphPath_CountGlyphSegments",
+            )?),
+            extern_FPDFGlyphPath_GetGlyphPathSegment: *(Self::bind(
+                &library,
+                "FPDFGlyphPath_GetGlyphPathSegment",
+            )?),
+            extern_FPDF_VIEWERREF_GetPrintScaling: *(Self::bind(
+                &library,
+                "FPDF_VIEWERREF_GetPrintScaling",
+            )?),
+            extern_FPDF_VIEWERREF_GetNumCopies: *(Self::bind(
+                &library,
+                "FPDF_VIEWERREF_GetNumCopies",
+            )?),
+            extern_FPDF_VIEWERREF_GetPrintPageRange: *(Self::bind(
+                &library,
+                "FPDF_VIEWERREF_GetPrintPageRange",
+            )?),
+            extern_FPDF_VIEWERREF_GetPrintPageRangeCount: *(Self::bind(
+                &library,
+                "FPDF_VIEWERREF_GetPrintPageRangeCount",
+            )?),
+            extern_FPDF_VIEWERREF_GetPrintPageRangeElement: *(Self::bind(
+                &library,
+                "FPDF_VIEWERREF_GetPrintPageRangeElement",
+            )?),
+            extern_FPDF_VIEWERREF_GetDuplex: *(Self::bind(&library, "FPDF_VIEWERREF_GetDuplex")?),
+            extern_FPDF_VIEWERREF_GetName: *(Self::bind(&library, "FPDF_VIEWERREF_GetName")?),
+            extern_FPDFDoc_GetAttachmentCount: *(Self::bind(
+                &library,
+                "FPDFDoc_GetAttachmentCount",
+            )?),
+            extern_FPDFDoc_AddAttachment: *(Self::bind(&library, "FPDFDoc_AddAttachment")?),
+            extern_FPDFDoc_GetAttachment: *(Self::bind(&library, "FPDFDoc_GetAttachment")?),
+            extern_FPDFDoc_DeleteAttachment: *(Self::bind(&library, "FPDFDoc_DeleteAttachment")?),
+            extern_FPDFAttachment_GetName: *(Self::bind(&library, "FPDFAttachment_GetName")?),
+            extern_FPDFAttachment_HasKey: *(Self::bind(&library, "FPDFAttachment_HasKey")?),
+            extern_FPDFAttachment_GetValueType: *(Self::bind(
+                &library,
+                "FPDFAttachment_GetValueType",
+            )?),
+            extern_FPDFAttachment_SetStringValue: *(Self::bind(
+                &library,
+                "FPDFAttachment_SetStringValue",
+            )?),
+            extern_FPDFAttachment_GetStringValue: *(Self::bind(
+                &library,
+                "FPDFAttachment_GetStringValue",
+            )?),
+            extern_FPDFAttachment_SetFile: *(Self::bind(&library, "FPDFAttachment_SetFile")?),
+            extern_FPDFAttachment_GetFile: *(Self::bind(&library, "FPDFAttachment_GetFile")?),
+            extern_FPDFCatalog_IsTagged: *(Self::bind(&library, "FPDFCatalog_IsTagged")?),
+            library,
+        })
     }
 }
 
@@ -2259,6 +2875,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetActualText(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDF_StructElement_GetActualText)(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_StructElement_GetID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
@@ -2319,6 +2946,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetObjType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDF_StructElement_GetObjType)(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_StructElement_GetTitle(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
@@ -2342,6 +2980,402 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         index: c_int,
     ) -> FPDF_STRUCTELEMENT {
         unsafe { (self.extern_FPDF_StructElement_GetChildAtIndex)(struct_element, index) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetChildMarkedContentID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int {
+        unsafe { (self.extern_FPDF_StructElement_GetChildMarkedContentID)(struct_element, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetParent(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> FPDF_STRUCTELEMENT {
+        unsafe { (self.extern_FPDF_StructElement_GetParent)(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeCount(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+        unsafe { (self.extern_FPDF_StructElement_GetAttributeCount)(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR {
+        unsafe { (self.extern_FPDF_StructElement_GetAttributeAtIndex)(struct_element, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetCount(&self, struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int {
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetCount)(struct_attribute) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetName(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetName)(
+                struct_attribute,
+                index,
+                buffer,
+                buflen,
+                out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetValue)(struct_attribute, c_name.as_ptr()) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_OBJECT_TYPE {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetType)(struct_attribute, c_name.as_ptr()) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> FPDF_OBJECT_TYPE {
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetType)(value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetBooleanValue)(
+                struct_attribute,
+                c_name.as_ptr(),
+                out_value,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetBooleanValue)(value, out_value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetNumberValue)(
+                struct_attribute,
+                c_name.as_ptr(),
+                out_value,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetNumberValue)(value, out_value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetStringValue)(
+                struct_attribute,
+                c_name.as_ptr(),
+                buffer,
+                buflen,
+                out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetStringValue)(value, buffer, buflen, out_buflen)
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetBlobValue)(
+                struct_attribute,
+                c_name.as_ptr(),
+                buffer,
+                buflen,
+                out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            (self.extern_FPDF_StructElement_Attr_GetBlobValue)(value, buffer, buflen, out_buflen)
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int {
+        unsafe { (self.extern_FPDF_StructElement_Attr_CountChildren)(value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetChildAtIndex(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        unsafe { (self.extern_FPDF_StructElement_Attr_GetChildAtIndex)(value, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdCount(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int {
+        unsafe { (self.extern_FPDF_StructElement_GetMarkedContentIdCount)(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int {
+        unsafe { (self.extern_FPDF_StructElement_GetMarkedContentIdAtIndex)(struct_element, index) }
     }
 
     #[allow(non_snake_case)]
@@ -2621,6 +3655,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP {
+        unsafe { (self.extern_FPDFBitmap_Create)(width, height, alpha) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,
@@ -2644,6 +3684,23 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFBitmap_GetFormat)(bitmap) }
     }
 
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
@@ -2658,6 +3715,21 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe {
             (self.extern_FPDFBitmap_FillRect)(bitmap, left, top, width, height, color);
         }
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_FillRect(
+        &self,
+        bitmap: FPDF_BITMAP,
+        left: c_int,
+        top: c_int,
+        width: c_int,
+        height: c_int,
+        color: FPDF_DWORD,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFBitmap_FillRect)(bitmap, left, top, width, height, color) }
     }
 
     #[inline]
@@ -3208,6 +4280,25 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         value: *mut f32,
     ) -> FPDF_BOOL {
         unsafe { (self.extern_FPDFAnnot_GetFontSize)(hHandle, annot, value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFontColor(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFAnnot_GetFontColor)(hHandle, annot, R, G, B) }
     }
 
     #[inline]
@@ -4217,6 +5308,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_Transform)(page_object, a, b, c, d, e, f) }
     }
 
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformF(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFPageObj_TransformF)(page_object, matrix) }
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMatrix(
@@ -4237,6 +5339,13 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT {
         unsafe { (self.extern_FPDFPageObj_NewImageObj)(document) }
+    }
+
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+        unsafe { (self.extern_FPDFPageObj_GetMarkedContentID)(page_object) }
     }
 
     #[inline]

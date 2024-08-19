@@ -1,3 +1,11 @@
+#[cfg(any(
+    feature = "pdfium_6490",
+    feature = "pdfium_6555",
+    feature = "pdfium_6569",
+    feature = "pdfium_6611",
+    feature = "pdfium_future"
+))]
+use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
@@ -5,9 +13,9 @@ use crate::bindgen::{
     FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
-    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
-    FX_DOWNLOADHINTS, FX_FILEAVAIL,
+    FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF, FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use std::ffi::CString;
@@ -467,6 +475,17 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetActualText(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDF_StructElement_GetActualText(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_StructElement_GetID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
@@ -527,6 +546,17 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetObjType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { crate::bindgen::FPDF_StructElement_GetObjType(struct_element, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_StructElement_GetTitle(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
@@ -550,6 +580,412 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         index: c_int,
     ) -> FPDF_STRUCTELEMENT {
         unsafe { crate::bindgen::FPDF_StructElement_GetChildAtIndex(struct_element, index) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetChildMarkedContentID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int {
+        unsafe { crate::bindgen::FPDF_StructElement_GetChildMarkedContentID(struct_element, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetParent(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> FPDF_STRUCTELEMENT {
+        unsafe { crate::bindgen::FPDF_StructElement_GetParent(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeCount(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+        unsafe { crate::bindgen::FPDF_StructElement_GetAttributeCount(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR {
+        unsafe { crate::bindgen::FPDF_StructElement_GetAttributeAtIndex(struct_element, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetCount(&self, struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int {
+        unsafe { crate::bindgen::FPDF_StructElement_Attr_GetCount(struct_attribute) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetName(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetName(
+                struct_attribute,
+                index,
+                buffer,
+                buflen,
+                out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetValue(struct_attribute, c_name.as_ptr())
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_OBJECT_TYPE {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetType(struct_attribute, c_name.as_ptr())
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> FPDF_OBJECT_TYPE {
+        unsafe { crate::bindgen::FPDF_StructElement_Attr_GetType(value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetBooleanValue(
+                struct_attribute,
+                c_name.as_ptr(),
+                out_value,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDF_StructElement_Attr_GetBooleanValue(value, out_value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetNumberValue(
+                struct_attribute,
+                c_name.as_ptr(),
+                out_value,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDF_StructElement_Attr_GetNumberValue(value, out_value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetStringValue(
+                struct_attribute,
+                c_name.as_ptr(),
+                buffer,
+                buflen,
+                out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetStringValue(
+                value, buffer, buflen, out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetBlobValue(
+                struct_attribute,
+                c_name.as_ptr(),
+                buffer,
+                buflen,
+                out_buflen,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            crate::bindgen::FPDF_StructElement_Attr_GetBlobValue(value, buffer, buflen, out_buflen)
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int {
+        unsafe { crate::bindgen::FPDF_StructElement_Attr_CountChildren(value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetChildAtIndex(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        unsafe { crate::bindgen::FPDF_StructElement_Attr_GetChildAtIndex(value, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdCount(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int {
+        unsafe { crate::bindgen::FPDF_StructElement_GetMarkedContentIdCount(struct_element) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int {
+        unsafe {
+            crate::bindgen::FPDF_StructElement_GetMarkedContentIdAtIndex(struct_element, index)
+        }
     }
 
     #[inline]
@@ -830,6 +1266,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP {
+        unsafe { crate::bindgen::FPDFBitmap_Create(width, height, alpha) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,
@@ -853,6 +1295,23 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         unsafe { crate::bindgen::FPDFBitmap_GetFormat(bitmap) }
     }
 
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
@@ -867,6 +1326,21 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         unsafe {
             crate::bindgen::FPDFBitmap_FillRect(bitmap, left, top, width, height, color);
         }
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_FillRect(
+        &self,
+        bitmap: FPDF_BITMAP,
+        left: c_int,
+        top: c_int,
+        width: c_int,
+        height: c_int,
+        color: FPDF_DWORD,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFBitmap_FillRect(bitmap, left, top, width, height, color) }
     }
 
     #[inline]
@@ -1419,6 +1893,25 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         value: *mut f32,
     ) -> FPDF_BOOL {
         unsafe { crate::bindgen::FPDFAnnot_GetFontSize(hHandle, annot, value) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFontColor(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFAnnot_GetFontColor(hHandle, annot, R, G, B) }
     }
 
     #[inline]
@@ -2470,6 +2963,17 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         unsafe { crate::bindgen::FPDFPageObj_Transform(page_object, a, b, c, d, e, f) }
     }
 
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformF(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL {
+        unsafe { crate::bindgen::FPDFPageObj_TransformF(page_object, matrix) }
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMatrix(
@@ -2490,6 +2994,13 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT {
         unsafe { crate::bindgen::FPDFPageObj_NewImageObj(document) }
+    }
+
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+        unsafe { crate::bindgen::FPDFPageObj_GetMarkedContentID(page_object) }
     }
 
     #[inline]
@@ -3080,7 +3591,10 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         font: FPDF_FONT,
         buffer: *mut c_char,
         length: usize, // size_t is used in Pdfium API header, so usize is appropriate here
-    ) -> usize; // size_t is used in Pdfium API header, so usize is appropriate here
+    ) -> usize // size_t is used in Pdfium API header, so usize is appropriate here
+    {
+        unsafe { crate::bindgen::FPDFFont_GetBaseFontName(font, buffer, length) }
+    }
 
     #[cfg(feature = "pdfium_6611")]
     #[inline]

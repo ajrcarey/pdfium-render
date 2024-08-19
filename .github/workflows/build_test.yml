@@ -37,33 +37,118 @@ jobs:
       run: cargo install wasm-pack && wasm-pack build examples/ --target no-modules
     - name: Generate documentation
       run: cargo doc
-    - name: Check backward compatibility with pdfium_5961
+
+    # Compatibility checks for dynamic and thread safe bindings
+
+    - name: Check forward compatibility with pdfium_future and dynamic bindings
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_future"
+    - name: Check backward compatibility with pdfium_5961 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_5961"
-    - name: Check backward compatibility with pdfium_6015
+    - name: Check backward compatibility with pdfium_6015 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6015"
-    - name: Check backward compatibility with pdfium_6043
+    - name: Check backward compatibility with pdfium_6043 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6043"
-    - name: Check backward compatibility with pdfium_6084
+    - name: Check backward compatibility with pdfium_6084 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6084"
-    - name: Check backward compatibility with pdfium_6110
+    - name: Check backward compatibility with pdfium_6110 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6110"
-    - name: Check backward compatibility with pdfium_6124
+    - name: Check backward compatibility with pdfium_6124 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6124"
-    - name: Check backward compatibility with pdfium_6164
+    - name: Check backward compatibility with pdfium_6164 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6164"
-    - name: Check backward compatibility with pdfium_6259
+    - name: Check backward compatibility with pdfium_6259 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6259"
-    - name: Check backward compatibility with pdfium_6295
+    - name: Check backward compatibility with pdfium_6295 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6295"
-    - name: Check backward compatibility with pdfium_6337
+    - name: Check backward compatibility with pdfium_6337 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6337"
-    - name: Check backward compatibility with pdfium_6406
+    - name: Check backward compatibility with pdfium_6406 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6406"
-    - name: Check backward compatibility with pdfium_6490
+    - name: Check backward compatibility with pdfium_6490 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6490"
-    - name: Check backward compatibility with pdfium_6555
+    - name: Check backward compatibility with pdfium_6555 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6555"
-    - name: Check backward compatibility with pdfium_6569
+    - name: Check backward compatibility with pdfium_6569 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6569"
-    - name: Check backward compatibility with pdfium_6611
+    - name: Check backward compatibility with pdfium_6611 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_6611"
+
+    # Compatibility checks for static bindings
+
+    - name: Check forward compatibility with pdfium_future and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_future"
+    - name: Check backward compatibility with pdfium_5961 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_5961"
+    - name: Check backward compatibility with pdfium_6015 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6015"
+    - name: Check backward compatibility with pdfium_6043 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6043"
+    - name: Check backward compatibility with pdfium_6084 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6084"
+    - name: Check backward compatibility with pdfium_6110 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6110"
+    - name: Check backward compatibility with pdfium_6124 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6124"
+    - name: Check backward compatibility with pdfium_6164 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6164"
+    - name: Check backward compatibility with pdfium_6259 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6259"
+    - name: Check backward compatibility with pdfium_6295 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6295"
+    - name: Check backward compatibility with pdfium_6337 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6337"
+    - name: Check backward compatibility with pdfium_6406 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6406"
+    - name: Check backward compatibility with pdfium_6490 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6490"
+    - name: Check backward compatibility with pdfium_6555 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6555"
+    - name: Check backward compatibility with pdfium_6569 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6569"
+    - name: Check backward compatibility with pdfium_6611 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_6611"
+
+   # Compatibility checks for WASM bindings. This is not as easy to test as with
+   # the other binding types, since we must construct a unique Cargo.toml for use
+   # with wasm-pack for each API version. We'll write a simple script to do it.
+   # wasm-pack should already be installed from earlier, so we don't need to
+   # install it again.
+
+    - name: Prepare WASM compatibility test harness
+      run: |
+        cp examples/Cargo.toml examples/Cargo.bak && echo $' \n
+          sed "s|pdfium-render = .*|pdfium-render = { path = \\"../\\", default-features = false, features = [\\"image\\", \\"$1\\"] }|g" examples/Cargo.bak > examples/Cargo.toml \n
+          wasm-pack build examples/ --target no-modules \n
+          ' >> ./test-wasm-compat.sh
+    - name: Check forward compatibility with pdfium_future and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_future
+    - name: Check backward compatibility with pdfium_5961 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_5961
+    - name: Check backward compatibility with pdfium_6015 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6015
+    - name: Check backward compatibility with pdfium_6043 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6043
+    - name: Check backward compatibility with pdfium_6084 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6084
+    - name: Check backward compatibility with pdfium_6110 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6110
+    - name: Check backward compatibility with pdfium_6124 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6124
+    - name: Check backward compatibility with pdfium_6164 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6164
+    - name: Check backward compatibility with pdfium_6259 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6259
+    - name: Check backward compatibility with pdfium_6295 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6295
+    - name: Check backward compatibility with pdfium_6337 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6337
+    - name: Check backward compatibility with pdfium_6406 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6406
+    - name: Check backward compatibility with pdfium_6490 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6490
+    - name: Check backward compatibility with pdfium_6555 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6555
+    - name: Check backward compatibility with pdfium_6569 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6569
+    - name: Check backward compatibility with pdfium_6611 and WASM bindings
+      run: sh ./test-wasm-compat.sh pdfium_6611

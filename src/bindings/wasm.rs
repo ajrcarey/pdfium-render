@@ -1,3 +1,11 @@
+#[cfg(any(
+    feature = "pdfium_6490",
+    feature = "pdfium_6555",
+    feature = "pdfium_6569",
+    feature = "pdfium_6611",
+    feature = "pdfium_future"
+))]
+use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 use crate::bindgen::{
     size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
     FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
@@ -5,9 +13,9 @@ use crate::bindgen::{
     FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
     FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
     FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
-    FPDF_STRUCTELEMENT, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
-    FX_DOWNLOADHINTS, FX_FILEAVAIL,
+    FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
+    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF,
+    FS_QUADPOINTSF, FS_RECTF, FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -1268,6 +1276,25 @@ impl WasmPdfiumBindings {
     #[inline]
     fn js_value_from_struct_element(struct_element: FPDF_STRUCTELEMENT) -> JsValue {
         Self::js_value_from_offset(struct_element as usize)
+    }
+
+    /// Converts a pointer to an `FPDF_STRUCTELEMENT_ATTR` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_struct_attribute(struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> JsValue {
+        Self::js_value_from_offset(struct_attribute as usize)
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    /// Converts a pointer to an `FPDF_STRUCTELEMENT_ATTR_VALUE` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_struct_attribute_value(value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> JsValue {
+        Self::js_value_from_offset(value as usize)
     }
 
     /// Converts a pointer to an `FPDF_SIGNATURE` struct to a [JsValue].
@@ -2593,7 +2620,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetCharIndexFromTextIndex(
         &self,
@@ -2619,7 +2645,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetTextIndexFromCharIndex(
         &self,
@@ -2645,7 +2670,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetSignatureCount()");
@@ -2663,7 +2687,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_GetSignatureObject(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetSignatureObject()");
@@ -2685,7 +2708,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_SIGNATURE
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetContents(
         &self,
@@ -2744,7 +2766,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetByteRange(
         &self,
@@ -2803,7 +2824,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetSubFilter(
         &self,
@@ -2862,7 +2882,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetReason(
         &self,
@@ -2917,7 +2936,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetTime(
         &self,
@@ -2972,7 +2990,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFSignatureObj_GetDocMDPPermission()");
@@ -2990,7 +3007,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_uint
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructTree_GetForPage()");
@@ -3006,7 +3022,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_STRUCTTREE
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE) {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructTree_Close()");
@@ -3021,7 +3036,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         );
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructTree_CountChildren()");
@@ -3039,7 +3053,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructTree_GetChildAtIndex(
         &self,
@@ -3065,7 +3078,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_STRUCTELEMENT
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetAltText(
         &self,
@@ -3124,7 +3136,64 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetActualText(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetActualText(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetActualText(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetActualText(): calling FPDF_StructElement_GetActualText()"
+        );
+
+        let result = state
+            .call(
+                "FPDF_StructElement_GetActualText",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_struct_element(struct_element),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetActualText(): leaving"
+        );
+
+        result as c_ulong
+    }
+
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetID(
         &self,
@@ -3179,7 +3248,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetLang(
         &self,
@@ -3234,7 +3302,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetStringAttribute(
         &self,
@@ -3298,7 +3365,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
         log::debug!(
@@ -3318,7 +3384,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetType(
         &self,
@@ -3373,7 +3438,64 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetObjType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetObjType(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetObjType(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetObjType(): calling FPDF_StructElement_GetObjType()"
+        );
+
+        let result = state
+            .call(
+                "FPDF_StructElement_GetObjType",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_struct_element(struct_element),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetObjType(): leaving"
+        );
+
+        result as c_ulong
+    }
+
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetTitle(
         &self,
@@ -3430,7 +3552,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_CountChildren()");
@@ -3448,7 +3569,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[inline]
     #[allow(non_snake_case)]
     fn FPDF_StructElement_GetChildAtIndex(
         &self,
@@ -3472,6 +3592,974 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as usize as FPDF_STRUCTELEMENT
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetChildMarkedContentID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetChildMarkedContentID()"
+        );
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_GetChildMarkedContentID",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_element(struct_element),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetParent(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> FPDF_STRUCTELEMENT {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetParent()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_GetParent",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(
+                    &Self::js_value_from_struct_element(struct_element),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_STRUCTELEMENT
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeCount(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetAttributeCount()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_GetAttributeCount",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(
+                    &Self::js_value_from_struct_element(struct_element),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetAttributeAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetAttributeAtIndex()"
+        );
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_GetAttributeAtIndex",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_element(struct_element),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_STRUCTELEMENT_ATTR
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetCount(&self, struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetCount()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_Attr_GetCount",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetName(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetName()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        let out_buflen_length = size_of::<c_ulong>();
+
+        let out_buflen_ptr = state.malloc(out_buflen_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetName",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of5(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &JsValue::from_f64(index as f64),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                    &Self::js_value_from_offset(out_buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_buflen = state
+                    .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
+                    .try_into()
+                    .map(c_ulong::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *out_buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *out_buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(buffer_ptr);
+        state.free(out_buflen_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetValue()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &Self::js_value_from_offset(name_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_STRUCTELEMENT_ATTR_VALUE;
+
+        state.free(name_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+    ) -> FPDF_OBJECT_TYPE {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let c_name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetType",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &Self::js_value_from_offset(c_name_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_OBJECT_TYPE;
+
+        state.free(c_name_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetType(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> FPDF_OBJECT_TYPE {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_Attr_GetType",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(
+                    &Self::js_value_from_struct_attribute_value(value),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_OBJECT_TYPE
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBooleanValue()"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let c_name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let out_value_length = size_of::<FPDF_BOOL>();
+
+        let out_value_ptr = state.malloc(out_value_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetBooleanValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &Self::js_value_from_offset(c_name_ptr),
+                    &Self::js_value_from_offset(out_value_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_value = state
+                    .copy_bytes_from_pdfium(out_value_ptr, out_value_length)
+                    .try_into()
+                    .map(FPDF_BOOL::from_le_bytes)
+                    .unwrap_or(0);
+            }
+        }
+
+        state.free(c_name_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBooleanValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBooleanValue()"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let out_value_length = size_of::<FPDF_BOOL>();
+
+        let out_value_ptr = state.malloc(out_value_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetBooleanValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_attribute_value(value),
+                    &Self::js_value_from_offset(out_value_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_value = state
+                    .copy_bytes_from_pdfium(out_value_ptr, out_value_length)
+                    .try_into()
+                    .map(FPDF_BOOL::from_le_bytes)
+                    .unwrap_or(0);
+            }
+        }
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetNumberValue()"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let c_name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let out_value_length = size_of::<f32>();
+
+        let out_value_ptr = state.malloc(out_value_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetNumberValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &Self::js_value_from_offset(c_name_ptr),
+                    &Self::js_value_from_offset(out_value_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_value = state
+                    .copy_bytes_from_pdfium(out_value_ptr, out_value_length)
+                    .try_into()
+                    .map(f32::from_le_bytes)
+                    .unwrap_or(0.0);
+            }
+        }
+
+        state.free(c_name_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetNumberValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        out_value: *mut f32,
+    ) -> FPDF_BOOL {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetNumberValue()"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let out_value_length = size_of::<f32>();
+
+        let out_value_ptr = state.malloc(out_value_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetNumberValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_attribute_value(value),
+                    &Self::js_value_from_offset(out_value_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_value = state
+                    .copy_bytes_from_pdfium(out_value_ptr, out_value_length)
+                    .try_into()
+                    .map(f32::from_le_bytes)
+                    .unwrap_or(0.0);
+            }
+        }
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetStringValue()"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let c_name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        let out_buflen_length = size_of::<c_ulong>();
+
+        let out_buflen_ptr = state.malloc(out_buflen_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetStringValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of5(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &Self::js_value_from_offset(c_name_ptr),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                    &Self::js_value_from_offset(out_buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_buflen = state
+                    .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
+                    .try_into()
+                    .map(c_ulong::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *out_buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *out_buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(c_name_ptr);
+        state.free(buffer_ptr);
+        state.free(out_buflen_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetStringValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetStringValue()"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        let out_buflen_length = size_of::<c_ulong>();
+
+        let out_buflen_ptr = state.malloc(out_buflen_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetStringValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_struct_attribute_value(value),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                    &Self::js_value_from_offset(out_buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_buflen = state
+                    .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
+                    .try_into()
+                    .map(c_ulong::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *out_buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *out_buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(buffer_ptr);
+        state.free(out_buflen_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_5961",
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+        name: &str,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBlobValue()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let c_name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        let out_buflen_length = size_of::<c_ulong>();
+
+        let out_buflen_ptr = state.malloc(out_buflen_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetBlobValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of5(
+                    &Self::js_value_from_struct_attribute(struct_attribute),
+                    &Self::js_value_from_offset(c_name_ptr),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                    &Self::js_value_from_offset(out_buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_buflen = state
+                    .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
+                    .try_into()
+                    .map(c_ulong::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *out_buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *out_buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(c_name_ptr);
+        state.free(buffer_ptr);
+        state.free(out_buflen_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetBlobValue(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBlobValue()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        let out_buflen_length = size_of::<c_ulong>();
+
+        let out_buflen_ptr = state.malloc(out_buflen_length);
+
+        let result = state
+            .call(
+                "FPDF_StructElement_Attr_GetBlobValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_struct_attribute_value(value),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                    &Self::js_value_from_offset(out_buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *out_buflen = state
+                    .copy_bytes_from_pdfium(out_buflen_ptr, out_buflen_length)
+                    .try_into()
+                    .map(c_ulong::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *out_buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *out_buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(buffer_ptr);
+        state.free(out_buflen_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBlobValue()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_Attr_GetBlobValue",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(
+                    &Self::js_value_from_struct_attribute_value(value),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_Attr_GetChildAtIndex(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+        index: c_int,
+    ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetChildAtIndex()"
+        );
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_Attr_GetChildAtIndex",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_attribute_value(value),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_STRUCTELEMENT_ATTR_VALUE
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdCount(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentIdCount()"
+        );
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_GetMarkedContentIdCount",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(
+                    &Self::js_value_from_struct_element(struct_element),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_StructElement_GetMarkedContentIdAtIndex(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        index: c_int,
+    ) -> c_int {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentIdAtIndex()"
+        );
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_StructElement_GetMarkedContentIdAtIndex",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_struct_element(struct_element),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -3782,7 +4870,13 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     ) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_TransFormWithClip()");
 
-        PdfiumRenderWasmState::lock()
+        let state = PdfiumRenderWasmState::lock();
+
+        let matrix_ptr = state.copy_struct_to_pdfium(matrix);
+
+        let clipRect_ptr = state.copy_struct_to_pdfium(clipRect);
+
+        let result = state
             .call(
                 "FPDFPage_TransFormWithClip",
                 JsFunctionArgumentType::Number,
@@ -3793,12 +4887,18 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 ]),
                 Some(&JsValue::from(Array::of3(
                     &Self::js_value_from_page(page),
-                    &Self::js_value_from_offset(matrix as usize),
-                    &Self::js_value_from_offset(clipRect as usize),
+                    &Self::js_value_from_offset(matrix_ptr as usize),
+                    &Self::js_value_from_offset(clipRect_ptr as usize),
                 ))),
             )
             .as_f64()
-            .unwrap() as FPDF_BOOL
+            .unwrap() as FPDF_BOOL;
+
+        state.free(matrix_ptr);
+
+        state.free(clipRect_ptr);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -4046,6 +5146,29 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_Create()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFBitmap_Create",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &JsValue::from(width),
+                    &JsValue::from(height),
+                    &JsValue::from(alpha),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_BITMAP
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,
@@ -4111,6 +5234,23 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961"
+    ))]
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
         &self,
@@ -4143,6 +5283,44 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 JsValue::from(color),
             ]))),
         );
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_FillRect(
+        &self,
+        bitmap: FPDF_BITMAP,
+        left: c_int,
+        top: c_int,
+        width: c_int,
+        height: c_int,
+        color: FPDF_DWORD,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_FillRect()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFBitmap_FillRect",
+                JsFunctionArgumentType::Void,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_bitmap(bitmap),
+                    JsValue::from(left),
+                    JsValue::from(top),
+                    JsValue::from(width),
+                    JsValue::from(height),
+                    JsValue::from(color),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -4335,9 +5513,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let ptr_matrix = state.copy_struct_to_pdfium(matrix);
+        let matrix_ptr = state.copy_struct_to_pdfium(matrix);
 
-        let ptr_clipping = state.copy_struct_to_pdfium(clipping);
+        let clipping_ptr = state.copy_struct_to_pdfium(clipping);
 
         state.call(
             "FPDF_RenderPageBitmapWithMatrix",
@@ -4352,15 +5530,15 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             Some(&JsValue::from(Array::of5(
                 &Self::js_value_from_bitmap(bitmap),
                 &Self::js_value_from_page(page),
-                &Self::js_value_from_offset(ptr_matrix),
-                &Self::js_value_from_offset(ptr_clipping),
+                &Self::js_value_from_offset(matrix_ptr),
+                &Self::js_value_from_offset(clipping_ptr),
                 &JsValue::from(flags),
             ))),
         );
 
-        state.free(ptr_matrix);
+        state.free(matrix_ptr);
 
-        state.free(ptr_clipping);
+        state.free(clipping_ptr);
     }
 
     #[allow(non_snake_case)]
@@ -6119,6 +7297,84 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         }
 
         state.free(value_ptr);
+
+        result
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_GetFontColor(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: *mut c_uint,
+        G: *mut c_uint,
+        B: *mut c_uint,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFontColor()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len = size_of::<c_uint>();
+
+        let ptr_r = state.malloc(len);
+
+        let ptr_g = state.malloc(len);
+
+        let ptr_b = state.malloc(len);
+
+        let result = state
+            .call(
+                "FPDFAnnot_GetFontColor",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_form(hHandle),
+                    Self::js_value_from_annotation(annot),
+                    Self::js_value_from_offset(ptr_r),
+                    Self::js_value_from_offset(ptr_g),
+                    Self::js_value_from_offset(ptr_b),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *R = state
+                    .copy_bytes_from_pdfium(ptr_r, len)
+                    .try_into()
+                    .map(c_uint::from_le_bytes)
+                    .unwrap_or(0);
+
+                *G = state
+                    .copy_bytes_from_pdfium(ptr_g, len)
+                    .try_into()
+                    .map(c_uint::from_le_bytes)
+                    .unwrap_or(0);
+
+                *B = state
+                    .copy_bytes_from_pdfium(ptr_b, len)
+                    .try_into()
+                    .map(c_uint::from_le_bytes)
+                    .unwrap_or(0);
+            }
+        }
+
+        state.free(ptr_r);
+        state.free(ptr_g);
+        state.free(ptr_b);
 
         result
     }
@@ -9692,6 +10948,40 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         );
     }
 
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_TransformF(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_TransformF()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let matrix_ptr = state.copy_struct_to_pdfium(matrix);
+
+        let result = state
+            .call(
+                "FPDFPageObj_TransformF",
+                JsFunctionArgumentType::Void,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_object(page_object),
+                    &Self::js_value_from_offset(matrix_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        state.free(matrix_ptr);
+
+        result
+    }
+
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMatrix(
         &self,
@@ -9775,6 +11065,24 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as usize as FPDF_PAGEOBJECT
+    }
+
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetMarkedContentID()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPageObj_GetMarkedContentID",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_object(
+                    page_object,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
