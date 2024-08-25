@@ -1,28 +1,40 @@
+use crate::bindgen::{
+    size_t, FPDF_CharsetFontMap, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION,
+    FPDF_ANNOTATION_SUBTYPE, FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP,
+    FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_CLIPPATH, FPDF_COLORSCHEME, FPDF_DEST,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
+    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
+    FPDF_JAVASCRIPT_ACTION, FPDF_LIBRARY_CONFIG, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
+    FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR,
+    FPDF_STRUCTTREE, FPDF_SYSFONTINFO, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
+    FPDF_WIDESTRING, FPDF_XOBJECT, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF,
+    FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL, IFSDK_PAUSE,
+};
+
 #[cfg(any(
     feature = "pdfium_6490",
     feature = "pdfium_6555",
     feature = "pdfium_6569",
     feature = "pdfium_6611",
+    feature = "pdfium_6666",
     feature = "pdfium_future"
 ))]
 use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
-use crate::bindgen::{
-    size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
-    FPDF_BYTESTRING, FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD,
-    FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO,
-    FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE,
-    FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE,
-    FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRING, FPDF_STRUCTELEMENT,
-    FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR,
-    FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
-    FX_DOWNLOADHINTS, FX_FILEAVAIL,
-};
+
+#[cfg(feature = "pdfium_use_skia")]
+use crate::bindgen::FPDF_SKIA_CANVAS;
+
+#[cfg(feature = "pdfium_enable_xfa")]
+use crate::bindgen::{FPDF_BSTR, FPDF_RESULT};
+
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use libloading::{Library, Symbol};
 use std::ffi::CString;
-use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
+use std::os::raw::{
+    c_char, c_double, c_float, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort, c_void,
+};
 
 #[allow(non_snake_case)]
 pub(crate) struct DynamicPdfiumBindings {
@@ -34,8 +46,12 @@ pub(crate) struct DynamicPdfiumBindings {
 
     // Instead of using the library directly, we cache function pointers to all exposed
     // Pdfium functionality.
+    extern_FPDF_InitLibraryWithConfig: unsafe extern "C" fn(config: *const FPDF_LIBRARY_CONFIG),
     extern_FPDF_InitLibrary: unsafe extern "C" fn(),
+    extern_FPDF_SetSandBoxPolicy: unsafe extern "C" fn(policy: FPDF_DWORD, enable: FPDF_BOOL),
     extern_FPDF_DestroyLibrary: unsafe extern "C" fn(),
+    #[cfg(feature = "pdfium_use_win32")]
+    extern_FPDF_SetPrintMode: unsafe extern "C" fn(mode: c_int),
     extern_FPDF_GetLastError: unsafe extern "C" fn() -> c_ulong,
     extern_FPDF_CreateNewDocument: unsafe extern "C" fn() -> FPDF_DOCUMENT,
     extern_FPDF_LoadDocument:
@@ -117,12 +133,58 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong,
+    extern_FPDF_DocumentHasValidCrossReferenceTable:
+        unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL,
+    extern_FPDF_GetTrailerEnds: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        buffer: *mut c_uint,
+        length: c_ulong,
+    ) -> c_ulong,
     extern_FPDF_GetDocPermissions: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_ulong,
+    #[cfg(any(
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_GetDocUserPermissions: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_ulong,
     extern_FPDF_GetSecurityHandlerRevision: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
     extern_FPDF_GetPageCount: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
     extern_FPDF_LoadPage:
         unsafe extern "C" fn(document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE,
     extern_FPDF_ClosePage: unsafe extern "C" fn(page: FPDF_PAGE),
+    extern_FPDF_RenderPageBitmapWithColorScheme_Start: unsafe extern "C" fn(
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+        color_scheme: *const FPDF_COLORSCHEME,
+        pause: *mut IFSDK_PAUSE,
+    ) -> c_int,
+    extern_FPDF_RenderPageBitmap_Start: unsafe extern "C" fn(
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+        pause: *mut IFSDK_PAUSE,
+    ) -> c_int,
+    extern_FPDF_RenderPage_Continue:
+        unsafe extern "C" fn(page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int,
+    extern_FPDF_RenderPage_Close: unsafe extern "C" fn(page: FPDF_PAGE),
     extern_FPDF_ImportPagesByIndex: unsafe extern "C" fn(
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -149,6 +211,37 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong,
+    #[cfg(feature = "pdfium_enable_xfa")]
+    extern_FPDF_GetXFAPacketCount: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
+    #[cfg(feature = "pdfium_enable_xfa")]
+    extern_FPDF_GetXFAPacketName: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong,
+    #[cfg(feature = "pdfium_enable_xfa")]
+    extern_FPDF_GetXFAPacketContent: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL,
+    #[cfg(feature = "pdfium_enable_v8")]
+    extern_FPDF_GetRecommendedV8Flags: unsafe extern "C" fn() -> *const c_char,
+    #[cfg(feature = "pdfium_enable_v8")]
+    extern_FPDF_GetArrayBufferAllocatorSharedInstance: unsafe extern "C" fn() -> *mut c_void,
+    #[cfg(feature = "pdfium_enable_xfa")]
+    extern_FPDF_BStr_Init: unsafe extern "C" fn(bstr: *mut FPDF_BSTR) -> FPDF_RESULT,
+    #[cfg(feature = "pdfium_enable_xfa")]
+    extern_FPDF_BStr_Set: unsafe extern "C" fn(
+        bstr: *mut FPDF_BSTR,
+        cstr: *const c_char,
+        length: c_int,
+    ) -> FPDF_RESULT,
+    #[cfg(feature = "pdfium_enable_xfa")]
+    extern_FPDF_BStr_Clear: unsafe extern "C" fn(bstr: *mut FPDF_BSTR) -> FPDF_RESULT,
     extern_FPDF_GetPageBoundingBox:
         unsafe extern "C" fn(page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL,
     extern_FPDF_GetPageSizeByIndexF: unsafe extern "C" fn(
@@ -156,6 +249,24 @@ pub(crate) struct DynamicPdfiumBindings {
         page_index: c_int,
         size: *mut FS_SIZEF,
     ) -> FPDF_BOOL,
+    extern_FPDF_GetPageSizeByIndex: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        width: *mut f64,
+        height: *mut f64,
+    ) -> c_int,
+    extern_FPDF_NewXObjectFromPage: unsafe extern "C" fn(
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        src_page_index: c_int,
+    ) -> FPDF_XOBJECT,
+    extern_FPDF_CloseXObject: unsafe extern "C" fn(xobject: FPDF_XOBJECT),
+    extern_FPDF_NewFormObjectFromXObject:
+        unsafe extern "C" fn(xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT,
+    extern_FPDF_CopyViewerPreferences:
+        unsafe extern "C" fn(dest_doc: FPDF_DOCUMENT, src_doc: FPDF_DOCUMENT) -> FPDF_BOOL,
+    extern_FPDF_GetPageWidth: unsafe extern "C" fn(page: FPDF_PAGE) -> f64,
+    extern_FPDF_GetPageHeight: unsafe extern "C" fn(page: FPDF_PAGE) -> f64,
     extern_FPDF_GetPageWidthF: unsafe extern "C" fn(page: FPDF_PAGE) -> c_float,
     extern_FPDF_GetPageHeightF: unsafe extern "C" fn(page: FPDF_PAGE) -> c_float,
     extern_FPDFText_GetCharIndexFromTextIndex:
@@ -260,6 +371,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_GetChildMarkedContentID:
@@ -287,6 +399,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetValue: unsafe extern "C" fn(
@@ -316,6 +429,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetType:
@@ -343,6 +457,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetBooleanValue: unsafe extern "C" fn(
@@ -372,6 +487,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetNumberValue: unsafe extern "C" fn(
@@ -403,6 +519,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetStringValue: unsafe extern "C" fn(
@@ -436,6 +553,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetBlobValue: unsafe extern "C" fn(
@@ -449,6 +567,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_CountChildren:
@@ -458,6 +577,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDF_StructElement_Attr_GetChildAtIndex:
@@ -476,6 +596,29 @@ pub(crate) struct DynamicPdfiumBindings {
         height: c_double,
     ) -> FPDF_PAGE,
     extern_FPDFPage_Delete: unsafe extern "C" fn(document: FPDF_DOCUMENT, page_index: c_int),
+    #[cfg(any(
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_MovePages: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        page_indices: *const c_int,
+        page_indices_len: c_ulong,
+        dest_page_index: c_int,
+    ) -> FPDF_BOOL,
     extern_FPDFPage_GetRotation: unsafe extern "C" fn(page: FPDF_PAGE) -> c_int,
     extern_FPDFPage_SetRotation: unsafe extern "C" fn(page: FPDF_PAGE, rotate: c_int),
     extern_FPDFPage_GetMediaBox: unsafe extern "C" fn(
@@ -597,6 +740,17 @@ pub(crate) struct DynamicPdfiumBindings {
         stride: c_int,
     ) -> FPDF_BITMAP,
     extern_FPDFBitmap_Destroy: unsafe extern "C" fn(bitmap: FPDF_BITMAP),
+    #[cfg(feature = "pdfium_use_win32")]
+    extern_FPDF_RenderPage: unsafe extern "C" fn(
+        dc: windows::Win32::Graphics::Gdi::HDC,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ),
     extern_FPDFBitmap_GetFormat: unsafe extern "C" fn(bitmap: FPDF_BITMAP) -> c_int,
     #[cfg(any(
         feature = "pdfium_6611",
@@ -623,7 +777,7 @@ pub(crate) struct DynamicPdfiumBindings {
         height: c_int,
         color: FPDF_DWORD,
     ),
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     extern_FPDFBitmap_FillRect: unsafe extern "C" fn(
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -652,6 +806,13 @@ pub(crate) struct DynamicPdfiumBindings {
         matrix: *const FS_MATRIX,
         clipping: *const FS_RECTF,
         flags: c_int,
+    ),
+    #[cfg(feature = "pdfium_use_skia")]
+    extern_FPDF_RenderPageSkia: unsafe extern "C" fn(
+        canvas: FPDF_SKIA_CANVAS,
+        page: FPDF_PAGE,
+        size_x: c_int,
+        size_y: c_int,
     ),
     extern_FPDFAnnot_IsSupportedSubtype:
         unsafe extern "C" fn(subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL,
@@ -841,6 +1002,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDFAnnot_GetFontColor: unsafe extern "C" fn(
@@ -884,6 +1046,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDFAnnot_GetFileAttachment:
@@ -895,6 +1058,7 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     extern_FPDFAnnot_AddFileAttachment:
@@ -908,10 +1072,135 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FORM_OnBeforeClosePage: unsafe extern "C" fn(page: FPDF_PAGE, handle: FPDF_FORMHANDLE),
     extern_FPDFDoc_GetPageMode: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
     extern_FPDFPage_Flatten: unsafe extern "C" fn(page: FPDF_PAGE, nFlag: c_int) -> c_int,
+    extern_FORM_DoDocumentJSAction: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE),
+    extern_FORM_DoDocumentOpenAction: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE),
+    extern_FORM_DoDocumentAAction: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, aaType: c_int),
+    extern_FORM_DoPageAAction:
+        unsafe extern "C" fn(page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int),
+    extern_FORM_OnMouseMove: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnMouseWheel: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_coord: *const FS_POINTF,
+        delta_x: c_int,
+        delta_y: c_int,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnFocus: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnLButtonDown: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnRButtonDown: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnLButtonUp: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnRButtonUp: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnLButtonDoubleClick: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnKeyDown: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnKeyUp: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL,
+    extern_FORM_OnChar: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nChar: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL,
+    extern_FORM_GetFocusedText: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong,
+    extern_FORM_GetSelectedText: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong,
+    extern_FORM_ReplaceAndKeepSelection:
+        unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE, wsText: FPDF_WIDESTRING),
+    extern_FORM_ReplaceSelection:
+        unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE, wsText: FPDF_WIDESTRING),
+    extern_FORM_SelectAllText:
+        unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL,
+    extern_FORM_CanUndo:
+        unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL,
+    extern_FORM_CanRedo:
+        unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL,
+    extern_FORM_Undo: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL,
+    extern_FORM_Redo: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL,
+    extern_FORM_ForceToKillFocus: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL,
+    extern_FORM_GetFocusedAnnot: unsafe extern "C" fn(
+        handle: FPDF_FORMHANDLE,
+        page_index: *mut c_int,
+        annot: *mut FPDF_ANNOTATION,
+    ) -> FPDF_BOOL,
+    extern_FORM_SetFocusedAnnot:
+        unsafe extern "C" fn(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL,
+    extern_FPDFPage_HasFormFieldAtPoint: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> c_int,
+    extern_FPDFPage_FormFieldZOrderAtPoint: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> c_int,
     extern_FPDF_SetFormFieldHighlightColor:
         unsafe extern "C" fn(handle: FPDF_FORMHANDLE, field_type: c_int, color: c_ulong),
     extern_FPDF_SetFormFieldHighlightAlpha:
         unsafe extern "C" fn(handle: FPDF_FORMHANDLE, alpha: c_uchar),
+    extern_FPDF_RemoveFormFieldHighlight: unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE),
     extern_FPDF_FFLDraw: unsafe extern "C" fn(
         handle: FPDF_FORMHANDLE,
         bitmap: FPDF_BITMAP,
@@ -923,7 +1212,63 @@ pub(crate) struct DynamicPdfiumBindings {
         rotate: c_int,
         flags: c_int,
     ),
+    #[cfg(feature = "pdfium_use_skia")]
+    extern_FPDF_FFLDrawSkia: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        canvas: FPDF_SKIA_CANVAS,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ),
     extern_FPDF_GetFormType: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
+    extern_FORM_SetIndexSelected: unsafe extern "C" fn(
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: c_int,
+        selected: FPDF_BOOL,
+    ) -> FPDF_BOOL,
+    extern_FORM_IsIndexSelected:
+        unsafe extern "C" fn(hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL,
+    extern_FPDF_LoadXFA: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL,
+    extern_FPDFDoc_GetJavaScriptActionCount: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
+    extern_FPDFDoc_GetJavaScriptAction:
+        unsafe extern "C" fn(document: FPDF_DOCUMENT, index: c_int) -> FPDF_JAVASCRIPT_ACTION,
+    extern_FPDFDoc_CloseJavaScriptAction: unsafe extern "C" fn(javascript: FPDF_JAVASCRIPT_ACTION),
+    extern_FPDFJavaScriptAction_GetName: unsafe extern "C" fn(
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong,
+    extern_FPDFJavaScriptAction_GetScript: unsafe extern "C" fn(
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong,
+    extern_FPDF_GetDefaultTTFMap: unsafe extern "C" fn() -> *const FPDF_CharsetFontMap,
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_GetDefaultTTFMapCount: unsafe extern "C" fn() -> usize,
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDF_GetDefaultTTFMapEntry:
+        unsafe extern "C" fn(index: usize) -> *const FPDF_CharsetFontMap,
+    extern_FPDF_AddInstalledFont:
+        unsafe extern "C" fn(mapper: *mut c_void, face: *const c_char, charset: c_int),
+    extern_FPDF_SetSystemFontInfo: unsafe extern "C" fn(pFontInfo: *mut FPDF_SYSFONTINFO),
+    extern_FPDF_GetDefaultSystemFontInfo: unsafe extern "C" fn() -> *mut FPDF_SYSFONTINFO,
+    extern_FPDF_FreeDefaultSystemFontInfo: unsafe extern "C" fn(pFontInfo: *mut FPDF_SYSFONTINFO),
     extern_FPDFBookmark_GetFirstChild:
         unsafe extern "C" fn(document: FPDF_DOCUMENT, bookmark: FPDF_BOOKMARK) -> FPDF_BOOKMARK,
     extern_FPDFBookmark_GetNextSibling:
@@ -995,9 +1340,36 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFText_CountChars: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE) -> c_int,
     extern_FPDFText_GetUnicode:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint,
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     extern_FPDFText_GetTextObject:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT,
+    extern_FPDFText_IsGenerated:
+        unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
+    #[cfg(any(
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDFText_IsHyphen: unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
+    extern_FPDFText_HasUnicodeMapError:
+        unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_int,
     extern_FPDFText_GetFontSize:
         unsafe extern "C" fn(text_page: FPDF_TEXTPAGE, index: c_int) -> c_double,
     extern_FPDFText_GetFontInfo: unsafe extern "C" fn(
@@ -1161,6 +1533,12 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut FPDF_WCHAR,
         length: c_ulong,
     ) -> c_ulong,
+    extern_FPDFTextObj_GetRenderedBitmap: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        page: FPDF_PAGE,
+        text_object: FPDF_PAGEOBJECT,
+        scale: f32,
+    ) -> FPDF_BITMAP,
     extern_FPDFTextObj_GetFont: unsafe extern "C" fn(text: FPDF_PAGEOBJECT) -> FPDF_FONT,
     extern_FPDFTextObj_GetFontSize:
         unsafe extern "C" fn(text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL,
@@ -1185,6 +1563,25 @@ pub(crate) struct DynamicPdfiumBindings {
     ) -> FPDF_FONT,
     extern_FPDFText_LoadStandardFont:
         unsafe extern "C" fn(document: FPDF_DOCUMENT, font: FPDF_BYTESTRING) -> FPDF_FONT,
+    #[cfg(any(
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    extern_FPDFText_LoadCidType2Font: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        font_data: *const u8,
+        font_data_size: u32,
+        to_unicode_cmap: FPDF_BYTESTRING,
+        cid_to_gid_map_data: *const u8,
+        cid_to_gid_map_data_size: u32,
+    ) -> FPDF_FONT,
     extern_FPDFFont_Close: unsafe extern "C" fn(font: FPDF_FONT),
     extern_FPDFPath_MoveTo:
         unsafe extern "C" fn(path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL,
@@ -1229,7 +1626,11 @@ pub(crate) struct DynamicPdfiumBindings {
         e: c_double,
         f: c_double,
     ),
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     extern_FPDFPageObj_TransformF:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_GetMatrix:
@@ -1238,7 +1639,11 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL,
     extern_FPDFPageObj_NewImageObj:
         unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT,
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     extern_FPDFPageObj_GetMarkedContentID:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFPageObj_CountMarks: unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT) -> c_int,
@@ -1369,6 +1774,11 @@ pub(crate) struct DynamicPdfiumBindings {
         page: FPDF_PAGE,
         metadata: *mut FPDF_IMAGEOBJ_METADATA,
     ) -> FPDF_BOOL,
+    extern_FPDFImageObj_GetImagePixelSize: unsafe extern "C" fn(
+        image_object: FPDF_PAGEOBJECT,
+        width: *mut c_uint,
+        height: *mut c_uint,
+    ) -> FPDF_BOOL,
     extern_FPDFPageObj_CreateNewPath:
         unsafe extern "C" fn(x: c_float, y: c_float) -> FPDF_PAGEOBJECT,
     extern_FPDFPageObj_CreateNewRect:
@@ -1379,6 +1789,10 @@ pub(crate) struct DynamicPdfiumBindings {
         bottom: *mut c_float,
         right: *mut c_float,
         top: *mut c_float,
+    ) -> FPDF_BOOL,
+    extern_FPDFPageObj_GetRotatedBounds: unsafe extern "C" fn(
+        page_object: FPDF_PAGEOBJECT,
+        quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL,
     extern_FPDFPageObj_SetBlendMode:
         unsafe extern "C" fn(page_object: FPDF_PAGEOBJECT, blend_mode: FPDF_BYTESTRING),
@@ -1443,14 +1857,10 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(segment: FPDF_PATHSEGMENT, x: *mut f32, y: *mut f32) -> FPDF_BOOL,
     extern_FPDFPathSegment_GetType: unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> c_int,
     extern_FPDFPathSegment_GetClose: unsafe extern "C" fn(segment: FPDF_PATHSEGMENT) -> FPDF_BOOL,
-    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
-    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     extern_FPDFFont_GetBaseFontName:
         unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize,
-    // TODO: AJRC - 4-Aug-2024 - pointer type updated in FPDFFont_GetBaseFontName() definition,
-    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     extern_FPDFFont_GetFamilyName:
         unsafe extern "C" fn(font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize,
     #[cfg(feature = "pdfium_6611")]
@@ -1524,6 +1934,16 @@ pub(crate) struct DynamicPdfiumBindings {
         buffer: *mut c_char,
         length: c_ulong,
     ) -> c_ulong,
+    extern_FPDF_CountNamedDests: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_DWORD,
+    extern_FPDF_GetNamedDestByName:
+        unsafe extern "C" fn(document: FPDF_DOCUMENT, name: FPDF_BYTESTRING) -> FPDF_DEST,
+    extern_FPDF_GetNamedDest: unsafe extern "C" fn(
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: *mut c_long,
+    ) -> FPDF_DEST,
+
     extern_FPDFDoc_GetAttachmentCount: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> c_int,
     extern_FPDFDoc_AddAttachment:
         unsafe extern "C" fn(document: FPDF_DOCUMENT, name: FPDF_WIDESTRING) -> FPDF_ATTACHMENT,
@@ -1564,6 +1984,9 @@ pub(crate) struct DynamicPdfiumBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
     extern_FPDFCatalog_IsTagged: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL,
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    extern_FPDFCatalog_SetLanguage:
+        unsafe extern "C" fn(document: FPDF_DOCUMENT, language: FPDF_BYTESTRING) -> FPDF_BOOL,
 }
 
 impl DynamicPdfiumBindings {
@@ -1585,8 +2008,15 @@ impl DynamicPdfiumBindings {
 
     pub fn new(library: Library) -> Result<Self, PdfiumError> {
         Ok(DynamicPdfiumBindings {
+            extern_FPDF_InitLibraryWithConfig: *(Self::bind(
+                &library,
+                "FPDF_InitLibraryWithConfig",
+            )?),
             extern_FPDF_InitLibrary: *(Self::bind(&library, "FPDF_InitLibrary")?),
+            extern_FPDF_SetSandBoxPolicy: *(Self::bind(&library, "FPDF_SetSandBoxPolicy")?),
             extern_FPDF_DestroyLibrary: *(Self::bind(&library, "FPDF_DestroyLibrary")?),
+            #[cfg(feature = "pdfium_use_win32")]
+            extern_FPDF_SetPrintMode: *(Self::bind(&library, "FPDF_SetPrintMode")?),
             extern_FPDF_GetLastError: *(Self::bind(&library, "FPDF_GetLastError")?),
             extern_FPDF_CreateNewDocument: *(Self::bind(&library, "FPDF_CreateNewDocument")?),
             extern_FPDF_LoadDocument: *(Self::bind(&library, "FPDF_LoadDocument")?),
@@ -1608,7 +2038,28 @@ impl DynamicPdfiumBindings {
             extern_FPDF_GetFileVersion: *(Self::bind(&library, "FPDF_GetFileVersion")?),
             extern_FPDF_GetFileIdentifier: *(Self::bind(&library, "FPDF_GetFileIdentifier")?),
             extern_FPDF_GetMetaText: *(Self::bind(&library, "FPDF_GetMetaText")?),
+            extern_FPDF_DocumentHasValidCrossReferenceTable: *(Self::bind(
+                &library,
+                "FPDF_DocumentHasValidCrossReferenceTable",
+            )?),
+            extern_FPDF_GetTrailerEnds: *(Self::bind(&library, "FPDF_GetTrailerEnds")?),
             extern_FPDF_GetDocPermissions: *(Self::bind(&library, "FPDF_GetDocPermissions")?),
+            #[cfg(any(
+                feature = "pdfium_6295",
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_GetDocUserPermissions: *(Self::bind(
+                &library,
+                "FPDF_GetDocUserPermissions",
+            )?),
             extern_FPDF_GetSecurityHandlerRevision: *(Self::bind(
                 &library,
                 "FPDF_GetSecurityHandlerRevision",
@@ -1616,12 +2067,57 @@ impl DynamicPdfiumBindings {
             extern_FPDF_GetPageCount: *(Self::bind(&library, "FPDF_GetPageCount")?),
             extern_FPDF_LoadPage: *(Self::bind(&library, "FPDF_LoadPage")?),
             extern_FPDF_ClosePage: *(Self::bind(&library, "FPDF_ClosePage")?),
+            extern_FPDF_RenderPageBitmapWithColorScheme_Start: *(Self::bind(
+                &library,
+                "FPDF_RenderPageBitmapWithColorScheme_Start",
+            )?),
+            extern_FPDF_RenderPageBitmap_Start: *(Self::bind(
+                &library,
+                "FPDF_RenderPageBitmap_Start",
+            )?),
+            extern_FPDF_RenderPage_Continue: *(Self::bind(&library, "FPDF_RenderPage_Continue")?),
+            extern_FPDF_RenderPage_Close: *(Self::bind(&library, "FPDF_RenderPage_Close")?),
             extern_FPDF_ImportPagesByIndex: *(Self::bind(&library, "FPDF_ImportPagesByIndex")?),
             extern_FPDF_ImportPages: *(Self::bind(&library, "FPDF_ImportPages")?),
             extern_FPDF_ImportNPagesToOne: *(Self::bind(&library, "FPDF_ImportNPagesToOne")?),
             extern_FPDF_GetPageLabel: *(Self::bind(&library, "FPDF_GetPageLabel")?),
+            #[cfg(feature = "pdfium_enable_xfa")]
+            extern_FPDF_GetXFAPacketCount: *(Self::bind(&library, "FPDF_GetXFAPacketCount")?),
+            #[cfg(feature = "pdfium_enable_xfa")]
+            extern_FPDF_GetXFAPacketName: *(Self::bind(&library, "FPDF_GetXFAPacketName")?),
+            #[cfg(feature = "pdfium_enable_xfa")]
+            extern_FPDF_GetXFAPacketContent: *(Self::bind(&library, "FPDF_GetXFAPacketContet")?),
+            #[cfg(feature = "pdfium_enable_v8")]
+            extern_FPDF_GetRecommendedV8Flags: *(Self::bind(
+                &library,
+                "FPDF_GetRecommendedV8Flags",
+            )?),
+            #[cfg(feature = "pdfium_enable_v8")]
+            extern_FPDF_GetArrayBufferAllocatorSharedInstance: *(Self::bind(
+                &library,
+                "FPDF_GetArrayBufferAllocatorSharedInstance",
+            )?),
+            #[cfg(feature = "pdfium_enable_xfa")]
+            extern_FPDF_BStr_Init: *(Self::bind(&library, "FPDF_Bstr_Init")?),
+            #[cfg(feature = "pdfium_enable_xfa")]
+            extern_FPDF_BStr_Set: *(Self::bind(&library, "FPDF_Bstr_Set")?),
+            #[cfg(feature = "pdfium_enable_xfa")]
+            extern_FPDF_BStr_Clear: *(Self::bind(&library, "FPDF_Bstr_Clear")?),
             extern_FPDF_GetPageBoundingBox: *(Self::bind(&library, "FPDF_GetPageBoundingBox")?),
             extern_FPDF_GetPageSizeByIndexF: *(Self::bind(&library, "FPDF_GetPageSizeByIndexF")?),
+            extern_FPDF_GetPageSizeByIndex: *(Self::bind(&library, "FPDF_GetPageSizeByIndex")?),
+            extern_FPDF_NewXObjectFromPage: *(Self::bind(&library, "FPDF_NewXObjectFromPage")?),
+            extern_FPDF_CloseXObject: *(Self::bind(&library, "FPDF_CloseXObject")?),
+            extern_FPDF_NewFormObjectFromXObject: *(Self::bind(
+                &library,
+                "FPDF_NewFormObjectFromXObject",
+            )?),
+            extern_FPDF_CopyViewerPreferences: *(Self::bind(
+                &library,
+                "FPDF_CopyViewerPreferences",
+            )?),
+            extern_FPDF_GetPageWidth: *(Self::bind(&library, "FPDF_GetPageWidth")?),
+            extern_FPDF_GetPageHeight: *(Self::bind(&library, "FPDF_GetPageHeight")?),
             extern_FPDF_GetPageWidthF: *(Self::bind(&library, "FPDF_GetPageWidthF")?),
             extern_FPDF_GetPageHeightF: *(Self::bind(&library, "FPDF_GetPageHeightF")?),
             extern_FPDFText_GetCharIndexFromTextIndex: *(Self::bind(
@@ -1722,6 +2218,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDF_StructElement_GetChildMarkedContentID: *(Self::bind(
@@ -1753,6 +2250,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDF_StructElement_Attr_GetValue: *(Self::bind(
@@ -1784,6 +2282,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDF_StructElement_Attr_CountChildren: *(Self::bind(
@@ -1795,6 +2294,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDF_StructElement_Attr_GetChildAtIndex: *(Self::bind(
@@ -1811,6 +2311,24 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDFPage_New: *(Self::bind(&library, "FPDFPage_New")?),
             extern_FPDFPage_Delete: *(Self::bind(&library, "FPDFPage_Delete")?),
+            #[cfg(any(
+                feature = "pdfium_6043",
+                feature = "pdfium_6084",
+                feature = "pdfium_6110",
+                feature = "pdfium_6124",
+                feature = "pdfium_6164",
+                feature = "pdfium_6259",
+                feature = "pdfium_6295",
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_MovePages: *(Self::bind(&library, "FPDF_MovePages")?),
             extern_FPDFPage_GetRotation: *(Self::bind(&library, "FPDFPage_GetRotation")?),
             extern_FPDFPage_SetRotation: *(Self::bind(&library, "FPDFPage_SetRotation")?),
             extern_FPDFPage_GetMediaBox: *(Self::bind(&library, "FPDFPage_GetMediaBox")?),
@@ -1850,6 +2368,8 @@ impl DynamicPdfiumBindings {
             extern_FPDFBitmap_Create: *(Self::bind(&library, "FPDFBitmap_Create")?),
             extern_FPDFBitmap_CreateEx: *(Self::bind(&library, "FPDFBitmap_CreateEx")?),
             extern_FPDFBitmap_Destroy: *(Self::bind(&library, "FPDFBitmap_Destroy")?),
+            #[cfg(feature = "pdfium_use_win32")]
+            extern_FPDF_RenderPage: *(Self::bind(&library, "FPDF_RenderPage")?),
             extern_FPDFBitmap_GetFormat: *(Self::bind(&library, "FPDFBitmap_GetFormat")?),
             extern_FPDFBitmap_FillRect: *(Self::bind(&library, "FPDFBitmap_FillRect")?),
             extern_FPDFBitmap_GetBuffer: *(Self::bind(&library, "FPDFBitmap_GetBuffer")?),
@@ -1861,6 +2381,8 @@ impl DynamicPdfiumBindings {
                 &library,
                 "FPDF_RenderPageBitmapWithMatrix",
             )?),
+            #[cfg(feature = "pdfium_use_skia")]
+            extern_FPDF_RenderPageSkia: *(Self::bind(&library, "FPDF_RenderPageSkia")?),
             extern_FPDFAnnot_IsSupportedSubtype: *(Self::bind(
                 &library,
                 "FPDFAnnot_IsSupportedSubtype",
@@ -1962,6 +2484,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDFAnnot_GetFontColor: *(Self::bind(&library, "FPDFAnnot_GetFontColor")?),
@@ -1999,6 +2522,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDFAnnot_GetFileAttachment: *(Self::bind(
@@ -2012,6 +2536,7 @@ impl DynamicPdfiumBindings {
                 feature = "pdfium_6555",
                 feature = "pdfium_6569",
                 feature = "pdfium_6611",
+                feature = "pdfium_6666",
                 feature = "pdfium_future"
             ))]
             extern_FPDFAnnot_AddFileAttachment: *(Self::bind(
@@ -2030,6 +2555,44 @@ impl DynamicPdfiumBindings {
             extern_FORM_OnBeforeClosePage: *(Self::bind(&library, "FORM_OnBeforeClosePage")?),
             extern_FPDFDoc_GetPageMode: *(Self::bind(&library, "FPDFDoc_GetPageMode")?),
             extern_FPDFPage_Flatten: *(Self::bind(&library, "FPDFPage_Flatten")?),
+            extern_FORM_DoDocumentJSAction: *(Self::bind(&library, "FORM_DoDocumentJSAction")?),
+            extern_FORM_DoDocumentOpenAction: *(Self::bind(&library, "FORM_DoDocumentOpenAction")?),
+            extern_FORM_DoDocumentAAction: *(Self::bind(&library, "FORM_DoDocumentAAction")?),
+            extern_FORM_DoPageAAction: *(Self::bind(&library, "FORM_DoPageAAction")?),
+            extern_FORM_OnMouseMove: *(Self::bind(&library, "FORM_OnMouseMove")?),
+            extern_FORM_OnMouseWheel: *(Self::bind(&library, "FORM_OnMouseWheel")?),
+            extern_FORM_OnFocus: *(Self::bind(&library, "FORM_OnFocus")?),
+            extern_FORM_OnLButtonDown: *(Self::bind(&library, "FORM_OnLButtonDown")?),
+            extern_FORM_OnRButtonDown: *(Self::bind(&library, "FORM_OnRButtonDown")?),
+            extern_FORM_OnLButtonUp: *(Self::bind(&library, "FORM_OnLButtonUp")?),
+            extern_FORM_OnRButtonUp: *(Self::bind(&library, "FORM_OnRButtonUp")?),
+            extern_FORM_OnLButtonDoubleClick: *(Self::bind(&library, "FORM_OnLButtonDoubleClick")?),
+            extern_FORM_OnKeyDown: *(Self::bind(&library, "FORM_OnKeyDown")?),
+            extern_FORM_OnKeyUp: *(Self::bind(&library, "FORM_OnKeyUp")?),
+            extern_FORM_OnChar: *(Self::bind(&library, "FORM_OnChar")?),
+            extern_FORM_GetFocusedText: *(Self::bind(&library, "FORM_GetFocusedText")?),
+            extern_FORM_GetSelectedText: *(Self::bind(&library, "FORM_GetSelectedText")?),
+            extern_FORM_ReplaceAndKeepSelection: *(Self::bind(
+                &library,
+                "FORM_ReplaceAndKeepSelection",
+            )?),
+            extern_FORM_ReplaceSelection: *(Self::bind(&library, "FORM_ReplaceSelection")?),
+            extern_FORM_SelectAllText: *(Self::bind(&library, "FORM_SelectAllText")?),
+            extern_FORM_CanUndo: *(Self::bind(&library, "FORM_CanUndo")?),
+            extern_FORM_CanRedo: *(Self::bind(&library, "FORM_CanRedo")?),
+            extern_FORM_Undo: *(Self::bind(&library, "FORM_Undo")?),
+            extern_FORM_Redo: *(Self::bind(&library, "FORM_Redo")?),
+            extern_FORM_ForceToKillFocus: *(Self::bind(&library, "FORM_ForceToKillFocus")?),
+            extern_FORM_GetFocusedAnnot: *(Self::bind(&library, "FORM_GetFocusedAnnot")?),
+            extern_FORM_SetFocusedAnnot: *(Self::bind(&library, "FORM_SetFocusedAnnot")?),
+            extern_FPDFPage_HasFormFieldAtPoint: *(Self::bind(
+                &library,
+                "FPDFPage_HasFormFieldAtPoint",
+            )?),
+            extern_FPDFPage_FormFieldZOrderAtPoint: *(Self::bind(
+                &library,
+                "FPDFPage_FormFieldZOrderAtPoint",
+            )?),
             extern_FPDF_SetFormFieldHighlightColor: *(Self::bind(
                 &library,
                 "FPDF_SetFormFieldHighlightColor",
@@ -2038,8 +2601,68 @@ impl DynamicPdfiumBindings {
                 &library,
                 "FPDF_SetFormFieldHighlightAlpha",
             )?),
+            extern_FPDF_RemoveFormFieldHighlight: *(Self::bind(
+                &library,
+                "FPDF_RemoveFormFieldHighlight",
+            )?),
             extern_FPDF_FFLDraw: *(Self::bind(&library, "FPDF_FFLDraw")?),
+            #[cfg(feature = "pdfium_use_skia")]
+            extern_FPDF_FFLDrawSkia: *(Self::bind(&library, "FPDF_FFLDrawSkia")?),
             extern_FPDF_GetFormType: *(Self::bind(&library, "FPDF_GetFormType")?),
+            extern_FORM_SetIndexSelected: *(Self::bind(&library, "FORM_SetIndexSelected")?),
+            extern_FORM_IsIndexSelected: *(Self::bind(&library, "FORM_IsIndexSelected")?),
+            extern_FPDF_LoadXFA: *(Self::bind(&library, "FPDF_LoadXFA")?),
+            extern_FPDFDoc_GetJavaScriptActionCount: *(Self::bind(
+                &library,
+                "FPDFDoc_GetJavaScriptActionCount",
+            )?),
+            extern_FPDFDoc_GetJavaScriptAction: *(Self::bind(
+                &library,
+                "FPDFDoc_GetJavaScriptAction",
+            )?),
+            extern_FPDFDoc_CloseJavaScriptAction: *(Self::bind(
+                &library,
+                "FPDFDoc_CloseJavaScriptAction",
+            )?),
+            extern_FPDFJavaScriptAction_GetName: *(Self::bind(
+                &library,
+                "FPDFJavaScriptAction_GetName",
+            )?),
+            extern_FPDFJavaScriptAction_GetScript: *(Self::bind(
+                &library,
+                "FPDFJavaScriptAction_GetScript",
+            )?),
+            extern_FPDF_GetDefaultTTFMap: *(Self::bind(&library, "FPDF_GetDefaultTTFMap")?),
+            #[cfg(any(
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_GetDefaultTTFMapCount: *(Self::bind(
+                &library,
+                "FPDF_GetDefaultTTFMapCount",
+            )?),
+            #[cfg(any(
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDF_GetDefaultTTFMapEntry: *(Self::bind(
+                &library,
+                "FPDF_GetDefaultTTFMapEntry",
+            )?),
+            extern_FPDF_AddInstalledFont: *(Self::bind(&library, "FPDF_AddInstalledFont")?),
+            extern_FPDF_SetSystemFontInfo: *(Self::bind(&library, "FPDF_SetSystemFontInfo")?),
+            extern_FPDF_GetDefaultSystemFontInfo: *(Self::bind(
+                &library,
+                "FPDF_GetDefaultSystemFontInfo",
+            )?),
+            extern_FPDF_FreeDefaultSystemFontInfo: *(Self::bind(
+                &library,
+                "FPDF_FreeDefaultSystemFontInfo",
+            )?),
             extern_FPDFBookmark_GetFirstChild: *(Self::bind(
                 &library,
                 "FPDFBookmark_GetFirstChild",
@@ -2080,8 +2703,36 @@ impl DynamicPdfiumBindings {
             extern_FPDFText_ClosePage: *(Self::bind(&library, "FPDFText_ClosePage")?),
             extern_FPDFText_CountChars: *(Self::bind(&library, "FPDFText_CountChars")?),
             extern_FPDFText_GetUnicode: *(Self::bind(&library, "FPDFText_GetUnicode")?),
-            #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+            #[cfg(any(
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
             extern_FPDFText_GetTextObject: *(Self::bind(&library, "FPDFText_GetTextObject")?),
+            extern_FPDFText_IsGenerated: *(Self::bind(&library, "FPDFText_IsGenerated")?),
+            #[cfg(any(
+                feature = "pdfium_6015",
+                feature = "pdfium_6043",
+                feature = "pdfium_6084",
+                feature = "pdfium_6110",
+                feature = "pdfium_6124",
+                feature = "pdfium_6164",
+                feature = "pdfium_6259",
+                feature = "pdfium_6295",
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDFText_IsHyphen: *(Self::bind(&library, "FPDFText_IsHyphen")?),
+            extern_FPDFText_HasUnicodeMapError: *(Self::bind(
+                &library,
+                "FPDFText_HasUnicodeMapError",
+            )?),
             extern_FPDFText_GetFontSize: *(Self::bind(&library, "FPDFText_GetFontSize")?),
             extern_FPDFText_GetFontInfo: *(Self::bind(&library, "FPDFText_GetFontInfo")?),
             extern_FPDFText_GetFontWeight: *(Self::bind(&library, "FPDFText_GetFontWeight")?),
@@ -2160,6 +2811,10 @@ impl DynamicPdfiumBindings {
                 "FPDFTextObj_SetTextRenderMode",
             )?),
             extern_FPDFTextObj_GetText: *(Self::bind(&library, "FPDFTextObj_GetText")?),
+            extern_FPDFTextObj_GetRenderedBitmap: *(Self::bind(
+                &library,
+                "FPDFTextObj_GetRenderedBitmap",
+            )?),
             extern_FPDFTextObj_GetFont: *(Self::bind(&library, "FPDFTextObj_GetFont")?),
             extern_FPDFTextObj_GetFontSize: *(Self::bind(&library, "FPDFTextObj_GetFontSize")?),
             extern_FPDFPageObj_NewTextObj: *(Self::bind(&library, "FPDFPageObj_NewTextObj")?),
@@ -2167,6 +2822,18 @@ impl DynamicPdfiumBindings {
             extern_FPDFText_SetCharcodes: *(Self::bind(&library, "FPDFText_SetCharcodes")?),
             extern_FPDFText_LoadFont: *(Self::bind(&library, "FPDFText_LoadFont")?),
             extern_FPDFText_LoadStandardFont: *(Self::bind(&library, "FPDFText_LoadStandardFont")?),
+            #[cfg(any(
+                feature = "pdfium_6295",
+                feature = "pdfium_6337",
+                feature = "pdfium_6406",
+                feature = "pdfium_6490",
+                feature = "pdfium_6555",
+                feature = "pdfium_6569",
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
+            extern_FPDFText_LoadCidType2Font: *(Self::bind(&library, "FPDFText_LoadCidType2Font")?),
             extern_FPDFFont_Close: *(Self::bind(&library, "FPDFFont_Close")?),
             extern_FPDFPath_MoveTo: *(Self::bind(&library, "FPDFPath_MoveTo")?),
             extern_FPDFPath_LineTo: *(Self::bind(&library, "FPDFPath_LineTo")?),
@@ -2185,12 +2852,20 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDFPageObj_GetType: *(Self::bind(&library, "FPDFPageObj_GetType")?),
             extern_FPDFPageObj_Transform: *(Self::bind(&library, "FPDFPageObj_Transform")?),
-            #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+            #[cfg(any(
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
             extern_FPDFPageObj_TransformF: *(Self::bind(&library, "FPDFPageObj_TransformF")?),
             extern_FPDFPageObj_GetMatrix: *(Self::bind(&library, "FPDFPageObj_GetMatrix")?),
             extern_FPDFPageObj_SetMatrix: *(Self::bind(&library, "FPDFPageObj_SetMatrix")?),
             extern_FPDFPageObj_NewImageObj: *(Self::bind(&library, "FPDFPageObj_NewImageObj")?),
-            #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+            #[cfg(any(
+                feature = "pdfium_6611",
+                feature = "pdfium_6666",
+                feature = "pdfium_future"
+            ))]
             extern_FPDFPageObj_GetMarkedContentID: *(Self::bind(
                 &library,
                 "FPDFPageObj_GetMarkedContentID",
@@ -2272,9 +2947,17 @@ impl DynamicPdfiumBindings {
                 &library,
                 "FPDFImageObj_GetImageMetadata",
             )?),
+            extern_FPDFImageObj_GetImagePixelSize: *(Self::bind(
+                &library,
+                "FPDFImageObj_GetImagePixelSize",
+            )?),
             extern_FPDFPageObj_CreateNewPath: *(Self::bind(&library, "FPDFPageObj_CreateNewPath")?),
             extern_FPDFPageObj_CreateNewRect: *(Self::bind(&library, "FPDFPageObj_CreateNewRect")?),
             extern_FPDFPageObj_GetBounds: *(Self::bind(&library, "FPDFPageObj_GetBounds")?),
+            extern_FPDFPageObj_GetRotatedBounds: *(Self::bind(
+                &library,
+                "FPDFPageObj_GetRotatedBounds",
+            )?),
             extern_FPDFPageObj_SetBlendMode: *(Self::bind(&library, "FPDFPageObj_SetBlendMode")?),
             extern_FPDFPageObj_SetStrokeColor: *(Self::bind(
                 &library,
@@ -2308,11 +2991,13 @@ impl DynamicPdfiumBindings {
             extern_FPDFPathSegment_GetPoint: *(Self::bind(&library, "FPDFPathSegment_GetPoint")?),
             extern_FPDFPathSegment_GetType: *(Self::bind(&library, "FPDFPathSegment_GetType")?),
             extern_FPDFPathSegment_GetClose: *(Self::bind(&library, "FPDFPathSegment_GetClose")?),
-            // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
-            // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-            #[cfg(feature = "pdfium_future")]
+            #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
             extern_FPDFFont_GetBaseFontName: *(Self::bind(&library, "FPDFFont_GetBaseFontName")?),
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_6611"))]
+            #[cfg(any(
+                feature = "pdfium_6666",
+                feature = "pdfium_future",
+                feature = "pdfium_6611"
+            ))]
             extern_FPDFFont_GetFamilyName: *(Self::bind(&library, "FPDFFont_GetFamilyName")?),
             #[cfg(any(
                 feature = "pdfium_6569",
@@ -2370,6 +3055,9 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDF_VIEWERREF_GetDuplex: *(Self::bind(&library, "FPDF_VIEWERREF_GetDuplex")?),
             extern_FPDF_VIEWERREF_GetName: *(Self::bind(&library, "FPDF_VIEWERREF_GetName")?),
+            extern_FPDF_CountNamedDests: *(Self::bind(&library, "FPDF_CountNamedDests")?),
+            extern_FPDF_GetNamedDestByName: *(Self::bind(&library, "FPDF_GetNamedDestByName")?),
+            extern_FPDF_GetNamedDest: *(Self::bind(&library, "FPDF_GetNamedDest")?),
             extern_FPDFDoc_GetAttachmentCount: *(Self::bind(
                 &library,
                 "FPDFDoc_GetAttachmentCount",
@@ -2394,12 +3082,20 @@ impl DynamicPdfiumBindings {
             extern_FPDFAttachment_SetFile: *(Self::bind(&library, "FPDFAttachment_SetFile")?),
             extern_FPDFAttachment_GetFile: *(Self::bind(&library, "FPDFAttachment_GetFile")?),
             extern_FPDFCatalog_IsTagged: *(Self::bind(&library, "FPDFCatalog_IsTagged")?),
+            #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+            extern_FPDFCatalog_SetLanguage: *(Self::bind(&library, "FPDFCatalog_SetLanguage")?),
             library,
         })
     }
 }
 
 impl PdfiumLibraryBindings for DynamicPdfiumBindings {
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG) {
+        unsafe { (self.extern_FPDF_InitLibraryWithConfig)(config) }
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_InitLibrary(&self) {
@@ -2410,9 +3106,25 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL) {
+        unsafe {
+            (self.extern_FPDF_SetSandBoxPolicy)(policy, enable);
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_DestroyLibrary(&self) {
         unsafe {
             (self.extern_FPDF_DestroyLibrary)();
+        }
+    }
+
+    #[cfg(feature = "pdfium_use_win32")]
+    #[allow(non_snake_case)]
+    fn FPDF_SetPrintMode(&self, mode: c_int) {
+        unsafe {
+            (self.extern_FPDF_SetPrintMode)(mode);
         }
     }
 
@@ -2617,12 +3329,6 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
-        unsafe { (self.extern_FPDF_GetFormType)(document) }
-    }
-
-    #[inline]
-    #[allow(non_snake_case)]
     fn FPDF_GetMetaText(
         &self,
         document: FPDF_DOCUMENT,
@@ -2637,8 +3343,43 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_DocumentHasValidCrossReferenceTable(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDF_DocumentHasValidCrossReferenceTable)(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetTrailerEnds(
+        &self,
+        document: FPDF_DOCUMENT,
+        buffer: *mut c_uint,
+        length: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDF_GetTrailerEnds)(document, buffer, length) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
         unsafe { (self.extern_FPDF_GetDocPermissions)(document) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
+        unsafe { (self.extern_FPDF_GetDocUserPermissions)(document) }
     }
 
     #[inline]
@@ -2665,6 +3406,70 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe {
             (self.extern_FPDF_ClosePage)(page);
         }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmapWithColorScheme_Start(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+        color_scheme: *const FPDF_COLORSCHEME,
+        pause: *mut IFSDK_PAUSE,
+    ) -> c_int {
+        unsafe {
+            (self.extern_FPDF_RenderPageBitmapWithColorScheme_Start)(
+                bitmap,
+                page,
+                start_x,
+                start_y,
+                size_x,
+                size_y,
+                rotate,
+                flags,
+                color_scheme,
+                pause,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmap_Start(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+        pause: *mut IFSDK_PAUSE,
+    ) -> c_int {
+        unsafe {
+            (self.extern_FPDF_RenderPageBitmap_Start)(
+                bitmap, page, start_x, start_y, size_x, size_y, rotate, flags, pause,
+            )
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int {
+        unsafe { (self.extern_FPDF_RenderPage_Continue)(page, pause) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE) {
+        unsafe { (self.extern_FPDF_RenderPage_Close)(page) }
     }
 
     #[inline]
@@ -2719,6 +3524,51 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_NewXObjectFromPage(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        src_page_index: c_int,
+    ) -> FPDF_XOBJECT {
+        unsafe { (self.extern_FPDF_NewXObjectFromPage)(dest_doc, src_doc, src_page_index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT) {
+        unsafe { (self.extern_FPDF_CloseXObject)(xobject) };
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT {
+        unsafe { (self.extern_FPDF_NewFormObjectFromXObject)(xobject) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_CopyViewerPreferences(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDF_CopyViewerPreferences)(dest_doc, src_doc) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64 {
+        unsafe { (self.extern_FPDF_GetPageWidth)(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64 {
+        unsafe { (self.extern_FPDF_GetPageHeight)(page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float {
         unsafe { (self.extern_FPDF_GetPageWidthF)(page) }
     }
@@ -2739,6 +3589,82 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         buflen: c_ulong,
     ) -> c_ulong {
         unsafe { (self.extern_FPDF_GetPageLabel)(document, page_index, buffer, buflen) }
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { (self.extern_FPDF_GetXFAPacketCount)(document) }
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetXFAPacketName(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDF_GetXFAPacketName)(document, index, buffer, buflen) }
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetXFAPacketContent(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        unsafe {
+            (self.extern_FPDF_GetXFAPacketContent)(document, index, buffer, buflen, out_buflen)
+        }
+    }
+
+    #[cfg(feature = "pdfium_enable_v8")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetRecommendedV8Flags(&self) -> *const c_char {
+        unsafe { (self.extern_FPDF_GetRecommendedV8Flags)() }
+    }
+
+    #[cfg(feature = "pdfium_enable_v8")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetArrayBufferAllocatorSharedInstance(&self) -> *mut c_void {
+        unsafe { (self.extern_FPDF_GetArrayBufferAllocatorSharedInstance)() }
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
+        unsafe { (self.extern_FPDF_BStr_Init)(bstr) }
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_BStr_Set(
+        &self,
+        bstr: *mut FPDF_BSTR,
+        cstr: *const c_char,
+        length: c_int,
+    ) -> FPDF_RESULT {
+        unsafe { (self.extern_FPDF_BStr_Set)(bstr, cstr, length) }
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
+        unsafe { (self.extern_FPDF_BStr_Clear)(bstr) }
     }
 
     #[inline]
@@ -2995,6 +3921,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3064,6 +3991,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3108,6 +4036,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3156,6 +4085,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3205,6 +4135,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3256,6 +4187,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3313,6 +4245,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3334,6 +4267,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3347,6 +4281,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -3394,6 +4329,37 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPage_Delete)(document, page_index) }
     }
 
+    #[cfg(any(
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_MovePages(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_indices: *const c_int,
+        page_indices_len: c_ulong,
+        dest_page_index: c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            (self.extern_FPDF_MovePages)(document, page_indices, page_indices_len, dest_page_index)
+        }
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int {
@@ -3421,6 +4387,18 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         size: *mut FS_SIZEF,
     ) -> FPDF_BOOL {
         unsafe { (self.extern_FPDF_GetPageSizeByIndexF)(document, page_index, size) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageSizeByIndex(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        width: *mut f64,
+        height: *mut f64,
+    ) -> c_int {
+        unsafe { (self.extern_FPDF_GetPageSizeByIndex)(document, page_index, width, height) }
     }
 
     #[inline]
@@ -3678,6 +4656,26 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFBitmap_Destroy)(bitmap) }
     }
 
+    #[cfg(feature = "pdfium_use_win32")]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPage(
+        &self,
+        dc: windows::Win32::Graphics::Gdi::HDC,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ) {
+        unsafe {
+            (self.extern_FPDF_RenderPage)(
+                dc, page, start_x, start_y, size_x, size_y, rotate, flags,
+            );
+        }
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
@@ -3717,7 +4715,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         }
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
@@ -3788,6 +4786,20 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     ) {
         unsafe {
             (self.extern_FPDF_RenderPageBitmapWithMatrix)(bitmap, page, matrix, clipping, flags);
+        }
+    }
+
+    #[cfg(feature = "pdfium_use_skia")]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageSkia(
+        &self,
+        canvas: FPDF_SKIA_CANVAS,
+        page: FPDF_PAGE,
+        size_x: c_int,
+        size_y: c_int,
+    ) {
+        unsafe {
+            (self.extern_FPDF_RenderPageSkia)(canvas, page, size_x, size_y);
         }
     }
 
@@ -4286,6 +5298,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -4388,6 +5401,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -4403,6 +5417,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[inline]
@@ -4463,6 +5478,296 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE) {
+        unsafe { (self.extern_FORM_DoDocumentJSAction)(hHandle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE) {
+        unsafe { (self.extern_FORM_DoDocumentOpenAction)(hHandle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
+        unsafe { (self.extern_FORM_DoDocumentAAction)(hHandle, aaType) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
+        unsafe { (self.extern_FORM_DoPageAAction)(page, hHandle, aaType) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnMouseMove(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnMouseMove)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnMouseWheel(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_coord: *const FS_POINTF,
+        delta_x: c_int,
+        delta_y: c_int,
+    ) -> FPDF_BOOL {
+        unsafe {
+            (self.extern_FORM_OnMouseWheel)(hHandle, page, modifier, page_coord, delta_x, delta_y)
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnFocus(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnFocus)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnLButtonDown(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnLButtonDown)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnRButtonDown(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnRButtonDown)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnLButtonUp(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnLButtonUp)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnRButtonUp(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnRButtonUp)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnLButtonDoubleClick(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnLButtonDoubleClick)(hHandle, page, modifier, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnKeyDown(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnKeyDown)(hHandle, page, nKeyCode, modifier) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnKeyUp(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnKeyUp)(hHandle, page, nKeyCode, modifier) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_OnChar(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nChar: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_OnChar)(hHandle, page, nChar, modifier) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_GetFocusedText(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FORM_GetFocusedText)(hHandle, page, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_GetSelectedText(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FORM_GetSelectedText)(hHandle, page, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_ReplaceAndKeepSelection(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        wsText: FPDF_WIDESTRING,
+    ) {
+        unsafe { (self.extern_FORM_ReplaceAndKeepSelection)(hHandle, page, wsText) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_ReplaceSelection(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        wsText: FPDF_WIDESTRING,
+    ) {
+        unsafe { (self.extern_FORM_ReplaceSelection)(hHandle, page, wsText) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_SelectAllText)(hHandle, page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_CanUndo)(hHandle, page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_CanRedo)(hHandle, page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_Undo)(hHandle, page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_Redo)(hHandle, page) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_ForceToKillFocus)(hHandle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_GetFocusedAnnot(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        page_index: *mut c_int,
+        annot: *mut FPDF_ANNOTATION,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_GetFocusedAnnot)(handle, page_index, annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_SetFocusedAnnot)(handle, annot) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_HasFormFieldAtPoint(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> c_int {
+        unsafe { (self.extern_FPDFPage_HasFormFieldAtPoint)(hHandle, page, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_FormFieldZOrderAtPoint(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> c_int {
+        unsafe { (self.extern_FPDFPage_FormFieldZOrderAtPoint)(hHandle, page, page_x, page_y) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
         &self,
         handle: FPDF_FORMHANDLE,
@@ -4484,6 +5789,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE) {
+        unsafe { (self.extern_FPDF_RemoveFormFieldHighlight)(hHandle) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDF_FFLDraw(
         &self,
         handle: FPDF_FORMHANDLE,
@@ -4501,6 +5812,160 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
                 handle, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
             );
         }
+    }
+
+    #[cfg(feature = "pdfium_use_skia")]
+    #[allow(non_snake_case)]
+    fn FPDF_FFLDrawSkia(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        canvas: FPDF_SKIA_CANVAS,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ) {
+        unsafe {
+            (self.extern_FPDF_FFLDrawSkia)(
+                hHandle, canvas, page, start_x, start_y, size_x, size_y, rotate, flags,
+            );
+        }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { (self.extern_FPDF_GetFormType)(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_SetIndexSelected(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: c_int,
+        selected: FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_SetIndexSelected)(hHandle, page, index, selected) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_IsIndexSelected(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_IsIndexSelected)(hHandle, page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDF_LoadXFA)(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        unsafe { (self.extern_FPDFDoc_GetJavaScriptActionCount)(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetJavaScriptAction(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+    ) -> FPDF_JAVASCRIPT_ACTION {
+        unsafe { (self.extern_FPDFDoc_GetJavaScriptAction)(document, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION) {
+        unsafe { (self.extern_FPDFDoc_CloseJavaScriptAction)(javascript) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFJavaScriptAction_GetName(
+        &self,
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDFJavaScriptAction_GetName)(javascript, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFJavaScriptAction_GetScript(
+        &self,
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDFJavaScriptAction_GetScript)(javascript, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap {
+        unsafe { (self.extern_FPDF_GetDefaultTTFMap)() }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultTTFMapCount(&self) -> usize {
+        unsafe { (self.extern_FPDF_GetDefaultTTFMapCount)() }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap {
+        unsafe { (self.extern_FPDF_GetDefaultTTFMapEntry)(index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: *const c_char, charset: c_int) {
+        unsafe { (self.extern_FPDF_AddInstalledFont)(mapper, face, charset) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
+        unsafe { (self.extern_FPDF_SetSystemFontInfo)(pFontInfo) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO {
+        unsafe { (self.extern_FPDF_GetDefaultSystemFontInfo)() }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
+        unsafe { (self.extern_FPDF_FreeDefaultSystemFontInfo)(pFontInfo) }
     }
 
     #[inline]
@@ -4724,11 +6189,51 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFText_GetUnicode)(text_page, index) }
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
         unsafe { (self.extern_FPDFText_GetTextObject)(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        unsafe { (self.extern_FPDFText_IsGenerated)(text_page, index) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        unsafe { (self.extern_FPDFText_IsHyphen)(text_page, index) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        unsafe { (self.extern_FPDFText_HasUnicodeMapError)(text_page, index) }
     }
 
     #[inline]
@@ -5129,6 +6634,18 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFTextObj_GetRenderedBitmap(
+        &self,
+        document: FPDF_DOCUMENT,
+        page: FPDF_PAGE,
+        text_object: FPDF_PAGEOBJECT,
+        scale: f32,
+    ) -> FPDF_BITMAP {
+        unsafe { (self.extern_FPDFTextObj_GetRenderedBitmap)(document, page, text_object, scale) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT {
         unsafe { (self.extern_FPDFTextObj_GetFont)(text) }
     }
@@ -5188,6 +6705,42 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         let c_font = CString::new(font).unwrap();
 
         unsafe { (self.extern_FPDFText_LoadStandardFont)(document, c_font.as_ptr()) }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFText_LoadCidType2Font(
+        &self,
+        document: FPDF_DOCUMENT,
+        font_data: *const u8,
+        font_data_size: u32,
+        to_unicode_cmap: &str,
+        cid_to_gid_map_data: *const u8,
+        cid_to_gid_map_data_size: u32,
+    ) -> FPDF_FONT {
+        let c_to_unicode_cmap = CString::new(to_unicode_cmap).unwrap();
+
+        unsafe {
+            (self.extern_FPDFText_LoadCidType2Font)(
+                document,
+                font_data,
+                font_data_size,
+                c_to_unicode_cmap.as_ptr(),
+                cid_to_gid_map_data,
+                cid_to_gid_map_data_size,
+            )
+        }
     }
 
     #[inline]
@@ -5308,7 +6861,11 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_Transform)(page_object, a, b, c, d, e, f) }
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_TransformF(
@@ -5341,7 +6898,11 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPageObj_NewImageObj)(document) }
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
@@ -5695,6 +7256,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDFImageObj_GetImagePixelSize(
+        &self,
+        image_object: FPDF_PAGEOBJECT,
+        width: *mut c_uint,
+        height: *mut c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFImageObj_GetImagePixelSize)(image_object, width, height) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT {
         unsafe { (self.extern_FPDFPageObj_CreateNewPath)(x, y) }
     }
@@ -5722,6 +7294,16 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL {
         unsafe { (self.extern_FPDFPageObj_GetBounds)(page_object, left, bottom, right, top) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetRotatedBounds(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFPageObj_GetRotatedBounds)(page_object, quad_points) }
     }
 
     #[inline]
@@ -5910,9 +7492,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFPathSegment_GetClose)(segment) }
     }
 
-    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
-    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFFont_GetBaseFontName(
@@ -5924,9 +7504,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFFont_GetBaseFontName)(font, buffer, length) }
     }
 
-    // TODO: AJRC - 4-Aug-2024 - pointer type updated in FPDFFont_GetBaseFontName() definition,
-    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
@@ -6125,6 +7703,32 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
+    fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD {
+        unsafe { (self.extern_FPDF_CountNamedDests)(document) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST {
+        let c_name = CString::new(name).unwrap();
+
+        unsafe { (self.extern_FPDF_GetNamedDestByName)(document, c_name.as_ptr()) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDF_GetNamedDest(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: *mut c_long,
+    ) -> FPDF_DEST {
+        unsafe { (self.extern_FPDF_GetNamedDest)(document, index, buffer, buflen) }
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
     fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int {
         unsafe { (self.extern_FPDFDoc_GetAttachmentCount)(document) }
     }
@@ -6239,5 +7843,14 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
         unsafe { (self.extern_FPDFCatalog_IsTagged)(document) }
+    }
+
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
+        let c_language = CString::new(language).unwrap();
+
+        unsafe { (self.extern_FPDFCatalog_SetLanguage)(document, c_language.as_ptr()) }
     }
 }

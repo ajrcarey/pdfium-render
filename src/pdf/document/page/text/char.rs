@@ -14,7 +14,7 @@ use crate::utils::mem::create_byte_buffer;
 use std::convert::TryInto;
 use std::ffi::c_void;
 
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_6611"))]
+#[cfg(any(feature = "pdfium_6666", feature = "pdfium_future", feature = "pdfium_6611"))]
 use crate::pdf::document::page::object::text::PdfPageTextObject;
 
 /// A single character in a `PdfPageTextChars` collection.
@@ -295,7 +295,7 @@ impl<'a> PdfPageTextChar<'a> {
             .contains(FpdfFontDescriptorFlags::FORCE_BOLD_BIT_19)
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_6666", feature = "pdfium_future"))]
     /// Returns the page text object that contains this character.
     pub fn text_object(&self) -> Result<PdfPageTextObject, PdfiumError> {
         let object_handle = self
@@ -316,7 +316,7 @@ impl<'a> PdfPageTextChar<'a> {
         }
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_6666", feature = "pdfium_future"))]
     /// Returns the text rendering mode for this character.
     pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
         self.text_object()

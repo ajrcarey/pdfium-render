@@ -1,22 +1,33 @@
+use crate::bindgen::{
+    size_t, FPDF_CharsetFontMap, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION,
+    FPDF_ANNOTATION_SUBTYPE, FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP,
+    FPDF_BOOKMARK, FPDF_BOOL, FPDF_CLIPPATH, FPDF_COLORSCHEME, FPDF_DEST, FPDF_DOCUMENT,
+    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT,
+    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
+    FPDF_JAVASCRIPT_ACTION, FPDF_LIBRARY_CONFIG, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
+    FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
+    FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE,
+    FPDF_SYSFONTINFO, FPDF_TEXTPAGE, FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING,
+    FPDF_XOBJECT, FS_FLOAT, FS_MATRIX, FS_POINTF, FS_QUADPOINTSF, FS_RECTF, FS_SIZEF,
+    FX_DOWNLOADHINTS, FX_FILEAVAIL, IFSDK_PAUSE,
+};
+
 #[cfg(any(
     feature = "pdfium_6490",
     feature = "pdfium_6555",
     feature = "pdfium_6569",
     feature = "pdfium_6611",
+    feature = "pdfium_6666",
     feature = "pdfium_future"
 ))]
 use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
-use crate::bindgen::{
-    size_t, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION, FPDF_ANNOTATION_SUBTYPE,
-    FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP, FPDF_BOOKMARK, FPDF_BOOL,
-    FPDF_CLIPPATH, FPDF_DEST, FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS,
-    FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH,
-    FPDF_IMAGEOBJ_METADATA, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE, FPDF_PAGELINK, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT, FPDF_SCHHANDLE, FPDF_SIGNATURE,
-    FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE, FPDF_TEXTPAGE,
-    FPDF_TEXT_RENDERMODE, FPDF_WCHAR, FPDF_WIDESTRING, FS_FLOAT, FS_MATRIX, FS_POINTF,
-    FS_QUADPOINTSF, FS_RECTF, FS_SIZEF, FX_DOWNLOADHINTS, FX_FILEAVAIL,
-};
+
+#[cfg(feature = "pdfium_use_skia")]
+use crate::bindgen::FPDF_SKIA_CANVAS;
+
+#[cfg(feature = "pdfium_enable_xfa")]
+use crate::bindgen::{FPDF_BSTR, FPDF_RESULT};
+
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::utils::files::{
@@ -29,7 +40,9 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 use std::ffi::CString;
 use std::mem::size_of;
-use std::os::raw::{c_char, c_double, c_float, c_int, c_uchar, c_uint, c_ulong, c_ushort, c_void};
+use std::os::raw::{
+    c_char, c_double, c_float, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort, c_void,
+};
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use wasm_bindgen::intern;
 use wasm_bindgen::prelude::*;
@@ -1289,6 +1302,7 @@ impl WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     /// Converts a pointer to an `FPDF_STRUCTELEMENT_ATTR_VALUE` struct to a [JsValue].
@@ -1486,6 +1500,11 @@ impl Default for WasmPdfiumBindings {
 
 impl PdfiumLibraryBindings for WasmPdfiumBindings {
     #[allow(non_snake_case)]
+    fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_InitLibrary(&self) {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_InitLibrary()");
 
@@ -1503,6 +1522,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         };
 
         state.call(init, JsFunctionArgumentType::Void, None, None);
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL) {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -2196,6 +2220,21 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_DocumentHasValidCrossReferenceTable(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetTrailerEnds(
+        &self,
+        document: FPDF_DOCUMENT,
+        buffer: *mut c_uint,
+        length: c_ulong,
+    ) -> c_ulong {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_GetFileIdentifier(
         &self,
         document: FPDF_DOCUMENT,
@@ -2250,23 +2289,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFileIdentifier(): leaving");
 
         result as c_ulong
-    }
-
-    #[allow(non_snake_case)]
-    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFormType()");
-
-        PdfiumRenderWasmState::lock()
-            .call(
-                "FPDF_GetFormType",
-                JsFunctionArgumentType::Number,
-                Some(vec![JsFunctionArgumentType::Pointer]),
-                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
-                    document,
-                )))),
-            )
-            .as_f64()
-            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -2348,6 +2370,23 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_ulong
     }
 
+    #[cfg(any(
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
+        todo!()
+    }
+
     #[allow(non_snake_case)]
     fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetSecurityHandlerRevision()");
@@ -2413,6 +2452,49 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             Some(vec![JsFunctionArgumentType::Pointer]),
             Some(&JsValue::from(Array::of1(&Self::js_value_from_page(page)))),
         );
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmapWithColorScheme_Start(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+        color_scheme: *const FPDF_COLORSCHEME,
+        pause: *mut IFSDK_PAUSE,
+    ) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageBitmap_Start(
+        &self,
+        bitmap: FPDF_BITMAP,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+        pause: *mut IFSDK_PAUSE,
+    ) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE) {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -2534,6 +2616,35 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_NewXObjectFromPage(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+        src_page_index: c_int,
+    ) -> FPDF_XOBJECT {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_CopyViewerPreferences(
+        &self,
+        dest_doc: FPDF_DOCUMENT,
+        src_doc: FPDF_DOCUMENT,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageWidthF()");
 
@@ -2549,6 +2660,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64 {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageHeightF()");
 
@@ -2561,6 +2677,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as c_float
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64 {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -2618,6 +2739,72 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageLabel(): leaving");
 
         result as c_ulong
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[allow(non_snake_case)]
+    fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[allow(non_snake_case)]
+    fn FPDF_GetXFAPacketName(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[allow(non_snake_case)]
+    fn FPDF_GetXFAPacketContent(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_v8")]
+    #[allow(non_snake_case)]
+    fn FPDF_GetRecommendedV8Flags(&self) -> *const c_char {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_v8")]
+    #[allow(non_snake_case)]
+    fn FPDF_GetArrayBufferAllocatorSharedInstance(&self) -> *mut c_void {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[allow(non_snake_case)]
+    fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[allow(non_snake_case)]
+    fn FPDF_BStr_Set(
+        &self,
+        bstr: *mut FPDF_BSTR,
+        cstr: *const c_char,
+        length: c_int,
+    ) -> FPDF_RESULT {
+        todo!()
+    }
+
+    #[cfg(feature = "pdfium_enable_xfa")]
+    #[allow(non_snake_case)]
+    fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -3607,6 +3794,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -3789,6 +3977,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -3879,6 +4068,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -3973,6 +4163,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -4092,6 +4283,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -4231,6 +4423,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -4389,6 +4582,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -4460,6 +4654,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -4484,6 +4679,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -4611,6 +4807,34 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         );
     }
 
+    #[cfg(any(
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_MovePages(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_indices: *const c_int,
+        page_indices_len: c_ulong,
+        dest_page_index: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
     #[allow(non_snake_case)]
     fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetRotation()");
@@ -4719,6 +4943,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(buffer_ptr);
 
         result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetPageSizeByIndex(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_index: c_int,
+        width: *mut f64,
+        height: *mut f64,
+    ) -> c_int {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -5285,7 +5520,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         );
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFBitmap_FillRect(
         &self,
@@ -5539,6 +5774,18 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(matrix_ptr);
 
         state.free(clipping_ptr);
+    }
+
+    #[cfg(feature = "pdfium_use_skia")]
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPageSkia(
+        &self,
+        canvas: FPDF_SKIA_CANVAS,
+        page: FPDF_PAGE,
+        size_x: c_int,
+        size_y: c_int,
+    ) {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -7305,6 +7552,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -7676,6 +7924,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -7702,6 +7951,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
         feature = "pdfium_6569",
         feature = "pdfium_6611",
+        feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
     #[allow(non_snake_case)]
@@ -7857,6 +8107,265 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnMouseMove(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnMouseWheel(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_coord: *const FS_POINTF,
+        delta_x: c_int,
+        delta_y: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnFocus(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnLButtonDown(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnRButtonDown(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnLButtonUp(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnRButtonUp(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnLButtonDoubleClick(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnKeyDown(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnKeyUp(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nKeyCode: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_OnChar(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        nChar: c_int,
+        modifier: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_GetFocusedText(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_GetSelectedText(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        buffer: *mut c_void,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_ReplaceAndKeepSelection(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        wsText: FPDF_WIDESTRING,
+    ) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_ReplaceSelection(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        wsText: FPDF_WIDESTRING,
+    ) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_GetFocusedAnnot(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        page_index: *mut c_int,
+        annot: *mut FPDF_ANNOTATION,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_HasFormFieldAtPoint(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPage_FormFieldZOrderAtPoint(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        page_x: f64,
+        page_y: f64,
+    ) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
         &self,
         handle: FPDF_FORMHANDLE,
@@ -7900,6 +8409,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDF_FFLDraw(
         &self,
         handle: FPDF_FORMHANDLE,
@@ -7940,6 +8454,153 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 JsValue::from_f64(flags as f64),
             ]))),
         );
+    }
+
+    #[cfg(feature = "pdfium_use_skia")]
+    #[allow(non_snake_case)]
+    #[allow(clippy::too_many_arguments)]
+    fn FPDF_FFLDrawSkia(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        canvas: FPDF_SKIA_CANVAS,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetFormType()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_GetFormType",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
+                    document,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_SetIndexSelected(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: c_int,
+        selected: FPDF_BOOL,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FORM_IsIndexSelected(
+        &self,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        index: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_GetJavaScriptAction(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+    ) -> FPDF_JAVASCRIPT_ACTION {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFJavaScriptAction_GetName(
+        &self,
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFJavaScriptAction_GetScript(
+        &self,
+        javascript: FPDF_JAVASCRIPT_ACTION,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap {
+        todo!()
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultTTFMapCount(&self) -> usize {
+        todo!()
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: *const c_char, charset: c_int) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -8813,7 +9474,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_uint
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6611"))]
+    #[cfg(any(
+        feature = "pdfium_6666",
+        feature = "pdfium_future",
+        feature = "pdfium_6611"
+    ))]
     #[allow(non_snake_case)]
     fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_GetTextObject()");
@@ -10363,6 +11028,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFTextObj_GetRenderedBitmap(
+        &self,
+        document: FPDF_DOCUMENT,
+        page: FPDF_PAGE,
+        text_object: FPDF_PAGEOBJECT,
+        scale: f32,
+    ) -> FPDF_BITMAP {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetFont()");
 
@@ -10377,6 +11053,39 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as usize as FPDF_FONT
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        todo!()
+    }
+
+    #[cfg(any(
+        feature = "pdfium_6015",
+        feature = "pdfium_6043",
+        feature = "pdfium_6084",
+        feature = "pdfium_6110",
+        feature = "pdfium_6124",
+        feature = "pdfium_6164",
+        feature = "pdfium_6259",
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -10788,6 +11497,30 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_FONT
     }
 
+    #[cfg(any(
+        feature = "pdfium_6295",
+        feature = "pdfium_6337",
+        feature = "pdfium_6406",
+        feature = "pdfium_6490",
+        feature = "pdfium_6555",
+        feature = "pdfium_6569",
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
+    #[allow(non_snake_case)]
+    fn FPDFText_LoadCidType2Font(
+        &self,
+        document: FPDF_DOCUMENT,
+        font_data: *const u8,
+        font_data_size: u32,
+        to_unicode_cmap: &str,
+        cid_to_gid_map_data: *const u8,
+        cid_to_gid_map_data_size: u32,
+    ) -> FPDF_FONT {
+        todo!()
+    }
+
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_InsertObject()");
@@ -10948,7 +11681,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         );
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     #[allow(non_snake_case)]
     fn FPDFPageObj_TransformF(
         &self,
@@ -11067,7 +11804,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_PAGEOBJECT
     }
 
-    #[cfg(any(feature = "pdfium_6611", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_6611",
+        feature = "pdfium_6666",
+        feature = "pdfium_future"
+    ))]
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetMarkedContentID()");
@@ -12141,6 +12882,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDFImageObj_GetImagePixelSize(
+        &self,
+        image_object: FPDF_PAGEOBJECT,
+        width: *mut c_uint,
+        height: *mut c_uint,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_CreateNewPath()");
 
@@ -12271,6 +13022,15 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(ptr_top);
 
         result
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetRotatedBounds(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        quad_points: *mut FS_QUADPOINTSF,
+    ) -> FPDF_BOOL {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -12977,9 +13737,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_BOOL
     }
 
-    // TODO: AJRC - 4-Aug-2024 - FPDFFont_GetBaseFontName() is in Pdfium export headers
-    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFFont_GetBaseFontName(
         &self,
@@ -13032,9 +13790,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    // TODO: AJRC - 4-Aug-2024 - pointer type updated in FPDFFont_GetBaseFontName() definition,
-    // but changes not yet released. Tracking issue: https://github.com/ajrcarey/pdfium-render/issues/152
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
     #[allow(non_snake_case)]
     fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName()");
@@ -13745,6 +14501,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
+    fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
+    fn FPDF_GetNamedDest(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+        buffer: *mut c_void,
+        buflen: *mut c_long,
+    ) -> FPDF_DEST {
+        todo!()
+    }
+
+    #[allow(non_snake_case)]
     fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetAttachmentCount()");
 
@@ -14181,5 +14958,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as usize as FPDF_BOOL
+    }
+
+    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    #[allow(non_snake_case)]
+    fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
+        todo!()
     }
 }

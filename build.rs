@@ -135,6 +135,12 @@ fn build_bindings_for_one_pdfium_release(release: &str) -> Result<(), BuildError
         let bindings = bindgen::Builder::default()
             // The input header we would like to generate bindings for.
             .header(format!("include/{}/rust-import-wrapper.h", release))
+            .clang_arg("-DPDF_USE_SKIA") // Also generate bindings for optional SKIA functions
+            .clang_arg("-D_SKIA_SUPPORT_") // (Alternative name for this setting in Pdfium 5961 and earlier)
+            .clang_arg("-DPDF_ENABLE_XFA") // Also generate bindings for optional XFA functions
+            .clang_arg("-DPDF_ENABLE_V8") // Also generate bindings for optional V8 functions
+            .generate_cstr(true) // Recommended for Rust 1.59 and later
+            .enable_function_attribute_detection()
             .size_t_is_usize(true) // There are esoteric architectures where size_t != usize. See:
             // https://github.com/rust-lang/rust-bindgen/issues/1671
             // Long term, the solution is for Bindgen to switch to converting size_t to
@@ -149,11 +155,14 @@ fn build_bindings_for_one_pdfium_release(release: &str) -> Result<(), BuildError
                 ]
                 .iter(),
             )
-            .generate_comments(true)
-            .generate()?;
+            .generate_comments(true);
 
-        // Write the bindings to src/bindgen.rs.
+        #[cfg(feature = "pdfium_use_win32")]
+        let bindings = bindings.clang_arg("-D_WIN32"); // Also generate bindings for Windows-specific functions
 
+        // Generate the bindings to src/bindgen.rs.
+
+        let bindings = bindings.generate()?;
         let out_path = PathBuf::from("src");
 
         bindings.write_to_file(out_path.join(format!("bindgen/{}.rs", release)))?;
