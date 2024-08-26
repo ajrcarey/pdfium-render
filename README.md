@@ -283,19 +283,6 @@ Release 0.8.24 introduced new features to explicitly control the version of the 
 * `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_6666`.
 * `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
 
-A small number of functions in the Pdfium API are gated behind compile-time flags when compiling Pdfium.
-Release 0.8.25 introduced new features to control whether these functions are available in `pdfium-render`.
-
-* `pdfium_use_skia`: includes SKIA-specific functions in `PdfiumLibraryBindings`. You must bind to
-a build of Pdfium that was compiled with the `PDF_USE_SKIA` flag, or using these functions will fail.
-* `pdfium_use_win32`: includes Windows-specific functions in `PdfiumLibraryBindings`. You must bind
-to a build of Pdfium that was compiled with the `_WIN32` flag, or using these functions will fail.
-This feature requires the `windows` crate.
-* `pdfium_enable_xfa`: includes XFA-specific functions in `PdfiumLibraryBindings`. You must bind to
-a build of Pdfium that was compiled with the `PDF_ENABLE_XFA` flag, or using these functions will fail.
-* `pdfium_enable_v8`: includes V8-specific functions in `PdfiumLibraryBindings`. You must bind to
-a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using these functions will fail.
-
 The `image`, `thread_safe`, and `pdfium_latest` features are enabled by default. All other features are disabled by default.
 
 ## Minimum supported Rust version
@@ -381,6 +368,20 @@ and printing.
 Some functions and type definitions have been renamed or revised since their initial implementations.
 The initial implementations are still available but are marked as deprecated. These deprecated items
 will be removed in release 0.9.0.
+
+A small number of functions in the Pdfium API are gated behind compile-time flags when compiling Pdfium.
+Release 0.8.25 introduced new crate features to control whether these functions are included in
+the `PdfiumLibraryBindings` trait.
+
+* `pdfium_use_skia`: includes SKIA-specific functions in `PdfiumLibraryBindings`. You must bind to
+a build of Pdfium that was compiled with the `PDF_USE_SKIA` flag, or using these functions will fail.
+* `pdfium_use_win32`: includes Windows-specific functions in `PdfiumLibraryBindings`. You must bind
+to a build of Pdfium that was compiled with the `_WIN32` flag, or using these functions will fail.
+This feature requires the `windows` crate.
+* `pdfium_enable_xfa`: includes XFA-specific functions in `PdfiumLibraryBindings`. You must bind to
+a build of Pdfium that was compiled with the `PDF_ENABLE_XFA` flag, or using these functions will fail.
+* `pdfium_enable_v8`: includes V8-specific functions in `PdfiumLibraryBindings`. You must bind to
+a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using these functions will fail.
 
 ## Version history
 
