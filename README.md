@@ -277,7 +277,7 @@ This crate provides the following optional features:
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium.
   See the "Multithreading" section above.
 
-Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`.
+Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`:
 
 * `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes.
 * `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_6666`.
@@ -370,8 +370,8 @@ The initial implementations are still available but are marked as deprecated. Th
 will be removed in release 0.9.0.
 
 A small number of functions in the Pdfium API are gated behind compile-time flags when compiling Pdfium.
-Release 0.8.25 introduced new crate features to control whether these functions are included in
-the `PdfiumLibraryBindings` trait.
+`pdfium-render` release 0.8.25 introduced new crate features to control whether these functions are
+included in the `PdfiumLibraryBindings` trait:
 
 * `pdfium_use_skia`: includes SKIA-specific functions in `PdfiumLibraryBindings`. You must bind to
 a build of Pdfium that was compiled with the `PDF_USE_SKIA` flag, or using these functions will fail.
@@ -413,12 +413,11 @@ a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using thes
   `FPDF_CountNamedDests()`, `FPDF_GetNamedDestByName()`, `FPDF_GetNamedDest()`, `FPDF_GetXFAPacketCount()`,
   `FPDF_GetXFAPacketName()`, `FPDF_GetXFAPacketContent()`, `FPDF_GetRecommendedV8Flags()`,
   `FPDF_GetArrayBufferAllocatorSharedInstance()`, `FPDF_BStr_Init()`, `FPDF_BStr_Set()`,
-  `FPDF_BStr_Clear()`, `FPDF_SetPrintMode()`, and `FPDF_RenderPage()` functions;
-  adds `pfdium_use_skia`, `pdfium_use_win32`, `pdfium_enable_xfa`, and `pdfium_enable_v8`
-  crate feature flags; adjusts dependency versions in `Cargo.toml` to meet a minimum supported
-  Rust version (MSRV) of Rust 1.60; established upper bound on `bindgen` dependency to avoid
-  a build failure when compiling to WASM that was introduced in `bindgen` versions 0.70.0
-  and later, as described at <https://github.com/ajrcarey/pdfium-render/issues/156>.
+  `FPDF_BStr_Clear()`, `FPDF_SetPrintMode()`, and `FPDF_RenderPage()`; adds `pfdium_use_skia`,`pdfium_use_win32`, `pdfium_enable_xfa`, and `pdfium_enable_v8` crate feature flags;
+  adjusts dependency versions in `Cargo.toml` to meet a minimum supported Rust version (MSRV)
+  of Rust 1.60; established upper bound on `bindgen` dependency to avoid a build failure
+  when compiling to WASM that was introduced in `bindgen` versions 0.70.0 and later,
+  as described at <https://github.com/ajrcarey/pdfium-render/issues/156>.
 * 0.8.24: introduces crate feature flags for selecting Pdfium API versions to use in
   `PdfiumLibraryBindings`; reworked `build.rs` to output bindings for multiple sets of Pdfium header
   files; reworks bindings implementations to differentiate between API versions that include the
