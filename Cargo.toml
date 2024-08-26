@@ -23,7 +23,7 @@ doctest = false
 bitflags = "2"
 bytes = "1"
 bytemuck = "1"
-chrono = "0"
+chrono = "<= 0.4.31"                               # To meet MSRV target of Rust 1.60.
 image = { version = ">= 0.24.0", optional = true } # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we use trait from version 0.24.0 and later.
 itertools = "0"
 log = "0"
@@ -47,13 +47,15 @@ web-sys = { version = "0", features = [
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libloading = "0.8.1"
+libloading = "0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0", optional = true }
 
 [build-dependencies]
-bindgen = { version = ">=0.0.0, <=0.69.4", optional = true }
+# Bindgen 0.70.0 and later cause build failures when compiling to WASM. For more details, see:
+# 
+bindgen = { version = "<=0.69.4", optional = true }
 
 [dev-dependencies]
 # Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
@@ -62,7 +64,7 @@ rand = "0"  # Used by examples/create.rs, examples/matrix.rs
 rayon = "1" # Used by examples/thread_safe.rs
 
 [features]
-default = ["pdfium_latest", "thread_safe", "image"]
+default = ["pdfium_latest", "thread_safe"] #"image"]
 image = ["dep:image"]
 bindings = ["dep:bindgen"]
 static = []
@@ -83,7 +85,7 @@ flatten = []
 
 pdfium_latest = ["pdfium_6666"]
 pdfium_future = [
-    # For testing changes in Pdfium source control that are yet to be released
+    # For testing changes in Pdfium source control that are yet to be released.
     "pdfium_use_skia",
     "pdfium_enable_xfa",
 ]
@@ -105,8 +107,9 @@ pdfium_6015 = []
 pdfium_5961 = []
 
 # Certain Pdfium API functions are only made available when compile time flags are set
-# when the Pdfium binary is compiled. The feature flags below make these functions available
-# in PdfiumLibraryBindings.
+# when the Pdfium binary is compiled. The features below make these functions available
+# in PdfiumLibraryBindings. They correspond to the Pdfium compile time flags
+# _WIN32, PDF_USE_SKIA, PDF_ENABLE_XFA, and PDF_ENABLE_V8.
 
 pdfium_use_win32 = ["dep:windows"]
 pdfium_use_skia = []

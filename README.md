@@ -49,9 +49,6 @@ situations where a Pdfium library is not available. A key advantage of binding t
 rather than compile-time is that a Rust application using `pdfium-render` can be compiled to WASM
 for running in a browser alongside a WASM-packaged build of Pdfium.
 
-`pdfium-render` aims to eventually provide bindings to all non-interactive functionality provided
-by Pdfium. This is a work in progress that will be completed by version 1.0 of this crate.
-
 ## Examples
 
 Short, commented examples that demonstrate all the major Pdfium document handling features are
@@ -301,12 +298,18 @@ a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using thes
 
 The `image`, `thread_safe`, and `pdfium_latest` features are enabled by default. All other features are disabled by default.
 
+## Minimum supported Rust version
+
+With the `image` feature enabled, the minimum supported Rust version of `pdfium-render` will align
+with the minimum supported Rust version of `image` (at the time of writing, Rust 1.80). With the
+`image` feature disabled, the minimum supported Rust version of `pdfium-render` is 1.60.
+
 ## Porting existing Pdfium code from other languages
 
 The high-level idiomatic Rust interface provided by `pdfium-render` is built on top of 
-raw FFI bindings to the Pdfium API defined in the `PdfiumLibraryBindings` trait. It is completely feasible to use
-these raw FFI bindings directly if you wish, making porting existing code that uses the Pdfium API
-trivial while still gaining the benefits of late binding and WASM compatibility.
+raw FFI bindings to the Pdfium API defined in the `PdfiumLibraryBindings` trait. It is completely feasible
+to use these raw FFI bindings directly if you wish, making porting existing code that uses the
+Pdfium API trivial while still gaining the benefits of late binding and WASM compatibility.
 For instance, the following code snippet (taken from a C++ sample):
 
 ```cpp
@@ -360,7 +363,7 @@ are provided for converting between RGB and BGR image data in your own code.
 
 ## Development status
 
-As at Pdfium release `pdfium_6666` there are 425 `FPDF_*` functions in the Pdfium API, with
+As at Pdfium release `pdfium_6666` there are 426 `FPDF_*` functions in the Pdfium API, with
 bindings to all functions available in the `PdfiumLibraryBindings` trait.
 
 The initial focus of this crate was on rendering pages in a PDF file; consequently, high-level
@@ -381,8 +384,9 @@ will be removed in release 0.9.0.
 
 ## Version history
 
-* 0.8.25: adds bindings for `FPDFAnnot_GetFormAdditionalActionJavaScript()`,
-  `FPDFBitmap_Create()`, `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`,
+* 0.8.25: adds bindings for all outstanding Pdfium API functions, including
+  `FPDFAnnot_GetFormAdditionalActionJavaScript()`, `FPDFBitmap_Create()`,
+  `FPDFAnnot_GetFormFieldAlternateName()`, `FPDFAnnot_GetFileAttachment()`,
   `FPDFAnnot_AddFileAttachment()`, `FPDFAvail_Create()`, `FPDFAvail_Destroy()`,
   `FPDFAvail_IsDocAvail()`, `FPDFAvail_GetDocument()`, `FPDFAvail_GetFirstPageNum()`,
   `FPDFAvail_IsPageAvail()`, `FPDFAvail_IsFormAvail()`, `FPDFAvail_IsLinearized()`,
@@ -408,9 +412,12 @@ will be removed in release 0.9.0.
   `FPDF_CountNamedDests()`, `FPDF_GetNamedDestByName()`, `FPDF_GetNamedDest()`, `FPDF_GetXFAPacketCount()`,
   `FPDF_GetXFAPacketName()`, `FPDF_GetXFAPacketContent()`, `FPDF_GetRecommendedV8Flags()`,
   `FPDF_GetArrayBufferAllocatorSharedInstance()`, `FPDF_BStr_Init()`, `FPDF_BStr_Set()`,
-  `FPDF_BStr_Clear()`, `FPDF_SetPrintMode()`, and `FPDF_RenderPage()` functions.
-  Adds `pfdium_use_skia`, `pdfium_use_win32`, `pdfium_enable_xfa`, and `pdfium_enable_v8`
-  crate feature flags. 
+  `FPDF_BStr_Clear()`, `FPDF_SetPrintMode()`, and `FPDF_RenderPage()` functions;
+  adds `pfdium_use_skia`, `pdfium_use_win32`, `pdfium_enable_xfa`, and `pdfium_enable_v8`
+  crate feature flags; adjusts dependency versions in `Cargo.toml` to meet a minimum supported
+  Rust version (MSRV) of Rust 1.60; established upper bound on `bindgen` dependency to avoid
+  a build failure when compiling to WASM that was introduced in `bindgen` versions 0.70.0
+  and later, as described at <https://github.com/ajrcarey/pdfium-render/issues/156>.
 * 0.8.24: introduces crate feature flags for selecting Pdfium API versions to use in
   `PdfiumLibraryBindings`; reworked `build.rs` to output bindings for multiple sets of Pdfium header
   files; reworks bindings implementations to differentiate between API versions that include the
