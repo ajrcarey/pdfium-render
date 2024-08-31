@@ -377,11 +377,12 @@ included in the `PdfiumLibraryBindings` trait:
 a build of Pdfium that was compiled with the `PDF_USE_SKIA` flag, or using these functions will fail.
 * `pdfium_use_win32`: includes Windows-specific functions in `PdfiumLibraryBindings`. You must bind
 to a build of Pdfium that was compiled with the `_WIN32` flag, or using these functions will fail.
-This feature requires the `windows` crate.
+This feature requires the `windows` crate. This feature is not supported when compiling to WASM.
 * `pdfium_enable_xfa`: includes XFA-specific functions in `PdfiumLibraryBindings`. You must bind to
 a build of Pdfium that was compiled with the `PDF_ENABLE_XFA` flag, or using these functions will fail.
 * `pdfium_enable_v8`: includes V8-specific functions in `PdfiumLibraryBindings`. You must bind to
 a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using these functions will fail.
+This feature is not supported when compiling to WASM.
 
 ## Version history
 
@@ -415,7 +416,7 @@ a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using thes
   `FPDF_GetArrayBufferAllocatorSharedInstance()`, `FPDF_BStr_Init()`, `FPDF_BStr_Set()`,
   `FPDF_BStr_Clear()`, `FPDF_SetPrintMode()`, and `FPDF_RenderPage()`; adds `pfdium_use_skia`,`pdfium_use_win32`, `pdfium_enable_xfa`, and `pdfium_enable_v8` crate feature flags;
   adjusts dependency versions in `Cargo.toml` to meet a minimum supported Rust version (MSRV)
-  of Rust 1.60; established upper bound on `bindgen` dependency to avoid a build failure
+  of Rust 1.60; establishes upper bound on `bindgen` dependency to avoid a build failure
   when compiling to WASM that was introduced in `bindgen` versions 0.70.0 and later,
   as described at <https://github.com/ajrcarey/pdfium-render/issues/156>.
 * 0.8.24: introduces crate feature flags for selecting Pdfium API versions to use in
@@ -426,7 +427,7 @@ a build of Pdfium that was compiled with the `PDF_ENABLE_V8` flag, or using thes
   adds WASM bindings utility function `copy_string_to_pdfium()` to correctly copy the string data of an
   `FPDF_WIDESTRING` to Pdfium's WASM memory module, instead of just the pointer location;
   adds `PdfiumLibraryBindings::version()` function for reporting the currently configured API version;
-  internally reorganized source code layout to make the code structure clearer. 
+  internally reorganizes source code layout to make the code structure clearer. 
 * 0.8.23: synchronizes Pdfium API header files against mainline; removes binding for function
   `FPDFText_GetTextRenderMode()` in response to upstream change described at
   <https://github.com/ajrcarey/pdfium-render/issues/151>; adds bindings for `FPDFText_GetTextObject()`,
