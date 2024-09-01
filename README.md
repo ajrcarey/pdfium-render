@@ -350,8 +350,8 @@ are provided for converting between RGB and BGR image data in your own code.
 
 ## Development status
 
-As at Pdfium release `pdfium_6666` there are 426 `FPDF_*` functions in the Pdfium API, with
-bindings to all functions available in the `PdfiumLibraryBindings` trait.
+As at Pdfium release `pdfium_6666` there are 426 `FPDF_*` functions in the Pdfium API.
+Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
 
 The initial focus of this crate was on rendering pages in a PDF file; consequently, high-level
 implementations of `FPDF_*` functions related to page rendering were prioritised. By 1.0, the

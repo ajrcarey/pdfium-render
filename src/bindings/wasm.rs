@@ -1366,6 +1366,12 @@ impl WasmPdfiumBindings {
         Self::js_value_from_offset(canvas as usize)
     }
 
+    /// Converts a pointer to an `FPDF_JAVASCRIPT_ACTION` struct to a [JsValue].
+    #[inline]
+    fn js_value_from_javascript(javascript: FPDF_JAVASCRIPT_ACTION) -> JsValue {
+        Self::js_value_from_offset(javascript as usize)
+    }
+
     /// Converts a WASM memory heap offset to a [JsValue].
     #[inline]
     fn js_value_from_offset(offset: usize) -> JsValue {
@@ -1471,7 +1477,7 @@ impl WasmPdfiumBindings {
     }
 
     /// Calls an FPDF_Set*Box() function. Since all of these functions share the same
-    /// signature, we abstract out the function call into this separate function so it can
+    /// signature, we extract out the function call into this separate function so it can
     /// be re-used.
     #[inline]
     fn call_pdfium_set_page_box_fn(
@@ -1501,6 +1507,42 @@ impl WasmPdfiumBindings {
                 &JsValue::from(top),
             ))),
         );
+    }
+
+    /// Calls a FORM_On*() event function. Since all of these functions share the same
+    /// signature, we extract out the function call into this separate function so it can
+    /// be re-used.
+    #[inline]
+    fn call_pdfium_form_mouse_fn(
+        &self,
+        fn_name: &str,
+        hHandle: FPDF_FORMHANDLE,
+        page: FPDF_PAGE,
+        modifier: c_int,
+        page_x: f64,
+        page_y: f64,
+    ) -> FPDF_BOOL {
+        PdfiumRenderWasmState::lock()
+            .call(
+                fn_name,
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of5(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(modifier as f64),
+                    &JsValue::from_f64(page_x),
+                    &JsValue::from_f64(page_y),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 }
 
@@ -8724,22 +8766,68 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_DoDocumentJSAction()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FORM_DoDocumentJSAction",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_form(
+                hHandle,
+            )))),
+        );
     }
 
     #[allow(non_snake_case)]
     fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_DoDocumentOpenAction()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FORM_DoDocumentOpenAction",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_form(
+                hHandle,
+            )))),
+        );
     }
 
     #[allow(non_snake_case)]
     fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_DoDocumentAAction()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FORM_DoDocumentAAction",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Array::of2(
+                &Self::js_value_from_form(hHandle),
+                &JsValue::from_f64(aaType as f64),
+            ))),
+        );
     }
 
     #[allow(non_snake_case)]
     fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_DoPageAAction()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FORM_DoDocumFORM_DoPageAActionentAAction",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Array::of3(
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_form(hHandle),
+                &JsValue::from_f64(aaType as f64),
+            ))),
+        );
     }
 
     #[allow(non_snake_case)]
@@ -8751,7 +8839,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnMouseMove()");
+
+        self.call_pdfium_form_mouse_fn("FORM_OnMouseMove", hHandle, page, modifier, page_x, page_y)
     }
 
     #[allow(non_snake_case)]
@@ -8776,7 +8866,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnFocus()");
+
+        self.call_pdfium_form_mouse_fn("FORM_OnFocus", hHandle, page, modifier, page_x, page_y)
     }
 
     #[allow(non_snake_case)]
@@ -8788,7 +8880,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnLButtonDown()");
+
+        self.call_pdfium_form_mouse_fn(
+            "FORM_OnLButtonDown",
+            hHandle,
+            page,
+            modifier,
+            page_x,
+            page_y,
+        )
     }
 
     #[allow(non_snake_case)]
@@ -8800,7 +8901,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnRButtonDown()");
+
+        self.call_pdfium_form_mouse_fn(
+            "FORM_OnRButtonDown",
+            hHandle,
+            page,
+            modifier,
+            page_x,
+            page_y,
+        )
     }
 
     #[allow(non_snake_case)]
@@ -8812,7 +8922,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnLButtonUp()");
+
+        self.call_pdfium_form_mouse_fn("FORM_OnLButtonUp", hHandle, page, modifier, page_x, page_y)
     }
 
     #[allow(non_snake_case)]
@@ -8824,7 +8936,9 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnRButtonUp()");
+
+        self.call_pdfium_form_mouse_fn("FORM_OnRButtonUp", hHandle, page, modifier, page_x, page_y)
     }
 
     #[allow(non_snake_case)]
@@ -8836,7 +8950,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnLButtonDoubleClick()");
+
+        self.call_pdfium_form_mouse_fn(
+            "FORM_OnLButtonDoubleClick",
+            hHandle,
+            page,
+            modifier,
+            page_x,
+            page_y,
+        )
     }
 
     #[allow(non_snake_case)]
@@ -8847,7 +8970,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         nKeyCode: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnKeyDown()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_OnKeyDown",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(nKeyCode as f64),
+                    &JsValue::from_f64(modifier as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -8858,7 +9001,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         nKeyCode: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnKeyUp()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_OnKeyUp",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(nKeyCode as f64),
+                    &JsValue::from_f64(modifier as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -8869,7 +9032,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         nChar: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnChar()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_OnChar",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(nChar as f64),
+                    &JsValue::from_f64(modifier as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -8901,7 +9084,28 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_ReplaceAndKeepSelection()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let wsText_ptr = state.copy_string_to_pdfium(wsText);
+
+        state.call(
+            "FORM_ReplaceAndKeepSelection",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+            ]),
+            Some(&JsValue::from(Array::of3(
+                &Self::js_value_from_form(hHandle),
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_offset(wsText_ptr),
+            ))),
+        );
+
+        state.free(wsText_ptr);
     }
 
     #[allow(non_snake_case)]
@@ -8911,37 +9115,150 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_ReplaceSelection()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let wsText_ptr = state.copy_string_to_pdfium(wsText);
+
+        state.call(
+            "FORM_ReplaceSelection",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+            ]),
+            Some(&JsValue::from(Array::of3(
+                &Self::js_value_from_form(hHandle),
+                &Self::js_value_from_page(page),
+                &Self::js_value_from_offset(wsText_ptr),
+            ))),
+        );
+
+        state.free(wsText_ptr);
     }
 
     #[allow(non_snake_case)]
     fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_SelectAllText()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_SelectAllText",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_CanUndo()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_CanUndo",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_CanRedo()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_CanRedo",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_Undo()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_Undo",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_Redo()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_Redo",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_ForceToKillFocus()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_ForceToKillFocus",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_form(
+                    hHandle,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -8956,7 +9273,23 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_SetFocusedAnnot()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_SetFocusedAnnot",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(handle),
+                    &Self::js_value_from_annotation(annot),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -8967,7 +9300,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> c_int {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_HasFormFieldAtPoint()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPage_HasFormFieldAtPoint",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(page_x),
+                    &JsValue::from_f64(page_y),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -8978,7 +9331,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_x: f64,
         page_y: f64,
     ) -> c_int {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPage_FormFieldZOrderAtPoint()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPage_FormFieldZOrderAtPoint",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(page_x),
+                    &JsValue::from_f64(page_y),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -9026,7 +9399,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_RemoveFormFieldHighlight()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDF_RemoveFormFieldHighlight",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_form(
+                hHandle,
+            )))),
+        );
     }
 
     #[allow(non_snake_case)]
@@ -9087,7 +9469,34 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         rotate: c_int,
         flags: c_int,
     ) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_FFLDrawSkia()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDF_FFLDrawSkia",
+            JsFunctionArgumentType::Void,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Self::js_array_from_vec(vec![
+                Self::js_value_from_form(hHandle),
+                Self::js_value_from_canvas(canvas),
+                Self::js_value_from_page(page),
+                JsValue::from_f64(start_x as f64),
+                JsValue::from_f64(start_y as f64),
+                JsValue::from_f64(size_x as f64),
+                JsValue::from_f64(size_y as f64),
+                JsValue::from_f64(rotate as f64),
+                JsValue::from_f64(flags as f64),
+            ]))),
+        );
     }
 
     #[allow(non_snake_case)]
@@ -9115,7 +9524,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         index: c_int,
         selected: FPDF_BOOL,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_SetIndexSelected()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_SetIndexSelected",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(index as f64),
+                    &JsValue::from_f64(selected as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
@@ -9125,17 +9554,59 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page: FPDF_PAGE,
         index: c_int,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_IsIndexSelected()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_IsIndexSelected",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_LoadXFA()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_LoadXFA",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
+                    document,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
     }
 
     #[allow(non_snake_case)]
     fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetJavaScriptActionCount()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFDoc_GetJavaScriptActionCount",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
+                    document,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -9144,12 +9615,37 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         document: FPDF_DOCUMENT,
         index: c_int,
     ) -> FPDF_JAVASCRIPT_ACTION {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetJavaScriptAction()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFDoc_GetJavaScriptAction",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_document(document),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_JAVASCRIPT_ACTION
     }
 
     #[allow(non_snake_case)]
     fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFDoc_CloseJavaScriptAction()");
+
+        PdfiumRenderWasmState::lock().call(
+            "FPDFDoc_CloseJavaScriptAction",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_javascript(
+                javascript,
+            )))),
+        );
     }
 
     #[allow(non_snake_case)]
