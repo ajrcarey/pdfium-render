@@ -3901,7 +3901,7 @@ pub trait PdfiumLibraryBindings {
 
     #[doc = " Function: FPDF_AddInstalledFont\n          Add a system font to the list in PDFium.\n Comments:\n          This function is only called during the system font list building\n          process.\n Parameters:\n          mapper          -   Opaque pointer to Foxit font mapper\n          face            -   The font face name\n          charset         -   Font character set. See above defined constants.\n Return Value:\n          None."]
     #[allow(non_snake_case)]
-    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: *const c_char, charset: c_int);
+    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int);
 
     #[doc = " Function: FPDF_SetSystemFontInfo\n          Set the system font info interface into PDFium\n Parameters:\n          pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n          None\n Comments:\n          Platform support implementation should implement required methods of\n          FFDF_SYSFONTINFO interface, then call this function during PDFium\n          initialization process.\n\n          Call this with NULL to tell PDFium to stop using a previously set\n          |FPDF_SYSFONTINFO|."]
     #[allow(non_snake_case)]

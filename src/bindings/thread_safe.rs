@@ -2843,7 +2843,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: *const c_char, charset: c_int) {
+    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int) {
         self.bindings.FPDF_AddInstalledFont(mapper, face, charset)
     }
 

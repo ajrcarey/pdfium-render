@@ -1516,7 +1516,7 @@ impl WasmPdfiumBindings {
     fn call_pdfium_form_mouse_fn(
         &self,
         fn_name: &str,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -1534,7 +1534,7 @@ impl WasmPdfiumBindings {
                     JsFunctionArgumentType::Number,
                 ]),
                 Some(&JsValue::from(Array::of5(
-                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_form(form),
                     &Self::js_value_from_page(page),
                     &JsValue::from_f64(modifier as f64),
                     &JsValue::from_f64(page_x),
@@ -2627,8 +2627,6 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             state.copy_struct_to_pdfium_mut(pause)
         };
 
-        let color_scheme_length = size_of::<FPDF_COLORSCHEME>();
-
         let color_scheme_ptr = state.copy_struct_to_pdfium(color_scheme);
 
         let result = state
@@ -3277,9 +3275,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_RESULT;
 
         if result == 0 {
-            unsafe {
-                state.copy_struct_from_pdfium(bstr_ptr, bstr_length, bstr);
-            }
+            state.copy_struct_from_pdfium(bstr_ptr, bstr_length, bstr);
         }
 
         state.free(bstr_ptr);
@@ -3324,9 +3320,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_RESULT;
 
         if result == 0 {
-            unsafe {
-                state.copy_struct_from_pdfium(bstr_ptr, bstr_length, bstr);
-            }
+            state.copy_struct_from_pdfium(bstr_ptr, bstr_length, bstr);
         }
 
         state.free(bstr_ptr);
@@ -3359,9 +3353,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_RESULT;
 
         if result == 0 {
-            unsafe {
-                state.copy_struct_from_pdfium(bstr_ptr, bstr_length, bstr);
-            }
+            state.copy_struct_from_pdfium(bstr_ptr, bstr_length, bstr);
         }
 
         state.free(bstr_ptr);
@@ -8854,7 +8846,39 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         delta_x: c_int,
         delta_y: c_int,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_OnMouseWheel()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let ptr_page_coord = state.copy_struct_to_pdfium(page_coord);
+
+        let result = state
+            .call(
+                "FORM_OnMouseWheel",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_form(hHandle),
+                    Self::js_value_from_page(page),
+                    JsValue::from_f64(modifier as f64),
+                    Self::js_value_from_offset(ptr_page_coord),
+                    JsValue::from_f64(delta_x as f64),
+                    JsValue::from_f64(delta_y as f64),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        state.free(ptr_page_coord);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -9063,7 +9087,53 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedText(): entering");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedText(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedText(): calling FORM_GetFocusedText()"
+        );
+
+        let result = state
+            .call(
+                "FORM_GetFocusedText",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedText(): leaving");
+
+        result as c_ulong
     }
 
     #[allow(non_snake_case)]
@@ -9074,7 +9144,53 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetSelectedText(): entering");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetSelectedText(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FORM_GetSelectedText(): calling FORM_GetSelectedText()"
+        );
+
+        let result = state
+            .call(
+                "FORM_GetSelectedText",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_form(hHandle),
+                    &Self::js_value_from_page(page),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetSelectedText(): leaving");
+
+        result as c_ulong
     }
 
     #[allow(non_snake_case)]
@@ -9268,7 +9384,58 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_index: *mut c_int,
         annot: *mut FPDF_ANNOTATION,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedAnnot(): entering");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let page_index_length = size_of::<c_int>();
+
+        let page_index_ptr = state.copy_ptr_with_len_to_pdfium(page_index, page_index_length);
+
+        let annot_length = size_of::<FPDF_ANNOTATION>();
+
+        let annot_ptr = state.copy_ptr_with_len_to_pdfium(annot, annot_length);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedAnnot(): calling FORM_GetFocusedAnnot()"
+        );
+
+        let result = state
+            .call(
+                "FORM_GetFocusedAnnot",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_form(handle),
+                    &Self::js_value_from_offset(page_index_ptr),
+                    &Self::js_value_from_offset(annot_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *page_index = state
+                    .copy_bytes_from_pdfium(page_index_ptr, page_index_length)
+                    .try_into()
+                    .map(c_int::from_le_bytes)
+                    .unwrap_or(0);
+            }
+
+            state.copy_struct_from_pdfium(annot_ptr, annot_length, annot);
+        }
+
+        state.free(page_index_ptr);
+        state.free(annot_ptr);
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetFocusedAnnot(): leaving");
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -9655,7 +9822,55 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        todo!()
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetName(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetName(): calling FPDFJavaScriptAction_GetName()"
+        );
+
+        let result = state
+            .call(
+                "FPDFJavaScriptAction_GetName",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_javascript(javascript),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetName(): leaving"
+        );
+
+        result as c_ulong
     }
 
     #[allow(non_snake_case)]
@@ -9665,12 +9880,77 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        todo!()
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetScript(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetScript(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetScript(): calling FPDFJavaScriptAction_GetScript()"
+        );
+
+        let result = state
+            .call(
+                "FPDFJavaScriptAction_GetScript",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_javascript(javascript),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFJavaScriptAction_GetScript(): leaving"
+        );
+
+        result as c_ulong
     }
 
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultTTFMap()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let charset_font_map_ptr = state
+            .call(
+                "FPDF_GetDefaultTTFMap",
+                JsFunctionArgumentType::Pointer,
+                None,
+                None,
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        let result =
+            state.copy_bytes_from_pdfium(charset_font_map_ptr, size_of::<FPDF_CharsetFontMap>());
+
+        result.as_ptr() as *const FPDF_CharsetFontMap
     }
 
     #[cfg(any(
@@ -9681,7 +9961,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     ))]
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapCount(&self) -> usize {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultTTFMapCount()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_GetDefaultTTFMapCount",
+                JsFunctionArgumentType::Number,
+                None,
+                None,
+            )
+            .as_f64()
+            .unwrap() as usize
     }
 
     #[cfg(any(
@@ -9692,27 +9982,128 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     ))]
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultTTFMapEntry()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let charset_font_map_ptr = state
+            .call(
+                "FPDF_GetDefaultTTFMapEntry",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![JsFunctionArgumentType::Number]),
+                Some(&JsValue::from(Array::of1(&JsValue::from_f64(index as f64)))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        let result =
+            state.copy_bytes_from_pdfium(charset_font_map_ptr, size_of::<FPDF_CharsetFontMap>());
+
+        result.as_ptr() as *const FPDF_CharsetFontMap
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: *const c_char, charset: c_int) {
-        todo!()
+    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int) {
+        // TODO: AJRC - 7-Sep-2024 - this almost certainly won't work on WASM because
+        // mapper is (according to the documentation) meant to be a pointer to a Foxit font mapper,
+        // which doesn't exist on WASM.
+
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_AddInstalledFont()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_face = CString::new(face).unwrap();
+
+        let face_ptr = state.copy_bytes_to_pdfium(&c_face.into_bytes_with_nul());
+
+        let mapper_ptr = state.copy_struct_to_pdfium(mapper);
+
+        state.call(
+            "FPDF_AddInstalledFont",
+            JsFunctionArgumentType::Number,
+            Some(vec![
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Pointer,
+                JsFunctionArgumentType::Number,
+            ]),
+            Some(&JsValue::from(Array::of3(
+                &Self::js_value_from_offset(mapper_ptr),
+                &Self::js_value_from_offset(face_ptr),
+                &JsValue::from_f64(charset as f64),
+            ))),
+        );
+
+        state.free(mapper_ptr);
+        state.free(face_ptr);
     }
 
     #[allow(non_snake_case)]
     fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_SetSystemFontInfo()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let p_font_info_len = size_of::<FPDF_SYSFONTINFO>();
+
+        let p_font_info_ptr = state.copy_ptr_with_len_to_pdfium(pFontInfo, p_font_info_len);
+
+        state.call(
+            "FPDF_SetSystemFontInfo",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_offset(
+                p_font_info_ptr,
+            )))),
+        );
+
+        state.copy_struct_from_pdfium(p_font_info_ptr, p_font_info_len, pFontInfo);
+
+        state.free(p_font_info_ptr);
     }
 
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultSystemFontInfo()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let sys_font_info_ptr = state
+            .call(
+                "FPDF_GetDefaultSystemFontInfo",
+                JsFunctionArgumentType::Pointer,
+                None,
+                None,
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        let result = state.copy_bytes_from_pdfium(sys_font_info_ptr, size_of::<FPDF_SYSFONTINFO>());
+
+        result.as_ptr() as *mut FPDF_SYSFONTINFO
     }
 
     #[allow(non_snake_case)]
     fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_FreeDefaultSystemFontInfo()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let p_font_info_len = size_of::<FPDF_SYSFONTINFO>();
+
+        let p_font_info_ptr = state.copy_ptr_with_len_to_pdfium(pFontInfo, p_font_info_len);
+
+        state.call(
+            "FPDF_FreeDefaultSystemFontInfo",
+            JsFunctionArgumentType::Void,
+            Some(vec![JsFunctionArgumentType::Pointer]),
+            Some(&JsValue::from(Array::of1(&Self::js_value_from_offset(
+                p_font_info_ptr,
+            )))),
+        );
+
+        state.copy_struct_from_pdfium(p_font_info_ptr, p_font_info_len, pFontInfo);
+
+        state.free(p_font_info_ptr);
     }
 
     #[allow(non_snake_case)]
@@ -12147,7 +12538,27 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         text_object: FPDF_PAGEOBJECT,
         scale: f32,
     ) -> FPDF_BITMAP {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetRenderedBitmap()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFTextObj_GetRenderedBitmap",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_document(document),
+                    &Self::js_value_from_page(page),
+                    &Self::js_value_from_object(text_object),
+                    &JsValue::from_f64(scale as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_BITMAP
     }
 
     #[allow(non_snake_case)]
@@ -12169,7 +12580,23 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_IsGenerated()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFText_IsGenerated",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_text_page(text_page),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[cfg(any(
@@ -12192,12 +12619,44 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     ))]
     #[allow(non_snake_case)]
     fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_IsHyphen()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFText_IsHyphen",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_text_page(text_page),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
     fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_HasUnicodeMapError()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFText_HasUnicodeMapError",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_text_page(text_page),
+                    &JsValue::from_f64(index as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -12630,7 +13089,49 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         cid_to_gid_map_data: *const u8,
         cid_to_gid_map_data_size: u32,
     ) -> FPDF_FONT {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFText_LoadCidType2Font()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_to_unicode_cmap = CString::new(to_unicode_cmap).unwrap();
+
+        let c_to_unicode_cmap_ptr =
+            state.copy_bytes_to_pdfium(&c_to_unicode_cmap.into_bytes_with_nul());
+
+        let font_data_ptr = state.copy_ptr_with_len_to_pdfium(font_data, font_data_size as usize);
+
+        let cid_to_gid_map_data_ptr = state
+            .copy_ptr_with_len_to_pdfium(cid_to_gid_map_data, cid_to_gid_map_data_size as usize);
+
+        let result = state
+            .call(
+                "FPDFText_LoadCidType2Font",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Self::js_array_from_vec(vec![
+                    Self::js_value_from_document(document),
+                    Self::js_value_from_offset(font_data_ptr),
+                    JsValue::from(font_data_size),
+                    Self::js_value_from_offset(c_to_unicode_cmap_ptr),
+                    Self::js_value_from_offset(cid_to_gid_map_data_ptr),
+                    JsValue::from(cid_to_gid_map_data_size),
+                ]))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_FONT;
+
+        state.free(c_to_unicode_cmap_ptr);
+        state.free(font_data_ptr);
+        state.free(cid_to_gid_map_data_ptr);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -14000,7 +14501,54 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         width: *mut c_uint,
         height: *mut c_uint,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFImageObj_GetImagePixelSize()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len = size_of::<c_uint>();
+
+        let ptr_width = state.malloc(len);
+
+        let ptr_height = state.malloc(len);
+
+        let result = state
+            .call(
+                "FPDFImageObj_GetImagePixelSize",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_object(image_object),
+                    &Self::js_value_from_offset(ptr_width),
+                    &Self::js_value_from_offset(ptr_height),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *width = state
+                    .copy_bytes_from_pdfium(ptr_width, len)
+                    .try_into()
+                    .map(c_uint::from_le_bytes)
+                    .unwrap_or(0);
+
+                *height = state
+                    .copy_bytes_from_pdfium(ptr_height, len)
+                    .try_into()
+                    .map(c_uint::from_le_bytes)
+                    .unwrap_or(0);
+            }
+        }
+
+        state.free(ptr_width);
+        state.free(ptr_height);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -14142,7 +14690,37 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         page_object: FPDF_PAGEOBJECT,
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetRotatedBounds()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len = size_of::<FS_QUADPOINTSF>();
+
+        let ptr_quad_points = state.malloc(len);
+
+        let result = state
+            .call(
+                "FPDFPageObj_GetRotatedBounds",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_object(page_object),
+                    &Self::js_value_from_offset(ptr_quad_points),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(ptr_quad_points, len, quad_points);
+        }
+
+        state.free(ptr_quad_points);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -15614,12 +16192,50 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_CountNamedDests()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDF_CountNamedDests",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_document(
+                    document,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_DWORD
     }
 
     #[allow(non_snake_case)]
     fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetNamedDestByName()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let c_name = CString::new(name).unwrap();
+
+        let name_ptr = state.copy_bytes_to_pdfium(&c_name.into_bytes_with_nul());
+
+        let result = state
+            .call(
+                "FPDF_GetNamedDestByName",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_document(document),
+                    &Self::js_value_from_offset(name_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_DEST;
+
+        state.free(name_ptr);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -15630,7 +16246,60 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         buffer: *mut c_void,
         buflen: *mut c_long,
     ) -> FPDF_DEST {
-        todo!()
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_GetNamedDest()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        let buflen_length = size_of::<c_ulong>();
+
+        let buflen_ptr = state.copy_ptr_with_len_to_pdfium(buflen, buflen_length);
+
+        let result = state
+            .call(
+                "FPDF_GetNamedDest",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_document(document),
+                    &JsValue::from_f64(index as f64),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &Self::js_value_from_offset(buflen_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_DEST;
+
+        if result.is_null() {
+            unsafe {
+                *buflen = state
+                    .copy_bytes_from_pdfium(buflen_ptr, buflen_length)
+                    .try_into()
+                    .map(c_long::from_le_bytes)
+                    .unwrap_or(0);
+
+                if *buflen > 0 {
+                    state.copy_struct_from_pdfium(buffer_ptr, *buflen as usize, buffer);
+                }
+            }
+        }
+
+        state.free(buffer_ptr);
+        state.free(buflen_ptr);
+
+        result
     }
 
     #[allow(non_snake_case)]

@@ -5946,8 +5946,10 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: *const c_char, charset: c_int) {
-        unsafe { (self.extern_FPDF_AddInstalledFont)(mapper, face, charset) }
+    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int) {
+        let c_face = CString::new(face).unwrap();
+
+        unsafe { (self.extern_FPDF_AddInstalledFont)(mapper, c_face.as_ptr(), charset) }
     }
 
     #[inline]
