@@ -8,7 +8,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::page_index_cache::PdfPageIndexCache;
+use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::page::object::group::PdfPageGroupObject;
 use crate::pdf::document::page::size::PdfPagePaperSize;
 use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy};

@@ -4,7 +4,7 @@
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_TEXTPAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::page_index_cache::PdfPageIndexCache;
+use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::page::text::char::PdfPageTextChar;
 use crate::pdf::document::page::text::PdfPageText;
 use crate::pdf::document::page::PdfPage;

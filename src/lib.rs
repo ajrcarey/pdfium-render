@@ -64,7 +64,6 @@ mod bindgen {
 
 mod bindings;
 mod error;
-mod page_index_cache;
 mod pdf;
 mod pdfium;
 mod utils;

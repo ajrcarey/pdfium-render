@@ -5,8 +5,8 @@ use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
-use crate::page_index_cache::PdfPageIndexCache;
 use crate::pdf::color::PdfColor;
+use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::page::object::path::PdfPathFillMode;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::{

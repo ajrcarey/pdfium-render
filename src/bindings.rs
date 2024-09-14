@@ -233,19 +233,36 @@ pub trait PdfiumLibraryBindings {
         PdfiumApiVersion::current()
     }
 
-    #[doc = " Function: FPDF_InitLibraryWithConfig\n          Initialize the PDFium library and allocate global resources for it.\n Parameters:\n          config - configuration information as above.\n Return value:\n          None.\n Comments:\n          You have to call this function before you can call any PDF\n          processing functions."]
+    /// Initializes the PDFium library and allocate global resources for it.
+    ///
+    ///    `config` - configuration information.
+    ///
+    /// You have to call this function before you can call any PDF processing functions.
     #[allow(non_snake_case)]
     fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG);
 
-    #[doc = " Function: FPDF_InitLibrary\n          Initialize the PDFium library (alternative form).\n Parameters:\n          None\n Return value:\n          None.\n Comments:\n          Convenience function to call FPDF_InitLibraryWithConfig() with a\n          default configuration for backwards compatibility purposes. New\n          code should call FPDF_InitLibraryWithConfig() instead. This will\n          be deprecated in the future."]
+    /// Initializes the PDFium library (alternative form).
+    ///
+    /// Convenience function to call [PdfiumLibraryBindings::FPDF_InitLibraryWithConfig]
+    /// with a default configuration for backwards compatibility purposes. New code should
+    /// call [PdfiumLibraryBindings::FPDF_InitLibraryWithConfig] instead.
+    /// This will be deprecated in the future.
     #[allow(non_snake_case)]
     fn FPDF_InitLibrary(&self);
 
-    #[doc = " Function: FPDF_DestroyLibrary\n          Release global resources allocated to the PDFium library by\n          FPDF_InitLibrary() or FPDF_InitLibraryWithConfig().\n Parameters:\n          None.\n Return value:\n          None.\n Comments:\n          After this function is called, you must not call any PDF\n          processing functions.\n\n          Calling this function does not automatically close other\n          objects. It is recommended to close other objects before\n          closing the library with this function."]
+    /// Releases global resources allocated to the PDFium library by [PdfiumLibraryBindings::FPDF_InitLibrary]
+    /// or [PdfiumLibraryBindings::FPDF_InitLibraryWithConfig]. After this function is called,
+    /// you must not call any PDF processing functions. Calling this function does not automatically
+    /// close other objects. It is recommended to close other objects before closing the library
+    /// with this function.
     #[allow(non_snake_case)]
     fn FPDF_DestroyLibrary(&self);
 
-    #[doc = " Function: FPDF_SetSandBoxPolicy\n          Set the policy for the sandbox environment.\n Parameters:\n          policy -   The specified policy for setting, for example:\n                     FPDF_POLICY_MACHINETIME_ACCESS.\n          enable -   True to enable, false to disable the policy.\n Return value:\n          None."]
+    /// Sets the policy for the sandbox environment.
+    ///
+    ///    `policy` -   The specified policy for setting, for example `FPDF_POLICY_MACHINETIME_ACCESS`.
+    ///
+    ///    `enable` -   `true` to enable, `false` to disable the policy.
     #[allow(non_snake_case)]
     fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL);
 
@@ -253,30 +270,30 @@ pub trait PdfiumLibraryBindings {
     #[cfg(feature = "pdfium_use_win32")]
     /// Sets printing mode when printing on Windows.
     ///
-    ///    mode - FPDF_PRINTMODE_EMF to output EMF (default)
+    ///    mode - `FPDF_PRINTMODE_EMF` to output EMF (default)
     ///
-    ///           FPDF_PRINTMODE_TEXTONLY to output text only (for charstream devices)
+    ///           `FPDF_PRINTMODE_TEXTONLY` to output text only (for charstream devices)
     ///
-    ///           FPDF_PRINTMODE_POSTSCRIPT2 to output level 2 PostScript into
+    ///           `FPDF_PRINTMODE_POSTSCRIPT2` to output level 2 PostScript into
     ///           EMF as a series of GDI comments.
     ///
-    ///           FPDF_PRINTMODE_POSTSCRIPT3 to output level 3 PostScript into
+    ///           `FPDF_PRINTMODE_POSTSCRIPT3` to output level 3 PostScript into
     ///           EMF as a series of GDI comments.
     ///
-    ///           FPDF_PRINTMODE_POSTSCRIPT2_PASSTHROUGH to output level 2
+    ///           `FPDF_PRINTMODE_POSTSCRIPT2_PASSTHROUGH` to output level 2
     ///           PostScript via ExtEscape() in PASSTHROUGH mode.
     ///
-    ///           FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH to output level 3
+    ///           `FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH` to output level 3
     ///           PostScript via ExtEscape() in PASSTHROUGH mode.
     ///
-    ///           FPDF_PRINTMODE_EMF_IMAGE_MASKS to output EMF, with more
+    ///           `FPDF_PRINTMODE_EMF_IMAGE_MASKS` to output EMF, with more
     ///           efficient processing of documents containing image masks.
     ///
-    ///           FPDF_PRINTMODE_POSTSCRIPT3_TYPE42 to output level 3
+    ///           `FPDF_PRINTMODE_POSTSCRIPT3_TYPE42` to output level 3
     ///           PostScript with embedded Type 42 fonts, when applicable, into
     ///           EMF as a series of GDI comments.
     ///
-    ///           FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH to output level
+    ///           `FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH` to output level
     ///           3 PostScript with embedded Type 42 fonts, when applicable,
     ///           via ExtEscape() in PASSTHROUGH mode.
     ///
@@ -319,32 +336,104 @@ pub trait PdfiumLibraryBindings {
         PdfColor::from_pdfium(argb).alpha()
     }
 
-    #[doc = " Create a new PDF document.\n\n Returns a handle to a new document, or NULL on failure."]
+    /// Creates a new empty PDF document. Returns a handle to a new document, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT;
 
-    #[doc = " Function: FPDF_LoadDocument\n          Open and load a PDF document.\n Parameters:\n          file_path -  Path to the PDF file (including extension).\n          password  -  A string used as the password for the PDF file.\n                       If no password is needed, empty or NULL can be used.\n                       See comments below regarding the encoding.\n Return value:\n          A handle to the loaded document, or NULL on failure.\n Comments:\n          Loaded document can be closed by FPDF_CloseDocument().\n          If this function fails, you can use FPDF_GetLastError() to retrieve\n          the reason why it failed.\n\n          The encoding for |file_path| is UTF-8.\n\n          The encoding for |password| can be either UTF-8 or Latin-1. PDFs,\n          depending on the security handler revision, will only accept one or\n          the other encoding. If |password|'s encoding and the PDF's expected\n          encoding do not match, FPDF_LoadDocument() will automatically\n          convert |password| to the other encoding."]
-    /// This function is not available when compiling to WASM. You must use one of the
-    /// [PdfiumLibraryBindings::FPDF_LoadMemDocument()], [PdfiumLibraryBindings::FPDF_LoadMemDocument64()],
-    /// or [PdfiumLibraryBindings::FPDF_LoadCustomDocument()] functions instead.
     #[cfg(not(target_arch = "wasm32"))]
+    /// Opens and loads an existing PDF document.
+    ///
+    ///    `file_path` -  Path to the PDF file (including extension).
+    ///
+    ///    `password`  -  A string used as the password for the PDF file.
+    ///                   If no password is needed, empty or `NULL` can be used.
+    ///                   See comments below regarding the encoding.
+    ///
+    /// Returns a handle to the loaded document, or `NULL` on failure.
+    ///
+    /// The loaded document can be closed by [PdfiumLibraryBindings::FPDF_CloseDocument].
+    /// If this function fails, you can use [PdfiumLibraryBindings::FPDF_GetLastError] to retrieve
+    /// the reason why it failed. The encoding for `file_path` is UTF-8. The encoding for
+    /// `password` can be either UTF-8 or Latin-1. PDFs, depending on the security handler
+    /// revision, will only accept one or the other encoding. If `password`'s encoding and
+    /// the PDF's expected encoding do not match, `FPDF_LoadDocument` will automatically
+    /// convert `password` to the other encoding.
+    ///
+    /// This function is not available when compiling to WASM. You must use one of the
+    /// [PdfiumLibraryBindings::FPDF_LoadMemDocument], [PdfiumLibraryBindings::FPDF_LoadMemDocument64],
+    /// or [PdfiumLibraryBindings::FPDF_LoadCustomDocument] functions instead.
     #[allow(non_snake_case)]
     fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
 
-    #[doc = " Function: FPDF_LoadMemDocument\n          Open and load a PDF document from memory.\n Parameters:\n          data_buf    -   Pointer to a buffer containing the PDF document.\n          size        -   Number of bytes in the PDF document.\n          password    -   A string used as the password for the PDF file.\n                          If no password is needed, empty or NULL can be used.\n Return value:\n          A handle to the loaded document, or NULL on failure.\n Comments:\n          The memory buffer must remain valid when the document is open.\n          The loaded document can be closed by FPDF_CloseDocument.\n          If this function fails, you can use FPDF_GetLastError() to retrieve\n          the reason why it failed.\n\n          See the comments for FPDF_LoadDocument() regarding the encoding for\n          |password|.\n Notes:\n          If PDFium is built with the XFA module, the application should call\n          FPDF_LoadXFA() function after the PDF document loaded to support XFA\n          fields defined in the fpdfformfill.h file."]
-    /// Note that all calls to [PdfiumLibraryBindings::FPDF_LoadMemDocument()] are
-    /// internally upgraded to [PdfiumLibraryBindings::FPDF_LoadMemDocument64()].
+    /// Opens and loads an existing PDF document from memory.
+    ///
+    ///    `data_buf`    -   Pointer to a buffer containing the PDF document.
+    ///
+    ///    `size`        -   Number of bytes in the PDF document.
+    ///
+    ///    `password`    -   A string used as the password for the PDF file.
+    ///                      If no password is needed, empty or NULL can be used.
+    ///
+    /// Returns a handle to the loaded document, or `NULL` on failure.
+    ///
+    /// The memory buffer must remain valid when the document is open. The loaded document
+    /// can be closed by [PdfiumLibraryBindings::FPDF_CloseDocument]. If this function fails,
+    /// you can use [PdfiumLibraryBindings::FPDF_GetLastError] to retrieve the reason why it failed.
+    ///
+    /// See the comments for [PdfiumLibraryBindings::FPDF_LoadDocument] regarding the encoding for
+    /// `password`.
+    ///
+    /// If PDFium is built with the XFA module, the application should call [PdfiumLibraryBindings::FPDF_LoadXFA]
+    /// function after the PDF document is loaded to support XFA fields defined in the `fpdfformfill.h` file.
+    ///
+    /// Note that all calls to [PdfiumLibraryBindings::FPDF_LoadMemDocument] are
+    /// internally upgraded to [PdfiumLibraryBindings::FPDF_LoadMemDocument64] by `pdfium-render`.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
         self.FPDF_LoadMemDocument64(bytes, password)
     }
 
-    #[doc = " Experimental API.\n Function: FPDF_LoadMemDocument64\n          Open and load a PDF document from memory.\n Parameters:\n          data_buf    -   Pointer to a buffer containing the PDF document.\n          size        -   Number of bytes in the PDF document.\n          password    -   A string used as the password for the PDF file.\n                          If no password is needed, empty or NULL can be used.\n Return value:\n          A handle to the loaded document, or NULL on failure.\n Comments:\n          The memory buffer must remain valid when the document is open.\n          The loaded document can be closed by FPDF_CloseDocument.\n          If this function fails, you can use FPDF_GetLastError() to retrieve\n          the reason why it failed.\n\n          See the comments for FPDF_LoadDocument() regarding the encoding for\n          |password|.\n Notes:\n          If PDFium is built with the XFA module, the application should call\n          FPDF_LoadXFA() function after the PDF document loaded to support XFA\n          fields defined in the fpdfformfill.h file."]
+    /// Opens and loads an existing PDF document from memory.
+    ///
+    ///    `data_buf`    -   Pointer to a buffer containing the PDF document.
+    ///
+    ///    `size`        -   Number of bytes in the PDF document.
+    ///
+    ///    `password`    -   A string used as the password for the PDF file.
+    ///                      If no password is needed, empty or `NULL` can be used.
+    ///
+    /// Returns a handle to the loaded document, or `NULL` on failure.
+    ///
+    /// The memory buffer must remain valid when the document is open. The loaded document
+    /// can be closed by [PdfiumLibraryBindings::FPDF_CloseDocument]. If this function fails,
+    /// you can use [PdfiumLibraryBindings::FPDF_GetLastError] to retrieve the reason why it failed.
+    ///
+    /// See the comments for [PdfiumLibraryBindings::FPDF_LoadDocument] regarding the encoding for
+    /// `password`.
+    ///
+    /// If PDFium is built with the XFA module, the application should call [PdfiumLibraryBindings::FPDF_LoadXFA]
+    /// function after the PDF document loaded to support XFA fields defined in the `fpdfformfill.h` file.
     #[allow(non_snake_case)]
     fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
 
-    #[doc = " Function: FPDF_LoadCustomDocument\n          Load PDF document from a custom access descriptor.\n Parameters:\n          pFileAccess -   A structure for accessing the file.\n          password    -   Optional password for decrypting the PDF file.\n Return value:\n          A handle to the loaded document, or NULL on failure.\n Comments:\n          The application must keep the file resources |pFileAccess| points to\n          valid until the returned FPDF_DOCUMENT is closed. |pFileAccess|\n          itself does not need to outlive the FPDF_DOCUMENT.\n\n          The loaded document can be closed with FPDF_CloseDocument().\n\n          See the comments for FPDF_LoadDocument() regarding the encoding for\n          |password|.\n Notes:\n          If PDFium is built with the XFA module, the application should call\n          FPDF_LoadXFA() function after the PDF document loaded to support XFA\n          fields defined in the fpdfformfill.h file."]
+    /// Loads a PDF document from a custom access descriptor.
+    ///
+    ///    `pFileAccess` -   A structure for accessing the file.
+    ///
+    ///    `password`    -   Optional password for decrypting the PDF file.
+    ///
+    /// Returns a handle to the loaded document, or `NULL` on failure.
+    ///
+    /// The application must keep the file resources `pFileAccess` points to valid until the
+    /// returned `FPDF_DOCUMENT` is closed. `pFileAccess` itself does not need to outlive the
+    /// `FPDF_DOCUMENT`. The loaded document can be closed with [PdfiumLibraryBindings::FPDF_CloseDocument].
+    ///
+    /// See the comments for [PdfiumLibraryBindings::FPDF_LoadDocument] regarding the encoding for
+    /// `password`.
+    ///
+    /// If PDFium is built with the XFA module, the application should call [PdfiumLibraryBindings::FPDF_LoadXFA]
+    /// function after the PDF document loaded to support XFA fields defined in the `fpdfformfill.h` file.
     #[allow(non_snake_case)]
     fn FPDF_LoadCustomDocument(
         &self,
@@ -352,7 +441,16 @@ pub trait PdfiumLibraryBindings {
         password: Option<&str>,
     ) -> FPDF_DOCUMENT;
 
-    #[doc = " Function: FPDF_SaveAsCopy\n          Saves the copy of specified document in custom way.\n Parameters:\n          document        -   Handle to document, as returned by\n                              FPDF_LoadDocument() or FPDF_CreateNewDocument().\n          pFileWrite      -   A pointer to a custom file write structure.\n          flags           -   The creating flags.\n Return value:\n          TRUE for succeed, FALSE for failed.\n"]
+    /// Saves a copy of the specified document in a custom way.
+    ///
+    ///    `document`        -   Handle to document, as returned by [PdfiumLibraryBindings::FPDF_LoadDocument]
+    ///                          or [PdfiumLibraryBindings::FPDF_CreateNewDocument].
+    ///
+    ///    `pFileWrite`      -   A pointer to a custom file write structure.
+    ///
+    ///    `flags`           -   The creating flags.
+    ///
+    /// Returns `true` on success, `false` on failure.
     #[allow(non_snake_case)]
     fn FPDF_SaveAsCopy(
         &self,
@@ -361,7 +459,19 @@ pub trait PdfiumLibraryBindings {
         flags: FPDF_DWORD,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDF_SaveWithVersion\n          Same as FPDF_SaveAsCopy(), except the file version of the\n          saved document can be specified by the caller.\n Parameters:\n          document        -   Handle to document.\n          pFileWrite      -   A pointer to a custom file write structure.\n          flags           -   The creating flags.\n          fileVersion     -   The PDF file version. File version: 14 for 1.4,\n                              15 for 1.5, ...\n Return value:\n          TRUE if succeed, FALSE if failed.\n"]
+    /// Same as [PdfiumLibraryBindings::FPDF_SaveAsCopy], except the file version of the
+    /// saved document can be specified by the caller.
+    ///
+    ///    `document`        -   Handle to document.
+    ///
+    ///    `pFileWrite`      -   A pointer to a custom file write structure.
+    ///
+    ///    `flags`           -   The creating flags.
+    ///
+    ///    `fileVersion`     -   The PDF file version. File version: 14 for 1.4,
+    ///                          15 for 1.5, etc.
+    ///
+    /// Returns `true` on success, `false` on failure.
     #[allow(non_snake_case)]
     fn FPDF_SaveWithVersion(
         &self,
@@ -371,7 +481,7 @@ pub trait PdfiumLibraryBindings {
         fileVersion: c_int,
     ) -> FPDF_BOOL;
 
-    /// Create a document availability provider.
+    /// Creates a document availability provider.
     ///
     ///   `file_avail` - pointer to file availability interface.
     ///
@@ -388,7 +498,7 @@ pub trait PdfiumLibraryBindings {
         file: *mut FPDF_FILEACCESS,
     ) -> FPDF_AVAIL;
 
-    /// Destroy the `avail` document availability provider.
+    /// Destroys the `avail` document availability provider.
     ///
     ///   `avail` - handle to document availability provider to be destroyed.
     #[allow(non_snake_case)]
@@ -419,7 +529,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int;
 
-    /// Get document from the availability provider.
+    /// Gets a document from the availability provider.
     ///
     ///   `avail`    - handle to document availability provider.
     ///
@@ -434,7 +544,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT;
 
-    /// Get the page number for the first available page in a linearized PDF.
+    /// Gets the page number for the first available page in a linearized PDF.
     ///
     ///   `doc` - document handle.
     ///
@@ -447,7 +557,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int;
 
-    /// Check if `page_index` is ready for loading, if not, get the `FX_DOWNLOADHINTS`.
+    /// Checks if `page_index` is ready for loading, if not, get the `FX_DOWNLOADHINTS`.
     ///
     ///   `avail`      - handle to document availability provider.
     ///
@@ -478,7 +588,7 @@ pub trait PdfiumLibraryBindings {
         hints: *mut FX_DOWNLOADHINTS,
     ) -> c_int;
 
-    /// Check if form data is ready for initialization; if not, get the `FX_DOWNLOADHINTS`.
+    /// Checks if form data is ready for initialization; if not, get the `FX_DOWNLOADHINTS`.
     ///
     ///   `avail` - handle to document availability provider.
     ///
@@ -507,7 +617,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int;
 
-    /// Check whether a document is a linearized PDF.
+    /// Checks whether a document is a linearized PDF.
     ///
     ///   `avail` - handle to document availability provider.
     ///
@@ -526,15 +636,59 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int;
 
-    #[doc = " Function: FPDF_ClosePage\n          Close a loaded PDF page.\n Parameters:\n          page        -   Handle to the loaded page.\n Return value:\n          None."]
+    /// Closes a loaded PDF page.
+    ///
+    ///    `page`        -   Handle to the loaded page.
     #[allow(non_snake_case)]
     fn FPDF_ClosePage(&self, page: FPDF_PAGE);
 
-    #[doc = " Function: FPDF_CloseDocument\n          Close a loaded PDF document.\n Parameters:\n          document    -   Handle to the loaded document.\n Return value:\n          None."]
+    /// Closes a loaded PDF document.
+    ///
+    ///    `document`    -   Handle to the loaded document.
     #[allow(non_snake_case)]
     fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
 
-    #[doc = " Function: FPDF_DeviceToPage\n          Convert the screen coordinates of a point to page coordinates.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n          start_x     -   Left pixel position of the display area in\n                          device coordinates.\n          start_y     -   Top pixel position of the display area in device\n                          coordinates.\n          size_x      -   Horizontal size (in pixels) for displaying the page.\n          size_y      -   Vertical size (in pixels) for displaying the page.\n          rotate      -   Page orientation:\n                            0 (normal)\n                            1 (rotated 90 degrees clockwise)\n                            2 (rotated 180 degrees)\n                            3 (rotated 90 degrees counter-clockwise)\n          device_x    -   X value in device coordinates to be converted.\n          device_y    -   Y value in device coordinates to be converted.\n          page_x      -   A pointer to a double receiving the converted X\n                          value in page coordinates.\n          page_y      -   A pointer to a double receiving the converted Y\n                          value in page coordinates.\n Return value:\n          Returns true if the conversion succeeds, and |page_x| and |page_y|\n          successfully receives the converted coordinates.\n Comments:\n          The page coordinate system has its origin at the left-bottom corner\n          of the page, with the X-axis on the bottom going to the right, and\n          the Y-axis on the left side going up.\n\n          NOTE: this coordinate system can be altered when you zoom, scroll,\n          or rotate a page, however, a point on the page should always have\n          the same coordinate values in the page coordinate system.\n\n          The device coordinate system is device dependent. For screen device,\n          its origin is at the left-top corner of the window. However this\n          origin can be altered by the Windows coordinate transformation\n          utilities.\n\n          You must make sure the start_x, start_y, size_x, size_y\n          and rotate parameters have exactly same values as you used in\n          the FPDF_RenderPage() function call."]
+    /// Converts the screen coordinates of a point to page coordinates.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`     -   Left pixel position of the display area in device coordinates.
+    ///
+    ///    `start_y`     -   Top pixel position of the display area in device coordinates.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`      -   Page orientation:
+    ///                            0 (normal)
+    ///                            1 (rotated 90 degrees clockwise)
+    ///                            2 (rotated 180 degrees)
+    ///                            3 (rotated 90 degrees counter-clockwise)
+    ///
+    ///    `device_x`    -   X value in device coordinates to be converted.
+    ///
+    ///    `device_y`    -   Y value in device coordinates to be converted.
+    ///
+    ///    `page_x`      -   A pointer to a double receiving the converted X
+    ///                       value in page coordinates.
+    ///
+    ///    `page_y`      -   A pointer to a double receiving the converted Y
+    ///                       value in page coordinates.
+    ///
+    /// Returns `true` if the conversion succeeds, and `page_x` and `page_y`
+    /// successfully receives the converted coordinates.
+    ///
+    /// The page coordinate system has its origin at the left-bottom corner of the page,
+    /// with the X-axis on the bottom going to the right, and the Y-axis on the left side going up.
+    /// This coordinate system can be altered when you zoom, scroll, or rotate a page; however,
+    /// a point on the page should always have the same coordinate values in the page coordinate
+    /// system. The device coordinate system is device dependent. For screen device, its origin
+    /// is at the left-top corner of the window. This origin can be altered by the Windows coordinate
+    /// transformation utilities.
+    ///
+    /// You must make sure the `start_x`, `start_y`, `size_x`, `size_y` and `rotate` parameters
+    /// have exactly same values as you used in the [PdfiumLibraryBindings::FPDF_RenderPage] function call.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDF_DeviceToPage(
@@ -551,7 +705,36 @@ pub trait PdfiumLibraryBindings {
         page_y: *mut c_double,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDF_PageToDevice\n          Convert the page coordinates of a point to screen coordinates.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n          start_x     -   Left pixel position of the display area in\n                          device coordinates.\n          start_y     -   Top pixel position of the display area in device\n                          coordinates.\n          size_x      -   Horizontal size (in pixels) for displaying the page.\n          size_y      -   Vertical size (in pixels) for displaying the page.\n          rotate      -   Page orientation:\n                            0 (normal)\n                            1 (rotated 90 degrees clockwise)\n                            2 (rotated 180 degrees)\n                            3 (rotated 90 degrees counter-clockwise)\n          page_x      -   X value in page coordinates.\n          page_y      -   Y value in page coordinate.\n          device_x    -   A pointer to an integer receiving the result X\n                          value in device coordinates.\n          device_y    -   A pointer to an integer receiving the result Y\n                          value in device coordinates.\n Return value:\n          Returns true if the conversion succeeds, and |device_x| and\n          |device_y| successfully receives the converted coordinates.\n Comments:\n          See comments for FPDF_DeviceToPage()."]
+    /// Converts the page coordinates of a point to screen coordinates.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`     -   Left pixel position of the display area in device coordinates.
+    ///
+    ///    `start_y`     -   Top pixel position of the display area in device coordinates.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`      -   Page orientation:
+    ///                            0 (normal)
+    ///                            1 (rotated 90 degrees clockwise)
+    ///                            2 (rotated 180 degrees)
+    ///                            3 (rotated 90 degrees counter-clockwise)
+    ///
+    ///    `page_x`      -   X value in page coordinates.
+    ///
+    ///    `page_y`      -   Y value in page coordinate.
+    ///
+    ///    `device_x`    -   A pointer to an integer receiving the result X value in device coordinates.
+    ///
+    ///    `device_y`    -   A pointer to an integer receiving the result Y value in device coordinates.
+    ///
+    /// Returns `true` if the conversion succeeds, and `device_x` and `device_y`
+    /// successfully receives the converted coordinates.
+    ///
+    /// Refer to [PdfiumLibraryBindings::FPDF_DeviceToPage] for comments on coordinate systems.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDF_PageToDevice(
@@ -568,15 +751,45 @@ pub trait PdfiumLibraryBindings {
         device_y: *mut c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDF_GetFileVersion\n          Get the file version of the given PDF document.\n Parameters:\n          doc         -   Handle to a document.\n          fileVersion -   The PDF file version. File version: 14 for 1.4, 15\n                          for 1.5, ...\n Return value:\n          True if succeeds, false otherwise.\n Comments:\n          If the document was created by FPDF_CreateNewDocument,\n          then this function will always fail."]
+    /// Gets the file version of the given PDF document.
+    ///
+    ///    `doc`         -   Handle to a document.
+    ///
+    ///    `fileVersion` -   The PDF file version. File version: 14 for 1.4, 15
+    ///                      for 1.5, etc.
+    ///
+    /// Returns `true` on success, `false` on failure.
+    ///
+    /// If the document was created by [PdfiumLibraryBindings::FPDF_CreateNewDocument],
+    /// then this function will always fail.
     #[allow(non_snake_case)]
     fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDF_DocumentHasValidCrossReferenceTable\n          Whether the document's cross reference table is valid or not.\n Parameters:\n          document    -   Handle to a document. Returned by FPDF_LoadDocument.\n Return value:\n          True if the PDF parser did not encounter problems parsing the cross\n          reference table. False if the parser could not parse the cross\n          reference table and the table had to be rebuild from other data\n          within the document.\n Comments:\n          The return value can change over time as the PDF parser evolves."]
+    /// Returns whether the document's cross reference table is valid or not.
+    ///
+    ///    `document`    -   Handle to a document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns `true` if the PDF parser did not encounter problems parsing the cross reference table,
+    /// or `false` if the parser could not parse the cross reference table and the table had to be
+    /// rebuilt from other data within the document.
+    ///
+    /// The return value may change over time as the PDF parser evolves.
     #[allow(non_snake_case)]
     fn FPDF_DocumentHasValidCrossReferenceTable(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDF_GetTrailerEnds\n          Get the byte offsets of trailer ends.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument().\n          buffer      -   The address of a buffer that receives the\n                          byte offsets.\n          length      -   The size, in ints, of |buffer|.\n Return value:\n          Returns the number of ints in the buffer on success, 0 on error.\n\n |buffer| is an array of integers that describes the exact byte offsets of the\n trailer ends in the document. If |length| is less than the returned length,\n or |document| or |buffer| is NULL, |buffer| will not be modified."]
+    /// Gets the byte offsets of trailer ends.
+    ///
+    ///    `document`    -   Handle to document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `buffer`      -   The address of a buffer that receives the byte offsets.
+    ///
+    ///    `length`      -   The size, in ints, of `buffer`.
+    ///
+    /// Returns the number of ints in the buffer on success, 0 on error.
+    ///
+    /// `buffer` is an array of integers that describes the exact byte offsets of the
+    /// trailer ends in the document. If `length` is less than the returned length,
+    /// or `document` or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_GetTrailerEnds(
         &self,
@@ -585,7 +798,13 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Function: FPDF_GetDocPermissions\n          Get file permission flags of the document.\n Parameters:\n          document    -   Handle to a document. Returned by FPDF_LoadDocument.\n Return value:\n          A 32-bit integer indicating permission flags. Please refer to the\n          PDF Reference for detailed descriptions. If the document is not\n          protected or was unlocked by the owner, 0xffffffff will be returned."]
+    /// Gets the file permission flags of the document.
+    ///
+    ///    `document`    -   Handle to a document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns a 32-bit integer indicating permission flags. Please refer to the PDF Reference
+    /// for detailed descriptions. If the document is not protected or was unlocked
+    /// by the owner, `0xffffffff` will be returned.
     #[allow(non_snake_case)]
     fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
 
@@ -601,23 +820,79 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6666",
         feature = "pdfium_future"
     ))]
-    #[doc = " Function: FPDF_GetDocUserPermissions\n          Get user file permission flags of the document.\n Parameters:\n          document    -   Handle to a document. Returned by FPDF_LoadDocument.\n Return value:\n          A 32-bit integer indicating permission flags. Please refer to the\n          PDF Reference for detailed descriptions. If the document is not\n          protected, 0xffffffff will be returned. Always returns user\n          permissions, even if the document was unlocked by the owner."]
+    /// Gets user file permission flags of the document.
+    ///
+    ///    `document`    -   Handle to a document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns a 32-bit integer indicating permission flags. Please refer to the PDF Reference
+    /// for detailed descriptions. If the document is not protected, `0xffffffff` will be returned.
+    /// Always returns user permissions, even if the document was unlocked by the owner.
     #[allow(non_snake_case)]
     fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
 
-    #[doc = " Function: FPDF_GetSecurityHandlerRevision\n          Get the revision for the security handler.\n Parameters:\n          document    -   Handle to a document. Returned by FPDF_LoadDocument.\n Return value:\n          The security handler revision number. Please refer to the PDF\n          Reference for a detailed description. If the document is not\n          protected, -1 will be returned."]
+    /// Gets the revision for the security handler.
+    ///
+    ///    `document`    -   Handle to a document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns the security handler revision number. Please refer to the PDF Reference
+    /// for a detailed description. If the document is not protected, `-1` will be returned.
     #[allow(non_snake_case)]
     fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    #[doc = " Function: FPDF_GetPageCount\n          Get total number of pages in the document.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument.\n Return value:\n          Total number of pages in the document."]
+    /// Gets the total number of pages in the document.
+    ///
+    ///    `document`    -   Handle to a document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns the total number of pages in the document."]
     #[allow(non_snake_case)]
     fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    #[doc = " Function: FPDF_LoadPage\n          Load a page inside the document.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument\n          page_index  -   Index number of the page. 0 for the first page.\n Return value:\n          A handle to the loaded page, or NULL if page load fails.\n Comments:\n          The loaded page can be rendered to devices using FPDF_RenderPage.\n          The loaded page can be closed using FPDF_ClosePage."]
+    /// Loads a page inside the document.
+    ///
+    ///    `document`    -   Handle to a document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `page_index`  -   Index number of the page. `0` for the first page.
+    ///
+    /// Returns a handle to the loaded page, or `NULL` if page load fails.
+    ///
+    /// The loaded page can be rendered to devices using [PdfiumLibraryBindings::FPDF_RenderPage].
+    /// The loaded page can be closed using [PdfiumLibraryBindings::FPDF_ClosePage].
     #[allow(non_snake_case)]
     fn FPDF_LoadPage(&self, document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE;
 
-    #[doc = " Experimental API.\n Function: FPDF_RenderPageBitmapWithColorScheme_Start\n          Start to render page contents to a device independent bitmap\n          progressively with a specified color scheme for the content.\n Parameters:\n          bitmap       -   Handle to the device independent bitmap (as the\n                           output buffer). Bitmap handle can be created by\n                           FPDFBitmap_Create function.\n          page         -   Handle to the page as returned by FPDF_LoadPage\n                           function.\n          start_x      -   Left pixel position of the display area in the\n                           bitmap coordinate.\n          start_y      -   Top pixel position of the display area in the\n                           bitmap coordinate.\n          size_x       -   Horizontal size (in pixels) for displaying the\n                           page.\n          size_y       -   Vertical size (in pixels) for displaying the page.\n          rotate       -   Page orientation: 0 (normal), 1 (rotated 90\n                           degrees clockwise), 2 (rotated 180 degrees),\n                           3 (rotated 90 degrees counter-clockwise).\n          flags        -   0 for normal display, or combination of flags\n                           defined in fpdfview.h. With FPDF_ANNOT flag, it\n                           renders all annotations that does not require\n                           user-interaction, which are all annotations except\n                           widget and popup annotations.\n          color_scheme -   Color scheme to be used in rendering the |page|.\n                           If null, this function will work similar to\n                           FPDF_RenderPageBitmap_Start().\n          pause        -   The IFSDK_PAUSE interface. A callback mechanism\n                           allowing the page rendering process.\n Return value:\n          Rendering Status. See flags for progressive process status for the\n          details."]
+    /// Starts rendering page contents to a device independent bitmap progressively with a
+    /// specified color scheme for the content.
+    ///
+    ///    `bitmap`       -   Handle to the device independent bitmap (as the
+    ///                       output buffer). Bitmap handle can be created by
+    ///                       [PdfiumLibraryBindings::FPDFBitmap_Create] function.
+    ///
+    ///    `page`         -   Handle to the page as returned by [PdfiumLibraryBindings::FPDF_LoadPage]
+    ///                       function.
+    ///
+    ///    `start_x`      -   Left pixel position of the display area in the bitmap coordinate.
+    ///
+    ///    `start_y`      -   Top pixel position of the display area in the bitmap coordinate.
+    ///
+    ///    `size_x`       -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`       -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`       -   Page orientation: 0 (normal), 1 (rotated 90 degrees clockwise),
+    ///                       2 (rotated 180 degrees), 3 (rotated 90 degrees counter-clockwise).
+    ///
+    ///    `flags`        -   0 for normal display, or combination of flags defined in `fpdfview.h`.
+    ///                       With `FPDF_ANNOT` flag, it renders all annotations that does not require
+    ///                       user-interaction, which are all annotations except widget and popup
+    ///                       annotations.
+    ///
+    ///    `color_scheme` -   Color scheme to be used in rendering the `page`.
+    ///                       If `NULL`, this function will work similar to [PdfiumLibraryBindings::FPDF_RenderPageBitmap_Start].
+    ///
+    ///    `pause`        -   The `IFSDK_PAUSE` interface, a callback mechanism allowing the
+    ///                       page progressive rendering process to be paused.
+    ///
+    /// Returns the rendering status. See flags for progressive process status for details.
     #[allow(non_snake_case)]
     fn FPDF_RenderPageBitmapWithColorScheme_Start(
         &self,
@@ -633,7 +908,34 @@ pub trait PdfiumLibraryBindings {
         pause: *mut IFSDK_PAUSE,
     ) -> c_int;
 
-    #[doc = " Function: FPDF_RenderPageBitmap_Start\n          Start to render page contents to a device independent bitmap\n          progressively.\n Parameters:\n          bitmap      -   Handle to the device independent bitmap (as the\n                          output buffer). Bitmap handle can be created by\n                          FPDFBitmap_Create().\n          page        -   Handle to the page, as returned by FPDF_LoadPage().\n          start_x     -   Left pixel position of the display area in the\n                          bitmap coordinates.\n          start_y     -   Top pixel position of the display area in the bitmap\n                          coordinates.\n          size_x      -   Horizontal size (in pixels) for displaying the page.\n          size_y      -   Vertical size (in pixels) for displaying the page.\n          rotate      -   Page orientation: 0 (normal), 1 (rotated 90 degrees\n                          clockwise), 2 (rotated 180 degrees), 3 (rotated 90\n                          degrees counter-clockwise).\n          flags       -   0 for normal display, or combination of flags\n                          defined in fpdfview.h. With FPDF_ANNOT flag, it\n                          renders all annotations that does not require\n                          user-interaction, which are all annotations except\n                          widget and popup annotations.\n          pause       -   The IFSDK_PAUSE interface.A callback mechanism\n                          allowing the page rendering process\n Return value:\n          Rendering Status. See flags for progressive process status for the\n          details."]
+    /// Starts rendering page contents to a device independent bitmap progressively.
+    ///
+    ///    `bitmap`      -   Handle to the device independent bitmap (as the
+    ///                      output buffer). Bitmap handle can be created by
+    ///                      [PdfiumLibraryBindings::FPDFBitmap_Create].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`     -   Left pixel position of the display area in the
+    ///                      bitmap coordinates.
+    ///
+    ///    `start_y`     -   Top pixel position of the display area in the bitmap coordinates.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`      -   Page orientation: 0 (normal), 1 (rotated 90 degrees clockwise),
+    ///                      2 (rotated 180 degrees), 3 (rotated 90 degrees counter-clockwise).
+    ///
+    ///    `flags`       -   0 for normal display, or combination of flags defined in `fpdfview.h`.
+    ///                      With `FPDF_ANNOT` flag, it renders all annotations that does not require
+    ///                      user-interaction, which are all annotations except widget and popup annotations.
+    ///
+    ///    `pause`       -   The `IFSDK_PAUSE` interface, a callback mechanism allowing the
+    ///                      page rendering process to be paused.
+    ///
+    /// Returns the rendering status. See flags for progressive process status for details.
     #[allow(non_snake_case)]
     fn FPDF_RenderPageBitmap_Start(
         &self,
@@ -648,15 +950,44 @@ pub trait PdfiumLibraryBindings {
         pause: *mut IFSDK_PAUSE,
     ) -> c_int;
 
-    #[doc = " Function: FPDF_RenderPage_Continue\n          Continue rendering a PDF page.\n Parameters:\n          page        -   Handle to the page, as returned by FPDF_LoadPage().\n          pause       -   The IFSDK_PAUSE interface (a callback mechanism\n                          allowing the page rendering process to be paused\n                          before it's finished). This can be NULL if you\n                          don't want to pause.\n Return value:\n          The rendering status. See flags for progressive process status for\n          the details."]
+    /// Continues rendering a PDF page.
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage()].
+    ///
+    ///    `pause`       -   The `IFSDK_PAUSE` interface, a callback mechanism allowing
+    ///                      the page rendering process to be paused before it's finished.
+    ///                      This can be `NULL` if you don't want to pause.
+    ///
+    /// Returns the rendering status. See flags for progressive process status for details.
     #[allow(non_snake_case)]
     fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int;
 
-    #[doc = " Function: FPDF_RenderPage_Close\n          Release the resource allocate during page rendering. Need to be\n          called after finishing rendering or\n          cancel the rendering.\n Parameters:\n          page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return value:\n          None."]
+    /// Releases the resource allocate during page rendering. Needs to be called after finishing
+    /// rendering or after cancelling the rendering.
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage()].
     #[allow(non_snake_case)]
     fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE);
 
-    #[doc = " Experimental API.\n Import pages to a FPDF_DOCUMENT.\n\n   dest_doc     - The destination document for the pages.\n   src_doc      - The document to be imported.\n   page_indices - An array of page indices to be imported. The first page is\n                  zero. If |page_indices| is NULL, all pages from |src_doc|\n                  are imported.\n   length       - The length of the |page_indices| array.\n   index        - The page index at which to insert the first imported page\n                  into |dest_doc|. The first page is zero.\n\n Returns TRUE on success. Returns FALSE if any pages in |page_indices| is\n invalid."]
+    /// Imports pages into a `FPDF_DOCUMENT`.
+    ///
+    ///    `dest_doc`     - The destination document for the pages.
+    ///
+    ///    `src_doc`      - The document to be imported.
+    ///
+    ///    `page_indices` - An array of page indices to be imported. The first page index is
+    ///                     zero. If `page_indices` is `NULL`, all pages from `src_doc`
+    ///                     are imported.
+    ///
+    ///    `length`       - The length of the `page_indices` array.
+    ///
+    ///    `index`        - The page index at which to insert the first imported page
+    ///                     into `dest_doc`. The first page index is zero.
+    ///
+    /// Returns `true` on success. Returns `false` if any pages in `page_indices` are invalid.
+    ///
+    /// A [vec]-friendly helper function is available for this function.
+    /// See [PdfiumLibraryBindings::FPDF_ImportPagesByIndex_vec].
     #[allow(non_snake_case)]
     fn FPDF_ImportPagesByIndex(
         &self,
@@ -667,7 +998,20 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_BOOL;
 
-    // TODO: AJRC - 24-Aug-24 - need doc comment for helper function
+    /// A [vec]-friendly helper function for [PdfiumLibraryBindings::FPDF_ImportPagesByIndex].
+    ///
+    /// Imports pages into a `FPDF_DOCUMENT`.
+    ///
+    ///    `dest_doc`     - The destination document for the pages.
+    ///
+    ///    `src_doc`      - The document to be imported.
+    ///
+    ///    `page_indices` - A [vec] of page indices to be imported. The first page index is zero.
+    ///
+    ///    `index`        - The page index at which to insert the first imported page
+    ///                     into `dest_doc`. The first page index is zero.
+    ///
+    /// Returns `true` on success. Returns `false` if any pages in `page_indices` are invalid.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_ImportPagesByIndex_vec(
@@ -686,7 +1030,20 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    #[doc = " Import pages to a FPDF_DOCUMENT.\n\n   dest_doc  - The destination document for the pages.\n   src_doc   - The document to be imported.\n   pagerange - A page range string, Such as \"1,3,5-7\". The first page is one.\n               If |pagerange| is NULL, all pages from |src_doc| are imported.\n   index     - The page index at which to insert the first imported page into\n               |dest_doc|. The first page is zero.\n\n Returns TRUE on success. Returns FALSE if any pages in |pagerange| is\n invalid or if |pagerange| cannot be read."]
+    /// Imports pages into a `FPDF_DOCUMENT`.
+    ///
+    ///    `dest_doc`  - The destination document for the pages.
+    ///
+    ///    `src_doc`   - The document to be imported.
+    ///
+    ///    `pagerange` - A page range string, such as "1,3,5-7". The first page index is one.
+    ///                  If `pagerange` is `NULL`, all pages from `src_doc` are imported.
+    ///
+    ///    `index`     - The page index at which to insert the first imported page into
+    ///                  `dest_doc`. The first page index is zero.
+    ///
+    /// Returns `true` on success. Returns `false` if any pages in `pagerange` is invalid
+    /// or if `pagerange` cannot be read.
     #[allow(non_snake_case)]
     fn FPDF_ImportPages(
         &self,
@@ -696,7 +1053,22 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Create a new document from |src_doc|.  The pages of |src_doc| will be\n combined to provide |num_pages_on_x_axis x num_pages_on_y_axis| pages per\n |output_doc| page.\n\n   src_doc             - The document to be imported.\n   output_width        - The output page width in PDF \"user space\" units.\n   output_height       - The output page height in PDF \"user space\" units.\n   num_pages_on_x_axis - The number of pages on X Axis.\n   num_pages_on_y_axis - The number of pages on Y Axis.\n\n Return value:\n   A handle to the created document, or NULL on failure.\n\n Comments:\n   number of pages per page = num_pages_on_x_axis * num_pages_on_y_axis\n"]
+    /// Creates a new document from `src_doc`. The pages of `src_doc` will be combined to provide
+    /// `num_pages_on_x_axis`, `num_pages_on_y_axis` pages per `output_doc` page.
+    ///
+    ///    `src_doc`             - The document to be imported.
+    ///
+    ///    `output_width`        - The output page width in PDF "user space" units.
+    ///
+    ///    `output_height`       - The output page height in PDF "user space" units.
+    ///
+    ///    `num_pages_on_x_axis` - The number of pages on X Axis.
+    ///
+    ///    `num_pages_on_y_axis` - The number of pages on Y Axis.
+    ///
+    /// Returns a handle to the created document, or `NULL` on failure.
+    ///
+    /// The total number of pages per page = num_pages_on_x_axis * num_pages_on_y_axis.
     #[allow(non_snake_case)]
     fn FPDF_ImportNPagesToOne(
         &self,
@@ -707,7 +1079,10 @@ pub trait PdfiumLibraryBindings {
         num_pages_on_y_axis: size_t,
     ) -> FPDF_DOCUMENT;
 
-    #[doc = " Experimental API.\n Create a template to generate form xobjects from |src_doc|'s page at\n |src_page_index|, for use in |dest_doc|.\n\n Returns a handle on success, or NULL on failure. Caller owns the newly\n created object."]
+    /// Creates a template to generate form xobjects from `src_doc`'s page at `src_page_index`,
+    /// for use in `dest_doc`.
+    ///
+    /// Returns a handle on success, or `NULL` on failure. Caller owns the newly created object.
     #[allow(non_snake_case)]
     fn FPDF_NewXObjectFromPage(
         &self,
@@ -716,15 +1091,24 @@ pub trait PdfiumLibraryBindings {
         src_page_index: c_int,
     ) -> FPDF_XOBJECT;
 
-    #[doc = " Experimental API.\n Close an FPDF_XOBJECT handle created by FPDF_NewXObjectFromPage().\n FPDF_PAGEOBJECTs created from the FPDF_XOBJECT handle are not affected."]
+    /// Closes an `FPDF_XOBJECT` handle created by [PdfiumLibraryBindings::FPDF_NewXObjectFromPage].
+    /// `FPDF_PAGEOBJECT`s created from the `FPDF_XOBJECT` handle are not affected.
     #[allow(non_snake_case)]
     fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT);
 
-    #[doc = " Experimental API.\n Create a new form object from an FPDF_XOBJECT object.\n\n Returns a new form object on success, or NULL on failure. Caller owns the\n newly created object."]
+    /// Creates a new form object from an `FPDF_XOBJECT` object.
+    ///
+    /// Returns a new form object on success, or `NULL` on failure. Caller owns the newly created object.
     #[allow(non_snake_case)]
     fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Copy the viewer preferences from |src_doc| into |dest_doc|.\n\n   dest_doc - Document to write the viewer preferences into.\n   src_doc  - Document to read the viewer preferences from.\n\n Returns TRUE on success."]
+    /// Copies the viewer preferences from `src_doc` into `dest_doc`.
+    ///
+    ///    `dest_doc` - Document to write the viewer preferences into.
+    ///
+    ///    `src_doc`  - Document to read the viewer preferences from.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDF_CopyViewerPreferences(
         &self,
@@ -732,7 +1116,12 @@ pub trait PdfiumLibraryBindings {
         src_doc: FPDF_DOCUMENT,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API\n Function: FPDF_GetPageWidthF\n          Get page width.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage().\n Return value:\n          Page width (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)."]
+    /// Gets page width.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns the page width (excluding non-displayable area) measured in points.
+    /// One point is 1/72 inch (around 0.3528 mm).
     #[allow(non_snake_case)]
     fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
 
@@ -2197,8 +2586,8 @@ pub trait PdfiumLibraryBindings {
 
     /// Destroys a bitmap and releases all related buffers.
     ///
-    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
-    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///    `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                      or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
     ///
     /// This function will not destroy any external buffers provided when
     /// the bitmap was created.
@@ -2207,27 +2596,28 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(feature = "pdfium_use_win32")]
-    // Function: FPDF_RenderPage
-    //          Render contents of a page to a device (screen, bitmap, or printer).
-    //          This function is only supported on Windows.
-    // Parameters:
-    //          dc          -   Handle to the device context.
-    //          page        -   Handle to the page. Returned by FPDF_LoadPage.
-    //          start_x     -   Left pixel position of the display area in
-    //                          device coordinates.
-    //          start_y     -   Top pixel position of the display area in device
-    //                          coordinates.
-    //          size_x      -   Horizontal size (in pixels) for displaying the page.
-    //          size_y      -   Vertical size (in pixels) for displaying the page.
-    //          rotate      -   Page orientation:
-    //                            0 (normal)
-    //                            1 (rotated 90 degrees clockwise)
-    //                            2 (rotated 180 degrees)
-    //                            3 (rotated 90 degrees counter-clockwise)
-    //          flags       -   0 for normal display, or combination of flags
-    //                          defined above.
-    // Return value:
-    //          None.
+    /// Renders the contents of a page to a device (screen, bitmap, or printer).
+    /// This function is only supported on Windows.
+    ///
+    ///    `dc`          -   Handle to the device context.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`     -   Left pixel position of the display area in device coordinates.
+    ///
+    ///    `start_y`     -   Top pixel position of the display area in device coordinates.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`      -   Page orientation:
+    ///                            0 (normal)
+    ///                            1 (rotated 90 degrees clockwise)
+    ///                            2 (rotated 180 degrees)
+    ///                            3 (rotated 90 degrees counter-clockwise)
+    ///
+    ///    `flags`       -   0 for normal display, or combination of flags defined above.
     #[allow(non_snake_case)]
     fn FPDF_RenderPage(
         &self,
@@ -3875,7 +4265,11 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Function: FPDF_GetDefaultTTFMap\n    Returns a pointer to the default character set to TT Font name map. The\n    map is an array of FPDF_CharsetFontMap structs, with its end indicated\n    by a { -1, NULL } entry.\n Parameters:\n     None.\n Return Value:\n     Pointer to the Charset Font Map.\n Note:\n     Once FPDF_GetDefaultTTFMapCount() and FPDF_GetDefaultTTFMapEntry() are no\n     longer experimental, this API will be marked as deprecated.\n     See https://crbug.com/348468114"]
+    /// Returns a pointer to the default character set to TT Font name map. The map is an array of
+    /// FPDF_CharsetFontMap structs, with its end indicated by a { -1, NULL } entry.
+    /// Returns a pointer to the Charset Font Map. Note: once [PdfiumLibraryBindings::FPDF_GetDefaultTTFMapCount]
+    /// and [PdfiumLibraryBindings::FPDF_GetDefaultTTFMapEntry] are no longer experimental,
+    /// this API will be marked as deprecated. See: <https://crbug.com/348468114>
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap;
 
@@ -4743,11 +5137,28 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFText_FindClose(&self, handle: FPDF_SCHHANDLE);
 
-    #[doc = " Function: FPDFLink_LoadWebLinks\n          Prepare information about weblinks in a page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n Return Value:\n          A handle to the page's links information structure, or\n          NULL if something goes wrong.\n Comments:\n          Weblinks are those links implicitly embedded in PDF pages. PDF also\n          has a type of annotation called \"link\" (FPDFTEXT doesn't deal with\n          that kind of link). FPDFTEXT weblink feature is useful for\n          automatically detecting links in the page contents. For example,\n          things like \"https://www.example.com\" will be detected, so\n          applications can allow user to click on those characters to activate\n          the link, even the PDF doesn't come with link annotations.\n\n          FPDFLink_CloseWebLinks must be called to release resources.\n"]
+    /// Prepares information about weblinks in a page.
+    ///
+    ///     text_page   -   Handle to a text page information structure.
+    ///                     Returned by [PdfiumLibraryBindings::FPDFText_LoadPage] function.
+    ///
+    /// Returns a handle to the page's links information structure, or `NULL` if something goes wrong.
+    ///
+    /// Weblinks are those links implicitly embedded in PDF pages. PDF also has a type of annotation
+    /// called "link" (FPDFTEXT doesn't deal with that kind of link). FPDFTEXT weblink feature is
+    /// useful for automatically detecting links in the page contents. For example, things like
+    /// <https://www.example.com> will be detected, so applications can allow user to click on
+    /// those characters to activate the link, even the PDF doesn't come with link annotations.
+    ///
+    /// [PdfiumLibraryBindings::FPDFLink_CloseWebLinks] must be called to release resources.
     #[allow(non_snake_case)]
     fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK;
 
-    #[doc = " Function: FPDFLink_CountWebLinks\n          Count number of detected web links.\n Parameters:\n          link_page   -   Handle returned by FPDFLink_LoadWebLinks.\n Return Value:\n          Number of detected web links.\n"]
+    /// Counts the number of detected web links.
+    ///
+    ///     link_page   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
+    ///
+    /// Returns the umber of detected web links.
     #[allow(non_snake_case)]
     fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int;
 
