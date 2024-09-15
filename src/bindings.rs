@@ -301,7 +301,13 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_SetPrintMode(&self, mode: c_int);
 
-    #[doc = " Function: FPDF_GetLastError\n          Get last error code when a function fails.\n Parameters:\n          None.\n Return value:\n          A 32-bit integer indicating error code as defined above.\n Comments:\n          If the previous SDK call succeeded, the return value of this\n          function is not defined. This function only works in conjunction\n          with APIs that mention FPDF_GetLastError() in their documentation."]
+    /// Gets the last error code when a function fails.
+    ///
+    /// Returns a 32-bit integer indicating error code as defined above.
+    ///
+    /// If the previous SDK call succeeded, the return value of this function is not defined.
+    /// This function only works in conjunction with APIs that mention `FPDF_GetLastError`
+    /// in their documentation.
     #[allow(non_snake_case)]
     fn FPDF_GetLastError(&self) -> c_ulong;
 
@@ -2631,7 +2637,32 @@ pub trait PdfiumLibraryBindings {
         flags: c_int,
     );
 
-    #[doc = " Function: FPDF_RenderPageBitmap\n          Render contents of a page to a device independent bitmap.\n Parameters:\n          bitmap      -   Handle to the device independent bitmap (as the\n                          output buffer). The bitmap handle can be created\n                          by FPDFBitmap_Create or retrieved from an image\n                          object by FPDFImageObj_GetBitmap.\n          page        -   Handle to the page. Returned by FPDF_LoadPage\n          start_x     -   Left pixel position of the display area in\n                          bitmap coordinates.\n          start_y     -   Top pixel position of the display area in bitmap\n                          coordinates.\n          size_x      -   Horizontal size (in pixels) for displaying the page.\n          size_y      -   Vertical size (in pixels) for displaying the page.\n          rotate      -   Page orientation:\n                            0 (normal)\n                            1 (rotated 90 degrees clockwise)\n                            2 (rotated 180 degrees)\n                            3 (rotated 90 degrees counter-clockwise)\n          flags       -   0 for normal display, or combination of the Page\n                          Rendering flags defined above. With the FPDF_ANNOT\n                          flag, it renders all annotations that do not require\n                          user-interaction, which are all annotations except\n                          widget and popup annotations.\n Return value:\n          None."]
+    /// Renders contents of a page to a device independent bitmap.
+    ///
+    ///    `bitmap`      -   Handle to the device independent bitmap (as the
+    ///                      output buffer). The bitmap handle can be created
+    ///                      by [PdfiumLibraryBindings::FPDFBitmap_Create] or retrieved from an image
+    ///                      object by [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`     -   Left pixel position of the display area in bitmap coordinates.
+    ///
+    ///    `start_y`     -   Top pixel position of the display area in bitmap coordinates.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`      -   Page orientation:
+    ///                            0 (normal)
+    ///                            1 (rotated 90 degrees clockwise)
+    ///                            2 (rotated 180 degrees)
+    ///                            3 (rotated 90 degrees counter-clockwise)
+    ///
+    ///    `flags`       -   0 for normal display, or combination of the Page Rendering flags defined above.
+    ///                      With the `FPDF_ANNOT` flag, it renders all annotations that do not require
+    ///                      user-interaction, which are all annotations except widget and popup annotations.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDF_RenderPageBitmap(
@@ -2646,7 +2677,25 @@ pub trait PdfiumLibraryBindings {
         flags: c_int,
     );
 
-    #[doc = " Function: FPDF_RenderPageBitmapWithMatrix\n          Render contents of a page to a device independent bitmap.\n Parameters:\n          bitmap      -   Handle to the device independent bitmap (as the\n                          output buffer). The bitmap handle can be created\n                          by FPDFBitmap_Create or retrieved by\n                          FPDFImageObj_GetBitmap.\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n          matrix      -   The transform matrix, which must be invertible.\n                          See PDF Reference 1.7, 4.2.2 Common Transformations.\n          clipping    -   The rect to clip to in device coords.\n          flags       -   0 for normal display, or combination of the Page\n                          Rendering flags defined above. With the FPDF_ANNOT\n                          flag, it renders all annotations that do not require\n                          user-interaction, which are all annotations except\n                          widget and popup annotations.\n Return value:\n          None. Note that behavior is undefined if det of |matrix| is 0."]
+    /// Renders contents of a page to a device independent bitmap.
+    ///
+    ///    `bitmap`      -   Handle to the device independent bitmap (as the
+    ///                      output buffer). The bitmap handle can be created
+    ///                      by [PdfiumLibraryBindings::FPDFBitmap_Create] or retrieved by
+    ///                      [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `matrix`      -   The transform matrix, which must be invertible.
+    ///                      See PDF Reference 1.7, 4.2.2 Common Transformations.
+    ///
+    ///    `clipping`    -   The rect to clip to in device coords.
+    ///
+    ///    `flags`       -   0 for normal display, or combination of the Page Rendering flags defined above.
+    ///                      With the `FPDF_ANNOT` flag, it renders all annotations that do not require
+    ///                      user-interaction, which are all annotations except widget and popup annotations.
+    ///
+    /// Note that behavior is undefined if det of `matrix` is 0.
     #[allow(non_snake_case)]
     fn FPDF_RenderPageBitmapWithMatrix(
         &self,
@@ -2658,7 +2707,15 @@ pub trait PdfiumLibraryBindings {
     );
 
     #[cfg(feature = "pdfium_use_skia")]
-    #[doc = " Experimental API.\n Function: FPDF_RenderPageSkia\n          Render contents of a page to a Skia SkCanvas.\n Parameters:\n          canvas      -   SkCanvas to render to.\n          page        -   Handle to the page.\n          size_x      -   Horizontal size (in pixels) for displaying the page.\n          size_y      -   Vertical size (in pixels) for displaying the page.\n Return value:\n          None."]
+    /// Renders contents of a page to a Skia SkCanvas.
+    ///
+    ///    `canvas`      -   SkCanvas to render to.
+    ///
+    ///    `page`        -   Handle to the page.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
     #[allow(non_snake_case)]
     fn FPDF_RenderPageSkia(
         &self,
@@ -5910,7 +5967,21 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
     #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
-    #[doc = " Experimental API.\n Get the base name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the base font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the base name (including the trailing NUL\n character) on success, 0 on error. The base name is typically the font's\n PostScript name. See descriptions of \"BaseFont\" in ISO 32000-1:2008 spec.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    /// Gets the base name of a font.
+    ///
+    ///    `font`   - the handle to the font object.
+    ///
+    ///    `buffer` - the address of a buffer that receives the base font name.
+    ///
+    ///    `length` - the size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the base name (including the trailing `NUL`
+    /// character) on success, 0 on error. The base name is typically the font's
+    /// PostScript name. See descriptions of "BaseFont" in ISO 32000-1:2008 spec.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-8 encoding.
+    /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
+    /// will not be modified.
     #[allow(non_snake_case)]
     fn FPDFFont_GetBaseFontName(
         &self,
@@ -5920,7 +5991,20 @@ pub trait PdfiumLibraryBindings {
     ) -> size_t;
 
     #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
-    #[doc = " Experimental API.\n Get the family name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the family name (including the trailing NUL\n character) on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    /// Gets the family name of a font.
+    ///
+    ///    `font`   - the handle to the font object.
+    ///
+    ///    `buffer` - the address of a buffer that receives the font name.
+    ///
+    ///    `length` - the size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the family name (including the trailing `NUL`
+    /// character) on success, 0 on error.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-8 encoding.
+    /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
+    /// will not be modified.
     #[allow(non_snake_case)]
     fn FPDFFont_GetFamilyName(
         &self,
@@ -5930,7 +6014,20 @@ pub trait PdfiumLibraryBindings {
     ) -> size_t;
 
     #[cfg(feature = "pdfium_6611")]
-    #[doc = " Experimental API.\n Get the family name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the family name (including the trailing NUL\n character) on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    /// Gets the family name of a font.
+    ///
+    ///    `font`   - the handle to the font object.
+    ///
+    ///    `buffer` - the address of a buffer that receives the font name.
+    ///
+    ///    `length` - the size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the family name (including the trailing `NUL`
+    /// character) on success, 0 on error.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-8 encoding.
+    /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
+    /// will not be modified.
     #[allow(non_snake_case)]
     fn FPDFFont_GetFamilyName(
         &self,
@@ -5955,7 +6052,20 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961"
     ))]
-    #[doc = " Experimental API.\n Get the font name of a font.\n\n font   - the handle to the font object.\n buffer - the address of a buffer that receives the font name.\n length - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the font name (including the trailing NUL\n character) on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-8 encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    /// Gets the font name of a font.
+    ///
+    ///    `font`   - the handle to the font object.
+    ///
+    ///    `buffer` - the address of a buffer that receives the font name.
+    ///
+    ///    `length` - the size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the font name (including the trailing `NUL`
+    /// character) on success, 0 on error.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-8 encoding.
+    /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
+    /// will not be modified.
     #[allow(non_snake_case)]
     fn FPDFFont_GetFontName(
         &self,
@@ -5964,7 +6074,27 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Get the decoded data from the |font| object.\n\n font       - The handle to the font object. (Required)\n buffer     - The address of a buffer that receives the font data.\n buflen     - Length of the buffer.\n out_buflen - Pointer to variable that will receive the minimum buffer size\n              to contain the font data. Not filled if the return value is\n              FALSE. (Required)\n\n Returns TRUE on success. In which case, |out_buflen| will be filled, and\n |buffer| will be filled if it is large enough. Returns FALSE if any of the\n required parameters are null.\n\n The decoded data is the uncompressed font data. i.e. the raw font data after\n having all stream filters applied, when the data is embedded.\n\n If the font is not embedded, then this API will instead return the data for\n the substitution font it is using."]
+    /// Gets the decoded data from the `font` object.
+    ///
+    ///    `font`       - The handle to the font object. (Required)
+    ///
+    ///    `buffer`     - The address of a buffer that receives the font data.
+    ///
+    ///    `buflen`     - Length of the buffer.
+    ///
+    ///    `out_buflen` - Pointer to variable that will receive the minimum buffer size
+    ///                   to contain the font data. Not filled if the return value is
+    ///                   `false`. (Required)
+    ///
+    /// Returns `true` on success. In which case, `out_buflen` will be filled, and
+    /// `buffer` will be filled if it is large enough. Returns `false` if any of the
+    /// required parameters are `NULL`.
+    ///
+    /// The decoded data is the uncompressed font data. i.e. the raw font data after
+    /// having all stream filters applied, when the data is embedded.
+    ///
+    /// If the font is not embedded, then this API will instead return the data for
+    /// the substitution font it is using.
     #[allow(non_snake_case)]
     fn FPDFFont_GetFontData(
         &self,
@@ -5974,23 +6104,56 @@ pub trait PdfiumLibraryBindings {
         out_buflen: *mut size_t,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get whether |font| is embedded or not.\n\n font - the handle to the font object.\n\n Returns 1 if the font is embedded, 0 if it not, and -1 on failure."]
+    /// Gets whether `font` is embedded or not.
+    ///
+    ///    `font` - the handle to the font object.
+    ///
+    /// Returns 1 if the font is embedded, 0 if it not, or -1 on failure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int;
 
-    #[doc = " Experimental API.\n Get the descriptor flags of a font.\n\n font - the handle to the font object.\n\n Returns the bit flags specifying various characteristics of the font as\n defined in ISO 32000-1:2008, table 123, -1 on failure."]
+    /// Gets the descriptor flags of a font.
+    ///
+    ///    `font` - the handle to the font object.
+    ///
+    /// Returns the bit flags specifying various characteristics of the font as
+    /// defined in ISO 32000-1:2008, table 123, or -1 on failure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int;
 
-    #[doc = " Experimental API.\n Get the font weight of a font.\n\n font - the handle to the font object.\n\n Returns the font weight, -1 on failure.\n Typical values are 400 (normal) and 700 (bold)."]
+    /// Gets the font weight of a font.
+    ///
+    ///    `font` - the handle to the font object.
+    ///
+    /// Returns the font weight, or -1 on failure. Typical values include 400 (normal) and 700 (bold).
     #[allow(non_snake_case)]
     fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int;
 
-    #[doc = " Experimental API.\n Get the italic angle of a font.\n\n font  - the handle to the font object.\n angle - pointer where the italic angle will be stored\n\n The italic angle of a |font| is defined as degrees counterclockwise\n from vertical. For a font that slopes to the right, this will be negative.\n\n Returns TRUE on success; |angle| unmodified on failure."]
+    /// Gets the italic angle of a font.
+    ///
+    ///    `font`  - the handle to the font object.
+    ///
+    ///    `angle` - pointer where the italic angle will be stored.
+    ///
+    /// The italic angle of a `font` is defined as degrees counterclockwise
+    /// from vertical. For a font that slopes to the right, this will be negative.
+    ///
+    /// Returns `true` on success; `angle` unmodified on failure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get ascent distance of a font.\n\n font       - the handle to the font object.\n font_size  - the size of the |font|.\n ascent     - pointer where the font ascent will be stored\n\n Ascent is the maximum distance in points above the baseline reached by the\n glyphs of the |font|. One point is 1/72 inch (around 0.3528 mm).\n\n Returns TRUE on success; |ascent| unmodified on failure."]
+    /// Gets ascent distance of a font.
+    ///
+    ///    `font`       - the handle to the font object.
+    ///
+    ///    `font_size`  - the size of the `font`.
+    ///
+    ///    `ascent`     - pointer where the font ascent will be stored.
+    ///
+    /// Ascent is the maximum distance in points above the baseline reached by the
+    /// glyphs of the `font`. One point is 1/72 inch (around 0.3528 mm).
+    ///
+    /// Returns `true` on success; `ascent` unmodified on failure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetAscent(
         &self,
@@ -5999,7 +6162,18 @@ pub trait PdfiumLibraryBindings {
         ascent: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get descent distance of a font.\n\n font       - the handle to the font object.\n font_size  - the size of the |font|.\n descent    - pointer where the font descent will be stored\n\n Descent is the maximum distance in points below the baseline reached by the\n glyphs of the |font|. One point is 1/72 inch (around 0.3528 mm).\n\n Returns TRUE on success; |descent| unmodified on failure."]
+    /// Gets descent distance of a font.
+    ///
+    ///    `font`       - the handle to the font object.
+    ///
+    ///    `font_size`  - the size of the `font`.
+    ///
+    ///    `descent`    - pointer where the font descent will be stored.
+    ///
+    /// Descent is the maximum distance in points below the baseline reached by the
+    /// glyphs of the `font`. One point is 1/72 inch (around 0.3528 mm).
+    ///
+    /// Returns `true` on success; `descent` unmodified on failure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetDescent(
         &self,
@@ -6008,7 +6182,20 @@ pub trait PdfiumLibraryBindings {
         descent: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the width of a glyph in a font.\n\n font       - the handle to the font object.\n glyph      - the glyph.\n font_size  - the size of the font.\n width      - pointer where the glyph width will be stored\n\n Glyph width is the distance from the end of the prior glyph to the next\n glyph. This will be the vertical distance for vertical writing.\n\n Returns TRUE on success; |width| unmodified on failure."]
+    /// Gets the width of a glyph in a font.
+    ///
+    ///    `font`       - the handle to the font object.
+    ///
+    ///    `glyph`      - the glyph.
+    ///
+    ///    `font_size`  - the size of the font.
+    ///
+    ///    `width`      - pointer where the glyph width will be stored.
+    ///
+    /// Glyph width is the distance from the end of the prior glyph to the next
+    /// glyph. This will be the vertical distance for vertical writing.
+    ///
+    /// Returns `true` on success; `width` unmodified on failure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetGlyphWidth(
         &self,
@@ -6018,7 +6205,15 @@ pub trait PdfiumLibraryBindings {
         width: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the glyphpath describing how to draw a font glyph.\n\n font       - the handle to the font object.\n glyph      - the glyph being drawn.\n font_size  - the size of the font.\n\n Returns the handle to the segment, or NULL on faiure."]
+    /// Gets the glyphpath describing how to draw a font glyph.
+    ///
+    ///    `font`       - the handle to the font object.
+    ///
+    ///    `glyph`      - the glyph being drawn.
+    ///
+    ///    `font_size`  - the size of the font.
+    ///
+    /// Returns the handle to the segment, or `NULL` on faiure.
     #[allow(non_snake_case)]
     fn FPDFFont_GetGlyphPath(
         &self,
@@ -6027,11 +6222,21 @@ pub trait PdfiumLibraryBindings {
         font_size: c_float,
     ) -> FPDF_GLYPHPATH;
 
-    #[doc = " Experimental API.\n Get number of segments inside glyphpath.\n\n glyphpath - handle to a glyph path.\n\n Returns the number of objects in |glyphpath| or -1 on failure."]
+    /// Gets the number of segments inside `glyphpath`.
+    ///
+    ///    `glyphpath` - handle to a glyph path.
+    ///
+    /// Returns the number of objects in `glyphpath` or -1 on failure.
     #[allow(non_snake_case)]
     fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int;
 
-    #[doc = " Experimental API.\n Get segment in glyphpath at index.\n\n glyphpath  - handle to a glyph path.\n index      - the index of a segment.\n\n Returns the handle to the segment, or NULL on faiure."]
+    /// Gets the segment in `glyphpath` at `index`.
+    ///
+    ///    `glyphpath`  - handle to a glyph path.
+    ///
+    ///    `index`      - the index of a segment.
+    ///
+    /// Returns the handle to the segment, or `NULL` on faiure.
     #[allow(non_snake_case)]
     fn FPDFGlyphPath_GetGlyphPathSegment(
         &self,
@@ -6039,23 +6244,44 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_PATHSEGMENT;
 
-    #[doc = " Function: FPDF_VIEWERREF_GetPrintScaling\n          Whether the PDF document prefers to be scaled or not.\n Parameters:\n          document    -   Handle to the loaded document.\n Return value:\n          None."]
+    /// Whether the PDF document prefers to be scaled or not.
+    ///
+    ///    `document`    -   Handle to the loaded document.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDF_VIEWERREF_GetNumCopies\n          Returns the number of copies to be printed.\n Parameters:\n          document    -   Handle to the loaded document.\n Return value:\n          The number of copies to be printed."]
+    /// Returns the number of copies to be printed.
+    ///
+    ///    `document`    -   Handle to the loaded document.
+    ///
+    /// Returns the number of copies to be printed.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    #[doc = " Function: FPDF_VIEWERREF_GetPrintPageRange\n          Page numbers to initialize print dialog box when file is printed.\n Parameters:\n          document    -   Handle to the loaded document.\n Return value:\n          The print page range to be used for printing."]
+    /// Page numbers to initialize print dialog box when file is printed.
+    ///
+    ///    `document`    -   Handle to the loaded document.
+    ///
+    /// Returns the print page range to be used for printing.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE;
 
-    #[doc = " Experimental API.\n Function: FPDF_VIEWERREF_GetPrintPageRangeCount\n          Returns the number of elements in a FPDF_PAGERANGE.\n Parameters:\n          pagerange   -   Handle to the page range.\n Return value:\n          The number of elements in the page range. Returns 0 on error."]
+    /// Returns the number of elements in a `FPDF_PAGERANGE`.
+    ///
+    ///    `pagerange`   -   Handle to the page range.
+    ///
+    /// Returns the number of elements in the page range. Returns 0 on error.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t;
 
-    #[doc = " Experimental API.\n Function: FPDF_VIEWERREF_GetPrintPageRangeElement\n          Returns an element from a FPDF_PAGERANGE.\n Parameters:\n          pagerange   -   Handle to the page range.\n          index       -   Index of the element.\n Return value:\n          The value of the element in the page range at a given index.\n          Returns -1 on error."]
+    /// Returns an element from a `FPDF_PAGERANGE`.
+    ///
+    ///    `pagerange`   -   Handle to the page range.
+    ///
+    ///    `index`       -   Index of the element.
+    ///
+    /// Returns the value of the element in the page range at a given index.
+    /// Returns -1 on error.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetPrintPageRangeElement(
         &self,
@@ -6063,11 +6289,31 @@ pub trait PdfiumLibraryBindings {
         index: size_t,
     ) -> c_int;
 
-    #[doc = " Function: FPDF_VIEWERREF_GetDuplex\n          Returns the paper handling option to be used when printing from\n          the print dialog.\n Parameters:\n          document    -   Handle to the loaded document.\n Return value:\n          The paper handling option to be used when printing."]
+    /// Returns the paper handling option to be used when printing from the print dialog.
+    ///
+    ///    `document`    -   Handle to the loaded document.
+    ///
+    /// Returns the paper handling option to be used when printing.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE;
 
-    #[doc = " Function: FPDF_VIEWERREF_GetName\n          Gets the contents for a viewer ref, with a given key. The value must\n          be of type \"name\".\n Parameters:\n          document    -   Handle to the loaded document.\n          key         -   Name of the key in the viewer pref dictionary,\n                          encoded in UTF-8.\n          buffer      -   Caller-allocate buffer to receive the key, or NULL\n                      -   to query the required length.\n          length      -   Length of the buffer.\n Return value:\n          The number of bytes in the contents, including the NULL terminator.\n          Thus if the return value is 0, then that indicates an error, such\n          as when |document| is invalid. If |length| is less than the required\n          length, or |buffer| is NULL, |buffer| will not be modified."]
+    /// Gets the contents for a viewer ref, with a given key. The value must
+    /// be of type "name".
+    ///
+    ///    `document`    -   Handle to the loaded document.
+    ///
+    ///    `key`         -   Name of the key in the viewer pref dictionary,
+    ///                      encoded in UTF-8.
+    ///
+    ///    `buffer`      -   Caller-allocate buffer to receive the key, or `NULL`
+    ///                      to query the required length.
+    ///
+    ///    `length`      -   Length of the buffer.
+    ///
+    /// Returns the number of bytes in the contents, including the `NULL` terminator.
+    /// Thus if the return value is 0, then that indicates an error, such
+    /// as when `document` is invalid. If `length` is less than the required length, or
+    /// `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDF_VIEWERREF_GetName(
         &self,
@@ -6077,15 +6323,45 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Function: FPDF_CountNamedDests\n          Get the count of named destinations in the PDF document.\n Parameters:\n          document    -   Handle to a document\n Return value:\n          The count of named destinations."]
+    /// Gets the count of named destinations in the PDF document.
+    ///
+    ///    `document`    -   Handle to a document
+    ///
+    /// Returns the count of named destinations.
     #[allow(non_snake_case)]
     fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD;
 
-    #[doc = " Function: FPDF_GetNamedDestByName\n          Get a the destination handle for the given name.\n Parameters:\n          document    -   Handle to the loaded document.\n          name        -   The name of a destination.\n Return value:\n          The handle to the destination."]
+    /// Gets a the destination handle for the given name.
+    ///
+    ///    `document`    -   Handle to the loaded document.
+    ///
+    ///    `name`        -   The name of a destination.
+    ///
+    /// Returns a handle to the destination.
     #[allow(non_snake_case)]
     fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST;
 
-    #[doc = " Function: FPDF_GetNamedDest\n          Get the named destination by index.\n Parameters:\n          document        -   Handle to a document\n          index           -   The index of a named destination.\n          buffer          -   The buffer to store the destination name,\n                              used as wchar_t*.\n          buflen [in/out] -   Size of the buffer in bytes on input,\n                              length of the result in bytes on output\n                              or -1 if the buffer is too small.\n Return value:\n          The destination handle for a given index, or NULL if there is no\n          named destination corresponding to |index|.\n Comments:\n          Call this function twice to get the name of the named destination:\n            1) First time pass in |buffer| as NULL and get buflen.\n            2) Second time pass in allocated |buffer| and buflen to retrieve\n               |buffer|, which should be used as wchar_t*.\n\n         If buflen is not sufficiently large, it will be set to -1 upon\n         return."]
+    /// Gets the named destination by index.
+    ///
+    ///    `document`        -   Handle to a document
+    ///
+    ///    `index`           -   The index of a named destination.
+    ///
+    ///    `buffer`          -   The buffer to store the destination name, used as `wchar_t*`.
+    ///
+    ///    `buflen [in/out]` -   Size of the buffer in bytes on input,
+    ///                          length of the result in bytes on output
+    ///                          or -1 if the buffer is too small.
+    ///
+    /// Returns the destination handle for a given index, or `NULL` if there is no
+    /// named destination corresponding to `index`.
+    ///
+    /// Call this function twice to get the name of the named destination:
+    /// * First time pass in `buffer` as `NULL` and get `buflen`.
+    /// * Second time pass in allocated `buffer` and `buflen` to retrieve `buffer`,
+    /// which should be used as `wchar_t*`.
+    ///
+    /// If `buflen` is not sufficiently large, it will be set to -1 upon return.
     #[allow(non_snake_case)]
     fn FPDF_GetNamedDest(
         &self,
@@ -6095,22 +6371,22 @@ pub trait PdfiumLibraryBindings {
         buflen: *mut c_long,
     ) -> FPDF_DEST;
 
-    /// Get the number of embedded files in `document`.
+    /// Gets the number of embedded files in `document`.
     ///
-    ///   document - handle to a document.
+    ///    `document` - handle to a document.
     ///
     /// Returns the number of embedded files in `document`.
     #[allow(non_snake_case)]
     fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    /// Add an embedded file with `name` in `document`. If `name` is empty, or if
+    /// Adds an embedded file with `name` in `document`. If `name` is empty, or if
     /// `name` is the name of a existing embedded file in `document`, or if
     /// `document`'s embedded file name tree is too deep (i.e. `document` has too
     /// many embedded files already), then a new attachment will not be added.
     ///
-    ///   document - handle to a document.
+    ///    `document` - handle to a document.
     ///
-    ///   name     - name of the new attachment.
+    ///    `name`     - name of the new attachment.
     ///
     /// Returns a handle to the new attachment object, or NULL on failure.
     ///
@@ -6125,16 +6401,16 @@ pub trait PdfiumLibraryBindings {
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFDoc_AddAttachment].
     ///
-    /// Add an embedded file with `name` in `document`. If `name` is empty, or if
+    /// Adds an embedded file with `name` in `document`. If `name` is empty, or if
     /// `name` is the name of a existing embedded file in `document`, or if
     /// `document`'s embedded file name tree is too deep (i.e. `document` has too
     /// many embedded files already), then a new attachment will not be added.
     ///
-    ///   document - handle to a document.
+    ///    `document` - handle to a document.
     ///
-    ///   name     - name of the new attachment.
+    ///    `name`     - name of the new attachment.
     ///
-    /// Returns a handle to the new attachment object, or NULL on failure.
+    /// Returns a handle to the new attachment object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFDoc_AddAttachment_str(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_ATTACHMENT {
         self.FPDFDoc_AddAttachment(
@@ -6143,39 +6419,39 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    /// Get the embedded attachment at `index` in `document`. Note that the returned
+    /// Gets the embedded attachment at `index` in `document`. Note that the returned
     /// attachment handle is only valid while `document` is open.
     ///
-    ///   document - handle to a document.
+    ///    `document` - handle to a document.
     ///
-    ///   index    - the index of the requested embedded file.
+    ///    `index`    - the index of the requested embedded file.
     ///
-    /// Returns the handle to the attachment object, or NULL on failure.
+    /// Returns the handle to the attachment object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT;
 
-    /// Delete the embedded attachment at `index` in `document`. Note that this does
+    /// Deletes the embedded attachment at `index` in `document`. Note that this does
     /// not remove the attachment data from the PDF file; it simply removes the
     /// file's entry in the embedded files name tree so that it does not appear in
     /// the attachment list. This behavior may change in the future.
     ///
-    ///   document - handle to a document.
+    ///    `document` - handle to a document.
     ///
-    ///   index    - the index of the embedded file to be deleted.
+    ///    `index`    - the index of the embedded file to be deleted.
     ///
-    /// Returns true if successful.
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
 
-    /// Get the name of the `attachment` file. `buffer` is only modified if `buflen`
+    /// Gets the name of the `attachment` file. `buffer` is only modified if `buflen`
     /// is longer than the length of the file name. On errors, `buffer` is unmodified
     /// and the returned length is 0.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   buffer     - buffer for holding the file name, encoded in UTF-16LE.
+    ///    `buffer`     - buffer for holding the file name, encoded in UTF-16LE.
     ///
-    ///   buflen     - length of the buffer in bytes.
+    ///    `buflen`     - length of the buffer in bytes.
     ///
     /// Returns the length of the file name in bytes.
     #[allow(non_snake_case)]
@@ -6186,22 +6462,22 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Check if the params dictionary of `attachment` has `key` as a key.
+    /// Checks if the params dictionary of `attachment` has `key` as a key.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   key        - the key to look for, encoded in UTF-8.
+    ///    `key`        - the key to look for, encoded in UTF-8.
     ///
-    /// Returns true if `key` exists.
+    /// Returns `true` if `key` exists, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL;
 
-    /// Get the type of the value corresponding to `key` in the params dictionary of
+    /// Gets the type of the value corresponding to `key` in the params dictionary of
     /// the embedded `attachment`.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   key        - the key to look for, encoded in UTF-8.
+    ///    `key`        - the key to look for, encoded in UTF-8.
     ///
     /// Returns the type of the dictionary value.
     #[allow(non_snake_case)]
@@ -6211,17 +6487,17 @@ pub trait PdfiumLibraryBindings {
         key: &str,
     ) -> FPDF_OBJECT_TYPE;
 
-    /// Set the string value corresponding to `key` in the params dictionary of the
+    /// Sets the string value corresponding to `key` in the params dictionary of the
     /// embedded file `attachment`, overwriting the existing value if any. The value
     /// type should be FPDF_OBJECT_STRING after this function call succeeds.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   key        - the key to the dictionary entry, encoded in UTF-8.
+    ///    `key`        - the key to the dictionary entry, encoded in UTF-8.
     ///
-    ///   value      - the string value to be set, encoded in UTF-16LE.
+    ///    `value`      - the string value to be set, encoded in UTF-16LE.
     ///
-    /// Returns true if successful.
+    /// Returns `true` on success, `false` otherwise.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAttachment_SetStringValue_str].
@@ -6235,17 +6511,17 @@ pub trait PdfiumLibraryBindings {
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFAttachment_SetStringValue].
     ///
-    /// Set the string value corresponding to `key` in the params dictionary of the
+    /// Sets the string value corresponding to `key` in the params dictionary of the
     /// embedded file `attachment`, overwriting the existing value if any. The value
     /// type should be FPDF_OBJECT_STRING after this function call succeeds.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   key        - the key to the dictionary entry.
+    ///    `key`        - the key to the dictionary entry.
     ///
-    ///   value      - the string value to be set.
+    ///    `value`      - the string value to be set.
     ///
-    /// Returns true if successful.
+    /// Returns `true` on success, `false` otherwise.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAttachment_SetStringValue_str(
@@ -6261,7 +6537,7 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    /// Get the string value corresponding to `key` in the params dictionary of the
+    /// Gets the string value corresponding to `key` in the params dictionary of the
     /// embedded file `attachment`. `buffer` is only modified if `buflen` is longer
     /// than the length of the string value. Note that if `key` does not exist in the
     /// dictionary or if `key`'s corresponding value in the dictionary is not a
@@ -6270,13 +6546,13 @@ pub trait PdfiumLibraryBindings {
     /// return value would be 2. On other errors, nothing would be added to `buffer`
     /// and the return value would be 0.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   key        - the key to the requested string value, encoded in UTF-8.
+    ///    `key`        - the key to the requested string value, encoded in UTF-8.
     ///
-    ///   buffer     - buffer for holding the string value encoded in UTF-16LE.
+    ///    `buffer`     - buffer for holding the string value encoded in UTF-16LE.
     ///
-    ///   buflen     - length of the buffer in bytes.
+    ///    `buflen`     - length of the buffer in bytes.
     ///
     /// Returns the length of the dictionary value string in bytes.
     #[allow(non_snake_case)]
@@ -6288,18 +6564,18 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Set the file data of `attachment`, overwriting the existing file data if any.
+    /// Sets the file data of `attachment`, overwriting the existing file data if any.
     /// The creation date and checksum will be updated, while all other dictionary
     /// entries will be deleted. Note that only contents with `len` smaller than
     /// INT_MAX is supported.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   contents   - buffer holding the file data to write to `attachment`.
+    ///    `contents`   - buffer holding the file data to write to `attachment`.
     ///
-    ///   len        - length of file data in bytes.
+    ///    `len`        - length of file data in bytes.
     ///
-    /// Returns true if successful.
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAttachment_SetFile(
         &self,
@@ -6309,7 +6585,7 @@ pub trait PdfiumLibraryBindings {
         len: c_ulong,
     ) -> FPDF_BOOL;
 
-    /// Get the file data of `attachment`.
+    /// Gets the file data of `attachment`.
     ///
     /// When the attachment file data is readable, true is returned, and `out_buflen`
     /// is updated to indicate the file data size. `buffer` is only modified if
@@ -6320,16 +6596,16 @@ pub trait PdfiumLibraryBindings {
     /// Otherwise, when the attachment file data is unreadable or when `out_buflen`
     /// is null, false is returned and `buffer` and `out_buflen` remain unmodified.
     ///
-    ///   attachment - handle to an attachment.
+    ///    `attachment` - handle to an attachment.
     ///
-    ///   buffer     - buffer for holding the file data from `attachment`.
+    ///    `buffer`     - buffer for holding the file data from `attachment`.
     ///
-    ///   buflen     - length of the buffer in bytes.
+    ///    `buflen`     - length of the buffer in bytes.
     ///
-    ///   out_buflen - pointer to the variable that will receive the minimum buffer
-    ///                size to contain the file data of `attachment`.
+    ///    `out_buflen` - pointer to the variable that will receive the minimum buffer
+    ///                   size to contain the file data of `attachment`.
     ///
-    /// Returns true on success, false otherwise.
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFAttachment_GetFile(
         &self,
@@ -6350,7 +6626,13 @@ pub trait PdfiumLibraryBindings {
     fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
     #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
-    #[doc = " Experimental API.\n Sets the language of |document| to |language|.\n\n document - handle to a document.\n language - the language to set to.\n\n Returns TRUE on success."]
+    /// Sets the language of `document` to `language`.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    ///    `language` - the language to set to.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL;
 }
