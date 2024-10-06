@@ -21,6 +21,7 @@ examples/test*.png
 *.ipr
 *.iws
 .idea/
+.DS_Store
 
 # Do not check Visual Studio Code-specific files into source control
 

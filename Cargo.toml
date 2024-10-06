@@ -2,7 +2,7 @@
 name = "pdfium-render"
 version = "0.8.25"
 edition = "2018"
-rust-version = "1.60"
+rust-version = "1.63"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
 readme = "README.md"
@@ -23,14 +23,14 @@ doctest = false
 bitflags = "2"
 bytes = "1"
 bytemuck = "1"
-chrono = "0.4, <= 0.4.31"                          # To meet crate MSRV target of Rust 1.60.
-image = { version = ">= 0.24.0", optional = true } # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we use trait from version 0.24.0 and later.
+chrono = "0.4"
 itertools = "0"
 log = "0"
 maybe-owned = "0"
 once_cell = "1"
 utf16string = "0"
 vecmath = "1"
+image = { version = "0.24", default-features = false, optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_log = "1"
@@ -39,11 +39,11 @@ js-sys = "0"
 wasm-bindgen = { version = "0", features = ["enable-interning"] }
 wasm-bindgen-futures = { version = "0" }
 web-sys = { version = "0", features = [
-    "TextDecoder",
-    "ImageData",
-    "Window",
-    "Response",
-    "Blob",
+  "TextDecoder",
+  "ImageData",
+  "Window",
+  "Response",
+  "Blob",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -54,14 +54,19 @@ windows = { version = "0", optional = true }
 
 [build-dependencies]
 # Bindgen 0.70.0 and later cause build failures when compiling to WASM. For more details, see:
-# 
+#
 bindgen = { version = "<=0.69.4", optional = true }
 
 [dev-dependencies]
 # Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
 # are specified separately in examples/Cargo.toml.
-rand = "0"  # Used by examples/create.rs, examples/matrix.rs
+rand = "0" # Used by examples/create.rs, examples/matrix.rs
 rayon = "1" # Used by examples/thread_safe.rs
+image = { version = "0.24", default-features = false, features = [
+  "png",
+  "jpeg",
+  "webp",
+] }
 
 [features]
 default = ["pdfium_latest", "thread_safe", "image"]
@@ -85,10 +90,10 @@ flatten = []
 
 pdfium_latest = ["pdfium_6666"]
 pdfium_future = [
-    # For testing changes in Pdfium source control that are yet to be released.
-    "pdfium_use_skia",
-    "pdfium_enable_xfa",
-    "pdfium_enable_v8",
+  # For testing changes in Pdfium source control that are yet to be released.
+  "pdfium_use_skia",
+  "pdfium_enable_xfa",
+  "pdfium_enable_v8",
 ]
 pdfium_6666 = []
 pdfium_6611 = []
