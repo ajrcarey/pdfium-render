@@ -2878,10 +2878,10 @@ extern "C" {
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Get the name of a content mark.\n\n   mark       - handle to a content mark.\n   buffer     - buffer for holding the returned name in UTF-16LE. This is only\n                modified if |buflen| is longer than the length of the name.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the name. Not filled if FALSE is returned.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
+    #[doc = " Experimental API.\n Get the name of a content mark.\n\n   mark       - handle to a content mark.\n   buffer     - buffer for holding the returned name in UTF-16LE. This is only\n                modified if |buflen| is large enough to store the name.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
     pub fn FPDFPageObjMark_GetName(
         mark: FPDF_PAGEOBJECTMARK,
-        buffer: *mut ::std::os::raw::c_void,
+        buffer: *mut FPDF_WCHAR,
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
@@ -2891,11 +2891,11 @@ extern "C" {
     pub fn FPDFPageObjMark_CountParams(mark: FPDF_PAGEOBJECTMARK) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Get the key of a property in a content mark.\n\n   mark       - handle to a content mark.\n   index      - index of the property.\n   buffer     - buffer for holding the returned key in UTF-16LE. This is only\n                modified if |buflen| is longer than the length of the key.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the key. Not filled if FALSE is returned.\n\n Returns TRUE if the operation was successful, FALSE otherwise."]
+    #[doc = " Experimental API.\n Get the key of a property in a content mark.\n\n   mark       - handle to a content mark.\n   index      - index of the property.\n   buffer     - buffer for holding the returned key in UTF-16LE. This is only\n                modified if |buflen| is large enough to store the key.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the operation was successful, FALSE otherwise."]
     pub fn FPDFPageObjMark_GetParamKey(
         mark: FPDF_PAGEOBJECTMARK,
         index: ::std::os::raw::c_ulong,
-        buffer: *mut ::std::os::raw::c_void,
+        buffer: *mut FPDF_WCHAR,
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
@@ -2916,21 +2916,21 @@ extern "C" {
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Get the value of a string property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value in UTF-16LE. This is\n                only modified if |buflen| is longer than the length of the\n                value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the value. Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    #[doc = " Experimental API.\n Get the value of a string property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value in UTF-16LE. This is\n                only modified if |buflen| is large enough to store the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
     pub fn FPDFPageObjMark_GetParamStringValue(
         mark: FPDF_PAGEOBJECTMARK,
         key: FPDF_BYTESTRING,
-        buffer: *mut ::std::os::raw::c_void,
+        buffer: *mut FPDF_WCHAR,
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
 }
 extern "C" {
-    #[doc = " Experimental API.\n Get the value of a blob property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value. This is only modified\n                if |buflen| is at least as long as the length of the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the value. Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    #[doc = " Experimental API.\n Get the value of a blob property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value. This is only modified\n                if |buflen| is large enough to store the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
     pub fn FPDFPageObjMark_GetParamBlobValue(
         mark: FPDF_PAGEOBJECTMARK,
         key: FPDF_BYTESTRING,
-        buffer: *mut ::std::os::raw::c_void,
+        buffer: *mut ::std::os::raw::c_uchar,
         buflen: ::std::os::raw::c_ulong,
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
@@ -2962,7 +2962,7 @@ extern "C" {
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
         key: FPDF_BYTESTRING,
-        value: *mut ::std::os::raw::c_void,
+        value: *const ::std::os::raw::c_uchar,
         value_len: ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
 }

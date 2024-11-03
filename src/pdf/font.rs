@@ -819,7 +819,12 @@ impl<'a> PdfFont<'a> {
         // this will write the font name into the buffer. Unlike most text handling in
         // Pdfium, font names are returned in UTF-8 format.
 
-        #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future", feature = "pdfium_6611"))]
+        #[cfg(any(
+            feature = "pdfium_future",
+            feature = "pdfium_6721",
+            feature = "pdfium_6666",
+            feature = "pdfium_6611"
+        ))]
         let buffer_length =
             self.bindings
                 .FPDFFont_GetFamilyName(self.handle, std::ptr::null_mut(), 0);
@@ -852,7 +857,12 @@ impl<'a> PdfFont<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future", feature = "pdfium_6611"))]
+        #[cfg(any(
+            feature = "pdfium_future",
+            feature = "pdfium_6721",
+            feature = "pdfium_6666",
+            feature = "pdfium_6611"
+        ))]
         let result = self.bindings.FPDFFont_GetFamilyName(
             self.handle,
             buffer.as_mut_ptr() as *mut c_char,

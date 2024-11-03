@@ -39,7 +39,7 @@ use {
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
     crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
-    image_023::{DynamicImage, EncodableLayout, GrayImage, RgbaImage, GenericImageView},
+    image_023::{DynamicImage, EncodableLayout, GenericImageView, GrayImage, RgbaImage},
 };
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`. The page object defines a single

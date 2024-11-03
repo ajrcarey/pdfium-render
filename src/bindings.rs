@@ -53,12 +53,13 @@ use crate::bindgen::{
 };
 
 #[cfg(any(
-    feature = "pdfium_6490",
-    feature = "pdfium_6555",
-    feature = "pdfium_6569",
-    feature = "pdfium_6611",
+    feature = "pdfium_future",
+    feature = "pdfium_6721",
     feature = "pdfium_6666",
-    feature = "pdfium_future"
+    feature = "pdfium_6611",
+    feature = "pdfium_6569",
+    feature = "pdfium_6555",
+    feature = "pdfium_6490",
 ))]
 use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 
@@ -815,16 +816,17 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
 
     #[cfg(any(
-        feature = "pdfium_6295",
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
     ))]
     /// Gets user file permission flags of the document.
     ///
@@ -1494,20 +1496,21 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_STRUCTELEMENT;
 
     #[cfg(any(
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
     ))]
     /// Gets the child's content id.
     ///
@@ -1610,12 +1613,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets a handle to a value for an attribute in a structure element attribute map.
     ///
@@ -1635,17 +1639,17 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_STRUCTELEMENT_ATTR_VALUE;
 
     #[cfg(any(
-        feature = "pdfium_5961",
-        feature = "pdfium_6015",
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
+        feature = "pdfium_6406",
         feature = "pdfium_6337",
-        feature = "pdfium_6406"
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
     ))]
     /// Gets the type of an attribute in a structure element attribute map.
     ///
@@ -1662,12 +1666,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_OBJECT_TYPE;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets the type of an attribute in a structure element attribute map.
     ///
@@ -1682,17 +1687,17 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_OBJECT_TYPE;
 
     #[cfg(any(
-        feature = "pdfium_5961",
-        feature = "pdfium_6015",
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
+        feature = "pdfium_6406",
         feature = "pdfium_6337",
-        feature = "pdfium_6406"
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
     ))]
     /// Gets the value of a boolean attribute in an attribute map by name as `FPDF_BOOL`.
     /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
@@ -1715,12 +1720,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets the value of a boolean attribute in an attribute map as `FPDF_BOOL`.
     /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
@@ -1740,17 +1746,17 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_5961",
-        feature = "pdfium_6015",
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
+        feature = "pdfium_6406",
         feature = "pdfium_6337",
-        feature = "pdfium_6406"
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
     ))]
     /// Gets the value of a number attribute in an attribute map by name as float.
     /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
@@ -1773,12 +1779,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets the value of a number attribute in an attribute map as float.
     /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
@@ -1798,17 +1805,17 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_5961",
-        feature = "pdfium_6015",
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
+        feature = "pdfium_6406",
         feature = "pdfium_6337",
-        feature = "pdfium_6406"
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
     ))]
     /// Gets the value of a string attribute in an attribute map by name as string.
     /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
@@ -1842,12 +1849,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets the value of a string attribute in an attribute map as string.
     /// [PdfiumLibraryBindings::FPDF_StructElement_Attr_GetType] should have returned
@@ -1877,17 +1885,17 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_5961",
-        feature = "pdfium_6015",
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
+        feature = "pdfium_6406",
         feature = "pdfium_6337",
-        feature = "pdfium_6406"
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
     ))]
     /// Gets the value of a blob attribute in an attribute map by name as string.
     ///
@@ -1919,12 +1927,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets the value of a blob attribute in an attribute map as string.
     ///
@@ -1951,12 +1960,13 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Counts the number of children values in an attribute.
     ///
@@ -1967,12 +1977,13 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int;
 
     #[cfg(any(
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
     ))]
     /// Gets a child from an attribute.
     ///
@@ -2036,21 +2047,22 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int);
 
     #[cfg(any(
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
     ))]
     #[doc = " Experimental API.\n Move the given pages to a new index position.\n\n  page_indices     - the ordered list of pages to move. No duplicates allowed.\n  page_indices_len - the number of elements in |page_indices|\n  dest_page_index  - the new index position to which the pages in\n                     |page_indices| are moved.\n\n Returns TRUE on success. If it returns FALSE, the document may be left in an\n indeterminate state.\n\n Example: The PDF document starts out with pages [A, B, C, D], with indices\n [0, 1, 2, 3].\n\n >  Move(doc, [3, 2], 2, 1); // returns true\n >  // The document has pages [A, D, C, B].\n >\n >  Move(doc, [0, 4, 3], 3, 1); // returns false\n >  // Returned false because index 4 is out of range.\n >\n >  Move(doc, [0, 3, 1], 3, 2); // returns false\n >  // Returned false because index 2 is out of range for 3 page indices.\n >\n >  Move(doc, [2, 2], 2, 0); // returns false\n >  // Returned false because [2, 2] contains duplicates.\n"]
     #[allow(non_snake_case)]
@@ -2413,7 +2425,11 @@ pub trait PdfiumLibraryBindings {
         color: FPDF_DWORD,
     );
 
-    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666"
+    ))]
     /// Fills a rectangle in a bitmap.
     ///
     ///   `bitmap`      -   The handle to the bitmap. Returned by
@@ -3671,11 +3687,12 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(any(
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
     ))]
     /// Gets the RGB value of the font color for an `annot` with variable text.
     ///
@@ -3856,14 +3873,15 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Returns the handle to the attachment object, or NULL on failure.
     #[cfg(any(
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
     ))]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT;
@@ -3879,14 +3897,15 @@ pub trait PdfiumLibraryBindings {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment_str].
     #[cfg(any(
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
     ))]
     #[allow(non_snake_case)]
     fn FPDFAnnot_AddFileAttachment(
@@ -3905,14 +3924,15 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Returns a handle to the new attachment object, or NULL on failure.
     #[cfg(any(
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
     ))]
     #[inline]
     #[allow(non_snake_case)]
@@ -4331,20 +4351,22 @@ pub trait PdfiumLibraryBindings {
     fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap;
 
     #[cfg(any(
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
     ))]
     #[doc = " Experimental API.\n\n Function: FPDF_GetDefaultTTFMapCount\n    Returns the number of entries in the default character set to TT Font name\n    map.\n Parameters:\n    None.\n Return Value:\n    The number of entries in the map."]
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapCount(&self) -> usize;
 
     #[cfg(any(
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
     ))]
     #[doc = " Experimental API.\n\n Function: FPDF_GetDefaultTTFMapEntry\n    Returns an entry in the default character set to TT Font name map.\n Parameters:\n    index    -   The index to the entry in the map to retrieve.\n Return Value:\n     A pointer to the entry, if it is in the map, or NULL if the index is out\n     of bounds."]
     #[allow(non_snake_case)]
@@ -4942,9 +4964,10 @@ pub trait PdfiumLibraryBindings {
     fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint;
 
     #[cfg(any(
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
     ))]
     #[doc = " Experimental API.\n Function: FPDFText_GetTextObject\n          Get the FPDF_PAGEOBJECT associated with a given character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          The associated text object for the character at |index|, or NULL on\n          error. The returned text object, if non-null, is of type\n          |FPDF_PAGEOBJ_TEXT|. The caller does not own the returned object.\n"]
     #[allow(non_snake_case)]
@@ -4955,22 +4978,23 @@ pub trait PdfiumLibraryBindings {
     fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
     #[cfg(any(
-        feature = "pdfium_6015",
-        feature = "pdfium_6043",
-        feature = "pdfium_6084",
-        feature = "pdfium_6110",
-        feature = "pdfium_6124",
-        feature = "pdfium_6164",
-        feature = "pdfium_6259",
-        feature = "pdfium_6295",
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
     ))]
     #[doc = " Experimental API.\n Function: FPDFText_IsHyphen\n          Get if a character in a page is a hyphen.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          1 if the character is a hyphen.\n          0 if the character is not a hyphen.\n          -1 if there was an error.\n"]
     #[allow(non_snake_case)]
@@ -5440,15 +5464,16 @@ pub trait PdfiumLibraryBindings {
     fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT;
 
     #[cfg(any(
-        feature = "pdfium_6295",
-        feature = "pdfium_6337",
-        feature = "pdfium_6406",
-        feature = "pdfium_6490",
-        feature = "pdfium_6555",
-        feature = "pdfium_6569",
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
     ))]
     #[doc = " Experimental API.\n Returns a font object loaded from a stream of data for a type 2 CID font. The\n font is loaded into the document. Unlike FPDFText_LoadFont(), the ToUnicode\n data and the CIDToGIDMap data are caller provided, instead of auto-generated.\n\n document                 - handle to the document.\n font_data                - the stream of font data, which will be copied by\n                            the font object.\n font_data_size           - the size of the font data, in bytes.\n to_unicode_cmap          - the ToUnicode data.\n cid_to_gid_map_data      - the stream of CIDToGIDMap data.\n cid_to_gid_map_data_size - the size of the CIDToGIDMap data, in bytes.\n\n The loaded font can be closed using FPDFFont_Close().\n\n Returns NULL on failure."]
     #[allow(non_snake_case)]
@@ -5505,9 +5530,10 @@ pub trait PdfiumLibraryBindings {
     );
 
     #[cfg(any(
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
     ))]
     /// Transform `page_object` by the given matrix.
     ///
@@ -5545,9 +5571,10 @@ pub trait PdfiumLibraryBindings {
     fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
 
     #[cfg(any(
-        feature = "pdfium_6611",
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
         feature = "pdfium_6666",
-        feature = "pdfium_future"
+        feature = "pdfium_6611",
     ))]
     /// Get the marked content ID for the object.
     ///
@@ -5581,6 +5608,36 @@ pub trait PdfiumLibraryBindings {
         mark: FPDF_PAGEOBJECTMARK,
     ) -> FPDF_BOOL;
 
+    #[cfg(feature = "pdfium_future")]
+    #[doc = " Experimental API.\n Get the name of a content mark.\n\n   mark       - handle to a content mark.\n   buffer     - buffer for holding the returned name in UTF-16LE. This is only\n                modified if |buflen| is large enough to store the name.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_GetName(
+        &self,
+        mark: FPDF_PAGEOBJECTMARK,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
+    ))]
     #[doc = " Experimental API.\n Get the name of a content mark.\n\n   mark       - handle to a content mark.\n   buffer     - buffer for holding the returned name in UTF-16LE. This is only\n                modified if |buflen| is longer than the length of the name.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the name. Not filled if FALSE is returned.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetName(
@@ -5595,6 +5652,37 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int;
 
+    #[cfg(feature = "pdfium_future")]
+    #[doc = " Experimental API.\n Get the key of a property in a content mark.\n\n   mark       - handle to a content mark.\n   index      - index of the property.\n   buffer     - buffer for holding the returned key in UTF-16LE. This is only\n                modified if |buflen| is large enough to store the key.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the operation was successful, FALSE otherwise."]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_GetParamKey(
+        &self,
+        mark: FPDF_PAGEOBJECTMARK,
+        index: c_ulong,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
+    ))]
     #[doc = " Experimental API.\n Get the key of a property in a content mark.\n\n   mark       - handle to a content mark.\n   index      - index of the property.\n   buffer     - buffer for holding the returned key in UTF-16LE. This is only\n                modified if |buflen| is longer than the length of the key.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the key. Not filled if FALSE is returned.\n\n Returns TRUE if the operation was successful, FALSE otherwise."]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamKey(
@@ -5623,6 +5711,37 @@ pub trait PdfiumLibraryBindings {
         out_value: *mut c_int,
     ) -> FPDF_BOOL;
 
+    #[cfg(feature = "pdfium_future")]
+    #[doc = " Experimental API.\n Get the value of a string property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value in UTF-16LE. This is\n                only modified if |buflen| is large enough to store the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_GetParamStringValue(
+        &self,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: &str,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
+    ))]
     #[doc = " Experimental API.\n Get the value of a string property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value in UTF-16LE. This is\n                only modified if |buflen| is longer than the length of the\n                value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the value. Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamStringValue(
@@ -5634,6 +5753,37 @@ pub trait PdfiumLibraryBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
 
+    #[cfg(feature = "pdfium_future")]
+    #[doc = " Experimental API.\n Get the value of a blob property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value. This is only modified\n                if |buflen| is large enough to store the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_GetParamBlobValue(
+        &self,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: &str,
+        buffer: *mut c_uchar,
+        buflen: c_ulong,
+        out_buflen: *mut c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
+    ))]
     #[doc = " Experimental API.\n Get the value of a blob property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value. This is only modified\n                if |buflen| is at least as long as the length of the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the value. Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamBlobValue(
@@ -5667,6 +5817,38 @@ pub trait PdfiumLibraryBindings {
         value: &str,
     ) -> FPDF_BOOL;
 
+    #[cfg(feature = "pdfium_future")]
+    #[doc = " Experimental API.\n Set the value of a blob property in a content mark by key. If a parameter\n with key |key| exists, its value is set to |value|. Otherwise, it is added as\n a new parameter.\n\n   document    - handle to the document.\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n   value       - pointer to blob value to set.\n   value_len   - size in bytes of |value|.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_SetBlobParam(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: &str,
+        value: *const c_uchar,
+        value_len: c_ulong,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
+    ))]
     #[doc = " Experimental API.\n Set the value of a blob property in a content mark by key. If a parameter\n with key |key| exists, its value is set to |value|. Otherwise, it is added as\n a new parameter.\n\n   document    - handle to the document.\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n   value       - pointer to blob value to set.\n   value_len   - size in bytes of |value|.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetBlobParam(
@@ -5966,7 +6148,11 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
-    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666"
+    ))]
     /// Gets the base name of a font.
     ///
     ///    `font`   - the handle to the font object.
@@ -5990,7 +6176,11 @@ pub trait PdfiumLibraryBindings {
         length: size_t,
     ) -> size_t;
 
-    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666"
+    ))]
     /// Gets the family name of a font.
     ///
     ///    `font`   - the handle to the font object.
@@ -6625,7 +6815,11 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
-    #[cfg(any(feature = "pdfium_6666", feature = "pdfium_future"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666"
+    ))]
     /// Sets the language of `document` to `language`.
     ///
     ///    `document` - handle to a document.

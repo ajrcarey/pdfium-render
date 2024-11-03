@@ -77,8 +77,9 @@ sync = ["thread_safe"]
 paragraph = []
 flatten = []
 
-# Default to the latest version of the image crate, but allow consumers to pin their dependency
-# to a different version if they prefer.
+# By default, pdfium-render uses the latest version of the image crate. To explicitly use
+# an older version, select one of the feature flags below when taking pdfium-render as
+# a dependency in your project's Cargo.toml.
 
 image_latest = ["image_025"]
 image_025 = ["dep:image_025"]
@@ -91,15 +92,16 @@ image_023 = ["dep:image_023"]
 
 # By default, pdfium-render attempts to bind against the latest released version of the Pdfium API.
 # To explicitly bind against an older version, select one of the feature flags below when
-# taking `pdfium-render` as a dependency in your project's Cargo.toml.
+# taking pdfium-render as a dependency in your project's Cargo.toml.
 
-pdfium_latest = ["pdfium_6666"]
+pdfium_latest = ["pdfium_6721"]
 pdfium_future = [
     # For testing changes in Pdfium source control that are yet to be released.
     "pdfium_use_skia",
     "pdfium_enable_xfa",
     "pdfium_enable_v8",
 ]
+pdfium_6721 = []
 pdfium_6666 = []
 pdfium_6611 = []
 pdfium_6569 = []
