@@ -2,7 +2,7 @@
 name = "pdfium-render"
 version = "0.8.26"
 edition = "2018"
-rust-version = "1.60"
+rust-version = "1.61"
 publish = true
 description = "A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by the Google Chromium project."
 readme = "README.md"
@@ -23,7 +23,7 @@ doctest = false
 bitflags = "2"
 bytes = "1"
 bytemuck = "1"
-chrono = "0.4, <= 0.4.31"                          # To meet crate MSRV target of Rust 1.60.
+chrono = "0"
 image_025 = { package = "image", version = "0.25", optional = true }
 image_024 = { package = "image", version = "0.24", optional = true }
 image_023 = { package = "image", version = "0.23", optional = true }
