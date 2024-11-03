@@ -270,10 +270,8 @@ impl<'a> PdfBookmark<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::error::PdfiumError;
+    use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
-
-    use super::PdfBookmark;
 
     #[test]
     fn test_bookmarks() -> Result<(), PdfiumError> {

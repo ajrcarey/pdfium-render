@@ -125,14 +125,14 @@ impl<'a> PdfBookmarks<'a> {
 pub struct PdfBookmarksIterator<'a> {
     // If true, recurse into descendants.
     include_descendants: bool,
-    // Stack of pairs of (Bookmark Node, Node's Parent).  The parent may be NULL
+    // Stack of pairs of (Bookmark Node, Node's Parent). The parent may be NULL
     // if its a root node or the parent is unknown.
     pending_stack: Vec<(FPDF_BOOKMARK, FPDF_BOOKMARK)>,
-    // Set of nodes already visitied.  This ensures we terminate if the PDF's
+    // Set of nodes already visitied. This ensures we terminate if the PDF's
     // bookmark graph is cyclic.
     visited: HashSet<FPDF_BOOKMARK>,
     // This bookmark will not be returned by the iterator (but its siblings and
-    // descendants will be explored).  May be NULL.
+    // descendants will be explored). May be NULL.
     skip_sibling: FPDF_BOOKMARK,
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
@@ -193,12 +193,12 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
         // This iterator implements that algorithm with the following additional
         // complexities:
         //
-        // - Iterators, of course, can't take advantage of recusion.  So the
-        //   callstack which is implicit in the recursive version becomes an
+        // - Iterators, of course, can't take advantage of recursion. So the
+        //   call stack which is implicit in the recursive version becomes an
         //   explicit stack retained in PdfIterator::pending_stack.
-        // - For efficiency, the iterator internally operats with FPDF_BOOKMARK
+        // - For efficiency, the iterator internally operates with FPDF_BOOKMARK
         //   handles, and only constructs PdfBookmark objects right before
-        //   they're returend.
+        //   they're returned.
         // - PdfIterator::visited keeps a HashSet of visited nodes, to ensure
         //   termination even if the PDF's bookmark graph is cyclic.
         // - PdfIterator::skip_sibling keeps a FPDF_BOOKMARK that will not be
@@ -212,7 +212,7 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
             self.visited.insert(node);
 
             // Add our next sibling to the stack first, so we'll come back to it
-            // after having addressed our descendants.  It's okay if its NULL,
+            // after having addressed our descendants. It's okay if it's NULL,
             // we'll handle that when it comes off the stack.
             self.pending_stack.push((
                 self.bindings
