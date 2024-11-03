@@ -1098,7 +1098,7 @@ impl<'a> Drop for PdfPage<'a> {
 mod tests {
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
-    use image::GenericImageView;
+    use image_025::{ImageFormat, GenericImageView};
 
     #[test]
     fn test_page_rendering_reusing_bitmap() -> Result<(), PdfiumError> {
@@ -1123,7 +1123,7 @@ mod tests {
             bitmap
                 .as_image()
                 .into_rgb8()
-                .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg)
+                .save_with_format(format!("test-page-{}.jpg", index), ImageFormat::Jpeg)
                 .map_err(|_| PdfiumError::ImageError)?;
         }
 

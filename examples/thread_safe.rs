@@ -1,4 +1,4 @@
-use image::ImageFormat;
+use image_025::ImageFormat;
 use pdfium_render::prelude::*;
 use rayon::prelude::*;
 use std::thread;

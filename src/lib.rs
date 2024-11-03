@@ -177,7 +177,7 @@ pub mod prelude {
 mod tests {
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
-    use image::ImageFormat;
+    use image_025::ImageFormat;
     use std::fs::File;
     use std::path::Path;
 
@@ -214,7 +214,7 @@ mod tests {
                 page.render_with_config(&render_config)?
                     .as_image() // Renders this page to an Image::DynamicImage...
                     .into_rgb8() // ... then converts it to an Image::Image ...
-                    .save_with_format(format!("test-page-{}.jpg", index), image::ImageFormat::Jpeg) // ... and saves it to a file.
+                    .save_with_format(format!("test-page-{}.jpg", index), ImageFormat::Jpeg) // ... and saves it to a file.
                     .map_err(|_| PdfiumError::ImageError)?;
             }
 

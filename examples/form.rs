@@ -1,4 +1,4 @@
-use image::ImageFormat;
+use image_025::ImageFormat;
 use pdfium_render::prelude::*;
 
 pub fn main() -> Result<(), PdfiumError> {

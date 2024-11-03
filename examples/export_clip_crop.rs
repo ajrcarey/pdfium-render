@@ -1,3 +1,4 @@
+use image_025::ImageFormat;
 use pdfium_render::prelude::*;
 
 fn main() -> Result<(), PdfiumError> {
@@ -64,7 +65,7 @@ fn main() -> Result<(), PdfiumError> {
                             "export-clip-crop-test-{}-{}.jpg",
                             page_index, annotation_index
                         ),
-                        image::ImageFormat::Jpeg,
+                        ImageFormat::Jpeg,
                     )
                     .map_err(|_| PdfiumError::ImageError)?;
             }
