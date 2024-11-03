@@ -10,8 +10,15 @@ use crate::pdf::document::page::render_config::PdfRenderSettings;
 use crate::utils::pixels::{aligned_bgr_to_rgba, aligned_rgb_to_rgba, bgra_to_rgba};
 use std::os::raw::c_int;
 
-#[cfg(feature = "image")]
-use image::{DynamicImage, GrayImage, RgbaImage};
+
+#[cfg(any(feature = "image_latest", feature = "image_025"))]
+use image_025::{DynamicImage, GrayImage, RgbaImage};
+
+#[cfg(feature = "image_024")]
+use image_024::{DynamicImage, GrayImage, RgbaImage};
+
+#[cfg(feature = "image_023")]
+use image_023::{DynamicImage, GrayImage, RgbaImage};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::os::raw::c_void;

@@ -13,8 +13,14 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use std::ops::{Range, RangeInclusive};
 
-#[cfg(feature = "image")]
-use image::DynamicImage;
+#[cfg(any(feature = "image_latest", feature = "image_025"))]
+use image_025::DynamicImage;
+
+#[cfg(feature = "image_024")]
+use image_024::DynamicImage;
+
+#[cfg(feature = "image_023")]
+use image_023::{DynamicImage, GenericImageView};
 
 pub type PdfPageObjectIndex = usize;
 

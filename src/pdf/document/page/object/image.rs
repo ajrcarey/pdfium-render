@@ -21,11 +21,25 @@ use std::convert::TryInto;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_void};
 
-#[cfg(feature = "image")]
+#[cfg(any(feature = "image_latest", feature = "image_025"))]
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
     crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
-    image::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
+    image_025::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
+};
+
+#[cfg(feature = "image_024")]
+use {
+    crate::pdf::bitmap::PdfBitmapFormat,
+    crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
+    image_024::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
+};
+
+#[cfg(feature = "image_023")]
+use {
+    crate::pdf::bitmap::PdfBitmapFormat,
+    crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
+    image_023::{DynamicImage, EncodableLayout, GrayImage, RgbaImage, GenericImageView},
 };
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Image`. The page object defines a single

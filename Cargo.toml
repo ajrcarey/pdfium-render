@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.8.25"
+version = "0.8.26"
 edition = "2018"
 rust-version = "1.60"
 publish = true
@@ -24,7 +24,9 @@ bitflags = "2"
 bytes = "1"
 bytemuck = "1"
 chrono = "0.4, <= 0.4.31"                          # To meet crate MSRV target of Rust 1.60.
-image = { version = ">= 0.24.0", optional = true } # DynamicImage trait definitions changed between 0.23.14 and 0.24.0; we use trait from version 0.24.0 and later.
+image_025 = { package = "image", version = "0.25", optional = true }
+image_024 = { package = "image", version = "0.24", optional = true }
+image_023 = { package = "image", version = "0.23", optional = true }
 itertools = "0"
 log = "0"
 maybe-owned = "0"
@@ -54,7 +56,7 @@ windows = { version = "0", optional = true }
 
 [build-dependencies]
 # Bindgen 0.70.0 and later cause build failures when compiling to WASM. For more details, see:
-# 
+# https://github.com/ajrcarey/pdfium-render/issues/157
 bindgen = { version = "<=0.69.4", optional = true }
 
 [dev-dependencies]
@@ -65,7 +67,7 @@ rayon = "1" # Used by examples/thread_safe.rs
 
 [features]
 default = ["pdfium_latest", "thread_safe", "image"]
-image = ["dep:image"]
+image = ["image_latest"] # A synonym for backwards compatibility
 bindings = ["dep:bindgen"]
 static = []
 thread_safe = []
@@ -74,6 +76,14 @@ thread_safe = []
 sync = ["thread_safe"]
 paragraph = []
 flatten = []
+
+# Default to the latest version of the image crate, but allow consumers to pin their dependency
+# to a different version if they prefer.
+
+image_latest = ["image_025"]
+image_025 = ["dep:image_025"]
+image_024 = ["dep:image_024"]
+image_023 = ["dep:image_023"]
 
 # PdfiumLibraryBindings supports pinning its API definitions to a specific Pdfium release.
 # This allows pdfium-render consumers to safely upgrade their pdfium-render dependency without
