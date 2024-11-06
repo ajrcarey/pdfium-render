@@ -2032,7 +2032,22 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> c_int;
 
-    #[doc = " Create a new PDF page.\n\n   document   - handle to document.\n   page_index - suggested 0-based index of the page to create. If it is larger\n                than document's current last index(L), the created page index\n                is the next available index -- L+1.\n   width      - the page width in points.\n   height     - the page height in points.\n\n Returns the handle to the new page or NULL on failure.\n\n The page should be closed with FPDF_ClosePage() when finished as\n with any other page in the document."]
+    /// Creates a new PDF page.
+    ///
+    ///   `document`   - handle to document.
+    ///
+    ///   `page_index` - suggested 0-based index of the page to create. If it is larger
+    ///                  than document's current last index(L), the created page index
+    ///                  is the next available index -- L+1.
+    ///
+    ///   `width`      - the page width in points.
+    ///
+    ///   `height`     - the page height in points.
+    ///
+    /// Returns the handle to the new page or `NULL` on failure.
+    ///
+    /// The page should be closed with [PdfiumLibraryBindings::FPDF_ClosePage()] when finished as
+    /// with any other page in the document.
     #[allow(non_snake_case)]
     fn FPDFPage_New(
         &self,
@@ -2042,7 +2057,11 @@ pub trait PdfiumLibraryBindings {
         height: c_double,
     ) -> FPDF_PAGE;
 
-    #[doc = " Delete the page at |page_index|.\n\n   document   - handle to document.\n   page_index - the index of the page to delete."]
+    /// Deletes the page at `page_index`.
+    ///
+    ///   `document`   - handle to document.
+    ///
+    ///   `page_index` - the index of the page to delete.
     #[allow(non_snake_case)]
     fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int);
 
@@ -2064,7 +2083,28 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6084",
         feature = "pdfium_6043",
     ))]
-    #[doc = " Experimental API.\n Move the given pages to a new index position.\n\n  page_indices     - the ordered list of pages to move. No duplicates allowed.\n  page_indices_len - the number of elements in |page_indices|\n  dest_page_index  - the new index position to which the pages in\n                     |page_indices| are moved.\n\n Returns TRUE on success. If it returns FALSE, the document may be left in an\n indeterminate state.\n\n Example: The PDF document starts out with pages [A, B, C, D], with indices\n [0, 1, 2, 3].\n\n >  Move(doc, [3, 2], 2, 1); // returns true\n >  // The document has pages [A, D, C, B].\n >\n >  Move(doc, [0, 4, 3], 3, 1); // returns false\n >  // Returned false because index 4 is out of range.\n >\n >  Move(doc, [0, 3, 1], 3, 2); // returns false\n >  // Returned false because index 2 is out of range for 3 page indices.\n >\n >  Move(doc, [2, 2], 2, 0); // returns false\n >  // Returned false because [2, 2] contains duplicates.\n"]
+    /// Experimental API. Moves the given pages to a new index position.
+    ///
+    ///   `page_indices`     - the ordered list of pages to move. No duplicates allowed.
+    ///
+    ///   `page_indices_len` - the number of elements in `page_indices`
+    ///
+    ///   `dest_page_index`  - the new index position to which the pages in
+    ///                        `page_indices` are moved.
+    ///
+    /// Returns `true` on success. If it returns `false`, the document may be left in an
+    /// indeterminate state.
+    ///
+    /// Example: The PDF document starts out with pages [A, B, C, D], with indices
+    /// [0, 1, 2, 3].
+    ///
+    /// >  Move(doc, [3, 2], 2, 1); // returns `true`. The document now has pages [A, D, C, B].
+    /// >
+    /// >  Move(doc, [0, 4, 3], 3, 1); // returns `false` because index 4 is out of range.
+    /// >
+    /// >  Move(doc, [0, 3, 1], 3, 2); // returns `false` because index 2 is out of range for 3 page indices.
+    /// >
+    /// >  Move(doc, [2, 2], 2, 0); // returns `false` because [2, 2] contains duplicates.
     #[allow(non_snake_case)]
     fn FPDF_MovePages(
         &self,
@@ -2074,19 +2114,59 @@ pub trait PdfiumLibraryBindings {
         dest_page_index: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get the rotation of |page|.\n\n   page - handle to a page\n\n Returns one of the following indicating the page rotation:\n   0 - No rotation.\n   1 - Rotated 90 degrees clockwise.\n   2 - Rotated 180 degrees clockwise.\n   3 - Rotated 270 degrees clockwise."]
+    /// Gets the rotation of `page`.
+    ///
+    ///   `page` - handle to a page
+    ///
+    /// Returns one of the following indicating the page rotation:
+    ///
+    ///   `0` - No rotation.
+    ///
+    ///   `1` - Rotated 90 degrees clockwise.
+    ///
+    ///   `2` - Rotated 180 degrees clockwise.
+    ///
+    ///   `3` - Rotated 270 degrees clockwise.
     #[allow(non_snake_case)]
     fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int;
 
-    #[doc = " Set rotation for |page|.\n\n   page   - handle to a page.\n   rotate - the rotation value, one of:\n              0 - No rotation.\n              1 - Rotated 90 degrees clockwise.\n              2 - Rotated 180 degrees clockwise.\n              3 - Rotated 270 degrees clockwise."]
+    /// Sets rotation for `page`.
+    ///
+    ///   `page`   - handle to a page.
+    ///
+    ///   `rotate` - the rotation value, one of:
+    ///
+    ///              0 - No rotation.
+    ///
+    ///              1 - Rotated 90 degrees clockwise.
+    ///
+    ///              2 - Rotated 180 degrees clockwise.
+    ///
+    ///              3 - Rotated 270 degrees clockwise.
     #[allow(non_snake_case)]
     fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int);
 
-    #[doc = " Experimental API.\n Function: FPDF_GetPageBoundingBox\n          Get the bounding box of the page. This is the intersection between\n          its media box and its crop box.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n          rect        -   Pointer to a rect to receive the page bounding box.\n                          On an error, |rect| won't be filled.\n Return value:\n          True for success."]
+    /// Experimental API. Gets the bounding box of the page. This is the intersection between
+    /// its media box and its crop box.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `rect`        -   Pointer to a rect to receive the page bounding box.
+    ///                      On an error, `rect` won't be filled.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDF_GetPageSizeByIndexF\n          Get the size of the page at the given index.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument().\n          page_index  -   Page index, zero for the first page.\n          size        -   Pointer to a FS_SIZEF to receive the page size.\n                          (in points).\n Return value:\n          Non-zero for success. 0 for error (document or page not found)."]
+    /// Experimental API. Gets the size of the page at the given index.
+    ///
+    ///    `document`    -   Handle to document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `page_index`  -   Page index, zero for the first page.
+    ///
+    ///    `size`        -   Pointer to a `FS_SIZEF` to receive the page size (in points).
+    ///
+    /// Returns non-zero value for success, `0` for error (document or page not found).
     #[allow(non_snake_case)]
     fn FPDF_GetPageSizeByIndexF(
         &self,
@@ -2095,7 +2175,20 @@ pub trait PdfiumLibraryBindings {
         size: *mut FS_SIZEF,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDF_GetPageSizeByIndex\n          Get the size of the page at the given index.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument.\n          page_index  -   Page index, zero for the first page.\n          width       -   Pointer to a double to receive the page width\n                          (in points).\n          height      -   Pointer to a double to receive the page height\n                          (in points).\n Return value:\n          Non-zero for success. 0 for error (document or page not found).\n Note:\n          Prefer FPDF_GetPageSizeByIndexF() above. This will be deprecated in\n          the future."]
+    /// Gets the size of the page at the given index.
+    ///
+    ///    `document`    -   Handle to document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `page_index`  -   Page index, zero for the first page.
+    ///
+    ///    `width`       -   Pointer to a double to receive the page width (in points).
+    ///
+    ///    `height`      -   Pointer to a double to receive the page height (in points).
+    ///
+    /// Returns non-zero for success, `0` for error (document or page not found).
+    ///
+    /// Note: prefer [PdfiumLibraryBindings::FPDF_GetPageSizeByIndexF]. This function
+    /// will be deprecated in the future.
     #[allow(non_snake_case)]
     fn FPDF_GetPageSizeByIndex(
         &self,
@@ -2105,7 +2198,20 @@ pub trait PdfiumLibraryBindings {
         height: *mut f64,
     ) -> c_int;
 
-    #[doc = " Get \"MediaBox\" entry from the page dictionary.\n\n page   - Handle to a page.\n left   - Pointer to a float value receiving the left of the rectangle.\n bottom - Pointer to a float value receiving the bottom of the rectangle.\n right  - Pointer to a float value receiving the right of the rectangle.\n top    - Pointer to a float value receiving the top of the rectangle.\n\n On success, return true and write to the out parameters. Otherwise return\n false and leave the out parameters unmodified."]
+    /// Gets "MediaBox" entry from the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - Pointer to a float value receiving the left of the rectangle.
+    ///
+    ///    `bottom` - Pointer to a float value receiving the bottom of the rectangle.
+    ///
+    ///    `right`  - Pointer to a float value receiving the right of the rectangle.
+    ///
+    ///    `top`    - Pointer to a float value receiving the top of the rectangle.
+    ///
+    /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
+    /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
     fn FPDFPage_GetMediaBox(
         &self,
@@ -2116,7 +2222,20 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get \"CropBox\" entry from the page dictionary.\n\n page   - Handle to a page.\n left   - Pointer to a float value receiving the left of the rectangle.\n bottom - Pointer to a float value receiving the bottom of the rectangle.\n right  - Pointer to a float value receiving the right of the rectangle.\n top    - Pointer to a float value receiving the top of the rectangle.\n\n On success, return true and write to the out parameters. Otherwise return\n false and leave the out parameters unmodified."]
+    /// Gets "CropBox" entry from the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - Pointer to a float value receiving the left of the rectangle.
+    ///
+    ///    `bottom` - Pointer to a float value receiving the bottom of the rectangle.
+    ///
+    ///    `right`  - Pointer to a float value receiving the right of the rectangle.
+    ///
+    ///    `top`    - Pointer to a float value receiving the top of the rectangle.
+    ///
+    /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
+    /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
     fn FPDFPage_GetCropBox(
         &self,
@@ -2127,7 +2246,20 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get \"BleedBox\" entry from the page dictionary.\n\n page   - Handle to a page.\n left   - Pointer to a float value receiving the left of the rectangle.\n bottom - Pointer to a float value receiving the bottom of the rectangle.\n right  - Pointer to a float value receiving the right of the rectangle.\n top    - Pointer to a float value receiving the top of the rectangle.\n\n On success, return true and write to the out parameters. Otherwise return\n false and leave the out parameters unmodified."]
+    /// Gets "BleedBox" entry from the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - Pointer to a float value receiving the left of the rectangle.
+    ///
+    ///    `bottom` - Pointer to a float value receiving the bottom of the rectangle.
+    ///
+    ///    `right`  - Pointer to a float value receiving the right of the rectangle.
+    ///
+    ///    `top`    - Pointer to a float value receiving the top of the rectangle.
+    ///
+    /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
+    /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
     fn FPDFPage_GetBleedBox(
         &self,
@@ -2138,7 +2270,20 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get \"TrimBox\" entry from the page dictionary.\n\n page   - Handle to a page.\n left   - Pointer to a float value receiving the left of the rectangle.\n bottom - Pointer to a float value receiving the bottom of the rectangle.\n right  - Pointer to a float value receiving the right of the rectangle.\n top    - Pointer to a float value receiving the top of the rectangle.\n\n On success, return true and write to the out parameters. Otherwise return\n false and leave the out parameters unmodified."]
+    /// Gets "TrimBox" entry from the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - Pointer to a float value receiving the left of the rectangle.
+    ///
+    ///    `bottom` - Pointer to a float value receiving the bottom of the rectangle.
+    ///
+    ///    `right`  - Pointer to a float value receiving the right of the rectangle.
+    ///
+    ///    `top`    - Pointer to a float value receiving the top of the rectangle.
+    ///
+    /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
+    /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
     fn FPDFPage_GetTrimBox(
         &self,
@@ -2149,7 +2294,20 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get \"ArtBox\" entry from the page dictionary.\n\n page   - Handle to a page.\n left   - Pointer to a float value receiving the left of the rectangle.\n bottom - Pointer to a float value receiving the bottom of the rectangle.\n right  - Pointer to a float value receiving the right of the rectangle.\n top    - Pointer to a float value receiving the top of the rectangle.\n\n On success, return true and write to the out parameters. Otherwise return\n false and leave the out parameters unmodified."]
+    /// Gets "ArtBox" entry from the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - Pointer to a float value receiving the left of the rectangle.
+    ///
+    ///    `bottom` - Pointer to a float value receiving the bottom of the rectangle.
+    ///
+    ///    `right`  - Pointer to a float value receiving the right of the rectangle.
+    ///
+    ///    `top`    - Pointer to a float value receiving the top of the rectangle.
+    ///
+    /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
+    /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
     fn FPDFPage_GetArtBox(
         &self,
@@ -2160,7 +2318,17 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Set \"MediaBox\" entry to the page dictionary.\n\n page   - Handle to a page.\n left   - The left of the rectangle.\n bottom - The bottom of the rectangle.\n right  - The right of the rectangle.\n top    - The top of the rectangle."]
+    /// Sets "MediaBox" entry to the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - The left of the rectangle.
+    ///
+    ///    `bottom` - The bottom of the rectangle.
+    ///
+    ///    `right`  - The right of the rectangle.
+    ///
+    ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
     fn FPDFPage_SetMediaBox(
         &self,
@@ -2171,7 +2339,17 @@ pub trait PdfiumLibraryBindings {
         top: c_float,
     );
 
-    #[doc = " Set \"CropBox\" entry to the page dictionary.\n\n page   - Handle to a page.\n left   - The left of the rectangle.\n bottom - The bottom of the rectangle.\n right  - The right of the rectangle.\n top    - The top of the rectangle."]
+    /// Sets "CropBox" entry in the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - The left of the rectangle.
+    ///
+    ///    `bottom` - The bottom of the rectangle.
+    ///
+    ///    `right`  - The right of the rectangle.
+    ///
+    ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
     fn FPDFPage_SetCropBox(
         &self,
@@ -2182,7 +2360,17 @@ pub trait PdfiumLibraryBindings {
         top: c_float,
     );
 
-    #[doc = " Set \"BleedBox\" entry to the page dictionary.\n\n page   - Handle to a page.\n left   - The left of the rectangle.\n bottom - The bottom of the rectangle.\n right  - The right of the rectangle.\n top    - The top of the rectangle."]
+    /// Sets "BleedBox" entry in the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - The left of the rectangle.
+    ///
+    ///    `bottom` - The bottom of the rectangle.
+    ///
+    ///    `right`  - The right of the rectangle.
+    ///
+    ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
     fn FPDFPage_SetBleedBox(
         &self,
@@ -2193,7 +2381,17 @@ pub trait PdfiumLibraryBindings {
         top: c_float,
     );
 
-    #[doc = " Set \"TrimBox\" entry to the page dictionary.\n\n page   - Handle to a page.\n left   - The left of the rectangle.\n bottom - The bottom of the rectangle.\n right  - The right of the rectangle.\n top    - The top of the rectangle."]
+    /// Sets "TrimBox" entry in the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - The left of the rectangle.
+    ///
+    ///    `bottom` - The bottom of the rectangle.
+    ///
+    ///    `right`  - The right of the rectangle.
+    ///
+    ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
     fn FPDFPage_SetTrimBox(
         &self,
@@ -2204,7 +2402,17 @@ pub trait PdfiumLibraryBindings {
         top: c_float,
     );
 
-    #[doc = " Set \"ArtBox\" entry to the page dictionary.\n\n page   - Handle to a page.\n left   - The left of the rectangle.\n bottom - The bottom of the rectangle.\n right  - The right of the rectangle.\n top    - The top of the rectangle."]
+    /// Sets "ArtBox" entry in the page dictionary.
+    ///
+    ///    `page`   - Handle to a page.
+    ///
+    ///    `left`   - The left of the rectangle.
+    ///
+    ///    `bottom` - The bottom of the rectangle.
+    ///
+    ///    `right`  - The right of the rectangle.
+    ///
+    ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
     fn FPDFPage_SetArtBox(
         &self,
@@ -2215,7 +2423,20 @@ pub trait PdfiumLibraryBindings {
         top: c_float,
     );
 
-    #[doc = " Apply transforms to |page|.\n\n If |matrix| is provided it will be applied to transform the page.\n If |clipRect| is provided it will be used to clip the resulting page.\n If neither |matrix| or |clipRect| are provided this method returns |false|.\n Returns |true| if transforms are applied.\n\n This function will transform the whole page, and would take effect to all the\n objects in the page.\n\n page        - Page handle.\n matrix      - Transform matrix.\n clipRect    - Clipping rectangle."]
+    /// Applies transforms to `page`.
+    ///
+    /// If `matrix` is provided, it will be applied to transform the page.
+    /// If `clipRect` is provided, it will be used to clip the resulting page.
+    /// If neither `matrix` nor `clipRect` are provided, this method returns `false`.
+    ///
+    /// Returns `true` if transforms are applied. This function will transform the whole page,
+    /// and will take effect on all the objects on the page.
+    ///
+    ///    `page`        - Page handle.
+    ///
+    ///    `matrix`      - Transform matrix.
+    ///
+    ///    `clipRect`    - Clipping rectangle.
     #[allow(non_snake_case)]
     fn FPDFPage_TransFormWithClip(
         &self,
@@ -2224,7 +2445,21 @@ pub trait PdfiumLibraryBindings {
         clipRect: *const FS_RECTF,
     ) -> FPDF_BOOL;
 
-    #[doc = " Transform (scale, rotate, shear, move) the clip path of page object.\n page_object - Handle to a page object. Returned by\n FPDFPageObj_NewImageObj().\n\n a  - The coefficient \"a\" of the matrix.\n b  - The coefficient \"b\" of the matrix.\n c  - The coefficient \"c\" of the matrix.\n d  - The coefficient \"d\" of the matrix.\n e  - The coefficient \"e\" of the matrix.\n f  - The coefficient \"f\" of the matrix."]
+    /// Transforms (scale, rotate, shear, move) the clip path of page object.
+    ///
+    ///    `page_object` - Handle to a page object. Returned by [PdfiumLibraryBindings::FPDFPageObj_NewImageObj].
+    ///
+    ///    `a`  - The coefficient "a" of the transformation matrix.
+    ///
+    ///    `b`  - The coefficient "b" of the matrix.
+    ///
+    ///    `c`  - The coefficient "c" of the matrix.
+    ///
+    ///    `d`  - The coefficient "d" of the matrix.
+    ///
+    ///    `e`  - The coefficient "e" of the matrix.
+    ///
+    ///    `f`  - The coefficient "f" of the matrix.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPageObj_TransformClipPath(
