@@ -1133,7 +1133,15 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
 
-    #[doc = " Function: FPDF_GetPageWidth\n          Get page width.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n Return value:\n          Page width (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm).\n Note:\n          Prefer FPDF_GetPageWidthF() above. This will be deprecated in the\n          future."]
+    /// Gets page width.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns the page width (excluding non-displayable area) measured in points.
+    /// One point is 1/72 inch (around 0.3528 mm).
+    ///
+    /// Note: prefer the [PdfiumLibraryBindings::FPDF_GetPageWidthF] function above.
+    /// This function will be deprecated in the future.
     #[deprecated(
         since = "0.8.25",
         note = "Deprecated in favour of FPDF_GetPageWidthF()"
@@ -1141,11 +1149,24 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64;
 
-    #[doc = " Experimental API\n Function: FPDF_GetPageHeightF\n          Get page height.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage().\n Return value:\n          Page height (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)"]
+    /// Gets page height.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns the page height (excluding non-displayable area) measured in points.
+    /// One point is 1/72 inch (around 0.3528 mm).
     #[allow(non_snake_case)]
     fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float;
 
-    #[doc = " Function: FPDF_GetPageHeight\n          Get page height.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n Return value:\n          Page height (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)\n Note:\n          Prefer FPDF_GetPageHeightF() above. This will be deprecated in the\n          future."]
+    /// Gets page height.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns the page height (excluding non-displayable area) measured in points.
+    /// One point is 1/72 inch (around 0.3528 mm).
+    ///
+    /// Note: prefer the [PdfiumLibraryBindings::FPDF_GetPageHeightF] function above.
+    /// This function will be deprecated in the future.
     #[deprecated(
         since = "0.8.25",
         note = "Deprecated in favour of FPDF_GetPageHeightF()"
@@ -1153,7 +1174,13 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64;
 
-    #[doc = " Get the character index in |text_page| internal character list.\n\n   text_page  - a text page information structure.\n   nTextIndex - index of the text returned from FPDFText_GetText().\n\n Returns the index of the character in internal character list. -1 for error."]
+    /// Gets the character index in the `text_page` internal character list.
+    ///
+    ///    `text_page`  - a text page information structure.
+    ///
+    ///    `nTextIndex` - index of the text returned from [PdfiumLibraryBindings::FPDFText_GetText].
+    ///
+    /// Returns the index of the character in the internal character list, or `-1` for error.
     #[allow(non_snake_case)]
     fn FPDFText_GetCharIndexFromTextIndex(
         &self,
@@ -1161,7 +1188,14 @@ pub trait PdfiumLibraryBindings {
         nTextIndex: c_int,
     ) -> c_int;
 
-    #[doc = " Get the text index in |text_page| internal character list.\n\n   text_page  - a text page information structure.\n   nCharIndex - index of the character in internal character list.\n\n Returns the index of the text returned from FPDFText_GetText(). -1 for error."]
+    /// Gets the text index in the `text_page` internal character list.
+    ///
+    ///    `text_page`  - a text page information structure.
+    ///
+    ///    `nCharIndex` - index of the character in internal character list.
+    ///
+    /// Returns the index of the text returned from [PdfiumLibraryBindings::FPDFText_GetText],
+    /// or `-1` for error.
     #[allow(non_snake_case)]
     fn FPDFText_GetTextIndexFromCharIndex(
         &self,
@@ -1169,15 +1203,39 @@ pub trait PdfiumLibraryBindings {
         nCharIndex: c_int,
     ) -> c_int;
 
-    #[doc = " Experimental API.\n Function: FPDF_GetSignatureCount\n          Get total number of signatures in the document.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument().\n Return value:\n          Total number of signatures in the document on success, -1 on error."]
+    /// Gets the total number of signatures in the document.
+    ///
+    ///    `document`    -   Handle to document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns the total number of signatures in the document on success, or `-1` on error.
     #[allow(non_snake_case)]
     fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    #[doc = " Experimental API.\n Function: FPDF_GetSignatureObject\n          Get the Nth signature of the document.\n Parameters:\n          document    -   Handle to document. Returned by FPDF_LoadDocument().\n          index       -   Index into the array of signatures of the document.\n Return value:\n          Returns the handle to the signature, or NULL on failure. The caller\n          does not take ownership of the returned FPDF_SIGNATURE. Instead, it\n          remains valid until FPDF_CloseDocument() is called for the document."]
+    /// Gets the nth signature in the document.
+    ///
+    ///    `document`    -   Handle to document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `index`       -   Index into the array of signatures of the document.
+    ///
+    /// Returns the handle to the signature, or `NULL` on failure. The caller
+    /// does not take ownership of the returned `FPDF_SIGNATURE`. Instead, it
+    /// remains valid until [PdfiumLibraryBindings::FPDF_CloseDocument] is called for the document.
     #[allow(non_snake_case)]
     fn FPDF_GetSignatureObject(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE;
 
-    #[doc = " Experimental API.\n Function: FPDFSignatureObj_GetContents\n          Get the contents of a signature object.\n Parameters:\n          signature   -   Handle to the signature object. Returned by\n                          FPDF_GetSignatureObject().\n          buffer      -   The address of a buffer that receives the contents.\n          length      -   The size, in bytes, of |buffer|.\n Return value:\n          Returns the number of bytes in the contents on success, 0 on error.\n\n For public-key signatures, |buffer| is either a DER-encoded PKCS#1 binary or\n a DER-encoded PKCS#7 binary. If |length| is less than the returned length, or\n |buffer| is NULL, |buffer| will not be modified."]
+    /// Gets the contents of a signature object.
+    ///
+    ///    `signature`   -   Handle to the signature object. Returned by
+    ///                      [PdfiumLibraryBindings::FPDF_GetSignatureObject].
+    ///
+    ///    `buffer`      -   The address of a buffer that receives the contents.
+    ///
+    ///    `length`      -   The size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the contents on success, or `0` on error.
+    /// For public-key signatures, `buffer` is either a DER-encoded PKCS#1 binary or
+    /// a DER-encoded PKCS#7 binary. If `length` is less than the returned length, or
+    /// `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetContents(
         &self,
@@ -1186,7 +1244,19 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Function: FPDFSignatureObj_GetByteRange\n          Get the byte range of a signature object.\n Parameters:\n          signature   -   Handle to the signature object. Returned by\n                          FPDF_GetSignatureObject().\n          buffer      -   The address of a buffer that receives the\n                          byte range.\n          length      -   The size, in ints, of |buffer|.\n Return value:\n          Returns the number of ints in the byte range on\n          success, 0 on error.\n\n |buffer| is an array of pairs of integers (starting byte offset,\n length in bytes) that describes the exact byte range for the digest\n calculation. If |length| is less than the returned length, or\n |buffer| is NULL, |buffer| will not be modified."]
+    /// Gets the byte range of a signature object.
+    ///
+    ///    `signature`   -   Handle to the signature object. Returned by
+    ///                      [PdfiumLibraryBindings::FPDF_GetSignatureObject].
+    ///
+    ///    `buffer`      -   The address of a buffer that receives the byte range.
+    ///
+    ///    `length`      -   The size, in `int`s, of `buffer`.
+    ///
+    /// Returns the number of `int`s in the byte range on success, or `0` on error.
+    /// `buffer` is an array of pairs of integers (starting byte offset, length in bytes)
+    /// that describes the exact byte range for the digest calculation. If `length` is
+    /// less than the returned length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetByteRange(
         &self,
@@ -1195,7 +1265,19 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Function: FPDFSignatureObj_GetSubFilter\n          Get the encoding of the value of a signature object.\n Parameters:\n          signature   -   Handle to the signature object. Returned by\n                          FPDF_GetSignatureObject().\n          buffer      -   The address of a buffer that receives the encoding.\n          length      -   The size, in bytes, of |buffer|.\n Return value:\n          Returns the number of bytes in the encoding name (including the\n          trailing NUL character) on success, 0 on error.\n\n The |buffer| is always encoded in 7-bit ASCII. If |length| is less than the\n returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    /// Gets the encoding of the value of a signature object.
+    ///
+    ///    `signature`   -   Handle to the signature object. Returned by
+    ///                      [PdfiumLibraryBindings::FPDF_GetSignatureObject].
+    ///
+    ///    `buffer`      -   The address of a buffer that receives the encoding.
+    ///
+    ///    `length`      -   The size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the encoding name (including the trailing `NUL` character)
+    /// on success, or `0` on error. The `buffer` is always encoded in 7-bit ASCII.
+    /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer` will
+    // not be modified.
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetSubFilter(
         &self,
@@ -1204,7 +1286,19 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Function: FPDFSignatureObj_GetReason\n          Get the reason (comment) of the signature object.\n Parameters:\n          signature   -   Handle to the signature object. Returned by\n                          FPDF_GetSignatureObject().\n          buffer      -   The address of a buffer that receives the reason.\n          length      -   The size, in bytes, of |buffer|.\n Return value:\n          Returns the number of bytes in the reason on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-16LE encoding. The\n string is terminated by a UTF16 NUL character. If |length| is less than the\n returned length, or |buffer| is NULL, |buffer| will not be modified."]
+    /// Gets the reason (comment) of the signature object.
+    ///
+    ///    `signature`   -   Handle to the signature object. Returned by
+    ///                      [PdfiumLibraryBindings::FPDF_GetSignatureObject].
+    ///
+    ///    `buffer`      -   The address of a buffer that receives the reason.
+    ///
+    ///    `length`      -   The size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the reason on success, or `0` on error.
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding. The
+    /// string is terminated by a UTF16 `NUL` character. If `length` is less than the
+    /// returned length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetReason(
         &self,
@@ -1213,7 +1307,22 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Function: FPDFSignatureObj_GetTime\n          Get the time of signing of a signature object.\n Parameters:\n          signature   -   Handle to the signature object. Returned by\n                          FPDF_GetSignatureObject().\n          buffer      -   The address of a buffer that receives the time.\n          length      -   The size, in bytes, of |buffer|.\n Return value:\n          Returns the number of bytes in the encoding name (including the\n          trailing NUL character) on success, 0 on error.\n\n The |buffer| is always encoded in 7-bit ASCII. If |length| is less than the\n returned length, or |buffer| is NULL, |buffer| will not be modified.\n\n The format of time is expected to be D:YYYYMMDDHHMMSS+XX'YY', i.e. it's\n percision is seconds, with timezone information. This value should be used\n only when the time of signing is not available in the (PKCS#7 binary)\n signature."]
+    /// Gets the time of signing of a signature object.
+    ///
+    ///    `signature`   -   Handle to the signature object. Returned by
+    ///                      [PdfiumLibraryBindings::FPDF_GetSignatureObject].
+    ///
+    ///    `buffer`      -   The address of a buffer that receives the time.
+    ///
+    ///    `length`      -   The size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the encoding name (including the
+    /// trailing `NUL` character) on success, or `0` on error.
+    /// The `buffer` is always encoded in 7-bit ASCII. If `length` is less than the
+    /// returned length, or `buffer` is `NULL`, `buffer` will not be modified.
+    /// The format of time is expected to be `D:YYYYMMDDHHMMSS+XX'YY'`, i.e. its
+    /// precision is seconds, with timezone information. This value should be used
+    /// only when the time of signing is not available in the PKCS#7 binary signature.
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetTime(
         &self,
@@ -1222,7 +1331,22 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Function: FPDFSignatureObj_GetDocMDPPermission\n          Get the DocMDP permission of a signature object.\n Parameters:\n          signature   -   Handle to the signature object. Returned by\n                          FPDF_GetSignatureObject().\n Return value:\n          Returns the permission (1, 2 or 3) on success, 0 on error."]
+    /// Gets the DocMDP (modification detection and prevention) permission of a signature object.
+    ///
+    ///    `signature`   -   Handle to the signature object. Returned by
+    ///                      [PdfiumLibraryBindings::FPDF_GetSignatureObject].
+    ///
+    /// Returns the permission (`1`, `2`, or `3`) on success, or `0` on error.
+    ///
+    ///    `1`           -   No changes to the document are permitted; any change
+    ///                      to the document invalidates the signature.
+    ///
+    ///    `2`           -   Permitted changes are filling in forms, instantiating page
+    ///                      templates, and signing; other changes invalidate the signature.
+    ///
+    ///    `3`           -   Permitted changes are the same as for level 2, as well as
+    ///                      annotation creation, deletion, and modification; other changes
+    ///                      invalidate the signature.
     #[allow(non_snake_case)]
     fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint;
 
@@ -2473,19 +2597,46 @@ pub trait PdfiumLibraryBindings {
         f: f64,
     );
 
-    #[doc = " Experimental API.\n Get the clip path of the page object.\n\n   page object - Handle to a page object. Returned by e.g.\n                 FPDFPage_GetObject().\n\n Returns the handle to the clip path, or NULL on failure. The caller does not\n take ownership of the returned FPDF_CLIPPATH. Instead, it remains valid until\n FPDF_ClosePage() is called for the page containing |page_object|."]
+    /// Gets the clip path of the page object.
+    ///
+    ///    `page object` - Handle to a page object. Returned by e.g.
+    ///                    [PdfiumLibraryBindings::FPDFPage_GetObject].
+    ///
+    /// Returns the handle to the clip path, or `NULL` on failure. The caller does not
+    /// take ownership of the returned `FPDF_CLIPPATH`. Instead, it remains valid until
+    /// [PdfiumLibraryBindings::FPDF_ClosePage] is called for the page containing `page_object`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH;
 
-    #[doc = " Experimental API.\n Get number of paths inside |clip_path|.\n\n   clip_path - handle to a clip_path.\n\n Returns the number of objects in |clip_path| or -1 on failure."]
+    /// Gets the number of paths inside `clip_path`.
+    ///
+    ///    `clip_path` - handle to a clip path.
+    ///
+    /// Returns the number of objects in `clip_path`, or `-1` on failure.
     #[allow(non_snake_case)]
     fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int;
 
-    #[doc = " Experimental API.\n Get number of segments inside one path of |clip_path|.\n\n   clip_path  - handle to a clip_path.\n   path_index - index into the array of paths of the clip path.\n\n Returns the number of segments or -1 on failure."]
+    /// Gets the number of segments inside one path of `clip_path`.
+    ///
+    ///    `clip_path`  - handle to a clip path.
+    ///
+    ///    `path_index` - index into the array of paths of the clip path.
+    ///
+    /// Returns the number of segments, or `-1` on failure.
     #[allow(non_snake_case)]
     fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int;
 
-    #[doc = " Experimental API.\n Get segment in one specific path of |clip_path| at index.\n\n   clip_path     - handle to a clip_path.\n   path_index    - the index of a path.\n   segment_index - the index of a segment.\n\n Returns the handle to the segment, or NULL on failure. The caller does not\n take ownership of the returned FPDF_PATHSEGMENT. Instead, it remains valid\n until FPDF_ClosePage() is called for the page containing |clip_path|."]
+    /// Gets a specific segment in a specific path of `clip_path`.
+    ///
+    ///    `clip_path`     - handle to a clip path.
+    ///
+    ///    `path_index`    - the index of a path.
+    ///
+    ///    `segment_index` - the index of a segment.
+    ///
+    /// Returns the handle to the segment, or `NULL` on failure. The caller does not
+    /// take ownership of the returned `FPDF_PATHSEGMENT`. Instead, it remains valid
+    /// until [PdfiumLibraryBindings::FPDF_ClosePage] is called for the page containing `clip_path`.
     #[allow(non_snake_case)]
     fn FPDFClipPath_GetPathSegment(
         &self,
@@ -2494,27 +2645,78 @@ pub trait PdfiumLibraryBindings {
         segment_index: c_int,
     ) -> FPDF_PATHSEGMENT;
 
-    #[doc = " Create a new clip path, with a rectangle inserted.\n\n Caller takes ownership of the returned FPDF_CLIPPATH. It should be freed with\n FPDF_DestroyClipPath().\n\n left   - The left of the clip box.\n bottom - The bottom of the clip box.\n right  - The right of the clip box.\n top    - The top of the clip box."]
+    /// Creates a new clip path, with a rectangle inserted.
+    ///
+    /// Caller takes ownership of the returned `FPDF_CLIPPATH`. It should be freed with
+    /// [PdfiumLibraryBindings::FPDF_DestroyClipPath].
+    ///
+    ///    `left`   - The left of the clip box.
+    ///
+    ///    `bottom` - The bottom of the clip box.
+    ///
+    ///    `right`  - The right of the clip box.
+    ///
+    ///    `top`    - The top of the clip box.
     #[allow(non_snake_case)]
     fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH;
 
-    #[doc = " Destroy the clip path.\n\n clipPath - A handle to the clip path. It will be invalid after this call."]
+    /// Destroys a clip path.
+    ///
+    ///    `clipPath` - A handle to the clip path. It will be invalid after this call.
     #[allow(non_snake_case)]
     fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH);
 
-    #[doc = " Clip the page content, the page content that outside the clipping region\n become invisible.\n\n A clip path will be inserted before the page content stream or content array.\n In this way, the page content will be clipped by this clip path.\n\n page        - A page handle.\n clipPath    - A handle to the clip path. (Does not take ownership.)"]
+    /// Clips the page content. Content outside the clipping region will become invisible.
+    ///
+    /// A clip path will be inserted before the page content stream or content array.
+    /// In this way, the page content will be clipped by this clip path.
+    ///
+    ///    `page`        - A page handle.
+    ///
+    ///    `clipPath`    - A handle to the clip path. The caller does not take ownership.
     #[allow(non_snake_case)]
     fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH);
 
-    #[doc = " Checks if |page| contains transparency.\n\n   page - handle to a page.\n\n Returns TRUE if |page| contains transparency."]
+    /// Checks if `page` contains transparency.
+    ///
+    ///    `page` - handle to a page.
+    ///
+    /// Returns `true` if `page` contains transparency.
     #[allow(non_snake_case)]
     fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Generate the content of |page|.\n\n   page - handle to a page.\n\n Returns TRUE on success.\n\n Before you save the page to a file, or reload the page, you must call\n |FPDFPage_GenerateContent| or any changes to |page| will be lost."]
+    /// Generates the content of `page`. Before you save `page` to a file or reload `page`,
+    /// you must call this function or any changes to `page` will be lost.
+    ///
+    ///    `page` - handle to a page.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Transform all annotations in |page|.\n\n   page - handle to a page.\n   a    - matrix value.\n   b    - matrix value.\n   c    - matrix value.\n   d    - matrix value.\n   e    - matrix value.\n   f    - matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and can be used to scale, rotate, shear and translate the |page| annotations."]
+    /// Transforms all annotations in `page`.
+    ///
+    ///    `page` - handle to a page.
+    ///
+    ///    `a`    - matrix value.
+    ///
+    ///    `b`    - matrix value.
+    ///
+    ///    `c`    - matrix value.
+    ///
+    ///    `d`    - matrix value.
+    ///
+    ///    `e`    - matrix value.
+    ///
+    ///    `f`    - matrix value.
+    ///
+    /// The matrix is composed as:
+    ///
+    ///    `|a c e|`
+    ///
+    ///    `|b d f|`
+    ///
+    /// and can be used to scale, rotate, shear, and translate the `page` annotations.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPage_TransformAnnots(
@@ -3931,10 +4133,10 @@ pub trait PdfiumLibraryBindings {
     ))]
     /// Gets the RGB value of the font color for an `annot` with variable text.
     ///
-    ///   `hHandle`  - handle to the form fill module, returned by
-    ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///   `hHandle`      - handle to the form fill module, returned by
+    ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///   `annot`    - handle to an annotation.
+    ///   `annot`        - handle to an annotation.
     ///
     ///   `R`, `G`, `B`  - buffer to hold the RGB value of the color. Ranges from 0 to 255.
     ///
@@ -3988,7 +4190,7 @@ pub trait PdfiumLibraryBindings {
     ///   `hHandle`  - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    /// Returns the count of focusable annotation subtypes or -1 on error.
+    /// Returns the count of focusable annotation subtypes or `-1` on error.
     ///
     /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
@@ -4038,7 +4240,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    /// Returns number of controls in its control group or -1 on error.
+    /// Returns number of controls in its control group or `-1` on error.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlCount(
         &self,
@@ -4057,7 +4259,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    /// Returns index of a given `annot` in its control group or -1 on error.
+    /// Returns index of a given `annot` in its control group or `-1` on error.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlIndex(
         &self,
@@ -4106,7 +4308,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `annot`  - handle to a file annotation.
     ///
-    /// Returns the handle to the attachment object, or NULL on failure.
+    /// Returns the handle to the attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
         feature = "pdfium_6721",
@@ -4127,7 +4329,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `name`     - name of the new attachment.
     ///
-    /// Returns a handle to the new attachment object, or NULL on failure.
+    /// Returns a handle to the new attachment object, or `NULL` on failure.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment_str].
@@ -4157,7 +4359,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `name`     - name of the new attachment.
     ///
-    /// Returns a handle to the new attachment object, or NULL on failure.
+    /// Returns a handle to the new attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
         feature = "pdfium_6721",
@@ -4230,29 +4432,88 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
 
+    /// Gets the document's page mode.
+    ///
+    ///    `doc` - Handle to document.
+    ///
+    /// Returns one of the `PAGEMODE_*` flags defined above.
+    /// The page mode defines how the document should be initially displayed.
     #[allow(non_snake_case)]
     fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
 
+    /// Flattens annotations and form fields into the page contents.
+    ///
+    ///    `page`  - handle to the page.
+    ///
+    ///    `nFlag` - One of the `FLAT_*` values denoting the page usage.
+    ///
+    /// Returns one of the `FLATTEN_*` values. Currently, all failures return `FLATTEN_FAIL`
+    /// with no indication of the cause.
     #[allow(non_snake_case)]
     fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int;
 
-    #[doc = " Function: FORM_DoDocumentJSAction\n       This method is required for performing document-level JavaScript\n       actions. It should be invoked after the PDF document has been loaded.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n Return Value:\n       None.\n Comments:\n       If there is document-level JavaScript action embedded in the\n       document, this method will execute the JavaScript action. Otherwise,\n       the method will do nothing."]
+    /// This method is required for performing document-level JavaScript actions.
+    /// It should be invoked after the PDF document has been loaded.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    /// If there is document-level JavaScript action embedded in the document, this method
+    /// will execute the JavaScript action. Otherwise, the method will do nothing.
     #[allow(non_snake_case)]
     fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE);
 
-    #[doc = " Function: FORM_DoDocumentOpenAction\n       This method is required for performing open-action when the document\n       is opened.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n Return Value:\n       None.\n Comments:\n       This method will do nothing if there are no open-actions embedded\n       in the document."]
+    /// This method is required for performing open-action when the document is opened.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    /// This method will do nothing if there are no open-actions embedded in the document.
     #[allow(non_snake_case)]
     fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE);
 
-    #[doc = " Function: FORM_DoDocumentAAction\n       This method is required for performing the document's\n       additional-action.\n Parameters:\n       hHandle     -   Handle to the form fill module. Returned by\n                       FPDFDOC_InitFormFillEnvironment.\n       aaType      -   The type of the additional-actions which defined\n                       above.\n Return Value:\n       None.\n Comments:\n       This method will do nothing if there is no document\n       additional-action corresponding to the specified |aaType|."]
+    /// This method is required for performing the document's additional-action.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `aaType`      -   The type of the additional-actions which are defined above.
+    ///
+    /// This method will do nothing if there is no document additional-action corresponding
+    /// to the specified `aaType`.
     #[allow(non_snake_case)]
     fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int);
 
-    #[doc = " Function: FORM_DoPageAAction\n       This method is required for performing the page object's\n       additional-action when opened or closed.\n Parameters:\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       aaType      -   The type of the page object's additional-actions\n                       which defined above.\n Return Value:\n       None.\n Comments:\n       This method will do nothing if no additional-action corresponding\n       to the specified |aaType| exists."]
+    /// This method is required for performing the page object's additional-action when
+    /// opened or closed.
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `aaType`      -   The type of the page object's additional-actions
+    ///                      which are defined above.
+    ///
+    /// This method will do nothing if no additional-action corresponding to the specified
+    /// `aaType` exists.
     #[allow(non_snake_case)]
     fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int);
 
-    #[doc = " Function: FORM_OnMouseMove\n       Call this member function when the mouse cursor moves.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       modifier    -   Indicates whether various virtual keys are down.\n       page_x      -   Specifies the x-coordinate of the cursor in PDF user\n                       space.\n       page_y      -   Specifies the y-coordinate of the cursor in PDF user\n                       space.\n Return Value:\n       True indicates success; otherwise false."]
+    /// Call this member function when the mouse cursor moves.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `modifier`    -   Indicates whether various virtual keys are down.
+    ///
+    ///    `page_x`      -   Specifies the x-coordinate of the cursor in PDF user space.
+    ///
+    ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
+    ///
+    /// Returns `true` on  success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_OnMouseMove(
         &self,
@@ -4263,7 +4524,30 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API\n Function: FORM_OnMouseWheel\n       Call this member function when the user scrolls the mouse wheel.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       modifier    -   Indicates whether various virtual keys are down.\n       page_coord  -   Specifies the coordinates of the cursor in PDF user\n                       space.\n       delta_x     -   Specifies the amount of wheel movement on the x-axis,\n                       in units of platform-agnostic wheel deltas. Negative\n                       values mean left.\n       delta_y     -   Specifies the amount of wheel movement on the y-axis,\n                       in units of platform-agnostic wheel deltas. Negative\n                       values mean down.\n Return Value:\n       True indicates success; otherwise false.\n Comments:\n       For |delta_x| and |delta_y|, the caller must normalize\n       platform-specific wheel deltas. e.g. On Windows, a delta value of 240\n       for a WM_MOUSEWHEEL event normalizes to 2, since Windows defines\n       WHEEL_DELTA as 120."]
+    /// Call this member function when the user scrolls the mouse wheel.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `modifier`    -   Indicates whether various virtual keys are down.
+    ///
+    ///    `page_coord`  -   Specifies the coordinates of the cursor in PDF user space.
+    ///
+    ///    `delta_x`     -   Specifies the amount of wheel movement on the x-axis,
+    ///                      in units of platform-agnostic wheel deltas. Negative
+    ///                      values mean left.
+    ///
+    ///    `delta_y`     -   Specifies the amount of wheel movement on the y-axis,
+    ///                      in units of platform-agnostic wheel deltas. Negative
+    ///                      values mean down.
+    ///
+    /// Returns `true` indicates success, `false` otherwise.
+    ///
+    /// For `delta_x` and `delta_y`, the caller must normalize platform-specific wheel deltas,
+    /// e.g. on Windows, a delta value of `240` for a `WM_MOUSEWHEEL` event normalizes to `2`,
+    /// since Windows defines `WHEEL_DELTA` as 120.
     #[allow(non_snake_case)]
     fn FORM_OnMouseWheel(
         &self,
@@ -4275,7 +4559,22 @@ pub trait PdfiumLibraryBindings {
         delta_y: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnFocus\n       This function focuses the form annotation at a given point. If the\n       annotation at the point already has focus, nothing happens. If there\n       is no annotation at the point, removes form focus.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       modifier    -   Indicates whether various virtual keys are down.\n       page_x      -   Specifies the x-coordinate of the cursor in PDF user\n                       space.\n       page_y      -   Specifies the y-coordinate of the cursor in PDF user\n                       space.\n Return Value:\n       True if there is an annotation at the given point and it has focus."]
+    /// This function focuses the form annotation at a given point. If the annotation at the
+    /// point already has focus, nothing happens. If there is no annotation at the point,
+    /// removes form focus.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `modifier`    -   Indicates whether various virtual keys are down.
+    ///
+    ///    `page_x`      -   Specifies the x-coordinate of the cursor in PDF user space.
+    ///
+    ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
+    ///
+    /// Returns `true` if there is an annotation at the given point and it has focus.
     #[allow(non_snake_case)]
     fn FORM_OnFocus(
         &self,
@@ -4286,7 +4585,20 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnLButtonDown\n       Call this member function when the user presses the left\n       mouse button.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       modifier    -   Indicates whether various virtual keys are down.\n       page_x      -   Specifies the x-coordinate of the cursor in PDF user\n                       space.\n       page_y      -   Specifies the y-coordinate of the cursor in PDF user\n                       space.\n Return Value:\n       True indicates success; otherwise false."]
+    /// Call this member function when the user presses the left mouse button.
+    ///
+    ///    `hHandle     -   Handle to the form fill module, as returned by
+    ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`       -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `modifier`   -   Indicates whether various virtual keys are down.
+    ///
+    ///    `page_x`     -   Specifies the x-coordinate of the cursor in PDF user space.
+    ///
+    ///    `page_y`     -   Specifies the y-coordinate of the cursor in PDF user space.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDown(
         &self,
@@ -4297,7 +4609,10 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnRButtonDown\n       Same as above, execpt for the right mouse button.\n Comments:\n       At the present time, has no effect except in XFA builds, but is\n       included for the sake of symmetry."]
+    /// Same as [PdfiumLibraryBindings::FORM_OnLButtonDown], execpt for the right mouse button.
+    ///
+    /// At the present time, has no effect except in XFA builds, but is included for the sake
+    /// of symmetry.
     #[allow(non_snake_case)]
     fn FORM_OnRButtonDown(
         &self,
@@ -4308,7 +4623,20 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnLButtonUp\n       Call this member function when the user releases the left\n       mouse button.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       modifier    -   Indicates whether various virtual keys are down.\n       page_x      -   Specifies the x-coordinate of the cursor in device.\n       page_y      -   Specifies the y-coordinate of the cursor in device.\n Return Value:\n       True indicates success; otherwise false."]
+    /// Call this member function when the user releases the left mouse button.
+    ///
+    ///     `hHandle`    -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `modifier`    -   Indicates whether various virtual keys are down.
+    ///
+    ///    `page_x`      -   Specifies the x-coordinate of the cursor in device coordinates.
+    ///
+    ///    `page_y`      -   Specifies the y-coordinate of the cursor in device coordinates.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_OnLButtonUp(
         &self,
@@ -4319,7 +4647,10 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnRButtonUp\n       Same as above, execpt for the right mouse button.\n Comments:\n       At the present time, has no effect except in XFA builds, but is\n       included for the sake of symmetry."]
+    /// Same as [PdfiumLibraryBindings::FORM_OnLButtonUp], execpt for the right mouse button.
+    ///
+    /// At the present time, has no effect except in XFA builds, but is included for the sake
+    /// of symmetry.
     #[allow(non_snake_case)]
     fn FORM_OnRButtonUp(
         &self,
@@ -4330,7 +4661,20 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnLButtonDoubleClick\n       Call this member function when the user double clicks the\n       left mouse button.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       modifier    -   Indicates whether various virtual keys are down.\n       page_x      -   Specifies the x-coordinate of the cursor in PDF user\n                       space.\n       page_y      -   Specifies the y-coordinate of the cursor in PDF user\n                       space.\n Return Value:\n       True indicates success; otherwise false."]
+    /// Call this member function when the user double clicks the left mouse button.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindigns::FPDF_LoadPage].
+    ///
+    ///    `modifier`    -   Indicates whether various virtual keys are down.
+    ///
+    ///    `page_x`      -   Specifies the x-coordinate of the cursor in PDF user space.
+    ///
+    ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDoubleClick(
         &self,
@@ -4341,7 +4685,19 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnKeyDown\n       Call this member function when a nonsystem key is pressed.\n Parameters:\n       hHandle     -   Handle to the form fill module, aseturned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       nKeyCode    -   The virtual-key code of the given key (see\n                       fpdf_fwlevent.h for virtual key codes).\n       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key\n                       flag values).\n Return Value:\n       True indicates success; otherwise false."]
+    /// Call this member function when a non-system key is pressed.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `nKeyCode`    -   The virtual-key code of the given key (see `fpdf_fwlevent.h`
+    ///                      for virtual key codes).
+    ///
+    ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_OnKeyDown(
         &self,
