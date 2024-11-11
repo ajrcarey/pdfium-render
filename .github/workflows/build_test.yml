@@ -30,7 +30,7 @@ jobs:
     - name: Install Pdfium
       run: cp pdfium/lib/libpdfium.so . && export LD_LIBRARY_PATH="./"
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose --features="paragraph"
     - name: Verify static linking compatibility
       run: cargo check --features="static"
     - name: Verify WASM compatibility

@@ -4,17 +4,17 @@
 #![allow(unused)] // AJRC - 28/1/23 - Suppress unused function warnings during development of PdfParagraph
 
 use crate::bindgen::FPDF_PAGEOBJECT;
-use crate::document::PdfDocument;
 use crate::error::PdfiumError;
-use crate::font::PdfFont;
-use crate::fonts::PdfFontToken;
-use crate::page::PdfPage;
-use crate::page_object::{PdfPageObject, PdfPageObjectCommon};
-use crate::page_object_group::PdfPageGroupObject;
-use crate::page_object_private::internal::PdfPageObjectPrivate;
-use crate::page_object_text::PdfPageTextObject;
-use crate::page_objects_common::PdfPageObjectsCommon;
-use crate::points::PdfPoints;
+use crate::pdf::document::PdfDocument;
+use crate::pdf::document::fonts::PdfFontToken;
+use crate::pdf::document::page::PdfPage;
+use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
+use crate::pdf::document::page::object::group::PdfPageGroupObject;
+use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
+use crate::pdf::document::page::object::text::PdfPageTextObject;
+use crate::pdf::document::page::objects::common::PdfPageObjectsCommon;
+use crate::pdf::font::PdfFont;
+use crate::pdf::points::PdfPoints;
 use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 use std::cmp::Ordering;
@@ -104,8 +104,8 @@ impl<'a> PdfStyledString<'a> {
             other_font.is_all_caps(),
             self.font().is_small_caps(),
             other_font.is_small_caps(),
-            self.font().name(),
-            other_font.name()
+            self.font().family(),
+            other_font.family()
         );
 
         if self.font_size() != other_font_size {
@@ -118,9 +118,9 @@ impl<'a> PdfStyledString<'a> {
             return false;
         }
 
-        let this_font_name = this_font.name();
+        let this_font_name = this_font.family();
 
-        let other_font_name = other_font.name();
+        let other_font_name = other_font.family();
 
         if this_font_name.is_empty() && other_font_name.is_empty() {
             // We can't distinguish based on font names, and the sizes and font handles are identical,
@@ -862,7 +862,7 @@ impl<'a> PdfParagraph<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::paragraph::PdfParagraph;
+    use crate::pdf::document::page::paragraph::PdfParagraph;
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium; // Temporary until PdfParagraph is included in the prelude.
 
