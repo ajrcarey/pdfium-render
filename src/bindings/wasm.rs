@@ -622,8 +622,15 @@ impl PdfiumRenderWasmState {
         // two-byte pointer, not the string data itself. We must scan the source memory
         // location for two null bytes to find the correct data length.
 
+        // Many characters, such as standard ASCII characters, can be represented with
+        // a single byte. Since all characters in UTF-16 consume two bytes, ASCII characters
+        // will receive a second byte of padding in UTF-16. This second byte will be a null.
+        // When scanning the FPDF_WIDESTRING for two null bytes, we must be careful not to
+        // misinterpret a null padding byte as part of a string termination sequence.
+        // The easiest way is to iterate over the string in two-byte pairs rather than
+        // byte-by-byte. See: https://github.com/ajrcarey/pdfium-render/issues/171
+
         let mut len = 0;
-        let mut last_byte = None;
 
         log::debug!(
             "pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): FPDF_WIDESTRING is at heap offset {}",
@@ -631,18 +638,15 @@ impl PdfiumRenderWasmState {
         );
 
         loop {
-            let this_byte =
-                unsafe { Uint8Array::view_mut_raw((str as *mut u8).add(len), 1) }.get_index(0);
+            let utf16_char = unsafe { Uint8Array::view_mut_raw((str as *mut u8).add(len), 2) };
 
-            len += 1;
+            len += 2;
 
-            if this_byte == 0 && last_byte == Some(0) {
-                // We have found two sequential null bytes. This is the end of the string.
+            if utf16_char.get_index(0) == 0 && utf16_char.get_index(1) == 0 {
+                // This is the end of the string.
 
                 break;
             }
-
-            last_byte = Some(this_byte);
         }
 
         log::debug!(
