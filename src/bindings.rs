@@ -4625,7 +4625,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when the user releases the left mouse button.
     ///
-    ///     `hHandle`    -   Handle to the form fill module, as returned by
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4666,7 +4666,7 @@ pub trait PdfiumLibraryBindings {
     ///    `hHandle`     -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindigns::FPDF_LoadPage].
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
     ///    `modifier`    -   Indicates whether various virtual keys are down.
     ///
@@ -4707,7 +4707,22 @@ pub trait PdfiumLibraryBindings {
         modifier: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnKeyUp\n       Call this member function when a nonsystem key is released.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       nKeyCode    -   The virtual-key code of the given key (see\n                       fpdf_fwlevent.h for virtual key codes).\n       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key\n                       flag values).\n Return Value:\n       True indicates success; otherwise false.\n Comments:\n       Currently unimplemented and always returns false. PDFium reserves this\n       API and may implement it in the future on an as-needed basis."]
+    /// Call this member function when a non-system key is released.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `nKeyCode`    -   The virtual-key code of the given key (see `fpdf_fwlevent.h`
+    ///                      for virtual key codes).
+    ///
+    ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
+    ///
+    /// Returns `true` on success, `false` otherwise.
+    ///
+    /// Note: currently unimplemented, always returns `false`. PDFium reserves this API
+    /// and may implement it in the future on an as-needed basis.
     #[allow(non_snake_case)]
     fn FORM_OnKeyUp(
         &self,
@@ -4717,7 +4732,18 @@ pub trait PdfiumLibraryBindings {
         modifier: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_OnChar\n       Call this member function when a keystroke translates to a\n       nonsystem character.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       nChar       -   The character code value itself.\n       modifier    -   Mask of key flags (see fpdf_fwlevent.h for key\n                       flag values).\n Return Value:\n       True indicates success; otherwise false."]
+    /// Call this member function when a keystroke translates to a non-system character.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `nChar`       -   The character code value itself.
+    ///
+    ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_OnChar(
         &self,
@@ -4727,7 +4753,20 @@ pub trait PdfiumLibraryBindings {
         modifier: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API\n Function: FORM_GetFocusedText\n       Call this function to obtain the text within the current focused\n       field, if any.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       buffer      -   Buffer for holding the form text, encoded in\n                       UTF-16LE. If NULL, |buffer| is not modified.\n       buflen      -   Length of |buffer| in bytes. If |buflen| is less\n                       than the length of the form text string, |buffer| is\n                       not modified.\n Return Value:\n       Length in bytes for the text in the focused field."]
+    /// Call this function to obtain the text within the current focused field, if any.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `buffer`      -   Buffer for holding the form text, encoded in UTF-16LE.
+    ///                      If `NULL`, `buffer` is not modified.
+    ///
+    ///    `buflen`      -   Length of `buffer` in bytes. If `buflen` is less than the length
+    ///                      of the form text string, `buffer` is not modified.
+    ///
+    /// Returns the length in bytes of the text in the focused field.
     #[allow(non_snake_case)]
     fn FORM_GetFocusedText(
         &self,
@@ -4737,7 +4776,21 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Function: FORM_GetSelectedText\n       Call this function to obtain selected text within a form text\n       field or form combobox text field.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n       buffer      -   Buffer for holding the selected text, encoded in\n                       UTF-16LE. If NULL, |buffer| is not modified.\n       buflen      -   Length of |buffer| in bytes. If |buflen| is less\n                       than the length of the selected text string,\n                       |buffer| is not modified.\n Return Value:\n       Length in bytes of selected text in form text field or form combobox\n       text field."]
+    /// Call this function to obtain selected text within a form text field or
+    /// form combo-box text field.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `buffer`      -   Buffer for holding the selected text, encoded in UTF-16LE.
+    ///                      If `NULL`, `buffer` is not modified.
+    ///
+    ///    `buflen`      -   Length of `buffer` in bytes. If `buflen` is less than the length
+    ///                      of the selected text string, `buffer` is not modified.
+    ///
+    /// Returns the length in bytes of selected text in form text field or form combo-box text field.
     #[allow(non_snake_case)]
     fn FORM_GetSelectedText(
         &self,
@@ -4747,7 +4800,18 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API\n Function: FORM_ReplaceAndKeepSelection\n       Call this function to replace the selected text in a form\n       text field or user-editable form combobox text field with another\n       text string (which can be empty or non-empty). If there is no\n       selected text, this function will append the replacement text after\n       the current caret position. After the insertion, the inserted text\n       will be selected.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as Returned by FPDF_LoadPage().\n       wsText      -   The text to be inserted, in UTF-16LE format.\n Return Value:\n       None."]
+    /// Call this function to replace the selected text in a form text field or
+    /// user-editable form combo-box text field with another text string
+    /// (which can be empty or non-empty). If there is no selected text, this function will
+    /// append the replacement text after the current caret position. After the insertion,
+    /// the inserted text will be selected.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `wsText`      -   The text to be inserted, in UTF-16LE format.
     #[allow(non_snake_case)]
     fn FORM_ReplaceAndKeepSelection(
         &self,
@@ -4756,7 +4820,18 @@ pub trait PdfiumLibraryBindings {
         wsText: FPDF_WIDESTRING,
     );
 
-    #[doc = " Function: FORM_ReplaceSelection\n       Call this function to replace the selected text in a form\n       text field or user-editable form combobox text field with another\n       text string (which can be empty or non-empty). If there is no\n       selected text, this function will append the replacement text after\n       the current caret position. After the insertion, the selection range\n       will be set to empty.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as Returned by FPDF_LoadPage().\n       wsText      -   The text to be inserted, in UTF-16LE format.\n Return Value:\n       None."]
+    /// Call this function to replace the selected text in a form text field or
+    /// user-editable form combo-box text field with another text string
+    /// (which can be empty or non-empty). If there is no selected text, this function
+    /// will append the replacement text after the current caret position. After the insertion,
+    /// the selection range will be set to empty.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `wsText`      -   The text to be inserted, in UTF-16LE format.
     #[allow(non_snake_case)]
     fn FORM_ReplaceSelection(
         &self,
@@ -4765,31 +4840,93 @@ pub trait PdfiumLibraryBindings {
         wsText: FPDF_WIDESTRING,
     );
 
-    #[doc = " Experimental API\n Function: FORM_SelectAllText\n       Call this function to select all the text within the currently focused\n       form text field or form combobox text field.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       Whether the operation succeeded or not."]
+    /// Call this function to select all the text within the currently focused form text field
+    /// or form combo-box text field.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
     fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_CanUndo\n       Find out if it is possible for the current focused widget in a given\n       form to perform an undo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if it is possible to undo."]
+    /// Finds out if it is possible for the current focused widget in a given form to perform
+    /// an undo operation.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns `true` if it is possible to undo.
     #[allow(non_snake_case)]
     fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_CanRedo\n       Find out if it is possible for the current focused widget in a given\n       form to perform a redo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if it is possible to redo."]
+    /// Finds out if it is possible for the current focused widget in a given form to perform
+    /// a redo operation.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns `true` if it is possible to redo.
     #[allow(non_snake_case)]
     fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_Undo\n       Make the current focused widget perform an undo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the undo operation succeeded."]
+    /// Makes the current focused widget perform an undo operation.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns `true` if the undo operation succeeded.
     #[allow(non_snake_case)]
     fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_Redo\n       Make the current focused widget perform a redo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the redo operation succeeded."]
+    /// Makes the current focused widget perform a redo operation.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns `true` if the redo operation succeeded.
     #[allow(non_snake_case)]
     fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
-    #[doc = " Function: FORM_ForceToKillFocus.\n       Call this member function to force to kill the focus of the form\n       field which has focus. If it would kill the focus of a form field,\n       save the value of form field if was changed by theuser.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n Return Value:\n       True indicates success; otherwise false."]
+    /// Calls this member function to force to kill the focus of the form field which has focus.
+    /// If it would kill the focus of a form field, saves the value of form field if was
+    /// changed by the user.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FORM_GetFocusedAnnot.\n       Call this member function to get the currently focused annotation.\n Parameters:\n       handle      -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page_index  -   Buffer to hold the index number of the page which\n                       contains the focused annotation. 0 for the first page.\n                       Can't be NULL.\n       annot       -   Buffer to hold the focused annotation. Can't be NULL.\n Return Value:\n       On success, return true and write to the out parameters. Otherwise\n       return false and leave the out parameters unmodified.\n Comments:\n       Not currently supported for XFA forms - will report no focused\n       annotation.\n       Must call FPDFPage_CloseAnnot() when the annotation returned in |annot|\n       by this function is no longer needed.\n       This will return true and set |page_index| to -1 and |annot| to NULL,\n       if there is no focused annotation."]
+    /// Calls this member function to get the currently focused annotation.
+    ///
+    ///    `handle`      -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page_index`  -   Buffer to hold the index number of the page which contains
+    ///                      the focused annotation. `0` for the first page. Can't be `NULL`.
+    ///
+    ///    `annot`       -   Buffer to hold the focused annotation. Can't be `NULL`.
+    ///
+    /// On success, returns `true` and writes to the out parameters.
+    /// Otherwise returns `false` and leaves the out parameters unmodified.
+    /// Will return `true` and set `page_index` to `-1` and `annot` to `NULL`
+    /// if there is no focused annotation.
+    ///
+    /// Note: not currently supported for XFA forms - will report no focused annotation.
+    /// Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the annotation returned
+    /// in `annot` by this function is no longer needed.
     #[allow(non_snake_case)]
     fn FORM_GetFocusedAnnot(
         &self,
@@ -4798,11 +4935,33 @@ pub trait PdfiumLibraryBindings {
         annot: *mut FPDF_ANNOTATION,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FORM_SetFocusedAnnot.\n       Call this member function to set the currently focused annotation.\n Parameters:\n       handle      -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       annot       -   Handle to an annotation.\n Return Value:\n       True indicates success; otherwise false.\n Comments:\n       |annot| can't be NULL. To kill focus, use FORM_ForceToKillFocus()\n       instead."]
+    /// Calls this member function to set the currently focused annotation.
+    ///
+    ///    `handle`      -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `annot`       -   Handle to an annotation.
+    ///
+    /// Returns `true` on success, `false` otherwise.
+    ///
+    /// Note: `annot` must not be `NULL`. To kill focus, use
+    /// [PdfiumLibraryBindings::FORM_ForceToKillFocus] instead.
     #[allow(non_snake_case)]
     fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFPage_HasFormFieldAtPoint\n     Get the form field type by point.\n Parameters:\n     hHandle     -   Handle to the form fill module. Returned by\n                     FPDFDOC_InitFormFillEnvironment().\n     page        -   Handle to the page. Returned by FPDF_LoadPage().\n     page_x      -   X position in PDF \"user space\".\n     page_y      -   Y position in PDF \"user space\".\n Return Value:\n     Return the type of the form field; -1 indicates no field.\n     See field types above."]
+    /// Gets the form field type by point.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `page_x`      -   X position in PDF user space.
+    ///
+    ///    `page_y`      -   Y position in PDF user space.
+    ///
+    /// Returns the type of the form field. `-1` indicates no field at the given point.
+    /// See field types above.
     #[allow(non_snake_case)]
     fn FPDFPage_HasFormFieldAtPoint(
         &self,
@@ -4812,7 +4971,19 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> c_int;
 
-    #[doc = " Function: FPDFPage_FormFieldZOrderAtPoint\n     Get the form field z-order by point.\n Parameters:\n     hHandle     -   Handle to the form fill module. Returned by\n                     FPDFDOC_InitFormFillEnvironment().\n     page        -   Handle to the page. Returned by FPDF_LoadPage().\n     page_x      -   X position in PDF \"user space\".\n     page_y      -   Y position in PDF \"user space\".\n Return Value:\n     Return the z-order of the form field; -1 indicates no field.\n     Higher numbers are closer to the front."]
+    /// Gets the form field z-order by point.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `page_x`      -   X position in PDF user space.
+    ///
+    ///    `page_y`      -   Y position in PDF user space.
+    ///
+    /// Returns the z-order of the form field. `-1` indicates no field.
+    /// Higher numbers are closer to the front.
     #[allow(non_snake_case)]
     fn FPDFPage_FormFieldZOrderAtPoint(
         &self,
@@ -4822,7 +4993,21 @@ pub trait PdfiumLibraryBindings {
         page_y: f64,
     ) -> c_int;
 
-    #[doc = " Function: FPDF_SetFormFieldHighlightColor\n       Set the highlight color of the specified (or all) form fields\n       in the document.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       doc         -   Handle to the document, as returned by\n                       FPDF_LoadDocument().\n       fieldType   -   A 32-bit integer indicating the type of a form\n                       field (defined above).\n       color       -   The highlight color of the form field. Constructed by\n                       0xxxrrggbb.\n Return Value:\n       None.\n Comments:\n       When the parameter fieldType is set to FPDF_FORMFIELD_UNKNOWN, the\n       highlight color will be applied to all the form fields in the\n       document.\n       Please refresh the client window to show the highlight immediately\n       if necessary."]
+    /// Sets the highlight color of the specified (or all) form fields in the document.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `doc`         -   Handle to the document, as returned by
+    ///                      [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `fieldType`   -   A 32-bit integer indicating the type of a form field (defined above).
+    ///
+    ///    `color`       -   The highlight color of the form field. Constructed by `0xxxrrggbb`.
+    ///
+    /// When the parameter `fieldType` is set to `FPDF_FORMFIELD_UNKNOWN`,
+    /// the highlight color will be applied to all the form fields in the document.
+    /// Please refresh the client window to show the highlight immediately if necessary.
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
         &self,
@@ -4831,15 +5016,60 @@ pub trait PdfiumLibraryBindings {
         color: FPDF_DWORD,
     );
 
-    #[doc = " Function: FPDF_SetFormFieldHighlightAlpha\n       Set the transparency of the form field highlight color in the\n       document.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       doc         -   Handle to the document, as returaned by\n                       FPDF_LoadDocument().\n       alpha       -   The transparency of the form field highlight color,\n                       between 0-255.\n Return Value:\n       None."]
+    /// Sets the transparency of the form field highlight color in the document.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `doc`         -   Handle to the document, as returned by
+    ///                      [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    ///    `alpha`       -   The transparency of the form field highlight color, between `0` - `255`.
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightAlpha(&self, handle: FPDF_FORMHANDLE, alpha: c_uchar);
 
-    #[doc = " Function: FPDF_RemoveFormFieldHighlight\n       Remove the form field highlight color in the document.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n Return Value:\n       None.\n Comments:\n       Please refresh the client window to remove the highlight immediately\n       if necessary."]
+    /// Removes the form field highlight color in the document.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    /// Please refresh the client window to remove the highlight immediately if necessary.
     #[allow(non_snake_case)]
     fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE);
 
-    #[doc = " Function: FPDF_FFLDraw\n       Render FormFields and popup window on a page to a device independent\n       bitmap.\n Parameters:\n       hHandle      -   Handle to the form fill module, as returned by\n                        FPDFDOC_InitFormFillEnvironment().\n       bitmap       -   Handle to the device independent bitmap (as the\n                        output buffer). Bitmap handles can be created by\n                        FPDFBitmap_Create().\n       page         -   Handle to the page, as returned by FPDF_LoadPage().\n       start_x      -   Left pixel position of the display area in the\n                        device coordinates.\n       start_y      -   Top pixel position of the display area in the device\n                        coordinates.\n       size_x       -   Horizontal size (in pixels) for displaying the page.\n       size_y       -   Vertical size (in pixels) for displaying the page.\n       rotate       -   Page orientation: 0 (normal), 1 (rotated 90 degrees\n                        clockwise), 2 (rotated 180 degrees), 3 (rotated 90\n                        degrees counter-clockwise).\n       flags        -   0 for normal display, or combination of flags\n                        defined above.\n Return Value:\n       None.\n Comments:\n       This function is designed to render annotations that are\n       user-interactive, which are widget annotations (for FormFields) and\n       popup annotations.\n       With the FPDF_ANNOT flag, this function will render a popup annotation\n       when users mouse-hover on a non-widget annotation. Regardless of\n       FPDF_ANNOT flag, this function will always render widget annotations\n       for FormFields.\n       In order to implement the FormFill functions, implementation should\n       call this function after rendering functions, such as\n       FPDF_RenderPageBitmap() or FPDF_RenderPageBitmap_Start(), have\n       finished rendering the page contents."]
+    /// Renders form fields and pop-up windows on a page to a device independent bitmap.
+    ///
+    ///    `hHandle`      -   Handle to the form fill module, as returned by
+    ///                       [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `bitmap`       -   Handle to the device independent bitmap (as the output
+    ///                       buffer). Bitmap handles can be created by
+    ///                       [PdfiumLibraryBindings::FPDFBitmap_Create].
+    ///
+    ///    `page`         -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`      -   Left pixel position of the display area in the device coordinates.
+    ///
+    ///    `start_y`      -   Top pixel position of the display area in the device coordinates.
+    ///
+    ///    `size_x`       -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`       -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`       -   Page orientation: `0` (normal), `1` (rotated 90 degrees clockwise),
+    ///                       `2` (rotated 180 degrees), `3` (rotated 90 degrees counter-clockwise).
+    ///
+    ///    `flags`        -   `0` for normal display, or combination of flags defined above.
+    ///
+    /// This function is designed to render annotations that are user-interactive,
+    /// which are widget annotations (for form fields) and pop-up annotations.
+    /// With the `FPDF_ANNOT` flag, this function will render a pop-up annotation
+    /// when users mouse-hover on a non-widget annotation. Regardless of `FPDF_ANNOT` flag,
+    /// this function will always render widget annotations for form fields.
+    /// In order to implement the form fill functions, implementation should call this function
+    /// after rendering functions, such as [PdfiumLibraryBindings::FPDF_RenderPageBitmap]
+    /// or [PdfiumLibraryBindings::FPDF_RenderPageBitmap_Start], have finished rendering
+    /// the page contents.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDF_FFLDraw(
@@ -4858,7 +5088,39 @@ pub trait PdfiumLibraryBindings {
     #[cfg(feature = "pdfium_use_skia")]
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    // TODO: AJRC - 24-Aug-24 no doc comment included in C headers, reuse FPDF_FFLDraw() doc comment
+    /// Renders form fields and pop-up windows on a page to a SKIA canvas.
+    ///
+    ///    `hHandle`      -   Handle to the form fill module, as returned by
+    ///                       [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `bitmap`       -   Handle to the device independent bitmap (as the output
+    ///                       buffer). Bitmap handles can be created by
+    ///                       [PdfiumLibraryBindings::FPDFBitmap_Create].
+    ///
+    ///    `page`         -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`      -   Left pixel position of the display area in the device coordinates.
+    ///
+    ///    `start_y`      -   Top pixel position of the display area in the device coordinates.
+    ///
+    ///    `size_x`       -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`       -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`       -   Page orientation: `0` (normal), `1` (rotated 90 degrees clockwise),
+    ///                       `2` (rotated 180 degrees), `3` (rotated 90 degrees counter-clockwise).
+    ///
+    ///    `flags`        -   `0` for normal display, or combination of flags defined above.
+    ///
+    /// This function is designed to render annotations that are user-interactive,
+    /// which are widget annotations (for form fields) and pop-up annotations.
+    /// With the `FPDF_ANNOT` flag, this function will render a pop-up annotation
+    /// when users mouse-hover on a non-widget annotation. Regardless of `FPDF_ANNOT` flag,
+    /// this function will always render widget annotations for form fields.
+    /// In order to implement the form fill functions, implementation should call this function
+    /// after rendering functions, such as [PdfiumLibraryBindings::FPDF_RenderPageBitmap]
+    /// or [PdfiumLibraryBindings::FPDF_RenderPageBitmap_Start], have finished rendering
+    /// the page contents.
     fn FPDF_FFLDrawSkia(
         &self,
         hHandle: FPDF_FORMHANDLE,
@@ -4872,11 +5134,33 @@ pub trait PdfiumLibraryBindings {
         flags: c_int,
     );
 
-    #[doc = " Experimental API\n Function: FPDF_GetFormType\n           Returns the type of form contained in the PDF document.\n Parameters:\n           document - Handle to document.\n Return Value:\n           Integer value representing one of the FORMTYPE_ values.\n Comments:\n           If |document| is NULL, then the return value is FORMTYPE_NONE."]
+    /// Returns the type of form contained in the PDF document.
+    ///
+    ///    `document` - Handle to document.
+    ///
+    /// Returns an integer value representing one of the `FORMTYPE_*` values.
+    /// If `document` is `NULL`, then the return value is `FORMTYPE_NONE`.
     #[allow(non_snake_case)]
     fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    #[doc = " Experimental API\n Function: FORM_SetIndexSelected\n           Selects/deselects the value at the given |index| of the focused\n           annotation.\n Parameters:\n           hHandle     -   Handle to the form fill module. Returned by\n                           FPDFDOC_InitFormFillEnvironment.\n           page        -   Handle to the page. Returned by FPDF_LoadPage\n           index       -   0-based index of value to be set as\n                           selected/unselected\n           selected    -   true to select, false to deselect\n Return Value:\n           TRUE if the operation succeeded.\n           FALSE if the operation failed or widget is not a supported type.\n Comments:\n           Intended for use with listbox/combobox widget types. Comboboxes\n           have at most a single value selected at a time which cannot be\n           deselected. Deselect on a combobox is a no-op that returns false.\n           Default implementation is a no-op that will return false for\n           other types.\n           Not currently supported for XFA forms - will return false."]
+    /// Selects or deselects the value at the given `index` of the focused annotation.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `index`       -   `0`-based index of value to be set as selected or unselected.
+    ///
+    ///    `selected`    -   `true` to select, `false` to deselect.
+    ///
+    /// Returns `true` if the operation succeeded, `false` if the operation failed or
+    /// the widget is not a supported type.
+    ///
+    /// Intended for use with listbox or combo-box widget types. Default implementation is
+    /// a no-op that will return `false` for widget other types. Not currently supported for
+    /// XFA forms - will return `false`. Combo-boxes have at most a single value selected at
+    /// a time which cannot be deselected. Deselect on a combo-box is a no-op that returns `false`.
     #[allow(non_snake_case)]
     fn FORM_SetIndexSelected(
         &self,
@@ -4886,7 +5170,21 @@ pub trait PdfiumLibraryBindings {
         selected: FPDF_BOOL,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API\n Function: FORM_IsIndexSelected\n           Returns whether or not the value at |index| of the focused\n           annotation is currently selected.\n Parameters:\n           hHandle     -   Handle to the form fill module. Returned by\n                           FPDFDOC_InitFormFillEnvironment.\n           page        -   Handle to the page. Returned by FPDF_LoadPage\n           index       -   0-based Index of value to check\n Return Value:\n           TRUE if value at |index| is currently selected.\n           FALSE if value at |index| is not selected or widget is not a\n           supported type.\n Comments:\n           Intended for use with listbox/combobox widget types. Default\n           implementation is a no-op that will return false for other types.\n           Not currently supported for XFA forms - will return false."]
+    /// Returns whether or not the value at `index` of the focused annotation is currently selected.
+    ///
+    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `index`       -   `0`-based index of value to check.
+    ///
+    /// Returns `true`if value at `index` is currently selected, `false` if value at `index`
+    /// is not selected or widget is not a supported type.
+    ///
+    /// Intended for use with listbox or combo-box widget types. Default implementation is
+    /// a no-op that will return `false` for other types. Not currently supported for
+    /// XFA forms - will return `false`.
     #[allow(non_snake_case)]
     fn FORM_IsIndexSelected(
         &self,
@@ -4895,7 +5193,12 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDF_LoadXFA\n          If the document consists of XFA fields, call this method to\n          attempt to load XFA fields.\n Parameters:\n          document     -   Handle to document from FPDF_LoadDocument().\n Return Value:\n          TRUE upon success, otherwise FALSE. If XFA support is not built\n          into PDFium, performs no action and always returns FALSE."]
+    /// If the document consists of XFA fields, call this method to attempt to load XFA fields.
+    ///
+    ///    `document`     -   Handle to document from [PdfiumLibraryBindings::FPDF_LoadDocument].
+    ///
+    /// Returns `true` upon success, `false` otherwise. If XFA support is not built into
+    /// PDFium, performs no action and always returns `false`.
     #[allow(non_snake_case)]
     fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
