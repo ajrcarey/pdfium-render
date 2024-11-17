@@ -5202,11 +5202,24 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the number of JavaScript actions in |document|.\n\n   document - handle to a document.\n\n Returns the number of JavaScript actions in |document| or -1 on error."]
+    /// Gets the number of JavaScript actions in `document`.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    /// Returns the number of JavaScript actions in `document` or `-1` on error.
     #[allow(non_snake_case)]
     fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
-    #[doc = " Experimental API.\n Get the JavaScript action at |index| in |document|.\n\n   document - handle to a document.\n   index    - the index of the requested JavaScript action.\n\n Returns the handle to the JavaScript action, or NULL on failure.\n Caller owns the returned handle and must close it with\n FPDFDoc_CloseJavaScriptAction()."]
+    /// Gets the JavaScript action at `index` in `document`.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    ///    `index`    - the index of the requested JavaScript action.
+    ///
+    /// Returns the handle to the JavaScript action, or `NULL` on failure.
+    ///
+    /// Caller owns the returned handle and must close it with
+    /// [PdfiumLibraryBindings::FPDFDoc_CloseJavaScriptAction].
     #[allow(non_snake_case)]
     fn FPDFDoc_GetJavaScriptAction(
         &self,
@@ -5214,11 +5227,23 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_JAVASCRIPT_ACTION;
 
-    #[doc = "   javascript - Handle to a JavaScript action."]
+    /// Closes a loaded `FPDF_JAVASCRIPT_ACTION` object.
+    ///
+    ///    `javascript` - Handle to a JavaScript action.
     #[allow(non_snake_case)]
     fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION);
 
-    #[doc = " Experimental API.\n Get the name from the |javascript| handle. |buffer| is only modified if\n |buflen| is longer than the length of the name. On errors, |buffer| is\n unmodified and the returned length is 0.\n\n   javascript - handle to an JavaScript action.\n   buffer     - buffer for holding the name, encoded in UTF-16LE.\n   buflen     - length of the buffer in bytes.\n\n Returns the length of the JavaScript action name in bytes."]
+    /// Gets the name from the `javascript` handle. `buffer` is only modified if
+    /// `buflen` is longer than the length of the name. On errors, `buffer` is
+    /// unmodified and the returned length is `0`.
+    ///
+    ///    `javascript` - handle to an JavaScript action.
+    ///
+    ///    `buffer`     - buffer for holding the name, encoded in UTF-16LE.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    /// Returns the length of the JavaScript action name in bytes.
     #[allow(non_snake_case)]
     fn FPDFJavaScriptAction_GetName(
         &self,
@@ -5227,7 +5252,17 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Get the script from the |javascript| handle. |buffer| is only modified if\n |buflen| is longer than the length of the script. On errors, |buffer| is\n unmodified and the returned length is 0.\n\n   javascript - handle to an JavaScript action.\n   buffer     - buffer for holding the name, encoded in UTF-16LE.\n   buflen     - length of the buffer in bytes.\n\n Returns the length of the JavaScript action name in bytes."]
+    /// Gets the script from the `javascript` handle. `buffer` is only modified if
+    /// `buflen` is longer than the length of the script. On errors, `buffer` is
+    /// unmodified and the returned length is `0`.
+    ///
+    ///    `javascript` - handle to an JavaScript action.
+    ///
+    ///    `buffer`     - buffer for holding the name, encoded in UTF-16LE.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    /// Returns the length of the JavaScript action name in bytes.
     #[allow(non_snake_case)]
     fn FPDFJavaScriptAction_GetScript(
         &self,
@@ -5251,7 +5286,7 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6611",
         feature = "pdfium_6569",
     ))]
-    #[doc = " Experimental API.\n\n Function: FPDF_GetDefaultTTFMapCount\n    Returns the number of entries in the default character set to TT Font name\n    map.\n Parameters:\n    None.\n Return Value:\n    The number of entries in the map."]
+    /// Returns the number of entries in the default character set to TT Font name map.
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapCount(&self) -> usize;
 
@@ -5262,23 +5297,57 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6611",
         feature = "pdfium_6569",
     ))]
-    #[doc = " Experimental API.\n\n Function: FPDF_GetDefaultTTFMapEntry\n    Returns an entry in the default character set to TT Font name map.\n Parameters:\n    index    -   The index to the entry in the map to retrieve.\n Return Value:\n     A pointer to the entry, if it is in the map, or NULL if the index is out\n     of bounds."]
+    /// Returns an entry in the default character set to TT Font name map.
+    ///
+    ///    `index`    -   The index to the entry in the map to retrieve.
+    ///
+    /// Returns a pointer to the entry, if it is in the map, or `NULL` if the index is out
+    /// of bounds.
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap;
 
-    #[doc = " Function: FPDF_AddInstalledFont\n          Add a system font to the list in PDFium.\n Comments:\n          This function is only called during the system font list building\n          process.\n Parameters:\n          mapper          -   Opaque pointer to Foxit font mapper\n          face            -   The font face name\n          charset         -   Font character set. See above defined constants.\n Return Value:\n          None."]
+    /// Adds a system font to the list in PDFium.
+    ///
+    /// This function is only called during the system font list building process.
+    ///
+    ///    `mapper`    -   Opaque pointer to Foxit font mapper.
+    ///
+    ///    `face`      -   The font face name.
+    ///
+    ///    `charset`   -   Font character set. See above defined constants.
     #[allow(non_snake_case)]
     fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int);
 
-    #[doc = " Function: FPDF_SetSystemFontInfo\n          Set the system font info interface into PDFium\n Parameters:\n          pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n          None\n Comments:\n          Platform support implementation should implement required methods of\n          FFDF_SYSFONTINFO interface, then call this function during PDFium\n          initialization process.\n\n          Call this with NULL to tell PDFium to stop using a previously set\n          |FPDF_SYSFONTINFO|."]
+    /// Sets the system font info interface into PDFium.
+    ///
+    ///    `pFontInfo` -   Pointer to a `FPDF_SYSFONTINFO` structure.
+    ///
+    /// Platform support implementation should implement required methods of
+    /// `FFDF_SYSFONTINFO` interface, then call this function during PDFium initialization
+    /// process.
+    ///
+    /// Call this with `NULL` to tell PDFium to stop using a previously set `FPDF_SYSFONTINFO`.
     #[allow(non_snake_case)]
     fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO);
 
-    #[doc = " Function: FPDF_GetDefaultSystemFontInfo\n          Get default system font info interface for current platform\n Parameters:\n          None\n Return Value:\n          Pointer to a FPDF_SYSFONTINFO structure describing the default\n          interface, or NULL if the platform doesn't have a default interface.\n          Application should call FPDF_FreeDefaultSystemFontInfo to free the\n          returned pointer.\n Comments:\n          For some platforms, PDFium implements a default version of system\n          font info interface. The default implementation can be passed to\n          FPDF_SetSystemFontInfo()."]
+    /// Gets default system font info interface for current platform.
+    ///
+    /// Returns a pointer to a `FPDF_SYSFONTINFO` structure describing the default
+    /// interface, or `NULL` if the platform doesn't have a default interface.
+    ///
+    /// Application should call [PdfiumLibraryBindings::FPDF_FreeDefaultSystemFontInfo]
+    /// to free the returned pointer. For some platforms, PDFium implements a default version
+    /// of system font info interface. The default implementation can be passed to
+    /// [PdfiumLibraryBindings::FPDF_SetSystemFontInfo].
     #[allow(non_snake_case)]
     fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO;
 
-    #[doc = " Function: FPDF_FreeDefaultSystemFontInfo\n           Free a default system font info interface\n Parameters:\n           pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n           None\n Comments:\n           This function should be called on the output from\n           FPDF_GetDefaultSystemFontInfo() once it is no longer needed."]
+    /// Frees a default system font info interface.
+    ///
+    ///    `pFontInfo`   -   Pointer to a `FPDF_SYSFONTINFO` structure.
+    ///
+    /// This function should be called on the output from
+    /// [PdfiumLibraryBindings::FPDF_GetDefaultSystemFontInfo] once it is no longer needed.
     #[allow(non_snake_case)]
     fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO);
 
@@ -5782,12 +5851,31 @@ pub trait PdfiumLibraryBindings {
     ) -> c_ulong;
 
     #[cfg(feature = "pdfium_enable_xfa")]
-    #[doc = " Experimental API.\n Function: FPDF_GetXFAPacketCount\n          Get the number of valid packets in the XFA entry.\n Parameters:\n          document - Handle to the document.\n Return value:\n          The number of valid packets, or -1 on error."]
+    /// Gets the number of valid packets in the XFA entry.
+    ///
+    ///    `document` - handle to the document.
+    ///
+    /// Returns the number of valid packets, or `-1` on error.
     #[allow(non_snake_case)]
     fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     #[cfg(feature = "pdfium_enable_xfa")]
-    #[doc = " Experimental API.\n Function: FPDF_GetXFAPacketName\n          Get the name of a packet in the XFA array.\n Parameters:\n          document - Handle to the document.\n          index    - Index number of the packet. 0 for the first packet.\n          buffer   - Buffer for holding the name of the XFA packet.\n          buflen   - Length of |buffer| in bytes.\n Return value:\n          The length of the packet name in bytes, or 0 on error.\n\n |document| must be valid and |index| must be in the range [0, N), where N is\n the value returned by FPDF_GetXFAPacketCount().\n |buffer| is only modified if it is non-NULL and |buflen| is greater than or\n equal to the length of the packet name. The packet name includes a\n terminating NUL character. |buffer| is unmodified on error."]
+    /// Gets the name of a packet in the XFA array.
+    ///
+    ///    `document` - handle to the document.
+    ///
+    ///    `index`    - index number of the packet. `0` for the first packet.
+    ///
+    ///    `buffer`   - buffer for holding the name of the XFA packet.
+    ///
+    ///    `buflen`   - length of `buffer` in bytes.
+    ///
+    /// Returns the length of the packet name in bytes, or `0` on error.
+    /// `document` must be valid and `index` must be in the range `[0, N)`, where `N` is
+    /// the value returned by [PdfiumLibraryBindings::FPDF_GetXFAPacketCount].
+    /// `buffer` is only modified if it is non-`NULL` and `buflen` is greater than or
+    /// equal to the length of the packet name. The packet name includes a terminating `NUL` character.
+    /// `buffer` is unmodified on error.
     #[allow(non_snake_case)]
     fn FPDF_GetXFAPacketName(
         &self,
@@ -5798,7 +5886,28 @@ pub trait PdfiumLibraryBindings {
     ) -> c_ulong;
 
     #[cfg(feature = "pdfium_enable_xfa")]
-    #[doc = " Experimental API.\n Function: FPDF_GetXFAPacketContent\n          Get the content of a packet in the XFA array.\n Parameters:\n          document   - Handle to the document.\n          index      - Index number of the packet. 0 for the first packet.\n          buffer     - Buffer for holding the content of the XFA packet.\n          buflen     - Length of |buffer| in bytes.\n          out_buflen - Pointer to the variable that will receive the minimum\n                       buffer size needed to contain the content of the XFA\n                       packet.\n Return value:\n          Whether the operation succeeded or not.\n\n |document| must be valid and |index| must be in the range [0, N), where N is\n the value returned by FPDF_GetXFAPacketCount(). |out_buflen| must not be\n NULL. When the aforementioned arguments are valid, the operation succeeds,\n and |out_buflen| receives the content size. |buffer| is only modified if\n |buffer| is non-null and long enough to contain the content. Callers must\n check both the return value and the input |buflen| is no less than the\n returned |out_buflen| before using the data in |buffer|."]
+    /// Gets the content of a packet in the XFA array.
+    ///
+    ///    `document`   - handle to the document.
+    ///
+    ///    `index`      - index number of the packet. `0` for the first packet.
+    ///
+    ///    `buffer`     - buffer for holding the content of the XFA packet.
+    ///
+    ///    `buflen`     - length of `buffer` in bytes.
+    ///
+    ///    `out_buflen` - pointer to the variable that will receive the minimum
+    ///                   buffer size needed to contain the content of the XFA packet.
+    ///
+    /// Returns `true` if the operation succeeded, `false` if not.
+    ///
+    /// `document` must be valid and `index` must be in the range `[0, N)`, where `N` is
+    /// the value returned by [PdfiumLibraryBindings::FPDF_GetXFAPacketCount].
+    /// `out_buflen` must not be `NULL`. When the aforementioned arguments are valid,
+    /// the operation succeeds, and `out_buflen` receives the content size. `buffer` is
+    /// only modified if `buffer` is non-`NULL` and long enough to contain the content.
+    /// Callers must check both the return value and that the input `buflen` is no less than
+    /// the returned `out_buflen` before using the data in `buffer`.
     #[allow(non_snake_case)]
     fn FPDF_GetXFAPacketContent(
         &self,
@@ -5811,23 +5920,34 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(feature = "pdfium_enable_v8")]
     #[cfg(not(target_arch = "wasm32"))] // pdfium_enable_v8 feature not supported on WASM
-    #[doc = " Function: FPDF_GetRecommendedV8Flags\n          Returns a space-separated string of command line flags that are\n          recommended to be passed into V8 via V8::SetFlagsFromString()\n          prior to initializing the PDFium library.\n Parameters:\n          None.\n Return value:\n          NUL-terminated string of the form \"--flag1 --flag2\".\n          The caller must not attempt to modify or free the result."]
+    /// Returns a space-separated string of command line flags that are recommended to be
+    /// passed into V8 via `V8::SetFlagsFromString` prior to initializing the PDFium library.
+    ///
+    /// Returns a `NUL`-terminated string of the form `--flag1 --flag2`.
+    /// The caller must not attempt to modify or free the result.
     #[allow(non_snake_case)]
     fn FPDF_GetRecommendedV8Flags(&self) -> *const c_char;
 
     #[cfg(feature = "pdfium_enable_v8")]
     #[cfg(not(target_arch = "wasm32"))] // pdfium_enable_v8 feature not supported on WASM
-    #[doc = " Experimental API.\n Function: FPDF_GetArrayBufferAllocatorSharedInstance()\n          Helper function for initializing V8 isolates that will\n          use PDFium's internal memory management.\n Parameters:\n          None.\n Return Value:\n          Pointer to a suitable v8::ArrayBuffer::Allocator, returned\n          as void for C compatibility.\n Notes:\n          Use is optional, but allows external creation of isolates\n          matching the ones PDFium will make when none is provided\n          via |FPDF_LIBRARY_CONFIG::m_pIsolate|.\n\n          Can only be called when the library is in an uninitialized or\n          destroyed state."]
+    /// A helper function for initializing V8 isolates that will use PDFium's internal
+    /// memory management.
+    ///
+    /// Returns a pointer to a suitable `v8::ArrayBuffer::Allocator`, returned
+    /// as `void` for C compatibility. Use is optional, but allows external creation of
+    /// isolates matching the ones PDFium will make when none is provided via
+    /// `FPDF_LIBRARY_CONFIG::m_pIsolate`. Can only be called when the library is in an
+    /// uninitialized or destroyed state.
     #[allow(non_snake_case)]
     fn FPDF_GetArrayBufferAllocatorSharedInstance(&self) -> *mut c_void;
 
     #[cfg(feature = "pdfium_enable_xfa")]
-    #[doc = " Function: FPDF_BStr_Init\n          Helper function to initialize a FPDF_BSTR."]
+    /// A helper function to initialize a `FPDF_BSTR`.
     #[allow(non_snake_case)]
     fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT;
 
     #[cfg(feature = "pdfium_enable_xfa")]
-    #[doc = " Function: FPDF_BStr_Set\n          Helper function to copy string data into the FPDF_BSTR."]
+    /// A helper function to copy string data into the `FPDF_BSTR`.
     #[allow(non_snake_case)]
     fn FPDF_BStr_Set(
         &self,
@@ -5837,23 +5957,52 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_RESULT;
 
     #[cfg(feature = "pdfium_enable_xfa")]
-    #[doc = " Function: FPDF_BStr_Clear\n          Helper function to clear a FPDF_BSTR."]
+    /// A helper function to clear a `FPDF_BSTR`.
     #[allow(non_snake_case)]
     fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT;
 
-    #[doc = " Function: FPDFText_LoadPage\n          Prepare information about all characters in a page.\n Parameters:\n          page    -   Handle to the page. Returned by FPDF_LoadPage function\n                      (in FPDFVIEW module).\n Return value:\n          A handle to the text page information structure.\n          NULL if something goes wrong.\n Comments:\n          Application must call FPDFText_ClosePage to release the text page\n          information.\n"]
+    /// Prepares information about all characters in a page.
+    ///
+    ///    `page`    -   handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    /// Returns a handle to the text page information structure, or `NULL` if something goes wrong.
+    ///
+    /// Application must call [PdfiumLibraryBindings::FPDFText_ClosePage] to release the
+    /// text page information.
     #[allow(non_snake_case)]
     fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE;
 
-    #[doc = " Function: FPDFText_ClosePage\n          Release all resources allocated for a text page information\n          structure.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n Return Value:\n          None.\n"]
+    /// Releases all resources allocated for a text page information structure.
+    ///
+    ///    `text_page`   -   handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
     #[allow(non_snake_case)]
     fn FPDFText_ClosePage(&self, text_page: FPDF_TEXTPAGE);
 
-    #[doc = " Function: FPDFText_CountChars\n          Get number of characters in a page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n Return value:\n          Number of characters in the page. Return -1 for error.\n          Generated characters, like additional space characters, new line\n          characters, are also counted.\n Comments:\n          Characters in a page form a \"stream\", inside the stream, each\n          character has an index.\n          We will use the index parameters in many of FPDFTEXT functions. The\n          first character in the page\n          has an index value of zero.\n"]
+    /// Gets the number of characters in a page.
+    ///
+    ///    `text_page`   -   handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    /// Returns the number of characters in the page, or `-1` for error.
+    /// Generated characters, like additional space characters, new line characters,
+    /// are also counted.
+    ///
+    /// Characters in a page form a "stream"; inside the stream, each character has an index.
+    /// We will use the index parameters in many of the `FPDFTEXT` functions. The
+    /// first character in the page has an index value of zero.
     #[allow(non_snake_case)]
     fn FPDFText_CountChars(&self, text_page: FPDF_TEXTPAGE) -> c_int;
 
-    #[doc = " Function: FPDFText_GetUnicode\n          Get Unicode of a character in a page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          The Unicode of the particular character.\n          If a character is not encoded in Unicode and Foxit engine can't\n          convert to Unicode,\n          the return value will be zero.\n"]
+    /// Gets the Unicode of a character in a page.
+    ///
+    ///    `text_page`   -   handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   zero-based index of the character.
+    ///
+    /// Returns the Unicode of the particular character. If a character is not encoded in
+    /// Unicode and Foxit engine can't convert to Unicode, the return value will be zero.
     #[allow(non_snake_case)]
     fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint;
 
@@ -5863,11 +6012,28 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6666",
         feature = "pdfium_6611",
     ))]
-    #[doc = " Experimental API.\n Function: FPDFText_GetTextObject\n          Get the FPDF_PAGEOBJECT associated with a given character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          The associated text object for the character at |index|, or NULL on\n          error. The returned text object, if non-null, is of type\n          |FPDF_PAGEOBJ_TEXT|. The caller does not own the returned object.\n"]
+    /// Gets the `FPDF_PAGEOBJECT` associated with a given character.
+    ///
+    ///    `text_page`   -   handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   zero-based index of the character.
+    ///
+    /// Returns the associated text object for the character at `index`, or `NULL` on error.
+    /// The returned text object, if non-`NULL`, is of type `FPDF_PAGEOBJ_TEXT`.
+    /// The caller does not own the returned object.
     #[allow(non_snake_case)]
     fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Experimental API.\n Function: FPDFText_IsGenerated\n          Get if a character in a page is generated by PDFium.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          1 if the character is generated by PDFium.\n          0 if the character is not generated by PDFium.\n          -1 if there was an error.\n"]
+    /// Returns whether or not a character in a page is generated by PDFium.
+    ///
+    ///    `text_page`   -   handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   zero-based index of the character.
+    ///
+    /// Returns `1` if the character is generated by PDFium, `0` if the character is not
+    /// generated by PDFium, or `-1` if there was an error.
     #[allow(non_snake_case)]
     fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
