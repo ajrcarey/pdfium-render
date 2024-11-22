@@ -27,21 +27,21 @@ use {crate::utils::files::get_pdfium_file_accessor_from_reader, std::fs::File, s
 #[cfg(any(feature = "image_latest", feature = "image_025"))]
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
-    crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
+    crate::utils::pixels::{aligned_bgr_to_rgba, aligned_grayscale, bgra_to_rgba, rgba_to_bgra},
     image_025::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
 };
 
 #[cfg(feature = "image_024")]
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
-    crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
+    crate::utils::pixels::{aligned_bgr_to_rgba, aligned_grayscale, bgra_to_rgba, rgba_to_bgra},
     image_024::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
 };
 
 #[cfg(feature = "image_023")]
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
-    crate::utils::pixels::{aligned_bgr_to_rgba, bgra_to_rgba, rgba_to_bgra},
+    crate::utils::pixels::{aligned_bgr_to_rgba, aligned_grayscale, bgra_to_rgba, rgba_to_bgra},
     image_023::{DynamicImage, EncodableLayout, GenericImageView, GrayImage, RgbaImage},
 };
 
@@ -585,10 +585,11 @@ impl<'a> PdfPageImageObject<'a> {
                 aligned_bgr_to_rgba(buffer, width as usize, stride as usize),
             )
             .map(DynamicImage::ImageRgba8),
-            PdfBitmapFormat::Gray => {
-                GrayImage::from_raw(width as u32, height as u32, buffer.to_vec())
-                    .map(DynamicImage::ImageLuma8)
-            }
+            PdfBitmapFormat::Gray => GrayImage::from_raw(
+                width as u32, 
+                height as u32, 
+                aligned_grayscale(buffer, width as usize, stride as usize)
+            ).map(DynamicImage::ImageLuma8),
         }
         .ok_or(PdfiumError::ImageError)
     }
