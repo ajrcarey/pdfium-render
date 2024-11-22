@@ -233,6 +233,7 @@ impl<'a> PdfBitmap<'a> {
     )]
     #[doc(hidden)]
     #[inline]
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn as_bytes(&self) -> &'a [u8] {
         self.as_raw_bytes()
     }
@@ -243,6 +244,7 @@ impl<'a> PdfBitmap<'a> {
     /// To adjust color channels in your own code, use the [PdfiumLibraryBindings::bgr_to_rgba()],
     /// [PdfiumLibraryBindings::bgra_to_rgba()], [PdfiumLibraryBindings::rgb_to_bgra()],
     /// and [PdfiumLibraryBindings::rgba_to_bgra()] functions.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn as_raw_bytes(&self) -> &'a [u8] {
         let buffer_length = self.bindings.FPDFBitmap_GetStride(self.handle)
             * self.bindings.FPDFBitmap_GetHeight(self.handle);
@@ -252,8 +254,15 @@ impl<'a> PdfBitmap<'a> {
         unsafe { std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize) }
     }
 
+    #[cfg(target_arch = "wasm32")]
+    pub fn as_raw_bytes(&self) -> Vec<u8> {
+        self.bindings.FPDFBitmap_GetBuffer(self.handle)
+    }
+
+
     /// Returns an owned copy of the bitmap buffer backing this [PdfBitmap], normalizing all
     /// color channels into RGBA irrespective of the original pixel format.
+    // #[cfg(not(target_arch = "wasm32"))]
     pub fn as_rgba_bytes(&self) -> Vec<u8> {
         let bytes = self.as_raw_bytes();
 
@@ -274,17 +283,17 @@ impl<'a> PdfBitmap<'a> {
                     // to four-channel RGB during rendering.
                     bytes.to_vec()
                 }
-                PdfBitmapFormat::BGR => aligned_rgb_to_rgba(bytes, width, stride),
-                PdfBitmapFormat::Gray => bytes.to_vec(),
+                PdfBitmapFormat::BGR => aligned_rgb_to_rgba(bytes.as_ref(), width, stride),
+                PdfBitmapFormat::Gray => Vec::from(bytes),
             }
         } else {
             match format {
                 #[allow(deprecated)]
                 PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
-                    bgra_to_rgba(bytes)
+                    bgra_to_rgba(bytes.as_ref())
                 }
-                PdfBitmapFormat::BGR => aligned_bgr_to_rgba(bytes, width, stride),
-                PdfBitmapFormat::Gray => bytes.to_vec(),
+                PdfBitmapFormat::BGR => aligned_bgr_to_rgba(bytes.as_ref(), width, stride),
+                PdfBitmapFormat::Gray => Vec::from(bytes),
             }
         }
     }

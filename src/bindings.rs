@@ -2962,7 +2962,7 @@ pub trait PdfiumLibraryBindings {
     /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     #[allow(non_snake_case)]
     #[cfg(target_arch = "wasm32")]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> Vec<u8>;
 
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by

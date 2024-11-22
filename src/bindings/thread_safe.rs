@@ -1640,7 +1640,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[inline]
     #[allow(non_snake_case)]
     #[cfg(target_arch = "wasm32")]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void {
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
         self.bindings.FPDFBitmap_GetBuffer(bitmap)
     }
 

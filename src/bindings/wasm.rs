@@ -676,9 +676,12 @@ impl PdfiumRenderWasmState {
             .heap_u8()
             .slice(ptr as u32, (ptr + len) as u32)
             .to_vec();
+        
 
         if self.debug {
             let mut differences_count = 0;
+ 
+            log::debug!("pdfium-render::PdfiumRenderWasmState::copy_bytes_from_pdfium(): copied to new buffer at offset {}", copy.as_ptr() as usize);
 
             let pdfium_heap = self.heap_u8();
 
@@ -699,6 +702,11 @@ impl PdfiumRenderWasmState {
 
             log::debug!("pdfium-render::PdfiumRenderWasmState::copy_bytes_from_pdfium(): {} bytes differ between source and destination byte buffers", differences_count);
         }
+
+        let copy2: Vec<u8> = Vec::with_capacity(len);
+
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_bytes_from_pdfium(): setup copy at {}, original is {}", copy2.as_ptr() as usize, copy.as_ptr() as usize);
+
 
         log::debug!("pdfium-render::PdfiumRenderWasmState::copy_bytes_from_pdfium(): leaving");
 
@@ -6214,7 +6222,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void {
+    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetBuffer()");
 
         let width = self.FPDFBitmap_GetWidth(bitmap);
@@ -6237,9 +6245,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .as_f64()
             .unwrap() as usize;
 
-        let buffer = state.copy_bytes_from_pdfium(buffer_ptr, buffer_len);
-
-        buffer.as_ptr() as *const c_void
+        state.copy_bytes_from_pdfium(buffer_ptr, buffer_len)
     }
 
     #[allow(non_snake_case)]

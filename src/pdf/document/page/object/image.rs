@@ -478,6 +478,20 @@ impl<'a> PdfPageImageObject<'a> {
             .and_then(|bitmap| self.get_image_from_bitmap(&bitmap))
     }
 
+    #[cfg(not(target_arch="wasm32"))]
+    fn get_raw_image_bytes(&self, bitmap: &PdfBitmap, buffer_length: usize) -> &[u8] {
+        let buffer_start = self.bindings.FPDFBitmap_GetBuffer(*bitmap.handle());
+
+        unsafe {
+            std::slice::from_raw_parts(buffer_start as *const u8, buffer_length )
+        }
+    }
+
+    #[cfg(target_arch="wasm32")]
+    fn get_raw_image_bytes(&self, bitmap: &PdfBitmap, _buffer_length: usize) -> Vec<u8> {
+        bitmap.as_raw_bytes()
+    }
+
     #[cfg(feature = "image")]
     pub(crate) fn get_image_from_bitmap(
         &self,
@@ -493,29 +507,25 @@ impl<'a> PdfPageImageObject<'a> {
 
         let buffer_length = stride * height;
 
-        let buffer_start = self.bindings.FPDFBitmap_GetBuffer(handle);
-
         let format =
             PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(handle) as u32)?;
 
-        let buffer = unsafe {
-            std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
-        };
+        let buffer = self.get_raw_image_bytes(bitmap, buffer_length as usize);
 
         match format {
             #[allow(deprecated)]
             PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
-                RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
+                RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer.as_ref()))
                     .map(DynamicImage::ImageRgba8)
             }
             PdfBitmapFormat::BGR => RgbaImage::from_raw(
                 width as u32,
                 height as u32,
-                aligned_bgr_to_rgba(buffer, width as usize, stride as usize),
+                aligned_bgr_to_rgba(buffer.as_ref(), width as usize, stride as usize),
             )
             .map(DynamicImage::ImageRgba8),
             PdfBitmapFormat::Gray => {
-                GrayImage::from_raw(width as u32, height as u32, buffer.to_vec())
+                GrayImage::from_raw(width as u32, height as u32, Vec::from(buffer))
                     .map(DynamicImage::ImageLuma8)
             }
         }
