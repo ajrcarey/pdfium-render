@@ -6056,19 +6056,61 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6043",
         feature = "pdfium_6015",
     ))]
-    #[doc = " Experimental API.\n Function: FPDFText_IsHyphen\n          Get if a character in a page is a hyphen.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          1 if the character is a hyphen.\n          0 if the character is not a hyphen.\n          -1 if there was an error.\n"]
+    // Returns whether or not a character in a page is a hyphen.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    /// Returns `1` if the character is a hyphen, `0` if the character is not a hyphen,
+    /// or `-1` if there was an error.
     #[allow(non_snake_case)]
     fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
-    #[doc = " Experimental API.\n Function: FPDFText_HasUnicodeMapError\n          Get if a character in a page has an invalid unicode mapping.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          1 if the character has an invalid unicode mapping.\n          0 if the character has no known unicode mapping issues.\n          -1 if there was an error.\n"]
+    /// Returns whether or not a character in a page has an invalid unicode mapping.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    /// Returns `1` if the character has an invalid unicode mapping, `0` if the character
+    /// has no known unicode mapping issues, or `-1` if there was an error.
     #[allow(non_snake_case)]
     fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
-    #[doc = " Function: FPDFText_GetFontSize\n          Get the font size of a particular character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          The font size of the particular character, measured in points (about\n          1/72 inch). This is the typographic size of the font (so called\n          \"em size\").\n"]
+    /// Gets the font size of a particular character.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    /// Returns the font size of the particular character, measured in points (about 1/72 inch).
+    /// This is the typographic size of the font (so called "em size").
     #[allow(non_snake_case)]
     fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetFontInfo\n          Get the font name and flags of a particular character.\n Parameters:\n          text_page - Handle to a text page information structure.\n                      Returned by FPDFText_LoadPage function.\n          index     - Zero-based index of the character.\n          buffer    - A buffer receiving the font name.\n          buflen    - The length of |buffer| in bytes.\n          flags     - Optional pointer to an int receiving the font flags.\n                      These flags should be interpreted per PDF spec 1.7\n                      Section 5.7.1 Font Descriptor Flags.\n Return value:\n          On success, return the length of the font name, including the\n          trailing NUL character, in bytes. If this length is less than or\n          equal to |length|, |buffer| is set to the font name, |flags| is\n          set to the font flags. |buffer| is in UTF-8 encoding. Return 0 on\n          failure.\n"]
+    /// Gets the font name and flags of a particular character.
+    ///
+    ///    `text_page` - Handle to a text page information structure.
+    ///                  Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`     - Zero-based index of the character.
+    ///
+    ///    `buffer`    - A buffer receiving the font name.
+    ///
+    ///    `buflen`    - The length of `buffer` in bytes.
+    ///
+    ///    `flags`     - Optional pointer to an int receiving the font flags.
+    ///                  These flags should be interpreted per PDF spec 1.7
+    ///                  Section 5.7.1, "Font Descriptor Flags".
+    ///
+    /// On success, returns the length of the font name, including the trailing `NUL` character,
+    /// in bytes. If this length is less than or equal to `length`, `buffer` is set to the
+    /// font name, `flags` is set to the font flags. `buffer` is in UTF-8 encoding.
+    /// Returns `0` on failure.
     #[allow(non_snake_case)]
     fn FPDFText_GetFontInfo(
         &self,
@@ -6079,7 +6121,16 @@ pub trait PdfiumLibraryBindings {
         flags: *mut c_int,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetFontWeight\n          Get the font weight of a particular character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return value:\n          On success, return the font weight of the particular character. If\n          |text_page| is invalid, if |index| is out of bounds, or if the\n          character's text object is undefined, return -1.\n"]
+    /// Gets the font weight of a particular character.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    /// On success, returns the font weight of the particular character. If `text_page`
+    /// is invalid, if `index` is out of bounds, or if the character's text object is
+    /// undefined, return `-1`.
     #[allow(non_snake_case)]
     fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
@@ -6099,7 +6150,16 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961"
     ))]
-    #[doc = " Experimental API.\n Function: FPDFText_GetTextRenderMode\n          Get text rendering mode of character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return Value:\n          On success, return the render mode value. A valid value is of type\n          FPDF_TEXT_RENDERMODE. If |text_page| is invalid, if |index| is out\n          of bounds, or if the text object is undefined, then return\n          FPDF_TEXTRENDERMODE_UNKNOWN.\n"]
+    /// Gets the text rendering mode of character.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    /// On success, returns the render mode value. A valid value is of type
+    /// `FPDF_TEXT_RENDERMODE`. If `text_page` is invalid, if `index` is out of bounds,
+    /// or if the text object is undefined, then returns `FPDF_TEXTRENDERMODE_UNKNOWN`.
     #[allow(non_snake_case)]
     fn FPDFText_GetTextRenderMode(
         &self,
@@ -6107,7 +6167,26 @@ pub trait PdfiumLibraryBindings {
         index: c_int,
     ) -> FPDF_TEXT_RENDERMODE;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetFillColor\n          Get the fill color of a particular character.\n Parameters:\n          text_page      -   Handle to a text page information structure.\n                             Returned by FPDFText_LoadPage function.\n          index          -   Zero-based index of the character.\n          R              -   Pointer to an unsigned int number receiving the\n                             red value of the fill color.\n          G              -   Pointer to an unsigned int number receiving the\n                             green value of the fill color.\n          B              -   Pointer to an unsigned int number receiving the\n                             blue value of the fill color.\n          A              -   Pointer to an unsigned int number receiving the\n                             alpha value of the fill color.\n Return value:\n          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are\n          unchanged.\n"]
+    /// Gets the fill color of a particular character.
+    ///
+    ///    `text_page`      -   Handle to a text page information structure.
+    ///                         Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`          -   Zero-based index of the character.
+    ///
+    ///    `R`              -   Pointer to an unsigned int number receiving the
+    ///                         red value of the fill color.
+    ///
+    ///    `G`              -   Pointer to an unsigned int number receiving the
+    ///                         green value of the fill color.
+    ///
+    ///    `B`              -   Pointer to an unsigned int number receiving the
+    ///                         blue value of the fill color.
+    ///
+    ///    `A`              -   Pointer to an unsigned int number receiving the
+    ///                         alpha value of the fill color.
+    ///
+    /// Returns whether the call succeeded. If false, `R`, `G`, `B` and `A` are unchanged.
     #[allow(non_snake_case)]
     fn FPDFText_GetFillColor(
         &self,
@@ -6119,7 +6198,26 @@ pub trait PdfiumLibraryBindings {
         A: *mut c_uint,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetStrokeColor\n          Get the stroke color of a particular character.\n Parameters:\n          text_page      -   Handle to a text page information structure.\n                             Returned by FPDFText_LoadPage function.\n          index          -   Zero-based index of the character.\n          R              -   Pointer to an unsigned int number receiving the\n                             red value of the stroke color.\n          G              -   Pointer to an unsigned int number receiving the\n                             green value of the stroke color.\n          B              -   Pointer to an unsigned int number receiving the\n                             blue value of the stroke color.\n          A              -   Pointer to an unsigned int number receiving the\n                             alpha value of the stroke color.\n Return value:\n          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are\n          unchanged.\n"]
+    /// Gets the stroke color of a particular character.
+    ///
+    ///    `text_page`      -   Handle to a text page information structure.
+    ///                         Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`          -   Zero-based index of the character.
+    ///
+    ///    `R`              -   Pointer to an unsigned int number receiving the
+    ///                         red value of the stroke color.
+    ///
+    ///    `G`              -   Pointer to an unsigned int number receiving the
+    ///                         green value of the stroke color.
+    ///
+    ///    `B`              -   Pointer to an unsigned int number receiving the
+    ///                         blue value of the stroke color.
+    ///
+    ///    `A`              -   Pointer to an unsigned int number receiving the
+    ///                         alpha value of the stroke color.
+    ///
+    /// Returns whether the call succeeded. If false, `R`, `G`, `B` and `A` are unchanged.
     #[allow(non_snake_case)]
     fn FPDFText_GetStrokeColor(
         &self,
@@ -6131,11 +6229,43 @@ pub trait PdfiumLibraryBindings {
         A: *mut c_uint,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetCharAngle\n          Get character rotation angle.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n Return Value:\n          On success, return the angle value in radian. Value will always be\n          greater or equal to 0. If |text_page| is invalid, or if |index| is\n          out of bounds, then return -1.\n"]
+    /// Gets character rotation angle.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    /// On success, returns the angle value in radians. Value will always be greater or
+    /// equal to `0`. If `text_page` is invalid, or if `index` is out of bounds,
+    /// then returns `-1`.
     #[allow(non_snake_case)]
     fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float;
 
-    #[doc = " Function: FPDFText_GetCharBox\n          Get bounding box of a particular character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n          left        -   Pointer to a double number receiving left position\n                          of the character box.\n          right       -   Pointer to a double number receiving right position\n                          of the character box.\n          bottom      -   Pointer to a double number receiving bottom position\n                          of the character box.\n          top         -   Pointer to a double number receiving top position of\n                          the character box.\n Return Value:\n          On success, return TRUE and fill in |left|, |right|, |bottom|, and\n          |top|. If |text_page| is invalid, or if |index| is out of bounds,\n          then return FALSE, and the out parameters remain unmodified.\n Comments:\n          All positions are measured in PDF \"user space\".\n"]
+    /// Gets bounding box of a particular character.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    ///    `left`        -   Pointer to a double number receiving left position
+    ///                      of the character box.
+    ///
+    ///    `right`       -   Pointer to a double number receiving right position
+    ///                      of the character box.
+    ///
+    ///    `bottom`      -   Pointer to a double number receiving bottom position
+    ///                      of the character box.
+    ///
+    ///    `top`         -   Pointer to a double number receiving top position of
+    ///                      the character box.
+    ///
+    /// On success, returns `true` and fills in `left`, `right`, `bottom`, and `top`.
+    /// If `text_page` is invalid, or if `index` is out of bounds, then returns `false`,
+    /// and the out parameters remain unmodified.
+    ///
+    /// All positions are measured in PDF user space.
     #[allow(non_snake_case)]
     fn FPDFText_GetCharBox(
         &self,
@@ -6147,7 +6277,21 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_double,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetLooseCharBox\n          Get a \"loose\" bounding box of a particular character, i.e., covering\n          the entire glyph bounds, without taking the actual glyph shape into\n          account.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n          rect        -   Pointer to a FS_RECTF receiving the character box.\n Return Value:\n          On success, return TRUE and fill in |rect|. If |text_page| is\n          invalid, or if |index| is out of bounds, then return FALSE, and the\n          |rect| out parameter remains unmodified.\n Comments:\n          All positions are measured in PDF \"user space\".\n"]
+    /// Gets a "loose" bounding box of a particular character, i.e., covering the entire
+    /// glyph bounds, without taking the actual glyph shape into account.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    ///    `rect`        -   Pointer to a `FS_RECTF` receiving the character box.
+    ///
+    /// On success, returns `true` and fills in `rect`. If `text_page` is invalid, or if
+    /// `index` is out of bounds, then returns `false`, and the `rect` out parameter
+    /// remains unmodified.
+    ///
+    /// All positions are measured in PDF "user space".
     #[allow(non_snake_case)]
     fn FPDFText_GetLooseCharBox(
         &self,
@@ -6156,7 +6300,18 @@ pub trait PdfiumLibraryBindings {
         rect: *mut FS_RECTF,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDFText_GetMatrix\n          Get the effective transformation matrix for a particular character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage().\n          index       -   Zero-based index of the character.\n          matrix      -   Pointer to a FS_MATRIX receiving the transformation\n                          matrix.\n Return Value:\n          On success, return TRUE and fill in |matrix|. If |text_page| is\n          invalid, or if |index| is out of bounds, or if |matrix| is NULL,\n          then return FALSE, and |matrix| remains unmodified.\n"]
+    /// Gets the effective transformation matrix for a particular character.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    ///    `matrix`      -   Pointer to a `FS_MATRIX` receiving the transformation matrix.
+    ///
+    /// On success, returns `true` and fills in `matrix`. If `text_page` is invalid, or if
+    /// `index` is out of bounds, or if `matrix` is `NULL`, then returns `false`, and
+    /// `matrix` remains unmodified.
     #[allow(non_snake_case)]
     fn FPDFText_GetMatrix(
         &self,
@@ -6165,7 +6320,22 @@ pub trait PdfiumLibraryBindings {
         matrix: *mut FS_MATRIX,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFText_GetCharOrigin\n          Get origin of a particular character.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          index       -   Zero-based index of the character.\n          x           -   Pointer to a double number receiving x coordinate of\n                          the character origin.\n          y           -   Pointer to a double number receiving y coordinate of\n                          the character origin.\n Return Value:\n          Whether the call succeeded. If false, x and y are unchanged.\n Comments:\n          All positions are measured in PDF \"user space\".\n"]
+    /// Gets the origin of a particular character.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `index`       -   Zero-based index of the character.
+    ///
+    ///    `x`           -   Pointer to a double number receiving x coordinate of
+    ///                      the character origin.
+    ///
+    ///    `y`           -   Pointer to a double number receiving y coordinate of
+    ///                      the character origin.
+    ///
+    /// Returns whether the call succeeded. If `false`, `x` and `y` are unchanged.
+    ///
+    /// All positions are measured in PDF "user space".
     #[allow(non_snake_case)]
     fn FPDFText_GetCharOrigin(
         &self,
@@ -6175,7 +6345,24 @@ pub trait PdfiumLibraryBindings {
         y: *mut c_double,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFText_GetCharIndexAtPos\n          Get the index of a character at or nearby a certain position on the\n          page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          x           -   X position in PDF \"user space\".\n          y           -   Y position in PDF \"user space\".\n          xTolerance  -   An x-axis tolerance value for character hit\n                          detection, in point units.\n          yTolerance  -   A y-axis tolerance value for character hit\n                          detection, in point units.\n Return Value:\n          The zero-based index of the character at, or nearby the point (x,y).\n          If there is no character at or nearby the point, return value will\n          be -1. If an error occurs, -3 will be returned.\n"]
+    /// Gets the index of a character at or nearby a certain position on the page.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `x`           -   X position in PDF "user space".
+    ///
+    ///    `y`           -   Y position in PDF "user space".
+    ///
+    ///    `xTolerance`  -   An x-axis tolerance value for character hit detection,
+    ///                      in point units.
+    ///
+    ///    `yTolerance`  -   A y-axis tolerance value for character hit detection,
+    ///                      in point units.
+    ///
+    /// Returns the zero-based index of the character at, or nearby, the point `(x, y)`.
+    /// If there is no character at or nearby the point, the return value will be `-1`.
+    /// If an error occurs, `-3` will be returned.
     #[allow(non_snake_case)]
     fn FPDFText_GetCharIndexAtPos(
         &self,
@@ -6186,7 +6373,26 @@ pub trait PdfiumLibraryBindings {
         yTolerance: c_double,
     ) -> c_int;
 
-    #[doc = " Function: FPDFText_GetText\n          Extract unicode text string from the page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          start_index -   Index for the start characters.\n          count       -   Number of UCS-2 values to be extracted.\n          result      -   A buffer (allocated by application) receiving the\n                          extracted UCS-2 values. The buffer must be able to\n                          hold `count` UCS-2 values plus a terminator.\n Return Value:\n          Number of characters written into the result buffer, including the\n          trailing terminator.\n Comments:\n          This function ignores characters without UCS-2 representations.\n          It considers all characters on the page, even those that are not\n          visible when the page has a cropbox. To filter out the characters\n          outside of the cropbox, use FPDF_GetPageBoundingBox() and\n          FPDFText_GetCharBox().\n"]
+    /// Extracts a unicode text string from the page.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `start_index` -   Index for the start characters.
+    ///
+    ///    `count`       -   Number of `UCS-2` values to be extracted.
+    ///
+    ///    `result`      -   A buffer (allocated by application) receiving the extracted
+    ///                      `UCS-2` values. The buffer must be able to hold `count`
+    ///                      `UCS-2` values plus a terminator.
+    ///
+    /// Returns the number of characters written into the `result` buffer, including the
+    /// trailing terminator.
+    ///
+    /// This function ignores characters without `UCS-2` representations. It considers
+    /// all characters on the page, even those that are not visible when the page has
+    /// a cropbox. To filter out the characters outside of the cropbox, use
+    /// [PdfiumLibraryBindings::FPDF_GetPageBoundingBox] and [PdfiumLibraryBindings::FPDFText_GetCharBox].
     #[allow(non_snake_case)]
     fn FPDFText_GetText(
         &self,
@@ -6196,7 +6402,22 @@ pub trait PdfiumLibraryBindings {
         result: *mut c_ushort,
     ) -> c_int;
 
-    #[doc = " Function: FPDFText_CountRects\n          Counts number of rectangular areas occupied by a segment of text,\n          and caches the result for subsequent FPDFText_GetRect() calls.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          start_index -   Index for the start character.\n          count       -   Number of characters, or -1 for all remaining.\n Return value:\n          Number of rectangles, 0 if text_page is null, or -1 on bad\n          start_index.\n Comments:\n          This function, along with FPDFText_GetRect can be used by\n          applications to detect the position on the page for a text segment,\n          so proper areas can be highlighted. The FPDFText_* functions will\n          automatically merge small character boxes into bigger one if those\n          characters are on the same line and use same font settings.\n"]
+    /// Counts the number of rectangular areas occupied by a segment of text,
+    /// and caches the result for subsequent [PdfiumLibraryBindings::FPDFText_GetRect] calls.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `start_index` -   Index for the start character.
+    ///
+    ///    `count`       -   Number of characters, or `-1` for all remaining.
+    ///
+    /// Returns the number of rectangles, `0` if `text_page` is `NULL`, or `-1` on bad `start_index`.
+    ///
+    /// This function, along with [PdfiumLibraryBindings::FPDFText_GetRect], can be used by
+    /// applications to detect the position on the page for a text segment, so proper areas
+    /// can be highlighted. The `FPDFText_*` functions will automatically merge small character
+    /// boxes into bigger one if those characters are on the same line and use same font settings.
     #[allow(non_snake_case)]
     fn FPDFText_CountRects(
         &self,
@@ -6205,7 +6426,26 @@ pub trait PdfiumLibraryBindings {
         count: c_int,
     ) -> c_int;
 
-    #[doc = " Function: FPDFText_GetRect\n          Get a rectangular area from the result generated by\n          FPDFText_CountRects.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          rect_index  -   Zero-based index for the rectangle.\n          left        -   Pointer to a double value receiving the rectangle\n                          left boundary.\n          top         -   Pointer to a double value receiving the rectangle\n                          top boundary.\n          right       -   Pointer to a double value receiving the rectangle\n                          right boundary.\n          bottom      -   Pointer to a double value receiving the rectangle\n                          bottom boundary.\n Return Value:\n          On success, return TRUE and fill in |left|, |top|, |right|, and\n          |bottom|. If |text_page| is invalid then return FALSE, and the out\n          parameters remain unmodified. If |text_page| is valid but\n          |rect_index| is out of bounds, then return FALSE and set the out\n          parameters to 0.\n"]
+    /// Gets a rectangular area from the result generated by
+    /// [PdfiumLibraryBindings::FPDFText_CountRects].
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `rect_index`  -   Zero-based index for the rectangle.
+    ///
+    ///    `left`        -   Pointer to a double value receiving the rectangle left boundary.
+    ///
+    ///    `top`         -   Pointer to a double value receiving the rectangle top boundary.
+    ///
+    ///    `right`       -   Pointer to a double value receiving the rectangle right boundary.
+    ///
+    ///    `bottom`      -   Pointer to a double value receiving the rectangle bottom boundary.
+    ///
+    /// On success, returns `true` and fills in `left`, `top`, `right`, and `bottom`.
+    /// If `text_page` is invalid then returns `false`, and the out parameters remain unmodified.
+    /// If `text_page` is valid but `rect_index` is out of bounds, then returns `false`
+    ///  and sets the out parameters to `0`.
     #[allow(non_snake_case)]
     fn FPDFText_GetRect(
         &self,
@@ -6217,7 +6457,33 @@ pub trait PdfiumLibraryBindings {
         bottom: *mut c_double,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFText_GetBoundedText\n          Extract unicode text within a rectangular boundary on the page.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          left        -   Left boundary.\n          top         -   Top boundary.\n          right       -   Right boundary.\n          bottom      -   Bottom boundary.\n          buffer      -   Caller-allocated buffer to receive UTF-16 values.\n          buflen      -   Number of UTF-16 values (not bytes) that `buffer`\n                          is capable of holding.\n Return Value:\n          If buffer is NULL or buflen is zero, return number of UTF-16\n          values (not bytes) of text present within the rectangle, excluding\n          a terminating NUL. Generally you should pass a buffer at least one\n          larger than this if you want a terminating NUL, which will be\n          provided if space is available. Otherwise, return number of UTF-16\n          values copied into the buffer, including the terminating NUL when\n          space for it is available.\n Comment:\n          If the buffer is too small, as much text as will fit is copied into\n          it. May return a split surrogate in that case.\n"]
+    /// Extracts unicode text within a rectangular boundary on the page.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `left`        -   Left boundary.
+    ///
+    ///    `top`         -   Top boundary.
+    ///
+    ///    `right`       -   Right boundary.
+    ///
+    ///    `bottom`      -   Bottom boundary.
+    ///
+    ///    `buffer`      -   Caller-allocated buffer to receive `UTF-16` values.
+    ///
+    ///    `buflen`      -   Number of `UTF-16` values **(not bytes)** that `buffer`
+    ///                      is capable of holding.
+    ///
+    /// If `buffer` is `NULL` or `buflen` is zero, then returns the number of `UTF-16`
+    /// values **(not bytes)** of text present within the rectangle, excluding
+    /// a terminating `NUL`. Generally you should pass a buffer at least one larger than this
+    /// if you want a terminating `NUL`, which will be provided if space is available.
+    /// Otherwise, return number of `UTF-16` values copied into the buffer, including the
+    /// terminating `NUL` when space for it is available.
+    ///
+    /// If `buffer` is too small, as much text as will fit is copied into it. May return
+    /// a split surrogate in that case.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFText_GetBoundedText(
@@ -6231,7 +6497,22 @@ pub trait PdfiumLibraryBindings {
         buflen: c_int,
     ) -> c_int;
 
-    #[doc = " Function: FPDFText_FindStart\n          Start a search.\n Parameters:\n          text_page   -   Handle to a text page information structure.\n                          Returned by FPDFText_LoadPage function.\n          findwhat    -   A unicode match pattern.\n          flags       -   Option flags.\n          start_index -   Start from this character. -1 for end of the page.\n Return Value:\n          A handle for the search context. FPDFText_FindClose must be called\n          to release this handle.\n"]
+    /// Starts a search.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `findwhat`    -   A unicode match pattern.
+    ///
+    ///    `flags`       -   Option flags.
+    ///
+    ///    `start_index` -   Start from this character. `-1` for end of the page.
+    ///
+    /// Returns a handle for the search context. [PdfiumLibraryBindings::FPDFText_FindClose]
+    /// must be called to release this handle.
+    ///
+    /// A [&str]-friendly helper function is available for this function.
+    /// See [PdfiumLibraryBindings::FPDFText_FindStart_str].
     #[allow(non_snake_case)]
     fn FPDFText_FindStart(
         &self,
@@ -6241,7 +6522,21 @@ pub trait PdfiumLibraryBindings {
         start_index: c_int,
     ) -> FPDF_SCHHANDLE;
 
-    // TODO: AJRC - 24-Aug-24 - need doc comment for helper function
+    /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFText_FindStart].
+    ///
+    /// Starts a search.
+    ///
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
+    ///
+    ///    `findwhat`    -   A unicode match pattern.
+    ///
+    ///    `flags`       -   Option flags.
+    ///
+    ///    `start_index` -   Start from this character. `-1` for end of the page.
+    ///
+    /// Returns a handle for the search context. [PdfiumLibraryBindings::FPDFText_FindClose]
+    /// must be called to release this handle.
     #[allow(non_snake_case)]
     fn FPDFText_FindStart_str(
         &self,
@@ -6258,23 +6553,46 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    #[doc = " Function: FPDFText_FindNext\n          Search in the direction from page start to end.\n Parameters:\n          handle      -   A search context handle returned by\n                          FPDFText_FindStart.\n Return Value:\n          Whether a match is found.\n"]
+    /// Searches in the direction from page start to end.
+    ///
+    ///    `handle`      -   A search context handle returned by
+    ///                      [PdfiumLibraryBindings::FPDFText_FindStart].
+    ///
+    /// Returns whether or not a match is found.
     #[allow(non_snake_case)]
     fn FPDFText_FindNext(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFText_FindPrev\n          Search in the direction from page end to start.\n Parameters:\n          handle      -   A search context handle returned by\n                          FPDFText_FindStart.\n Return Value:\n          Whether a match is found.\n"]
+    /// Searches in the direction from page end to start.
+    ///
+    ///    `handle`      -   A search context handle returned by
+    ///                      [PdfiumLibraryBindings::FPDFText_FindStart].
+    ///
+    /// Returns whether or not a match is found.
     #[allow(non_snake_case)]
     fn FPDFText_FindPrev(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFText_GetSchResultIndex\n          Get the starting character index of the search result.\n Parameters:\n          handle      -   A search context handle returned by\n                          FPDFText_FindStart.\n Return Value:\n          Index for the starting character.\n"]
+    /// Gets the starting character index of the search result.
+    ///
+    ///    `handle`      -   A search context handle returned by
+    ///                      [PdfiumLibraryBindings::FPDFText_FindStart].
+    ///
+    /// Returns the index for the starting character.
     #[allow(non_snake_case)]
     fn FPDFText_GetSchResultIndex(&self, handle: FPDF_SCHHANDLE) -> c_int;
 
-    #[doc = " Function: FPDFText_GetSchCount\n          Get the number of matched characters in the search result.\n Parameters:\n          handle      -   A search context handle returned by\n                          FPDFText_FindStart.\n Return Value:\n          Number of matched characters.\n"]
+    /// Gets the number of matched characters in the search result.
+    ///
+    ///    `handle`      -   A search context handle returned by
+    ///                      [PdfiumLibraryBindings::FPDFText_FindStart].
+    ///
+    /// Returns the number of matched characters.
     #[allow(non_snake_case)]
     fn FPDFText_GetSchCount(&self, handle: FPDF_SCHHANDLE) -> c_int;
 
-    #[doc = " Function: FPDFText_FindClose\n          Release a search context.\n Parameters:\n          handle      -   A search context handle returned by\n                          FPDFText_FindStart.\n Return Value:\n          None.\n"]
+    /// Releases a search context.
+    ///
+    ///    `handle`      -   A search context handle returned by
+    ///                      [PdfiumLibraryBindings::FPDFText_FindStart].
     #[allow(non_snake_case)]
     fn FPDFText_FindClose(&self, handle: FPDF_SCHHANDLE);
 
