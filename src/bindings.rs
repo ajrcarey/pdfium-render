@@ -36,6 +36,16 @@ pub(crate) mod wasm;
 #[cfg(feature = "thread_safe")]
 pub(crate) mod thread_safe;
 
+// The following dummy declarations are used only when running cargo doc.
+// They allow documentation of any target-specific functionality to be included
+// in documentation generated on a different target.
+
+#[cfg(doc)]
+struct Uint8Array;
+
+#[cfg(doc)]
+struct HDC;
+
 pub mod version;
 
 use crate::bindgen::{
@@ -108,12 +118,9 @@ use std::os::raw::{
 /// The following Pdfium functions have different signatures in this trait compared to their
 /// native function signatures in Pdfium:
 /// * [PdfiumLibraryBindings::FPDF_LoadDocument]: this function is not available when compiling to WASM.
-/// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer]: the return type of this function is modified
-///   when compiling to WASM. Instead of returning `*mut c_void`, it returns `*const c_void`.
-///   This is to encourage callers to avoid directly mutating the returned buffer, as this is not
-///   supported when compiling to WASM. Instead, callers should use the provided
-///   [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] convenience function to apply modified pixel data
-///   to a bitmap.
+/// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer]: this function is not available when compiling
+///   to WASM. Use the globally-available [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_vec]
+///   or the WASM-specific [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_array] functions instead.
 pub trait PdfiumLibraryBindings {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
     #[inline]
@@ -1144,7 +1151,7 @@ pub trait PdfiumLibraryBindings {
     /// This function will be deprecated in the future.
     #[deprecated(
         since = "0.8.25",
-        note = "Deprecated in favour of FPDF_GetPageWidthF()"
+        note = "Prefer FPDF_GetPageWidthF() over FPDF_GetPageWidth(). FPDF_GetPageWidth() is deprecated and will likely be removed in a future version of Pdfium."
     )]
     #[allow(non_snake_case)]
     fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64;
@@ -1169,7 +1176,7 @@ pub trait PdfiumLibraryBindings {
     /// This function will be deprecated in the future.
     #[deprecated(
         since = "0.8.25",
-        note = "Deprecated in favour of FPDF_GetPageHeightF()"
+        note = "Prefer FPDF_GetPageHeightF() over FPDF_GetPageHeight(). FPDF_GetPageHeight() is deprecated and will likely be removed in a future version of Pdfium."
     )]
     #[allow(non_snake_case)]
     fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64;
@@ -2901,20 +2908,21 @@ pub trait PdfiumLibraryBindings {
         color: FPDF_DWORD,
     ) -> FPDF_BOOL;
 
-    /// Note that the return type of this function is modified when compiling to WASM. Instead
-    /// of returning `*mut c_void`, it returns `*const c_void`.
-    ///
-    /// When compiling to WASM, Pdfium's internal pixel data buffer for the given bitmap resides
-    /// in a separate WASM memory module, so any buffer returned by this function is necessarily
-    /// a copy; mutating that copy does not alter the buffer in Pdfium's WASM module and, since
-    /// there is no way for `pdfium-render` to know when the caller has finished mutating the
-    /// copied buffer, there is no reliable way for `pdfium-render` to transfer any changes made
-    /// to the copy across to Pdfium's WASM module.
+    #[cfg(not(target_arch = "wasm32"))]
+    /// Note that this function is not available when compiling to WASM as it cannot be made
+    /// memory safe. When compiling to WASM, Pdfium's internal pixel data buffer for a bitmap
+    /// resides in a separate WASM memory module from your Rust application, so any buffer
+    /// returned by this function is necessarily a copy; mutating that copy does not alter
+    /// the buffer in Pdfium's WASM module and, since there is no way for `pdfium-render` to
+    /// know when the caller has finished mutating the copied buffer, there is no reliable way
+    /// for `pdfium-render` to transfer any changes made to the copy across to Pdfium's
+    /// WASM module.
     ///
     /// To avoid having to maintain different code for different platform targets, it is
-    /// recommended that all callers use the provided [PdfiumLibraryBindings::FPDFBitmap_SetBuffer]
-    /// convenience function to apply modified pixel data to a bitmap instead of mutating the
-    /// buffer returned by this function.
+    /// recommended that all callers use the provided [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_vec]
+    /// and [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] convenience functions to retrieve
+    /// and update the pixel data of a bitmap, instead of directly mutating the buffer
+    /// returned by this function.
     ///
     /// Gets the data buffer of a bitmap.
     ///
@@ -2930,40 +2938,18 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     #[allow(non_snake_case)]
-    #[cfg(not(target_arch = "wasm32"))]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void;
 
-    /// Note that the return type of this function is modified when compiling to WASM. Instead
-    /// of returning `*mut c_void`, it returns `*const c_void`.
-    ///
-    /// When compiling to WASM, Pdfium's internal pixel data buffer for the given bitmap resides
-    /// in a separate WASM memory module, so any buffer returned by this function is necessarily
-    /// a copy; mutating that copy does not alter the buffer in Pdfium's WASM module and, since
-    /// there is no way for `pdfium-render` to know when the caller has finished mutating the
-    /// copied buffer, there is no reliable way for `pdfium-render` to transfer any changes made
-    /// to the copy across to Pdfium's WASM module.
-    ///
-    /// **Do not mutate the pixel data in the buffer returned by this function.** Instead, use the
-    /// [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] function to apply a new pixel data
-    /// buffer to the bitmap.
-    ///
-    /// Gets the data buffer of a bitmap.
-    ///
-    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
-    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
-    ///
-    /// Returns the pointer to the first byte of the bitmap buffer.
-    ///
-    /// The stride may be more than `width * number of bytes per pixel`.
-    ///
-    /// Applications can use this function to get the bitmap buffer pointer,
-    /// then manipulate any color and/or alpha values for any pixels in the bitmap.
-    ///
-    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
-    #[allow(non_snake_case)]
+    // TODO: AJRC - 27/11/24 - remove deprecated item as part of #36
+    #[deprecated(
+        since = "0.8.27",
+        note = "The WASM implementation of FPDFBitmap_GetBuffer() cannot be made memory-safe. Prefer FPDFBitmap_GetBuffer_as_vec() or FPDFBitmap_GetBuffer_as_array() instead."
+    )]
     #[cfg(target_arch = "wasm32")]
+    #[allow(non_snake_case)]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
     /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
@@ -2973,7 +2959,6 @@ pub trait PdfiumLibraryBindings {
     /// does not have the same length as the bitmap's current buffer then the current buffer
     /// will be unchanged and a value of `false` will be returned.
     #[allow(non_snake_case)]
-    #[cfg(not(target_arch = "wasm32"))]
     fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
         let buffer_length =
             (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as usize;
@@ -2992,6 +2977,7 @@ pub trait PdfiumLibraryBindings {
         true
     }
 
+    #[cfg(target_arch = "wasm32")]
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
     /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
@@ -3001,18 +2987,137 @@ pub trait PdfiumLibraryBindings {
     /// does not have the same length as the bitmap's current buffer then the current buffer
     /// will be unchanged and a value of `false` will be returned.
     #[allow(non_snake_case)]
-    #[cfg(target_arch = "wasm32")]
     fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool;
 
+    #[cfg(not(target_arch = "wasm32"))]
+    /// Gets the data buffer of a bitmap as a Rust slice.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns a `&[u8]` slice containing the contents of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_GetBuffer_as_slice(&self, bitmap: FPDF_BITMAP) -> &[u8] {
+        let buffer = self.FPDFBitmap_GetBuffer(bitmap);
+
+        let len = self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap);
+
+        unsafe { std::slice::from_raw_parts(buffer as *const u8, len as usize) }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as a
+    /// cross-platform neutral way of retrieving the pixel data owned by a bitmap. It is
+    /// an alternative to Pdfium's [PdfiumLibraryBindings::FPDFBitmap_GetBuffer] function,
+    /// which is not available when compiling to WASM.
+    ///
+    /// To maintain memory safety, this function must copy pixel data from the bitmap
+    /// buffer into a new [Vec]. This has both memory usage and performance implications.
+    /// For non-WASM targets, consider using the [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_slice]
+    /// function, which avoids allocation. When compiling to WASM, an equivalent function,
+    /// [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_array], is provided that similarily
+    /// avoids the need to copy pixel data.
+    ///
+    /// Gets the data buffer of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns a [Vec] containing a copy of the contents of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] to apply any changes made
+    /// to the returned [Vec] back to the originating bitmap.
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
+        Vec::from(self.FPDFBitmap_GetBuffer_as_slice(bitmap))
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    /// Gets the data buffer of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns a [Vec] containing the contents of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_SetBuffer] to apply any changes made
+    /// to the returned [Vec] back to the originating bitmap.
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
+        self.FPDFBitmap_GetBuffer_as_array(bitmap).to_vec()
+    }
+
+    // TODO: AJRC - 27/11/24 - remove deprecated item as part of #36
+    #[deprecated(
+        since = "0.8.27",
+        note = "This function has been renamed to better reflect its purpose. Prefer FPDFBitmap_GetBuffer_as_array() instead."
+    )]
+    #[cfg(target_arch = "wasm32")]
+    #[doc(hidden)]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array {
+        self.FPDFBitmap_GetBuffer_as_array(bitmap)
+    }
+
+    #[allow(non_snake_case)]
+    #[cfg(target_arch = "wasm32")]
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as a
     /// more performant WASM-specific variant of [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
     /// Since it avoids a (potentially large) bitmap allocation and copy, it is both faster and
     /// more memory efficient than [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
     ///
     /// This function is only available when compiling to WASM.
-    #[allow(non_snake_case)]
-    #[cfg(target_arch = "wasm32")]
-    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
+    ///
+    /// Gets the data buffer of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns a [js_sys::Uint8Array] containing the contents of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
+    ///
+    /// Changes made to the returned array will directly mutate the pixel data of the bitmap.
+    fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
+
+    #[cfg(doc)]
+    /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as a
+    /// more performant WASM-specific variant of [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
+    /// Since it avoids a (potentially large) bitmap allocation and copy, it is both faster and
+    /// more memory efficient than [PdfiumLibraryBindings::FPDFBitmap_GetBuffer].
+    ///
+    /// This function is only available when compiling to WASM.
+    ///
+    /// Gets the data buffer of a bitmap.
+    ///
+    ///   `bitmap`      -   Handle to the bitmap. Returned by [PdfiumLibraryBindings::FPDFBitmap_Create]
+    ///                     or [PdfiumLibraryBindings::FPDFImageObj_GetBitmap].
+    ///
+    /// Returns a `js_sys::Uint8Array` containing the contents of the bitmap buffer.
+    ///
+    /// The stride may be more than `width * number of bytes per pixel`.
+    ///
+    /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
+    ///
+    /// Changes made to the returned array will directly mutate the pixel data of the bitmap.
+    fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {}
 
     /// Gets the width of a bitmap.
     ///
@@ -3089,6 +3194,43 @@ pub trait PdfiumLibraryBindings {
         rotate: c_int,
         flags: c_int,
     );
+
+    #[cfg(doc)]
+    /// Renders the contents of a page to a device (screen, bitmap, or printer).
+    /// This function is only supported on Windows.
+    ///
+    ///    `dc`          -   Handle to the device context.
+    ///
+    ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
+    ///
+    ///    `start_x`     -   Left pixel position of the display area in device coordinates.
+    ///
+    ///    `start_y`     -   Top pixel position of the display area in device coordinates.
+    ///
+    ///    `size_x`      -   Horizontal size (in pixels) for displaying the page.
+    ///
+    ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
+    ///
+    ///    `rotate`      -   Page orientation:
+    ///                            0 (normal)
+    ///                            1 (rotated 90 degrees clockwise)
+    ///                            2 (rotated 180 degrees)
+    ///                            3 (rotated 90 degrees counter-clockwise)
+    ///
+    ///    `flags`       -   0 for normal display, or combination of flags defined above.
+    #[allow(non_snake_case)]
+    fn FPDF_RenderPage(
+        &self,
+        dc: HDC,
+        page: FPDF_PAGE,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotate: c_int,
+        flags: c_int,
+    ) {
+    }
 
     /// Renders contents of a page to a device independent bitmap.
     ///

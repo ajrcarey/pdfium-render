@@ -6213,7 +6213,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_BOOL
     }
 
-    #[allow(non_snake_case)]
+    // TODO: AJRC - 27/11/24 - remove deprecated item as part of #36
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetBuffer()");
 
@@ -6243,14 +6243,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> Uint8Array {
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetArray()");
+    fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_array()");
 
-        let width = self.FPDFBitmap_GetWidth(bitmap);
-
-        let height = self.FPDFBitmap_GetHeight(bitmap);
-
-        let buffer_len = (width * height * PdfiumRenderWasmState::BYTES_PER_PIXEL) as u32;
+        let buffer_len =
+            (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as u32;
 
         let state = PdfiumRenderWasmState::lock();
 
@@ -6273,6 +6270,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_SetBuffer()");
+
         let buffer_length =
             (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as usize;
 
