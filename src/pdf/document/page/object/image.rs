@@ -491,16 +491,16 @@ impl<'a> PdfPageImageObject<'a> {
 
         let stride = self.bindings.FPDFBitmap_GetStride(handle);
 
-        let buffer_length = stride * height;
-
-        let buffer_start = self.bindings.FPDFBitmap_GetBuffer(handle);
-
         let format =
             PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(handle) as u32)?;
 
-        let buffer = unsafe {
-            std::slice::from_raw_parts(buffer_start as *const u8, buffer_length as usize)
-        };
+        #[cfg(not(target_arch = "wasm32"))]
+        let buffer = self.bindings.FPDFBitmap_GetBuffer_as_slice(handle);
+
+        #[cfg(target_arch = "wasm32")]
+        let buffer_vec = self.bindings.FPDFBitmap_GetBuffer_as_vec(handle);
+        #[cfg(target_arch = "wasm32")]
+        let buffer = buffer_vec.as_slice();
 
         match format {
             #[allow(deprecated)]
