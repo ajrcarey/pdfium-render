@@ -6740,8 +6740,8 @@ pub trait PdfiumLibraryBindings {
 
     /// Prepares information about weblinks in a page.
     ///
-    ///     text_page   -   Handle to a text page information structure.
-    ///                     Returned by [PdfiumLibraryBindings::FPDFText_LoadPage] function.
+    ///    `text_page`   -   Handle to a text page information structure.
+    ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage] function.
     ///
     /// Returns a handle to the page's links information structure, or `NULL` if something goes wrong.
     ///
@@ -6757,13 +6757,30 @@ pub trait PdfiumLibraryBindings {
 
     /// Counts the number of detected web links.
     ///
-    ///     link_page   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
+    ///    `link_page`   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
     ///
     /// Returns the umber of detected web links.
     #[allow(non_snake_case)]
     fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int;
 
-    #[doc = " Function: FPDFLink_GetURL\n          Fetch the URL information for a detected web link.\n Parameters:\n          link_page   -   Handle returned by FPDFLink_LoadWebLinks.\n          link_index  -   Zero-based index for the link.\n          buffer      -   A unicode buffer for the result.\n          buflen      -   Number of 16-bit code units (not bytes) for the\n                          buffer, including an additional terminator.\n Return Value:\n          If |buffer| is NULL or |buflen| is zero, return the number of 16-bit\n          code units (not bytes) needed to buffer the result (an additional\n          terminator is included in this count).\n          Otherwise, copy the result into |buffer|, truncating at |buflen| if\n          the result is too large to fit, and return the number of 16-bit code\n          units actually copied into the buffer (the additional terminator is\n          also included in this count).\n          If |link_index| does not correspond to a valid link, then the result\n          is an empty string.\n"]
+    /// Gets the URL information for a detected web link.
+    ///
+    ///    `link_page`   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
+    ///
+    ///    `link_index`  -   Zero-based index of the link.
+    ///
+    ///    `buffer`      -   A unicode buffer for the result.
+    ///
+    ///    `buflen`      -   Number of 16-bit code units (not bytes) for the buffer,
+    ///                      including an additional terminator.
+    ///
+    /// If `buffer` is `NULL` or `buflen` is zero, returns the number of 16-bit code units
+    /// (not bytes) needed to buffer the result (an additional terminator is included in this count).
+    /// Otherwise, copies the result into `buffer`, truncating at `buflen` if the result is
+    /// too large to fit, and returns the number of 16-bit code units actually copied into
+    // the buffer (the additional terminator is also included in this count).
+    ///
+    /// If `link_index` does not correspond to a valid link, then the result is an empty string.
     #[allow(non_snake_case)]
     fn FPDFLink_GetURL(
         &self,
@@ -6773,11 +6790,36 @@ pub trait PdfiumLibraryBindings {
         buflen: c_int,
     ) -> c_int;
 
-    #[doc = " Function: FPDFLink_CountRects\n          Count number of rectangular areas for the link.\n Parameters:\n          link_page   -   Handle returned by FPDFLink_LoadWebLinks.\n          link_index  -   Zero-based index for the link.\n Return Value:\n          Number of rectangular areas for the link.  If |link_index| does\n          not correspond to a valid link, then 0 is returned.\n"]
+    /// Counts the number of rectangular areas for a given link.
+    ///
+    ///    `link_page`   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
+    ///
+    ///    `link_index`  -   Zero-based index of the link.
+    ///
+    /// Returns the number of rectangular areas for the link. If `link_index` does not
+    /// correspond to a valid link, then returns `0`.
     #[allow(non_snake_case)]
     fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int;
 
-    #[doc = " Function: FPDFLink_GetRect\n          Fetch the boundaries of a rectangle for a link.\n Parameters:\n          link_page   -   Handle returned by FPDFLink_LoadWebLinks.\n          link_index  -   Zero-based index for the link.\n          rect_index  -   Zero-based index for a rectangle.\n          left        -   Pointer to a double value receiving the rectangle\n                          left boundary.\n          top         -   Pointer to a double value receiving the rectangle\n                          top boundary.\n          right       -   Pointer to a double value receiving the rectangle\n                          right boundary.\n          bottom      -   Pointer to a double value receiving the rectangle\n                          bottom boundary.\n Return Value:\n          On success, return TRUE and fill in |left|, |top|, |right|, and\n          |bottom|. If |link_page| is invalid or if |link_index| does not\n          correspond to a valid link, then return FALSE, and the out\n          parameters remain unmodified.\n"]
+    /// Gets the boundaries of one rectangular area for a given link.
+    ///
+    ///    `link_page`   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
+    ///
+    ///    `link_index`  -   Zero-based index of the link.
+    ///
+    ///    `rect_index`  -   Zero-based index of the rectangle.
+    ///
+    ///    `left`        -   Pointer to a double value receiving the rectangle left boundary.
+    ///
+    ///    `top`         -   Pointer to a double value receiving the rectangle top boundary.
+    ///
+    ///    `right`       -   Pointer to a double value receiving the rectangle right boundary.
+    ///
+    ///    `bottom`      -   Pointer to a double value receiving the rectangle bottom boundary.
+    ///
+    /// On success, returns `true` and fills in `left`, `top`, `right`, and `bottom`.
+    /// If `link_page` is invalid or if `link_index` does not correspond to a valid link,
+    /// then returns `false`, and the out parameters remain unmodified.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFLink_GetRect(
@@ -6791,7 +6833,19 @@ pub trait PdfiumLibraryBindings {
         bottom: *mut c_double,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Function: FPDFLink_GetTextRange\n          Fetch the start char index and char count for a link.\n Parameters:\n          link_page         -   Handle returned by FPDFLink_LoadWebLinks.\n          link_index        -   Zero-based index for the link.\n          start_char_index  -   pointer to int receiving the start char index\n          char_count        -   pointer to int receiving the char count\n Return Value:\n          On success, return TRUE and fill in |start_char_index| and\n          |char_count|. if |link_page| is invalid or if |link_index| does\n          not correspond to a valid link, then return FALSE and the out\n          parameters remain unmodified.\n"]
+    /// Gets the start char index and char count for a link.
+    ///
+    ///    `link_page`         -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
+    ///
+    ///    `link_index`        -   Zero-based index for the link.
+    ///
+    ///    `start_char_index`  -   pointer to int receiving the start char index
+    ///
+    ///    `char_count`        -   pointer to int receiving the char count
+    ///
+    /// On success, returns `true` and fills in `start_char_index` and `char_count`.
+    /// If `link_page` is invalid or if `link_index` does not correspond to a valid link,
+    /// then returns `false` and the out parameters remain unmodified.
     #[allow(non_snake_case)]
     fn FPDFLink_GetTextRange(
         &self,
@@ -6801,11 +6855,23 @@ pub trait PdfiumLibraryBindings {
         char_count: *mut c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Function: FPDFLink_CloseWebLinks\n          Release resources used by weblink feature.\n Parameters:\n          link_page   -   Handle returned by FPDFLink_LoadWebLinks.\n Return Value:\n          None.\n"]
+    /// Releases resources used by weblink feature.
+    ///
+    ///    `link_page`   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
     #[allow(non_snake_case)]
     fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK);
 
-    #[doc = " Experimental API.\n Gets the decoded data from the thumbnail of |page| if it exists.\n This only modifies |buffer| if |buflen| less than or equal to the\n size of the decoded data. Returns the size of the decoded\n data or 0 if thumbnail DNE. Optional, pass null to just retrieve\n the size of the buffer needed.\n\n   page    - handle to a page.\n   buffer  - buffer for holding the decoded image data.\n   buflen  - length of the buffer in bytes."]
+    /// Gets the decoded data from the thumbnail of `page`, if it exists.
+    ///
+    ///    `page`    - handle to a page.
+    ///
+    ///    `buffer`  - buffer for holding the decoded image data.
+    ///
+    ///    `buflen`  - length of the buffer in bytes.
+    ///
+    /// This only modifies `buffer` if `buflen` is less than or equal to the size of the
+    /// decoded data. Returns the size of the decoded data, or `0` if thumbnail does not exist.
+    /// Optionally, pass `NULL` to just retrieve the size of the buffer needed.
     #[allow(non_snake_case)]
     fn FPDFPage_GetDecodedThumbnailData(
         &self,
@@ -6814,7 +6880,17 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Gets the raw data from the thumbnail of |page| if it exists.\n This only modifies |buffer| if |buflen| is less than or equal to\n the size of the raw data. Returns the size of the raw data or 0\n if thumbnail DNE. Optional, pass null to just retrieve the size\n of the buffer needed.\n\n   page    - handle to a page.\n   buffer  - buffer for holding the raw image data.\n   buflen  - length of the buffer in bytes."]
+    /// Gets the raw data from the thumbnail of `page`, if it exists.
+    ///
+    ///    `page`    - handle to a page.
+    ///
+    ///    `buffer`  - buffer for holding the raw image data.
+    ///
+    ///    `buflen`  - length of the buffer in bytes.
+    ///
+    /// This only modifies `buffer` if `buflen` is less than or equal to the size of the
+    /// raw data. Returns the size of the raw data, or `0` if thumbnail does not exist.
+    /// Optionally, pass `NULL` to just retrieve the size of the buffer needed.
     #[allow(non_snake_case)]
     fn FPDFPage_GetRawThumbnailData(
         &self,
@@ -6823,15 +6899,29 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Returns the thumbnail of |page| as a FPDF_BITMAP. Returns a nullptr\n if unable to access the thumbnail's stream.\n\n   page - handle to a page."]
+    /// Returns the thumbnail of `page` as a `FPDF_BITMAP`.
+    ///
+    ///    `page` - handle to a page.
+    ///
+    /// Returns `NULL` if unable to access the thumbnail's stream.
     #[allow(non_snake_case)]
     fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP;
 
-    #[doc = " Get number of page objects inside |form_object|.\n\n   form_object - handle to a form object.\n\n Returns the number of objects in |form_object| on success, -1 on error."]
+    /// Gets the number of page objects inside `form_object`.
+    ///
+    ///    `form_object` - handle to a form object.
+    ///
+    /// Returns the number of objects in `form_object` on success, or `-1` on error.
     #[allow(non_snake_case)]
     fn FPDFFormObj_CountObjects(&self, form_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Get page object in |form_object| at |index|.\n\n   form_object - handle to a form object.\n   index       - the 0-based index of a page object.\n\n Returns the handle to the page object, or NULL on error."]
+    /// Gets the page object in `form_object` at `index`.
+    ///
+    ///    `form_object` - handle to a form object.
+    ///
+    ///    `index`       - the zero-based index of a page object.
+    ///
+    /// Returns the handle to the page object, or `NULL` on error.
     #[allow(non_snake_case)]
     fn FPDFFormObj_GetObject(
         &self,
@@ -6839,7 +6929,15 @@ pub trait PdfiumLibraryBindings {
         index: c_ulong,
     ) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Create a new text object using a loaded font.\n\n document   - handle to the document.\n font       - handle to the font object.\n font_size  - the font size for the new text object.\n\n Returns a handle to a new text object, or NULL on failure"]
+    /// Creates a new text object using a loaded font.
+    ///
+    ///    `document`   - handle to the document.
+    ///
+    ///    `font`       - handle to the font object.
+    ///
+    ///    `font_size`  - the font size for the new text object.
+    ///
+    /// Returns a handle to a new text object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFPageObj_CreateTextObj(
         &self,
@@ -6848,11 +6946,23 @@ pub trait PdfiumLibraryBindings {
         font_size: c_float,
     ) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Get the text rendering mode of a text object.\n\n text     - the handle to the text object.\n\n Returns one of the known FPDF_TEXT_RENDERMODE enum values on success,\n FPDF_TEXTRENDERMODE_UNKNOWN on error."]
+    /// Gets the text rendering mode of a text object.
+    ///
+    ///    `text`     - the handle to the text object.
+    ///
+    /// Returns one of the known `FPDF_TEXT_RENDERMODE` enum values on success,
+    /// `FPDF_TEXTRENDERMODE_UNKNOWN` on error.
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetTextRenderMode(&self, text: FPDF_PAGEOBJECT) -> FPDF_TEXT_RENDERMODE;
 
-    #[doc = " Experimental API.\n Set the text rendering mode of a text object.\n\n text         - the handle to the text object.\n render_mode  - the FPDF_TEXT_RENDERMODE enum value to be set (cannot set to\n                FPDF_TEXTRENDERMODE_UNKNOWN).\n\n Returns TRUE on success."]
+    /// Sets the text rendering mode of a text object.
+    ///
+    ///    `text`         - the handle to the text object.
+    ///
+    ///    `render_mode`  - the `FPDF_TEXT_RENDERMODE` enum value to be set (cannot set to
+    ///                     `FPDF_TEXTRENDERMODE_UNKNOWN`).
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFTextObj_SetTextRenderMode(
         &self,
@@ -6860,7 +6970,20 @@ pub trait PdfiumLibraryBindings {
         render_mode: FPDF_TEXT_RENDERMODE,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get the text of a text object.\n\n text_object      - the handle to the text object.\n text_page        - the handle to the text page.\n buffer           - the address of a buffer that receives the text.\n length           - the size, in bytes, of |buffer|.\n\n Returns the number of bytes in the text (including the trailing NUL\n character) on success, 0 on error.\n\n Regardless of the platform, the |buffer| is always in UTF-16LE encoding.\n If |length| is less than the returned length, or |buffer| is NULL, |buffer|\n will not be modified."]
+    /// Gets the text of a text object.
+    ///
+    ///    `text_object`      - the handle to the text object.
+    ///
+    ///    `text_page`        - the handle to the text page.
+    ///
+    ///    `buffer`           - the address of a buffer that receives the text.
+    ///
+    ///    `length`           - the size, in bytes, of `buffer`.
+    ///
+    /// Returns the number of bytes in the text (including the trailing `NUL` character)
+    /// on success, `0` on error. Regardless of the platform, the `buffer` is always in
+    /// UTF-16LE encoding. If `length` is less than the returned length, or `buffer` is
+    /// `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetText(
         &self,
@@ -6870,7 +6993,21 @@ pub trait PdfiumLibraryBindings {
         length: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Experimental API.\n Get a bitmap rasterization of |text_object|. To render correctly, the caller\n must provide the |document| associated with |text_object|. If there is a\n |page| associated with |text_object|, the caller should provide that as well.\n The returned bitmap will be owned by the caller, and FPDFBitmap_Destroy()\n must be called on the returned bitmap when it is no longer needed.\n\n   document    - handle to a document associated with |text_object|.\n   page        - handle to an optional page associated with |text_object|.\n   text_object - handle to a text object.\n   scale       - the scaling factor, which must be greater than 0.\n\n Returns the bitmap or NULL on failure."]
+    /// Gets a bitmap rasterization of `text_object`. To render correctly, the caller
+    /// must provide the `document` associated with `text_object`. If there is a `page`
+    /// associated with `text_object`, the caller should provide that as well.
+    /// The returned bitmap will be owned by the caller, and `FPDFBitmap_Destroy()`
+    /// must be called on the returned bitmap when it is no longer needed.
+    ///
+    ///    `document`    - handle to a document associated with `text_object`.
+    ///
+    ///    `page`        - handle to an optional page associated with `text_object`.
+    ///
+    ///    `text_object` - handle to a text object.
+    ///
+    ///    `scale`       - the scaling factor, which must be greater than `0`.
+    ///
+    /// Returns the bitmap or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetRenderedBitmap(
         &self,
@@ -6880,27 +7017,74 @@ pub trait PdfiumLibraryBindings {
         scale: f32,
     ) -> FPDF_BITMAP;
 
-    #[doc = " Experimental API.\n Get the font of a text object.\n\n text - the handle to the text object.\n\n Returns a handle to the font object held by |text| which retains ownership."]
+    /// Gets the font of a text object.
+    ///
+    ///    `text` - the handle to the text object.
+    ///
+    /// Returns a handle to the font object held by `text` which retains ownership.
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT;
 
-    #[doc = " Get the font size of a text object.\n\n   text - handle to a text.\n   size - pointer to the font size of the text object, measured in points\n   (about 1/72 inch)\n\n Returns TRUE on success."]
+    /// Gets the font size of a text object.
+    ///
+    ///    `text` - handle to a text.
+    ///
+    ///    `size` - pointer to the font size of the text object, measured in points
+    ///             (about 1/72 inch).
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetFontSize(&self, text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL;
 
-    #[doc = " Close a loaded PDF font.\n\n font   - Handle to the loaded font."]
+    /// Closes a loaded PDF font.
+    ///
+    ///    `font`   - Handle to the loaded font.
     #[allow(non_snake_case)]
     fn FPDFFont_Close(&self, font: FPDF_FONT);
 
-    #[doc = " Move a path's current point.\n\n path   - the handle to the path object.\n x      - the horizontal position of the new current point.\n y      - the vertical position of the new current point.\n\n Note that no line will be created between the previous current point and the\n new one.\n\n Returns TRUE on success"]
+    /// Moves a path's current point.
+    ///
+    ///    `path`   - the handle to the path object.
+    ///
+    ///    `x`      - the horizontal position of the new current point.
+    ///
+    ///    `y`      - the vertical position of the new current point.
+    ///
+    /// Note that no line will be created between the previous current point and the
+    /// new one. Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
-    #[doc = " Add a line between the current point and a new point in the path.\n\n path   - the handle to the path object.\n x      - the horizontal position of the new point.\n y      - the vertical position of the new point.\n\n The path's current point is changed to (x, y).\n\n Returns TRUE on success"]
+    /// Adds a line between the current point and a new point in the path.
+    ///
+    ///    `path`   - the handle to the path object.
+    ///
+    ///    `x`      - the horizontal position of the new point.
+    ///
+    ///    `y`      - the vertical position of the new point.
+    ///
+    /// The path's current point is changed to `(x, y)`. Returns `true` on success,
+    /// `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
-    #[doc = " Add a cubic Bezier curve to the given path, starting at the current point.\n\n path   - the handle to the path object.\n x1     - the horizontal position of the first Bezier control point.\n y1     - the vertical position of the first Bezier control point.\n x2     - the horizontal position of the second Bezier control point.\n y2     - the vertical position of the second Bezier control point.\n x3     - the horizontal position of the ending point of the Bezier curve.\n y3     - the vertical position of the ending point of the Bezier curve.\n\n Returns TRUE on success"]
+    /// Adds a cubic Bezier curve to the given path, starting at the current point.
+    ///
+    ///    `path`   - the handle to the path object.
+    ///
+    ///    `x1`     - the horizontal position of the first Bezier control point.
+    ///
+    ///    `y1`     - the vertical position of the first Bezier control point.
+    ///
+    ///    `x2`     - the horizontal position of the second Bezier control point.
+    ///
+    ///    `y2`     - the vertical position of the second Bezier control point.
+    ///
+    ///    `x3`     - the horizontal position of the ending point of the Bezier curve.
+    ///
+    ///    `y3`     - the vertical position of the ending point of the Bezier curve.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPath_BezierTo(
@@ -6914,11 +7098,24 @@ pub trait PdfiumLibraryBindings {
         y3: c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Close the current subpath of a given path.\n\n path   - the handle to the path object.\n\n This will add a line between the current point and the initial point of the\n subpath, thus terminating the current subpath.\n\n Returns TRUE on success"]
+    /// Closes the current subpath of a given path.
+    ///
+    ///    `path`   - the handle to the path object.
+    ///
+    /// This will add a line between the current point and the initial point of the subpath,
+    /// thus terminating the current subpath. Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
-    #[doc = " Set the drawing mode of a path.\n\n path     - the handle to the path object.\n fillmode - the filling mode to be set: one of the FPDF_FILLMODE_* flags.\n stroke   - a boolean specifying if the path should be stroked or not.\n\n Returns TRUE on success"]
+    /// Sets the drawing mode of a path.
+    ///
+    ///    `path`     - the handle to the path object.
+    ///
+    ///    `fillmode` - the filling mode to be set: one of the `FPDF_FILLMODE_*` flags.
+    ///
+    ///    `stroke`   - a boolean specifying if the path should be stroked or not.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPath_SetDrawMode(
         &self,
@@ -6927,7 +7124,15 @@ pub trait PdfiumLibraryBindings {
         stroke: FPDF_BOOL,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get the drawing mode of a path.\n\n path     - the handle to the path object.\n fillmode - the filling mode of the path: one of the FPDF_FILLMODE_* flags.\n stroke   - a boolean specifying if the path is stroked or not.\n\n Returns TRUE on success"]
+    /// Gets the drawing mode of a path.
+    ///
+    ///    `path`     - the handle to the path object.
+    ///
+    ///    `fillmode` - the filling mode of the path: one of the `FPDF_FILLMODE_*` flags.
+    ///
+    ///    `stroke`   - a boolean specifying if the path is stroked or not.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPath_GetDrawMode(
         &self,
@@ -6936,7 +7141,15 @@ pub trait PdfiumLibraryBindings {
         stroke: *mut FPDF_BOOL,
     ) -> FPDF_BOOL;
 
-    #[doc = " Create a new text object using one of the standard PDF fonts.\n\n document   - handle to the document.\n font       - string containing the font name, without spaces.\n font_size  - the font size for the new text object.\n\n Returns a handle to a new text object, or NULL on failure"]
+    /// Creates a new text object using one of the standard PDF fonts.
+    ///
+    ///    `document`   - handle to the document.
+    ///
+    ///    `font`       - string containing the font name, without spaces.
+    ///
+    ///    `font_size`  - the font size for the new text object.
+    ///
+    /// Returns a handle to a new text object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewTextObj(
         &self,
@@ -6945,11 +7158,28 @@ pub trait PdfiumLibraryBindings {
         font_size: c_float,
     ) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Set the text for a text object. If it had text, it will be replaced.\n\n text_object  - handle to the text object.\n text         - the UTF-16LE encoded string containing the text to be added.\n\n Returns TRUE on success"]
+    /// Sets the text for a text object. If it had text, it will be replaced.
+    ///
+    ///    `text_object`  - handle to the text object.
+    ///
+    ///    `text`         - the UTF-16LE encoded string containing the text to be added.
+    ///
+    /// Returns `true` on success, `false` otherwise.
+    ///
+    /// A [&str]-friendly helper function is available for this function.
+    /// See [PdfiumLibraryBindings::FPDFText_SetText_str].
     #[allow(non_snake_case)]
     fn FPDFText_SetText(&self, text_object: FPDF_PAGEOBJECT, text: FPDF_WIDESTRING) -> FPDF_BOOL;
 
-    // TODO: AJRC - 26-Aug-24 - need doc comment for _str helper function
+    /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFText_SetText].
+    ///
+    /// Sets the text for a text object. If it had text, it will be replaced.
+    ///
+    ///    `text_object`  - handle to the text object.
+    ///
+    ///    `text`         - the string containing the text to be added.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_SetText_str(&self, text_object: FPDF_PAGEOBJECT, text: &str) -> FPDF_BOOL {
