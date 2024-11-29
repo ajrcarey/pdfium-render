@@ -7189,7 +7189,15 @@ pub trait PdfiumLibraryBindings {
         )
     }
 
-    #[doc = " Experimental API.\n Set the text using charcodes for a text object. If it had text, it will be\n replaced.\n\n text_object  - handle to the text object.\n charcodes    - pointer to an array of charcodes to be added.\n count        - number of elements in |charcodes|.\n\n Returns TRUE on success"]
+    /// Sets the text using charcodes for a text object. If it had text, it will be replaced.
+    ///
+    ///    `text_object`  - handle to the text object.
+    ///
+    ///    `charcodes`    - pointer to an array of charcodes to be added.
+    ///
+    ///    `count`        - number of elements in |charcodes|.
+    ///
+    /// Returns `true` on success, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFText_SetCharcodes(
         &self,
@@ -7198,7 +7206,22 @@ pub trait PdfiumLibraryBindings {
         count: size_t,
     ) -> FPDF_BOOL;
 
-    #[doc = " Returns a font object loaded from a stream of data. The font is loaded\n into the document. Various font data structures, such as the ToUnicode data,\n are auto-generated based on the inputs.\n\n document  - handle to the document.\n data      - the stream of font data, which will be copied by the font object.\n size      - the size of the font data, in bytes.\n font_type - FPDF_FONT_TYPE1 or FPDF_FONT_TRUETYPE depending on the font type.\n cid       - a boolean specifying if the font is a CID font or not.\n\n The loaded font can be closed using FPDFFont_Close().\n\n Returns NULL on failure"]
+    /// Returns a font object loaded from a stream of data. The font is loaded into the
+    /// document. Various font data structures, such as the ToUnicode data, are auto-generated
+    /// based on the inputs.
+    ///
+    ///    `document`  - handle to the document.
+    ///
+    ///    `data`      - the stream of font data, which will be copied by the font object.
+    ///
+    ///    `size`      - the size of the font data, in bytes.
+    ///
+    ///    `font_type` - `FPDF_FONT_TYPE1` or `FPDF_FONT_TRUETYPE` depending on the font type.
+    ///
+    ///    `cid`       - a boolean specifying if the font is a CID font or not.
+    ///
+    /// The loaded font can be closed using [PdfiumLibraryBindings::FPDFFont_Close].
+    /// Returns `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFText_LoadFont(
         &self,
@@ -7209,7 +7232,16 @@ pub trait PdfiumLibraryBindings {
         cid: FPDF_BOOL,
     ) -> FPDF_FONT;
 
-    #[doc = " Experimental API.\n Loads one of the standard 14 fonts per PDF spec 1.7 page 416. The preferred\n way of using font style is using a dash to separate the name from the style,\n for example 'Helvetica-BoldItalic'.\n\n document   - handle to the document.\n font       - string containing the font name, without spaces.\n\n The loaded font can be closed using FPDFFont_Close().\n\n Returns NULL on failure."]
+    /// Loads one of the standard 14 fonts per PDF spec 1.7 page 416. The preferred way
+    /// of using font style is using a dash to separate the name from the style,
+    /// for example `Helvetica-BoldItalic`.
+    ///
+    ///    `document`   - handle to the document.
+    ///
+    ///    `font`       - string containing the font name, without spaces.
+    ///
+    /// The loaded font can be closed using [PdfiumLibraryBindings::FPDFFont_Close].
+    /// Returns `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT;
 
@@ -7225,7 +7257,26 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6337",
         feature = "pdfium_6295",
     ))]
-    #[doc = " Experimental API.\n Returns a font object loaded from a stream of data for a type 2 CID font. The\n font is loaded into the document. Unlike FPDFText_LoadFont(), the ToUnicode\n data and the CIDToGIDMap data are caller provided, instead of auto-generated.\n\n document                 - handle to the document.\n font_data                - the stream of font data, which will be copied by\n                            the font object.\n font_data_size           - the size of the font data, in bytes.\n to_unicode_cmap          - the ToUnicode data.\n cid_to_gid_map_data      - the stream of CIDToGIDMap data.\n cid_to_gid_map_data_size - the size of the CIDToGIDMap data, in bytes.\n\n The loaded font can be closed using FPDFFont_Close().\n\n Returns NULL on failure."]
+    /// Returns a font object loaded from a stream of data for a type 2 CID font. The font
+    /// is loaded into the document. Unlike [PdfiumLibraryBindings::FPDFText_LoadFont],
+    /// the ToUnicode data and the CIDToGIDMap data are caller provided, instead of being
+    /// auto-generated.
+    ///
+    ///    `document`                   - handle to the document.
+    ///
+    ///    `font_data`                  - the stream of font data, which will be copied
+    ///                                   by the font object.
+    ///
+    ///    `font_data_size`             - the size of the font data, in bytes.
+    ///
+    ///    `to_unicode_cmap`            - the ToUnicode data.
+    ///
+    ///    `cid_to_gid_map_data`        - the stream of CIDToGIDMap data.
+    ///
+    ///    `cid_to_gid_map_data_size`   - the size of the CIDToGIDMap data, in bytes.
+    ///
+    /// The loaded font can be closed using [PdfiumLibraryBindings::FPDFFont_Close].
+    /// Returns `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFText_LoadCidType2Font(
         &self,
@@ -7237,35 +7288,98 @@ pub trait PdfiumLibraryBindings {
         cid_to_gid_map_data_size: u32,
     ) -> FPDF_FONT;
 
-    #[doc = " Insert |page_object| into |page|.\n\n   page        - handle to a page\n   page_object - handle to a page object. The |page_object| will be\n                 automatically freed."]
+    /// Inserts `page_object` into `page`.
+    ///
+    ///    `page`        - handle to a page
+    ///
+    ///    `page_object` - handle to a page object. The `page_object` will be
+    ///                    automatically freed.
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT);
 
-    #[doc = " Experimental API.\n Remove |page_object| from |page|.\n\n   page        - handle to a page\n   page_object - handle to a page object to be removed.\n\n Returns TRUE on success.\n\n Ownership is transferred to the caller. Call FPDFPageObj_Destroy() to free\n it.\n Note that when removing a |page_object| of type FPDF_PAGEOBJ_TEXT, all\n FPDF_TEXTPAGE handles for |page| are no longer valid."]
+    /// Removes `page_object` from `page`.
+    ///
+    ///    `page`        - handle to a page
+    ///
+    ///    `page_object` - handle to a page object to be removed.
+    ///
+    /// Returns `true` on success, `false` otherwise. Ownership is transferred to the caller.
+    /// Call [PdfiumLibraryBindings::FPDFPageObj_Destroy] to free it. Note that when removing
+    /// a `page_object` of type `FPDF_PAGEOBJ_TEXT`, all `FPDF_TEXTPAGE` handles for `page`
+    /// are no longer valid.
     #[allow(non_snake_case)]
     fn FPDFPage_RemoveObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
-    #[doc = " Get number of page objects inside |page|.\n\n   page - handle to a page.\n\n Returns the number of objects in |page|."]
+    /// Gets the number of page objects inside `page`.
+    ///
+    ///    `page` - handle to a page.
+    ///
+    /// Returns the number of objects in `page`.
     #[allow(non_snake_case)]
     fn FPDFPage_CountObjects(&self, page: FPDF_PAGE) -> c_int;
 
-    #[doc = " Get object in |page| at |index|.\n\n   page  - handle to a page.\n   index - the index of a page object.\n\n Returns the handle to the page object, or NULL on failed."]
+    /// Gets the object in `page` at `index`.
+    ///
+    ///    `page`  - handle to a page.
+    ///
+    ///    `index` - the index of a page object.
+    ///
+    /// Returns the handle to the page object, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFPage_GetObject(&self, page: FPDF_PAGE, index: c_int) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Destroy |page_object| by releasing its resources. |page_object| must have\n been created by FPDFPageObj_CreateNew{Path|Rect}() or\n FPDFPageObj_New{Text|Image}Obj(). This function must be called on\n newly-created objects if they are not added to a page through\n FPDFPage_InsertObject() or to an annotation through FPDFAnnot_AppendObject().\n\n   page_object - handle to a page object."]
+    /// Destroys `page_object` by releasing its resources. `page_object` must have
+    /// been created by [PdfiumLibraryBindings::FPDFPageObj_CreateNewPath],
+    /// [PdfiumLibraryBindings::FPDFPageObj_CreateNewRect],
+    /// [PdfiumLibraryBindings::FPDFPageObj_NewTextObj] or
+    /// [PdfiumLibraryBindings::FPDFPageObj_NewImageObj]. This function must be called
+    /// on newly-created objects if they are not added to a page through
+    /// [PdfiumLibraryBindings::FPDFPage_InsertObject] or to an annotation through
+    /// [PdfiumLibraryBindings::FPDFAnnot_AppendObject].
+    ///
+    ///    `page_object` - handle to a page object.
     #[allow(non_snake_case)]
     fn FPDFPageObj_Destroy(&self, page_obj: FPDF_PAGEOBJECT);
 
-    #[doc = " Checks if |page| contains transparency.\n\n   page - handle to a page.\n\n Returns TRUE if |page| contains transparency."]
+    /// Checks if `page` contains transparency.
+    ///
+    ///    `page` - handle to a page.
+    ///
+    /// Returns `true` if `page` contains transparency.
     #[allow(non_snake_case)]
     fn FPDFPageObj_HasTransparency(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
-    #[doc = " Get type of |page_object|.\n\n   page_object - handle to a page object.\n\n Returns one of the FPDF_PAGEOBJ_* values on success, FPDF_PAGEOBJ_UNKNOWN on\n error."]
+    /// Gets the type of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    /// Returns one of the `FPDF_PAGEOBJ_*` values on success, or `FPDF_PAGEOBJ_UNKNOWN` on error.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Transform |page_object| by the given matrix.\n\n   page_object - handle to a page object.\n   a           - matrix value.\n   b           - matrix value.\n   c           - matrix value.\n   d           - matrix value.\n   e           - matrix value.\n   f           - matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and can be used to scale, rotate, shear and translate the |page_object|."]
+    /// Transforms `page_object` by the given matrix.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `a`           - matrix value.
+    ///
+    ///    `b`           - matrix value.
+    ///
+    ///    `c`           - matrix value.
+    ///
+    ///    `d`           - matrix value.
+    ///
+    ///    `e`           - matrix value.
+    ///
+    ///    `f`           - matrix value.
+    ///
+    /// The matrix is composed as:
+    ///
+    ///    `a c e`
+    ///
+    ///    `b d f`
+    ///
+    /// and can be used to scale, rotate, shear and translate the `page_object`.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPageObj_Transform(
@@ -7285,13 +7399,13 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6666",
         feature = "pdfium_6611",
     ))]
-    /// Transform `page_object` by the given matrix.
+    /// Transforms `page_object` by the given matrix.
     ///
     ///   `page_object` - handle to a page object.
     ///
     ///   `matrix`      - the transform matrix.
     ///
-    /// Returns `TRUE` on success.
+    /// Returns `true on success.
     ///
     /// This can be used to scale, rotate, shear and translate the `page_object`.
     /// It is an improved version of [PdfiumLibraryBindings::FPDFPageObj_Transform]
@@ -7304,7 +7418,24 @@ pub trait PdfiumLibraryBindings {
         matrix: *const FS_MATRIX,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the transform matrix of a page object.\n\n   page_object - handle to a page object.\n   matrix      - pointer to struct to receive the matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and used to scale, rotate, shear and translate the page object.\n\n For page objects outside form objects, the matrix values are relative to the\n page that contains it.\n For page objects inside form objects, the matrix values are relative to the\n form that contains it.\n\n Returns TRUE on success."]
+    /// Gets the transform matrix of a page object.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `matrix`      - pointer to struct to receive the matrix value.
+    ///
+    /// The matrix is composed as:
+    ///
+    ///    `a c e`
+    ///
+    ///    `b d f`
+    ///
+    /// and used to scale, rotate, shear and translate the page object. For page objects
+    /// outside form objects, the matrix values are relative to the page that contains it.
+    /// For page objects inside form objects, the matrix values are relative to the form
+    /// that contains it.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMatrix(
         &self,
@@ -7312,11 +7443,29 @@ pub trait PdfiumLibraryBindings {
         matrix: *mut FS_MATRIX,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Set the transform matrix of a page object.\n\n   page_object - handle to a page object.\n   matrix      - pointer to struct with the matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and can be used to scale, rotate, shear and translate the page object.\n\n Returns TRUE on success."]
+    /// Sets the transform matrix of a page object.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `matrix`      - pointer to struct with the matrix value.
+    ///
+    /// The matrix is composed as:
+    ///
+    ///    `a c e`
+    ///
+    ///    `b d f`
+    ///
+    /// and can be used to scale, rotate, shear and translate the page object.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetMatrix(&self, path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL;
 
-    #[doc = " Create a new image object.\n\n   document - handle to a document.\n\n Returns a handle to a new image object."]
+    /// Creates a new image object.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    /// Returns a handle to a new image object.
     #[allow(non_snake_case)]
     fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
 
@@ -7326,19 +7475,32 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6666",
         feature = "pdfium_6611",
     ))]
-    /// Get the marked content ID for the object.
+    /// Gets the marked content ID for the object.
     ///
-    ///   `page_object` - handle to a page object.
+    ///   `page_object`   - handle to a page object.
     ///
     /// Returns the page object's marked content ID, or -1 on error.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Experimental API.\n Get number of content marks in |page_object|.\n\n   page_object - handle to a page object.\n\n Returns the number of content marks in |page_object|, or -1 in case of\n failure."]
+    /// Gets the number of content marks in `page_object`.
+    ///
+    ///    `page_object`   - handle to a page object.
+    ///
+    /// Returns the number of content marks in `page_object`, or -1 in case of failure.
     #[allow(non_snake_case)]
     fn FPDFPageObj_CountMarks(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Experimental API.\n Get content mark in |page_object| at |index|.\n\n   page_object - handle to a page object.\n   index       - the index of a page object.\n\n Returns the handle to the content mark, or NULL on failure. The handle is\n still owned by the library, and it should not be freed directly. It becomes\n invalid if the page object is destroyed, either directly or indirectly by\n unloading the page."]
+    /// Gets content mark in `page_object` at `index`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `index`       - the index of a page object.
+    ///
+    /// Returns the handle to the content mark, or `NULL` on failure. The handle is
+    /// still owned by the library, and it should not be freed directly. It becomes
+    /// invalid if the page object is destroyed, either directly or indirectly by
+    /// unloading the page.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetMark(
         &self,
@@ -7346,11 +7508,27 @@ pub trait PdfiumLibraryBindings {
         index: c_ulong,
     ) -> FPDF_PAGEOBJECTMARK;
 
-    #[doc = " Experimental API.\n Add a new content mark to a |page_object|.\n\n   page_object - handle to a page object.\n   name        - the name (tag) of the mark.\n\n Returns the handle to the content mark, or NULL on failure. The handle is\n still owned by the library, and it should not be freed directly. It becomes\n invalid if the page object is destroyed, either directly or indirectly by\n unloading the page."]
+    /// Adds a new content mark to a `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `name`        - the name (tag) of the mark.
+    ///
+    /// Returns the handle to the content mark, or `NULL` on failure. The handle is
+    /// still owned by the library, and it should not be freed directly. It becomes
+    /// invalid if the page object is destroyed, either directly or indirectly by
+    /// unloading the page.
     #[allow(non_snake_case)]
     fn FPDFPageObj_AddMark(&self, page_object: FPDF_PAGEOBJECT, name: &str) -> FPDF_PAGEOBJECTMARK;
 
-    #[doc = " Experimental API.\n Removes a content |mark| from a |page_object|.\n The mark handle will be invalid after the removal.\n\n   page_object - handle to a page object.\n   mark        - handle to a content mark in that object to remove.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
+    /// Removes a content `mark` from a `page_object`. The mark handle will be invalid
+    /// after the removal.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `mark`        - handle to a content mark in that object to remove.
+    ///
+    /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
     fn FPDFPageObj_RemoveMark(
         &self,
@@ -7359,7 +7537,22 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(feature = "pdfium_future")]
-    #[doc = " Experimental API.\n Get the name of a content mark.\n\n   mark       - handle to a content mark.\n   buffer     - buffer for holding the returned name in UTF-16LE. This is only\n                modified if |buflen| is large enough to store the name.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
+    /// Gets the name of a content mark.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `buffer`     - buffer for holding the returned name in UTF-16LE. This is only
+    ///                   modified if `buflen` is large enough to store the name.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer
+    ///                   needed.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   in bytes to contain the name. This is a required parameter.
+    ///                   Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetName(
         &self,
@@ -7388,7 +7581,20 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961",
     ))]
-    #[doc = " Experimental API.\n Get the name of a content mark.\n\n   mark       - handle to a content mark.\n   buffer     - buffer for holding the returned name in UTF-16LE. This is only\n                modified if |buflen| is longer than the length of the name.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the name. Not filled if FALSE is returned.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
+    /// Gets the name of a content mark.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `buffer`     - buffer for holding the returned name in UTF-16LE. This is only
+    ///                   modified if `buflen` is longer than the length of the name.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   to contain the name. Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetName(
         &self,
@@ -7398,12 +7604,32 @@ pub trait PdfiumLibraryBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the number of key/value pair parameters in |mark|.\n\n   mark   - handle to a content mark.\n\n Returns the number of key/value pair parameters |mark|, or -1 in case of\n failure."]
+    /// Gets the number of key/value pair parameters in `mark`.
+    ///
+    ///    `mark`   - handle to a content mark.
+    ///
+    /// Returns the number of key/value pair parameters `mark`, or `-1` in case of failure.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int;
 
     #[cfg(feature = "pdfium_future")]
-    #[doc = " Experimental API.\n Get the key of a property in a content mark.\n\n   mark       - handle to a content mark.\n   index      - index of the property.\n   buffer     - buffer for holding the returned key in UTF-16LE. This is only\n                modified if |buflen| is large enough to store the key.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the operation was successful, FALSE otherwise."]
+    /// Gets the key of a property in a content mark.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `index`      - index of the property.
+    ///
+    ///    `buffer`     - buffer for holding the returned key in UTF-16LE. This is only
+    ///                   modified if `buflen` is large enough to store the key.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   in bytes to contain the name. This is a required parameter.
+    ///                   Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the operation was successful, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamKey(
         &self,
@@ -7433,7 +7659,22 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961",
     ))]
-    #[doc = " Experimental API.\n Get the key of a property in a content mark.\n\n   mark       - handle to a content mark.\n   index      - index of the property.\n   buffer     - buffer for holding the returned key in UTF-16LE. This is only\n                modified if |buflen| is longer than the length of the key.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the key. Not filled if FALSE is returned.\n\n Returns TRUE if the operation was successful, FALSE otherwise."]
+    /// Gets the key of a property in a content mark.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `index`      - index of the property.
+    ///
+    ///    `buffer`     - buffer for holding the returned key in UTF-16LE. This is only
+    ///                   modified if `buflen` is longer than the length of the key.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   to contain the key. Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the operation was successful, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamKey(
         &self,
@@ -7444,7 +7685,13 @@ pub trait PdfiumLibraryBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the type of the value of a property in a content mark by key.\n\n   mark   - handle to a content mark.\n   key    - string key of the property.\n\n Returns the type of the value, or FPDF_OBJECT_UNKNOWN in case of failure."]
+    /// Gets the type of the value of a property in a content mark by key.
+    ///
+    ///    `mark`   - handle to a content mark.
+    ///
+    ///    `key`    - string key of the property.
+    ///
+    /// Returns the type of the value, or `FPDF_OBJECT_UNKNOWN` in case of failure.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamValueType(
         &self,
