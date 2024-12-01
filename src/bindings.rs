@@ -7699,7 +7699,18 @@ pub trait PdfiumLibraryBindings {
         key: &str,
     ) -> FPDF_OBJECT_TYPE;
 
-    #[doc = " Experimental API.\n Get the value of a number property in a content mark by key as int.\n FPDFPageObjMark_GetParamValueType() should have returned FPDF_OBJECT_NUMBER\n for this property.\n\n   mark      - handle to a content mark.\n   key       - string key of the property.\n   out_value - pointer to variable that will receive the value. Not filled if\n               false is returned.\n\n Returns TRUE if the key maps to a number value, FALSE otherwise."]
+    /// Gets the value of a number property in a content mark by key as int.
+    /// [PdfiumLibraryBindings::FPDFPageObjMark_GetParamValueType] should have returned
+    /// `FPDF_OBJECT_NUMBER` for this property.
+    ///
+    ///    `mark`      - handle to a content mark.
+    ///
+    ///    `key`       - string key of the property.
+    ///
+    ///    `out_value` - pointer to variable that will receive the value. Not filled if
+    ///                  `false` is returned.
+    ///
+    /// Returns `true` if the key maps to a number value, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamIntValue(
         &self,
@@ -7709,7 +7720,23 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(feature = "pdfium_future")]
-    #[doc = " Experimental API.\n Get the value of a string property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value in UTF-16LE. This is\n                only modified if |buflen| is large enough to store the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    /// Gets the value of a string property in a content mark by key.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `key`        - string key of the property.
+    ///
+    ///    `buffer`     - buffer for holding the returned value in UTF-16LE. This is
+    ///                   only modified if `buflen` is large enough to store the value.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   in bytes to contain the name. This is a required parameter.
+    ///                   Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamStringValue(
         &self,
@@ -7739,7 +7766,22 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961",
     ))]
-    #[doc = " Experimental API.\n Get the value of a string property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value in UTF-16LE. This is\n                only modified if |buflen| is longer than the length of the\n                value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the value. Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    /// Gets the value of a string property in a content mark by key.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `key`        - string key of the property.
+    ///
+    ///    `buffer`     - buffer for holding the returned value in UTF-16LE. This is
+    ///                   only modified if `buflen` is longer than the length of the value.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   to contain the value. Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamStringValue(
         &self,
@@ -7751,7 +7793,23 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(feature = "pdfium_future")]
-    #[doc = " Experimental API.\n Get the value of a blob property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value. This is only modified\n                if |buflen| is large enough to store the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer in bytes.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                in bytes to contain the name. This is a required parameter.\n                Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    /// Gets the value of a blob property in a content mark by key.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `key`        - string key of the property.
+    ///
+    ///    `buffer`     - buffer for holding the returned value. This is only modified
+    ///                   if `buflen` is large enough to store the value. Optional, pass `null`
+    ///                   to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   in bytes to contain the name. This is a required parameter.
+    ///                   Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamBlobValue(
         &self,
@@ -7781,7 +7839,22 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961",
     ))]
-    #[doc = " Experimental API.\n Get the value of a blob property in a content mark by key.\n\n   mark       - handle to a content mark.\n   key        - string key of the property.\n   buffer     - buffer for holding the returned value. This is only modified\n                if |buflen| is at least as long as the length of the value.\n                Optional, pass null to just retrieve the size of the buffer\n                needed.\n   buflen     - length of the buffer.\n   out_buflen - pointer to variable that will receive the minimum buffer size\n                to contain the value. Not filled if FALSE is returned.\n\n Returns TRUE if the key maps to a string/blob value, FALSE otherwise."]
+    /// Gets the value of a blob property in a content mark by key.
+    ///
+    ///    `mark`       - handle to a content mark.
+    ///
+    ///    `key`        - string key of the property.
+    ///
+    ///    `buffer`     - buffer for holding the returned value. This is only modified
+    ///                   if `buflen` is at least as long as the length of the value.
+    ///                   Optional, pass `null` to just retrieve the size of the buffer needed.
+    ///
+    ///    `buflen`     - length of the buffer.
+    ///
+    ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
+    ///                   to contain the value. Not filled if `false` is returned.
+    ///
+    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamBlobValue(
         &self,
@@ -7792,7 +7865,21 @@ pub trait PdfiumLibraryBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Set the value of an int property in a content mark by key. If a parameter\n with key |key| exists, its value is set to |value|. Otherwise, it is added as\n a new parameter.\n\n   document    - handle to the document.\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n   value       - int value to set.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
+    /// Sets the value of an int property in a content mark by key. If a parameter
+    /// with key `key` exists, its value is set to `value`. Otherwise, it is added as
+    /// a new parameter.
+    ///
+    ///    `document`    - handle to the document.
+    ///
+    ///    `page_object` - handle to the page object with the mark.
+    ///
+    ///    `mark`        - handle to a content mark.
+    ///
+    ///    `key`         - string key of the property.
+    ///
+    ///    `value`       - int value to set.
+    ///
+    /// Returns `true` if the operation succeeded, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetIntParam(
         &self,
@@ -7803,7 +7890,21 @@ pub trait PdfiumLibraryBindings {
         value: c_int,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Set the value of a string property in a content mark by key. If a parameter\n with key |key| exists, its value is set to |value|. Otherwise, it is added as\n a new parameter.\n\n   document    - handle to the document.\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n   value       - string value to set.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
+    /// Sets the value of a string property in a content mark by key. If a parameter
+    /// with key `key` exists, its value is set to `value`. Otherwise, it is added as
+    /// a new parameter.
+    ///
+    ///    `document`    - handle to the document.
+    ///
+    ///    `page_object` - handle to the page object with the mark.
+    ///
+    ///    `mark`        - handle to a content mark.
+    ///
+    ///    `key`         - string key of the property.
+    ///
+    ///    `value`       - string value to set.
+    ///
+    /// Returns `true` if the operation succeeded, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetStringParam(
         &self,
@@ -7815,7 +7916,23 @@ pub trait PdfiumLibraryBindings {
     ) -> FPDF_BOOL;
 
     #[cfg(feature = "pdfium_future")]
-    #[doc = " Experimental API.\n Set the value of a blob property in a content mark by key. If a parameter\n with key |key| exists, its value is set to |value|. Otherwise, it is added as\n a new parameter.\n\n   document    - handle to the document.\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n   value       - pointer to blob value to set.\n   value_len   - size in bytes of |value|.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
+    /// Sets the value of a blob property in a content mark by key. If a parameter
+    /// with key `key` exists, its value is set to `value`. Otherwise, it is added as
+    /// a new parameter.
+    ///
+    ///    `document`    - handle to the document.
+    ///
+    ///    `page_object` - handle to the page object with the mark.
+    ///
+    ///    `mark`        - handle to a content mark.
+    ///
+    ///    `key`         - string key of the property.
+    ///
+    ///    `value`       - pointer to blob value to set.
+    ///
+    ///    `value_len`   - size in bytes of `value`.
+    ///
+    /// Returns `true` if the operation succeeded, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetBlobParam(
         &self,
@@ -7846,7 +7963,23 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6015",
         feature = "pdfium_5961",
     ))]
-    #[doc = " Experimental API.\n Set the value of a blob property in a content mark by key. If a parameter\n with key |key| exists, its value is set to |value|. Otherwise, it is added as\n a new parameter.\n\n   document    - handle to the document.\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n   value       - pointer to blob value to set.\n   value_len   - size in bytes of |value|.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
+    /// Sets the value of a blob property in a content mark by key. If a parameter
+    /// with key `key` exists, its value is set to `value`. Otherwise, it is added as
+    /// a new parameter.
+    ///
+    ///    `document`    - handle to the document.
+    ///
+    ///    `page_object` - handle to the page object with the mark.
+    ///
+    ///    `mark`        - handle to a content mark.
+    ///
+    ///    `key`         - string key of the property.
+    ///
+    ///    `value`       - pointer to blob value to set.
+    ///
+    ///    `value_len`   - size in bytes of `value`.
+    ///
+    /// Returns `true` if the operation succeeded, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetBlobParam(
         &self,
@@ -7858,7 +7991,15 @@ pub trait PdfiumLibraryBindings {
         value_len: c_ulong,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Removes a property from a content mark by key.\n\n   page_object - handle to the page object with the mark.\n   mark        - handle to a content mark.\n   key         - string key of the property.\n\n Returns TRUE if the operation succeeded, FALSE otherwise."]
+    /// Removes a property from a content mark by key.
+    ///
+    ///    `page_object` - handle to the page object with the mark.
+    ///
+    ///    `mark`        - handle to a content mark.
+    ///
+    ///    `key`         - string key of the property.
+    ///
+    /// Returns `true` if the operation succeeded, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_RemoveParam(
         &self,
@@ -7867,7 +8008,23 @@ pub trait PdfiumLibraryBindings {
         key: &str,
     ) -> FPDF_BOOL;
 
-    #[doc = " Load an image from a JPEG image file and then set it into |image_object|.\n\n   pages        - pointer to the start of all loaded pages, may be NULL.\n   count        - number of |pages|, may be 0.\n   image_object - handle to an image object.\n   file_access  - file access handler which specifies the JPEG image file.\n\n Returns TRUE on success.\n\n The image object might already have an associated image, which is shared and\n cached by the loaded pages. In that case, we need to clear the cached image\n for all the loaded pages. Pass |pages| and page count (|count|) to this API\n to clear the image cache. If the image is not previously shared, or NULL is a\n valid |pages| value."]
+    /// Loads an image from a JPEG image file and then set it into `image_object`.
+    ///
+    ///    `pages`        - pointer to the start of all loaded pages, may be `NULL`.
+    ///
+    ///    `count`        - number of `pages`, may be `0`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `file_access`  - file access handler which specifies the JPEG image file.
+    ///
+    /// Returns `true` on success.
+    ///
+    /// The image object might already have an associated image, which is shared and
+    /// cached by the loaded pages. In that case, we need to clear the cached image
+    /// for all the loaded pages. Pass `pages` and page count (`count`) to this API
+    /// to clear the image cache. If the image is not previously shared, or `NULL` is a
+    /// valid `pages` value.
     #[allow(non_snake_case)]
     fn FPDFImageObj_LoadJpegFile(
         &self,
@@ -7877,7 +8034,25 @@ pub trait PdfiumLibraryBindings {
         file_access: *mut FPDF_FILEACCESS,
     ) -> FPDF_BOOL;
 
-    #[doc = " Load an image from a JPEG image file and then set it into |image_object|.\n\n   pages        - pointer to the start of all loaded pages, may be NULL.\n   count        - number of |pages|, may be 0.\n   image_object - handle to an image object.\n   file_access  - file access handler which specifies the JPEG image file.\n\n Returns TRUE on success.\n\n The image object might already have an associated image, which is shared and\n cached by the loaded pages. In that case, we need to clear the cached image\n for all the loaded pages. Pass |pages| and page count (|count|) to this API\n to clear the image cache. If the image is not previously shared, or NULL is a\n valid |pages| value. This function loads the JPEG image inline, so the image\n content is copied to the file. This allows |file_access| and its associated\n data to be deleted after this function returns."]
+    /// Loads an image from a JPEG image file and then set it into `image_object`.
+    ///
+    ///    `pages`        - pointer to the start of all loaded pages, may be `NULL`.
+    ///
+    ///    `count`        - number of `pages`, may be `0`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `file_access`  - file access handler which specifies the JPEG image file.
+    ///
+    /// Returns `true` on success.
+    ///
+    /// The image object might already have an associated image, which is shared and
+    /// cached by the loaded pages. In that case, we need to clear the cached image
+    /// for all the loaded pages. Pass `pages` and page count (`count`) to this API
+    /// to clear the image cache. If the image is not previously shared, or `NULL` is a
+    /// valid `pages` value. This function loads the JPEG image inline, so the image
+    /// content is copied to the file. This allows `file_access` and its associated
+    /// data to be deleted after this function returns.
     #[allow(non_snake_case)]
     fn FPDFImageObj_LoadJpegFileInline(
         &self,
@@ -7887,7 +8062,31 @@ pub trait PdfiumLibraryBindings {
         file_access: *mut FPDF_FILEACCESS,
     ) -> FPDF_BOOL;
 
-    #[doc = " TODO(thestig): Start deprecating this once FPDFPageObj_SetMatrix() is stable.\n\n Set the transform matrix of |image_object|.\n\n   image_object - handle to an image object.\n   a            - matrix value.\n   b            - matrix value.\n   c            - matrix value.\n   d            - matrix value.\n   e            - matrix value.\n   f            - matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and can be used to scale, rotate, shear and translate the |image_object|.\n\n Returns TRUE on success."]
+    /// Sets the transform matrix of `image_object`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `a`            - matrix value.
+    ///
+    ///    `b`            - matrix value.
+    ///
+    ///    `c`            - matrix value.
+    ///
+    ///    `d`            - matrix value.
+    ///
+    ///    `e`            - matrix value.
+    ///
+    ///    `f`            - matrix value.
+    ///
+    /// The matrix is composed as:
+    ///
+    ///    `|a c e|`
+    ///
+    ///    `|b d f|`
+    ///
+    /// and can be used to scale, rotate, shear and translate the `image_object`.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     #[deprecated(
@@ -7904,7 +8103,17 @@ pub trait PdfiumLibraryBindings {
         f: c_double,
     ) -> FPDF_BOOL;
 
-    #[doc = " Set |bitmap| to |image_object|.\n\n   pages        - pointer to the start of all loaded pages, may be NULL.\n   count        - number of |pages|, may be 0.\n   image_object - handle to an image object.\n   bitmap       - handle of the bitmap.\n\n Returns TRUE on success."]
+    /// Sets `bitmap` to `image_object`.
+    ///
+    ///    `pages`        - pointer to the start of all loaded pages, may be `NULL`.
+    ///
+    ///    `count`        - number of `pages`, may be `0`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `bitmap`       - handle of the bitmap.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFImageObj_SetBitmap(
         &self,
@@ -7914,11 +8123,33 @@ pub trait PdfiumLibraryBindings {
         bitmap: FPDF_BITMAP,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get a bitmap rasterization of |image_object|. FPDFImageObj_GetBitmap() only\n operates on |image_object| and does not take the associated image mask into\n account. It also ignores the matrix for |image_object|.\n The returned bitmap will be owned by the caller, and FPDFBitmap_Destroy()\n must be called on the returned bitmap when it is no longer needed.\n\n   image_object - handle to an image object.\n\n Returns the bitmap."]
+    /// Gets a bitmap rasterization of `image_object`. [PdfiumLibraryBindings::FPDFImageObj_GetBitmap]
+    /// only operates on `image_object` and does not take the associated image mask into
+    /// account. It also ignores the matrix for `image_object`. The returned bitmap will be
+    /// owned by the caller, and [PdfiumLibraryBindings::FPDFBitmap_Destroy] must be called on
+    /// the returned bitmap when it is no longer needed.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    /// Returns the bitmap.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetBitmap(&self, image_object: FPDF_PAGEOBJECT) -> FPDF_BITMAP;
 
-    #[doc = " Experimental API.\n Get a bitmap rasterization of |image_object| that takes the image mask and\n image matrix into account. To render correctly, the caller must provide the\n |document| associated with |image_object|. If there is a |page| associated\n with |image_object|, the caller should provide that as well.\n The returned bitmap will be owned by the caller, and FPDFBitmap_Destroy()\n must be called on the returned bitmap when it is no longer needed.\n\n   document     - handle to a document associated with |image_object|.\n   page         - handle to an optional page associated with |image_object|.\n   image_object - handle to an image object.\n\n Returns the bitmap or NULL on failure."]
+    /// Gets a bitmap rasterization of `image_object` that takes the image mask and
+    /// image matrix into account. To render correctly, the caller must provide the
+    /// `document` associated with `image_object`. If there is a `page` associated
+    /// with `image_object`, the caller should provide that as well.
+    ///
+    /// The returned bitmap will be owned by the caller, and [PdfiumLibraryBindings::FPDFBitmap_Destroy]
+    /// must be called on the returned bitmap when it is no longer needed.
+    ///
+    ///    `document`     - handle to a document associated with `image_object`.
+    ///
+    ///    `page`         - handle to an optional page associated with `image_object`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    /// Returns the bitmap or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetRenderedBitmap(
         &self,
@@ -7927,7 +8158,17 @@ pub trait PdfiumLibraryBindings {
         image_object: FPDF_PAGEOBJECT,
     ) -> FPDF_BITMAP;
 
-    #[doc = " Get the decoded image data of |image_object|. The decoded data is the\n uncompressed image data, i.e. the raw image data after having all filters\n applied. |buffer| is only modified if |buflen| is longer than the length of\n the decoded image data.\n\n   image_object - handle to an image object.\n   buffer       - buffer for holding the decoded image data.\n   buflen       - length of the buffer in bytes.\n\n Returns the length of the decoded image data."]
+    /// Gets the decoded image data of `image_object`. The decoded data is the uncompressed
+    /// image data, i.e. the raw image data after having all filters applied. `buffer` is
+    /// only modified if `buflen` is longer than the length of the decoded image data.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `buffer`       - buffer for holding the decoded image data.
+    ///
+    ///    `buflen`       - length of the buffer in bytes.
+    ///
+    /// Returns the length of the decoded image data.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetImageDataDecoded(
         &self,
@@ -7936,7 +8177,17 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Get the raw image data of |image_object|. The raw data is the image data as\n stored in the PDF without applying any filters. |buffer| is only modified if\n |buflen| is longer than the length of the raw image data.\n\n   image_object - handle to an image object.\n   buffer       - buffer for holding the raw image data.\n   buflen       - length of the buffer in bytes.\n\n Returns the length of the raw image data."]
+    /// Gets the raw image data of `image_object`. The raw data is the image data as
+    /// stored in the PDF without applying any filters. `buffer` is only modified if
+    /// `buflen` is longer than the length of the raw image data.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `buffer`       - buffer for holding the raw image data.
+    ///
+    ///    `buflen`       - length of the buffer in bytes.
+    ///
+    /// Returns the length of the raw image data.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetImageDataRaw(
         &self,
@@ -7945,11 +8196,28 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Get the number of filters (i.e. decoders) of the image in |image_object|.\n\n   image_object - handle to an image object.\n\n Returns the number of |image_object|'s filters."]
+    /// Gets the number of filters (i.e. decoders) of the image in `image_object`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    /// Returns the number of `image_object`'s filters.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetImageFilterCount(&self, image_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Get the filter at |index| of |image_object|'s list of filters. Note that the\n filters need to be applied in order, i.e. the first filter should be applied\n first, then the second, etc. |buffer| is only modified if |buflen| is longer\n than the length of the filter string.\n\n   image_object - handle to an image object.\n   index        - the index of the filter requested.\n   buffer       - buffer for holding filter string, encoded in UTF-8.\n   buflen       - length of the buffer.\n\n Returns the length of the filter string."]
+    /// Gets the filter at `index` of `image_object`'s list of filters. Note that the
+    /// filters need to be applied in order, i.e. the first filter should be applied
+    /// first, then the second, etc. `buffer` is only modified if `buflen` is longer
+    /// than the length of the filter string.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `index`        - the index of the filter requested.
+    ///
+    ///    `buffer`       - buffer for holding filter string, encoded in UTF-8.
+    ///
+    ///    `buflen`       - length of the buffer.
+    ///
+    /// Returns the length of the filter string.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetImageFilter(
         &self,
@@ -7959,7 +8227,19 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[doc = " Get the image metadata of |image_object|, including dimension, DPI, bits per\n pixel, and colorspace. If the |image_object| is not an image object or if it\n does not have an image, then the return value will be false. Otherwise,\n failure to retrieve any specific parameter would result in its value being 0.\n\n   image_object - handle to an image object.\n   page         - handle to the page that |image_object| is on. Required for\n                  retrieving the image's bits per pixel and colorspace.\n   metadata     - receives the image metadata; must not be NULL.\n\n Returns true if successful."]
+    /// Gets the image metadata of `image_object`, including dimension, DPI, bits per pixel,
+    /// and colorspace. If the `image_object` is not an image object or if it does not have
+    /// an image, then the return value will be false. Otherwise, failure to retrieve any
+    /// specific parameter would result in its value being `0`.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `page`         - handle to the page that `image_object` is on. Required for
+    ///                     retrieving the image's bits per pixel and colorspace.
+    ///
+    ///    `metadata`     - receives the image metadata; must not be `NULL`.
+    ///
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetImageMetadata(
         &self,
@@ -7968,7 +8248,15 @@ pub trait PdfiumLibraryBindings {
         metadata: *mut FPDF_IMAGEOBJ_METADATA,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the image size in pixels. Faster method to get only image size.\n\n   image_object - handle to an image object.\n   width        - receives the image width in pixels; must not be NULL.\n   height       - receives the image height in pixels; must not be NULL.\n\n Returns true if successful."]
+    /// Gets the image size in pixels. Faster method to get only image size.
+    ///
+    ///    `image_object` - handle to an image object.
+    ///
+    ///    `width`        - receives the image width in pixels; must not be `NULL`.
+    ///
+    ///    `height`       - receives the image height in pixels; must not be `NULL`.
+    ///
+    /// Returns `true` if successful.
     #[allow(non_snake_case)]
     fn FPDFImageObj_GetImagePixelSize(
         &self,
@@ -7977,9 +8265,27 @@ pub trait PdfiumLibraryBindings {
         height: *mut c_uint,
     ) -> FPDF_BOOL;
 
+    /// Creates a new path object at an initial position.
+    ///
+    ///    `x` - initial horizontal position.
+    ///
+    ///    `y` - initial vertical position.
+    ///
+    /// Returns a handle to a new path object.
     #[allow(non_snake_case)]
     fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT;
 
+    /// Creates a closed path consisting of a rectangle.
+    ///
+    ///    `x` - horizontal position for the left boundary of the rectangle.
+    ///
+    ///    `y` - vertical position for the bottom boundary of the rectangle.
+    ///
+    ///    `w` - width of the rectangle.
+    ///
+    ///    `h` - height of the rectangle.
+    ///
+    /// Returns a handle to the new path object.
     #[allow(non_snake_case)]
     fn FPDFPageObj_CreateNewRect(
         &self,
@@ -7989,7 +8295,19 @@ pub trait PdfiumLibraryBindings {
         h: c_float,
     ) -> FPDF_PAGEOBJECT;
 
-    #[doc = " Get the bounding box of |page_object|.\n\n page_object  - handle to a page object.\n left         - pointer where the left coordinate will be stored\n bottom       - pointer where the bottom coordinate will be stored\n right        - pointer where the right coordinate will be stored\n top          - pointer where the top coordinate will be stored\n\n On success, returns TRUE and fills in the 4 coordinates."]
+    /// Gets the bounding box of `page_object`.
+    ///
+    ///    `page_object`  - handle to a page object.
+    ///
+    ///    `left`         - pointer where the left coordinate will be stored.
+    ///
+    ///    `bottom`       - pointer where the bottom coordinate will be stored.
+    ///
+    ///    `right`        - pointer where the right coordinate will be stored.
+    ///
+    ///    `top`          - pointer where the top coordinate will be stored.
+    ///
+    /// On success, returns `true` and fills in the four coordinates.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetBounds(
         &self,
@@ -8000,7 +8318,20 @@ pub trait PdfiumLibraryBindings {
         top: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the quad points that bounds |page_object|.\n\n page_object  - handle to a page object.\n quad_points  - pointer where the quadrilateral points will be stored.\n\n On success, returns TRUE and fills in |quad_points|.\n\n Similar to FPDFPageObj_GetBounds(), this returns the bounds of a page\n object. When the object is rotated by a non-multiple of 90 degrees, this API\n returns a tighter bound that cannot be represented with just the 4 sides of\n a rectangle.\n\n Currently only works the following |page_object| types: FPDF_PAGEOBJ_TEXT and\n FPDF_PAGEOBJ_IMAGE."]
+    /// Gets the quad points that bounds `page_object`.
+    ///
+    ///    `page_object`  - handle to a page object.
+    ///
+    ///    `quad_points`  - pointer where the quadrilateral points will be stored.
+    ///
+    /// On success, returns `true` and fills in `quad_points`.
+    ///
+    /// Similar to [PdfiumLibraryBindings::FPDFPageObj_GetBounds], this returns the bounds
+    /// of a page object. When the object is rotated by a non-multiple of 90 degrees,
+    /// this API returns a tighter bound that cannot be represented with just the four sides
+    /// of a rectangle.
+    ///
+    /// Currently only works the following `page_object` types: `FPDF_PAGEOBJ_TEXT` and `FPDF_PAGEOBJ_IMAGE`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetRotatedBounds(
         &self,
@@ -8008,11 +8339,31 @@ pub trait PdfiumLibraryBindings {
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL;
 
-    #[doc = " Set the blend mode of |page_object|.\n\n page_object  - handle to a page object.\n blend_mode   - string containing the blend mode.\n\n Blend mode can be one of following: Color, ColorBurn, ColorDodge, Darken,\n Difference, Exclusion, HardLight, Hue, Lighten, Luminosity, Multiply, Normal,\n Overlay, Saturation, Screen, SoftLight"]
+    /// Sets the blend mode of `page_object`.
+    ///
+    ///    `page_object`  - handle to a page object.
+    ///
+    ///    `blend_mode`   - string containing the blend mode.
+    ///
+    /// Blend mode can be one of following: `Color`, `ColorBurn`, `ColorDodge`, `Darken`,
+    /// `Difference`, `Exclusion`, `HardLight`, `Hue`, `Lighten`, `Luminosity`, `Multiply`,
+    /// `Normal`, `Overlay`, `Saturation`, `Screen`, `SoftLight`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str);
 
-    #[doc = " Set the stroke RGBA of a page object. Range of values: 0 - 255.\n\n page_object  - the handle to the page object.\n R            - the red component for the object's stroke color.\n G            - the green component for the object's stroke color.\n B            - the blue component for the object's stroke color.\n A            - the stroke alpha for the object.\n\n Returns TRUE on success."]
+    /// Sets the stroke RGBA of a page object. Range of values: `0` - `255`.
+    ///
+    ///    `page_object`  - the handle to the page object.
+    ///
+    ///    `R`            - the red component for the object's stroke color.
+    ///
+    ///    `G`            - the green component for the object's stroke color.
+    ///
+    ///    `B`            - the blue component for the object's stroke color.
+    ///
+    ///    `A`            - the stroke alpha for the object.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetStrokeColor(
         &self,
@@ -8023,7 +8374,19 @@ pub trait PdfiumLibraryBindings {
         A: c_uint,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get the stroke RGBA of a page object. Range of values: 0 - 255.\n\n page_object  - the handle to the page object.\n R            - the red component of the path stroke color.\n G            - the green component of the object's stroke color.\n B            - the blue component of the object's stroke color.\n A            - the stroke alpha of the object.\n\n Returns TRUE on success."]
+    /// Gets the stroke RGBA of a page object. Range of values: `0` - `255`.
+    ///
+    ///    `page_object`  - the handle to the page object.
+    ///
+    ///    `R`            - the red component of the path stroke color.
+    ///
+    ///    `G`            - the green component of the object's stroke color.
+    ///
+    ///    `B`            - the blue component of the object's stroke color.
+    ///
+    ///    `A`            - the stroke alpha of the object.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetStrokeColor(
         &self,
@@ -8034,12 +8397,24 @@ pub trait PdfiumLibraryBindings {
         A: *mut c_uint,
     ) -> FPDF_BOOL;
 
-    #[doc = " Set the stroke width of a page object.\n\n path   - the handle to the page object.\n width  - the width of the stroke.\n\n Returns TRUE on success"]
+    /// Sets the stroke width of a page object.
+    ///
+    ///    `path`   - the handle to the page object.
+    ///
+    ///    `width`  - the width of the stroke.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetStrokeWidth(&self, page_object: FPDF_PAGEOBJECT, width: c_float)
         -> FPDF_BOOL;
 
-    #[doc = " Get the stroke width of a page object.\n\n path   - the handle to the page object.\n width  - the width of the stroke.\n\n Returns TRUE on success"]
+    /// Gets the stroke width of a page object.
+    ///
+    ///    `path`   - the handle to the page object.
+    ///
+    ///    `width`  - the width of the stroke.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetStrokeWidth(
         &self,
@@ -8047,23 +8422,63 @@ pub trait PdfiumLibraryBindings {
         width: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get the line join of |page_object|.\n\n page_object  - handle to a page object.\n\n Returns the line join, or -1 on failure.\n Line join can be one of following: FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND,\n FPDF_LINEJOIN_BEVEL"]
+    /// Gets the line join of `page_object`.
+    ///
+    ///    `page_object`  - handle to a page object.
+    ///
+    /// Returns the line join, or `-1` on failure.
+    ///
+    /// Line join can be one of following: `FPDF_LINEJOIN_MITER`, `FPDF_LINEJOIN_ROUND`,
+    /// `FPDF_LINEJOIN_BEVEL`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetLineJoin(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Set the line join of |page_object|.\n\n page_object  - handle to a page object.\n line_join    - line join\n\n Line join can be one of following: FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND,\n FPDF_LINEJOIN_BEVEL"]
+    /// Sets the line join of `page_object`.
+    ///
+    ///    `page_object`  - handle to a page object.
+    ///
+    ///    `line_join`    - line join
+    ///
+    /// Line join can be one of following: `FPDF_LINEJOIN_MITER`, `FPDF_LINEJOIN_ROUND`,
+    /// `FPDF_LINEJOIN_BEVEL`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetLineJoin(&self, page_object: FPDF_PAGEOBJECT, line_join: c_int) -> FPDF_BOOL;
 
-    #[doc = " Get the line cap of |page_object|.\n\n page_object - handle to a page object.\n\n Returns the line cap, or -1 on failure.\n Line cap can be one of following: FPDF_LINECAP_BUTT, FPDF_LINECAP_ROUND,\n FPDF_LINECAP_PROJECTING_SQUARE"]
+    /// Gets the line cap of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    /// Returns the line cap, or `-1` on failure.
+    ///
+    /// Line cap can be one of following: `FPDF_LINECAP_BUTT`, `FPDF_LINECAP_ROUND`,
+    /// `FPDF_LINECAP_PROJECTING_SQUARE`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetLineCap(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Set the line cap of |page_object|.\n\n page_object - handle to a page object.\n line_cap    - line cap\n\n Line cap can be one of following: FPDF_LINECAP_BUTT, FPDF_LINECAP_ROUND,\n FPDF_LINECAP_PROJECTING_SQUARE"]
+    /// Sets the line cap of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `line_cap`    - line cap
+    ///
+    /// Line cap can be one of following: `FPDF_LINECAP_BUTT`, `FPDF_LINECAP_ROUND`,
+    /// `FPDF_LINECAP_PROJECTING_SQUARE`.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetLineCap(&self, page_object: FPDF_PAGEOBJECT, line_cap: c_int) -> FPDF_BOOL;
 
-    #[doc = " Set the fill RGBA of a page object. Range of values: 0 - 255.\n\n page_object  - the handle to the page object.\n R            - the red component for the object's fill color.\n G            - the green component for the object's fill color.\n B            - the blue component for the object's fill color.\n A            - the fill alpha for the object.\n\n Returns TRUE on success."]
+    /// Sets the fill RGBA of a page object. Range of values: `0` - `255`.
+    ///
+    ///    `page_object`  - the handle to the page object.
+    ///
+    ///    `R`            - the red component for the object's fill color.
+    ///
+    ///    `G`            - the green component for the object's fill color.
+    ///
+    ///    `B`            - the blue component for the object's fill color.
+    ///
+    ///    `A`            - the fill alpha for the object.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetFillColor(
         &self,
@@ -8074,7 +8489,19 @@ pub trait PdfiumLibraryBindings {
         A: c_uint,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get the fill RGBA of a page object. Range of values: 0 - 255.\n\n page_object  - the handle to the page object.\n R            - the red component of the object's fill color.\n G            - the green component of the object's fill color.\n B            - the blue component of the object's fill color.\n A            - the fill alpha of the object.\n\n Returns TRUE on success."]
+    /// Gets the fill RGBA of a page object. Range of values: `0` - `255`.
+    ///
+    ///    `page_object`  - the handle to the page object.
+    ///
+    ///    `R`            - the red component of the object's fill color.
+    ///
+    ///    `G`            - the green component of the object's fill color.
+    ///
+    ///    `B`            - the blue component of the object's fill color.
+    ///
+    ///    `A`            - the fill alpha of the object.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetFillColor(
         &self,
@@ -8085,7 +8512,13 @@ pub trait PdfiumLibraryBindings {
         A: *mut c_uint,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the line dash |phase| of |page_object|.\n\n page_object - handle to a page object.\n phase - pointer where the dashing phase will be stored.\n\n Returns TRUE on success."]
+    /// Gets the line dash `phase` of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `phase`       - pointer where the dashing phase will be stored.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetDashPhase(
         &self,
@@ -8093,15 +8526,33 @@ pub trait PdfiumLibraryBindings {
         phase: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Set the line dash phase of |page_object|.\n\n page_object - handle to a page object.\n phase - line dash phase.\n\n Returns TRUE on success."]
+    /// Sets the line dash phase of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `phase`       - line dash phase.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetDashPhase(&self, page_object: FPDF_PAGEOBJECT, phase: c_float) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Get the line dash array of |page_object|.\n\n page_object - handle to a page object.\n\n Returns the line dash array size or -1 on failure."]
+    /// Gets the line dash array of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    /// Returns the line dash array size, or `-1` on failure.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetDashCount(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Experimental API.\n Get the line dash array of |page_object|.\n\n page_object - handle to a page object.\n dash_array - pointer where the dashing array will be stored.\n dash_count - number of elements in |dash_array|.\n\n Returns TRUE on success."]
+    /// Gets the line dash array of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `dash_array`  - pointer where the dashing array will be stored.
+    ///
+    ///    `dash_count`  - number of elements in `dash_array`.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetDashArray(
         &self,
@@ -8110,7 +8561,17 @@ pub trait PdfiumLibraryBindings {
         dash_count: size_t,
     ) -> FPDF_BOOL;
 
-    #[doc = " Experimental API.\n Set the line dash array of |page_object|.\n\n page_object - handle to a page object.\n dash_array - the dash array.\n dash_count - number of elements in |dash_array|.\n phase - the line dash phase.\n\n Returns TRUE on success."]
+    /// Sets the line dash array of `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `dash_array`  - the dash array.
+    ///
+    ///    `dash_count`  - number of elements in `dash_array`.
+    ///
+    ///    `phase`       - the line dash phase.
+    ///
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPageObj_SetDashArray(
         &self,
@@ -8120,15 +8581,36 @@ pub trait PdfiumLibraryBindings {
         phase: c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get number of segments inside |path|.\n\n   path - handle to a path.\n\n A segment is a command, created by e.g. FPDFPath_MoveTo(),\n FPDFPath_LineTo() or FPDFPath_BezierTo().\n\n Returns the number of objects in |path| or -1 on failure."]
+    /// Gets the number of segments inside `path`.
+    ///
+    ///    `path` - handle to a path.
+    ///
+    /// A segment is a single command, created by e.g. [PdfiumLibraryBindings::FPDFPath_MoveTo],
+    /// [PdfiumLibraryBindings::FPDFPath_LineTo], or [PdfiumLibraryBindings::FPDFPath_BezierTo].
+    ///
+    /// Returns the number of objects in `path`, or `-1` on failure.
     #[allow(non_snake_case)]
     fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int;
 
-    #[doc = " Get segment in |path| at |index|.\n\n   path  - handle to a path.\n   index - the index of a segment.\n\n Returns the handle to the segment, or NULL on faiure."]
+    /// Gets segment in `path` at `index`.
+    ///
+    ///    `path`  - handle to a path.
+    ///
+    ///    `index` - the index of a segment.
+    ///
+    /// Returns the handle to the segment, or `NULL` on failure.
     #[allow(non_snake_case)]
     fn FPDFPath_GetPathSegment(&self, path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT;
 
-    #[doc = " Get coordinates of |segment|.\n\n   segment  - handle to a segment.\n   x      - the horizontal position of the segment.\n   y      - the vertical position of the segment.\n\n Returns TRUE on success, otherwise |x| and |y| is not set."]
+    /// Gets coordinates of `segment`.
+    ///
+    ///    `segment`  - handle to a segment.
+    ///
+    ///    `x`        - the horizontal position of the segment.
+    ///
+    ///    `y`        - the vertical position of the segment.
+    ///
+    /// Returns `true` on success, otherwise `x` and `y` is not set.
     #[allow(non_snake_case)]
     fn FPDFPathSegment_GetPoint(
         &self,
@@ -8137,11 +8619,20 @@ pub trait PdfiumLibraryBindings {
         y: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[doc = " Get type of |segment|.\n\n   segment - handle to a segment.\n\n Returns one of the FPDF_SEGMENT_* values on success,\n FPDF_SEGMENT_UNKNOWN on error."]
+    /// Gets the type of `segment`.
+    ///
+    ///    `segment` - handle to a segment.
+    ///
+    /// Returns one of the `FPDF_SEGMENT_*` values on success, or `FPDF_SEGMENT_UNKNOWN`
+    /// on error.
     #[allow(non_snake_case)]
     fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int;
 
-    #[doc = " Gets if the |segment| closes the current subpath of a given path.\n\n   segment - handle to a segment.\n\n Returns close flag for non-NULL segment, FALSE otherwise."]
+    /// Indicates whether or not the `segment` closes the current subpath of a given path.
+    ///
+    ///    `segment` - handle to a segment.
+    ///
+    /// Returns close flag for non-`NULL` segment, `false` otherwise.
     #[allow(non_snake_case)]
     fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
