@@ -1,3 +1,5 @@
+//! Defines the [PdfiumApiVersion] enum, the set of Pdfium API versions supported by `pdfium-render`.
+
 /// A specific Pdfium FPDF_* API release version.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfiumApiVersion {

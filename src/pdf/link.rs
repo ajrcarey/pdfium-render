@@ -6,17 +6,17 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::action::PdfAction;
 use crate::pdf::destination::PdfDestination;
 
+/// A single link contained within a `PdfPage`, a `PdfPageAnnotation`, or a `PdfBookmark`.
+///
+/// Each link may have a corresponding [PdfAction] that will be triggered when the user
+/// interacts with the link, and a [PdfDestination] that indicates the target of any behaviour
+/// triggered by the [PdfAction].
 pub struct PdfLink<'a> {
     handle: FPDF_LINK,
     document: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
-/// A single link contained within a `PdfPage`, a `PdfPageAnnotation`, or a `PdfBookmark`.
-///
-/// Each link may have a corresponding [PdfAction] that will be triggered when the user
-/// interacts with the link, and a [PdfDestination] that indicates the target of any behaviour
-/// triggered by the [PdfAction].
 impl<'a> PdfLink<'a> {
     #[inline]
     pub(crate) fn from_pdfium(

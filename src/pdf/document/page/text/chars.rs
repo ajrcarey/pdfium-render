@@ -15,6 +15,8 @@ use std::os::raw::c_int;
 
 pub type PdfPageTextCharIndex = usize;
 
+/// A collection of all the distinct character in a bounded rectangular region of
+/// a single [PdfPage].
 pub struct PdfPageTextChars<'a> {
     page_handle: FPDF_PAGE,
     text_page_handle: FPDF_TEXTPAGE,

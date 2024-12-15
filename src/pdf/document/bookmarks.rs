@@ -122,6 +122,7 @@ impl<'a> PdfBookmarks<'a> {
     }
 }
 
+/// An iterator over all the [PdfBookmark] objects in a [PdfBookmarks] collection.
 pub struct PdfBookmarksIterator<'a> {
     // If true, recurse into descendants.
     include_descendants: bool,

@@ -11,6 +11,7 @@ use crate::pdf::points::PdfPoints;
 use std::convert::TryInto;
 use std::os::raw::{c_float, c_int, c_uint};
 
+/// A single font glyph in a `PdfFontGlyphs` collection.
 pub struct PdfFontGlyph<'a> {
     handle: FPDF_FONT,
     index: PdfFontGlyphIndex,

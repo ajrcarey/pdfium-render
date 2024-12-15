@@ -40,6 +40,7 @@ pub enum PdfiumInternalError {
     Unknown = FPDF_ERR_UNKNOWN as isize,
 }
 
+/// A wrapper enum for handling Pdfium errors as standard Rust `Err` values.
 #[derive(Debug)]
 pub enum PdfiumError {
     /// The Pdfium WASM module has not been configured.
@@ -82,6 +83,7 @@ pub enum PdfiumError {
     UnknownPdfAnnotationType,
     UnknownPdfDestinationViewType,
     UnknownPdfSecurityHandlerRevision,
+    UnknownPdfSignatureModificationDetectionPermissionLevel,
     UnsupportedPdfPageObjectType,
     TextSegmentIndexOutOfBounds,
     CharIndexOutOfBounds,

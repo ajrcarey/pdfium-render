@@ -253,7 +253,7 @@ impl Pdfium {
         &'a self,
         path: &(impl AsRef<Path> + ?Sized),
         password: Option<&'a str>,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'a>, PdfiumError> {
         self.load_pdf_from_reader(File::open(path).map_err(PdfiumError::IoError)?, password)
     }
 

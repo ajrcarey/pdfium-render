@@ -125,6 +125,7 @@ impl<'a> ToPdfFontToken for &'a PdfFont<'a> {
     }
 }
 
+/// A collection of all the `PdfFont` objects in a `PdfDocument`.
 pub struct PdfFonts<'a> {
     document_handle: FPDF_DOCUMENT,
     fonts: HashMap<PdfFontToken, PdfFont<'a>>,

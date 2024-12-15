@@ -46,6 +46,7 @@ impl PdfDocumentMetadataTag {
     }
 }
 
+/// A collection of all the metadata tags in a `PdfDocument`.
 pub struct PdfMetadata<'a> {
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,

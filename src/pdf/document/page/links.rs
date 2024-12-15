@@ -12,6 +12,7 @@ use std::ptr::null_mut;
 
 pub type PdfPageLinkIndex = usize;
 
+/// The links contained within a single `PdfPage`.
 pub struct PdfPageLinks<'a> {
     page_handle: FPDF_PAGE,
     document_handle: FPDF_DOCUMENT,

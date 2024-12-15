@@ -16,6 +16,7 @@ use {
     crate::pdf::document::PdfDocument,
 };
 
+/// A single bookmark in a [PdfBookmarks] collection.
 pub struct PdfBookmark<'a> {
     bookmark_handle: FPDF_BOOKMARK,
     parent: Option<FPDF_BOOKMARK>,
