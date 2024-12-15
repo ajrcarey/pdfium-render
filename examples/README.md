@@ -7,7 +7,8 @@ For general comments about `pdfium-render` and binding to Pdfium, see `export.rs
 Each example can run via `cargo run --example <example_name>`.
 
 * `annotations.rs`: iterates over every annotation on every page in `test/annotations-test.pdf`, displaying information about each annotation.
-* `attachments.rs`: generates a new document by embedding `test/annotations-test.pdf`, `test/create-test.pdf`, and `test/path-test.pdf` as attachments, saving the new document to `test/attachments.pdf`. 
+* `attachments.rs`: generates a new document by embedding `test/annotations-test.pdf`, `test/create-test.pdf`, and `test/path-test.pdf` as attachments, saving the new document to `test/attachments.pdf`.
+* `axum_once_cell.rs`: demonstrates using `OnceCell` and `MutexGuard` to safely share a single `Pdfium` instance across multiple asynchronous tasks as part of an Axum service.
 * `chars.rs`: iterates over the individual characters in a text object to determine the bounding boxes of each word in the text object.
 * `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`
 * `copy_objects.rs`: moves a selection of page objects from one page to another using the object copying functions in `PdfPageGroupObject`, saving the new document to `test/copy-test.pdf`.
