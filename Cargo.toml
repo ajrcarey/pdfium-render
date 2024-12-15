@@ -64,12 +64,12 @@ bindgen = { version = "<=0.69.4", optional = true }
 [dev-dependencies]
 # Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
 # are specified separately in examples/Cargo.toml.
-rand = "0"                                           # Used by examples/create.rs, examples/matrix.rs
-rayon = "1"                                          # Used by examples/thread_safe.rs
-axum = "0"                                           # Used by examples/axum_once_cell.rs
-tokio = { version = "1", features = ["full"] }       # Used by examples/axum_once_cell.rs
-tower = "0"                                          # Used by examples/axum_once_cell.rs
-pdfium-render = { path = "./", features = ["sync"] } # sync feature required by examples/axum_once_cell.rs
+rand = "0"                                     # Used by examples/create.rs, examples/matrix.rs
+rayon = "1"                                    # Used by examples/thread_safe.rs
+axum = "0"                                     # Used by examples/axum_once_cell.rs
+tokio = { version = "1", features = ["full"] } # Used by examples/axum_once_cell.rs
+tower = "0"                                    # Used by examples/axum_once_cell.rs
+pdfium-render = { path = "./", default-features = false, features = ["sync"] } # sync feature required by examples/axum_once_cell.rs
 
 [features]
 default = ["pdfium_latest", "thread_safe", "image"]
