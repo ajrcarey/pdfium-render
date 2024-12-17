@@ -20,6 +20,7 @@ use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::PdfMatrix;
 use crate::pdf::matrix::PdfMatrixValue;
 use crate::pdf::points::PdfPoints;
+use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::Pdfium;
 use std::collections::HashMap;
@@ -483,7 +484,7 @@ impl<'a> PdfPageGroupObject<'a> {
             .objects()
             .create_group(|object| {
                 objects_to_discard.contains_key(&(
-                    object.bounds().unwrap_or(PdfRect::ZERO),
+                    object.bounds().unwrap_or(PdfQuadPoints::ZERO),
                     object.matrix().unwrap_or(PdfMatrix::IDENTITY),
                     object.object_type(),
                 ))
@@ -554,23 +555,23 @@ impl<'a> PdfPageGroupObject<'a> {
             .bounds()
             {
                 if let Some(bounds) = bounds.as_mut() {
-                    if object_bounds.bottom < bounds.bottom {
-                        bounds.bottom = object_bounds.bottom;
+                    if object_bounds.bottom() < bounds.bottom {
+                        bounds.bottom = object_bounds.bottom();
                     }
 
-                    if object_bounds.left < bounds.left {
-                        bounds.left = object_bounds.left;
+                    if object_bounds.left() < bounds.left {
+                        bounds.left = object_bounds.left();
                     }
 
-                    if object_bounds.top > bounds.top {
-                        bounds.top = object_bounds.top;
+                    if object_bounds.top() > bounds.top {
+                        bounds.top = object_bounds.top();
                     }
 
-                    if object_bounds.right > bounds.right {
-                        bounds.right = object_bounds.right;
+                    if object_bounds.right() > bounds.right {
+                        bounds.right = object_bounds.right();
                     }
                 } else {
-                    bounds = Some(object_bounds);
+                    bounds = Some(object_bounds.to_rect());
                 }
             }
         });
@@ -765,7 +766,7 @@ mod test {
                 .iter()
                 .filter(|object| {
                     object.object_type() == PdfPageObjectType::Text
-                        && object.bounds().unwrap().bottom > page.height() / 2.0
+                        && object.bounds().unwrap().bottom() > page.height() / 2.0
                 })
                 .collect::<Vec<_>>()
                 .as_mut_slice(),
@@ -800,7 +801,7 @@ mod test {
                 .iter()
                 .filter(|object| {
                     object.object_type() == PdfPageObjectType::Text
-                        && object.bounds().unwrap().bottom < page.height() / 2.0
+                        && object.bounds().unwrap().bottom() < page.height() / 2.0
                 })
                 .collect::<Vec<_>>()
                 .as_mut_slice(),

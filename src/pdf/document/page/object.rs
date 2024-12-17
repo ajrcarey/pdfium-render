@@ -1046,15 +1046,15 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
         self.unwrap_as_trait().get_object_handle()
     }
 
-    #[inline]
-    fn get_document_handle(&self) -> Option<FPDF_DOCUMENT> {
-        self.unwrap_as_trait().get_document_handle()
-    }
+    // #[inline]
+    // fn get_document_handle(&self) -> Option<FPDF_DOCUMENT> {
+    //     self.unwrap_as_trait().get_document_handle()
+    // }
 
-    #[inline]
-    fn set_document_handle(&mut self, document: FPDF_DOCUMENT) {
-        self.unwrap_as_trait_mut().set_document_handle(document);
-    }
+    // #[inline]
+    // fn set_document_handle(&mut self, document: FPDF_DOCUMENT) {
+    //     self.unwrap_as_trait_mut().set_document_handle(document);
+    // }
 
     #[inline]
     fn get_page_handle(&self) -> Option<FPDF_PAGE> {
