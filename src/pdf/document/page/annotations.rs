@@ -414,24 +414,24 @@ impl<'a> PdfPageAnnotations<'a> {
 
         let bounds = object.bounds()?;
 
-        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_position(bounds.left(), bounds.bottom())?;
         annotation.set_stroke_color(color)?;
 
         const SQUIGGLY_HEIGHT: f32 = 12.0;
 
-        let annotation_top = bounds.bottom.value - 5.0;
+        let annotation_top = bounds.bottom().value - 5.0;
         let annotation_bottom = annotation_top - SQUIGGLY_HEIGHT;
 
         annotation
             .attachment_points_mut()
             .create_attachment_point_at_end(PdfQuadPoints::new_from_values(
-                bounds.left.value,
+                bounds.left().value,
                 annotation_bottom,
-                bounds.right.value,
+                bounds.right().value,
                 annotation_bottom,
-                bounds.right.value,
+                bounds.right().value,
                 annotation_top,
-                bounds.left.value,
+                bounds.left().value,
                 annotation_top,
             ))?;
 
@@ -467,11 +467,11 @@ impl<'a> PdfPageAnnotations<'a> {
 
         let bounds = object.bounds()?;
 
-        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_position(bounds.left(), bounds.bottom())?;
         annotation.set_stroke_color(color)?;
         annotation
             .attachment_points_mut()
-            .create_attachment_point_at_end(PdfQuadPoints::from_rect(bounds))?;
+            .create_attachment_point_at_end(bounds)?;
 
         if let Some(contents) = contents {
             annotation.set_width(bounds.width())?;
@@ -505,11 +505,11 @@ impl<'a> PdfPageAnnotations<'a> {
 
         let bounds = object.bounds()?;
 
-        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_position(bounds.left(), bounds.bottom())?;
         annotation.set_stroke_color(color)?;
         annotation
             .attachment_points_mut()
-            .create_attachment_point_at_end(PdfQuadPoints::from_rect(bounds))?;
+            .create_attachment_point_at_end(bounds)?;
 
         if let Some(contents) = contents {
             annotation.set_width(bounds.width())?;
@@ -543,11 +543,11 @@ impl<'a> PdfPageAnnotations<'a> {
 
         let bounds = object.bounds()?;
 
-        annotation.set_position(bounds.left, bounds.bottom)?;
+        annotation.set_position(bounds.left(), bounds.bottom())?;
         annotation.set_stroke_color(color)?;
         annotation
             .attachment_points_mut()
-            .create_attachment_point_at_end(PdfQuadPoints::from_rect(bounds))?;
+            .create_attachment_point_at_end(bounds)?;
 
         if let Some(contents) = contents {
             annotation.set_width(bounds.width())?;

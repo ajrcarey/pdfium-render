@@ -30,6 +30,7 @@ use crate::pdf::document::page::objects::PdfPageObjects;
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
+use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
@@ -547,13 +548,13 @@ pub trait PdfPageObjectCommon<'a> {
     /// Returns `true` if this [PdfPageObject] contains transparency.
     fn has_transparency(&self) -> bool;
 
-    /// Returns the bounding box of this [PdfPageObject].
+    /// Returns the bounding box of this [PdfPageObject] as a quadrilateral.
     ///
     /// For text objects, the bottom of the bounding box is set to the font baseline. Any characters
     /// in the text object that have glyph shapes that descends below the font baseline will extend
     /// beneath the bottom of this bounding box. To measure the distance of the maximum descent of
     /// any glyphs, use the [PdfPageTextObject::descent()] function.
-    fn bounds(&self) -> Result<PdfRect, PdfiumError>;
+    fn bounds(&self) -> Result<PdfQuadPoints, PdfiumError>;
 
     /// Returns the width of this [PdfPageObject].
     #[inline]
@@ -571,7 +572,7 @@ pub trait PdfPageObjectCommon<'a> {
     #[inline]
     fn is_inside_rect(&self, rect: &PdfRect) -> bool {
         self.bounds()
-            .map(|bounds| bounds.is_inside(rect))
+            .map(|bounds| bounds.to_rect().is_inside(rect))
             .unwrap_or(false)
     }
 
@@ -580,7 +581,7 @@ pub trait PdfPageObjectCommon<'a> {
     #[inline]
     fn does_overlap_rect(&self, rect: &PdfRect) -> bool {
         self.bounds()
-            .map(|bounds| bounds.does_overlap(rect))
+            .map(|bounds| bounds.to_rect().does_overlap(rect))
             .unwrap_or(false)
     }
 
@@ -765,7 +766,7 @@ where
     }
 
     #[inline]
-    fn bounds(&self) -> Result<PdfRect, PdfiumError> {
+    fn bounds(&self) -> Result<PdfQuadPoints, PdfiumError> {
         self.bounds_impl()
     }
 
@@ -1043,6 +1044,16 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
     fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
         self.unwrap_as_trait().get_object_handle()
+    }
+
+    #[inline]
+    fn get_document_handle(&self) -> Option<FPDF_DOCUMENT> {
+        self.unwrap_as_trait().get_document_handle()
+    }
+
+    #[inline]
+    fn set_document_handle(&mut self, document: FPDF_DOCUMENT) {
+        self.unwrap_as_trait_mut().set_document_handle(document);
     }
 
     #[inline]

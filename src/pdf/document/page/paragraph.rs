@@ -5,14 +5,14 @@
 
 use crate::bindgen::FPDF_PAGEOBJECT;
 use crate::error::PdfiumError;
-use crate::pdf::document::PdfDocument;
 use crate::pdf::document::fonts::PdfFontToken;
-use crate::pdf::document::page::PdfPage;
-use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::object::group::PdfPageGroupObject;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::text::PdfPageTextObject;
+use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::objects::common::PdfPageObjectsCommon;
+use crate::pdf::document::page::PdfPage;
+use crate::pdf::document::PdfDocument;
 use crate::pdf::font::PdfFont;
 use crate::pdf::points::PdfPoints;
 use itertools::Itertools;
@@ -291,7 +291,7 @@ impl<'a> PdfParagraph<'a> {
             .map(|object| {
                 let object_bottom = object
                     .bounds()
-                    .map(|bounds| bounds.bottom)
+                    .map(|bounds| bounds.bottom())
                     .unwrap_or(PdfPoints::ZERO);
 
                 match objects_bottom {
@@ -305,7 +305,7 @@ impl<'a> PdfParagraph<'a> {
 
                 let object_top = object
                     .bounds()
-                    .map(|bounds| bounds.top)
+                    .map(|bounds| bounds.top())
                     .unwrap_or(PdfPoints::ZERO);
 
                 match objects_top {
@@ -324,7 +324,7 @@ impl<'a> PdfParagraph<'a> {
 
                 let object_left = object
                     .bounds()
-                    .map(|bounds| bounds.left)
+                    .map(|bounds| bounds.left())
                     .unwrap_or(PdfPoints::ZERO);
 
                 match objects_left {
@@ -338,7 +338,7 @@ impl<'a> PdfParagraph<'a> {
 
                 let object_right = object
                     .bounds()
-                    .map(|bounds| bounds.right)
+                    .map(|bounds| bounds.right())
                     .unwrap_or(PdfPoints::ZERO);
 
                 match objects_right {
@@ -472,7 +472,7 @@ impl<'a> PdfParagraph<'a> {
 
                         let separator = if let Ok(bounds) = object.bounds() {
                             if let Some(last_object_right) = last_object_right {
-                                if last_object_right > bounds.left {
+                                if last_object_right > bounds.left() {
                                     // The last and current objects are touching.
                                     // Assume they're part of the same word, despite being
                                     // in separate objects.
@@ -507,7 +507,7 @@ impl<'a> PdfParagraph<'a> {
                         println!(
                             "last_object_right = {:?},  this object left = {:?}",
                             last_object_right,
-                            object.bounds().unwrap().left,
+                            object.bounds().unwrap().left(),
                         );
                     } else {
                         // The styles of the two text objects are different, so they can't be merged.

@@ -6,7 +6,6 @@ use crate::bindgen::FPDF_ANNOTATION;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::quad_points::PdfQuadPoints;
-use crate::pdf::rect::PdfRect;
 use std::ops::{Range, RangeInclusive};
 
 /// The zero-based index of a single attachment point inside its containing
@@ -82,7 +81,7 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
             return Err(PdfiumError::PageAnnotationAttachmentPointIndexOutOfBounds);
         }
 
-        let mut result = PdfQuadPoints::from_rect(PdfRect::ZERO).as_pdfium();
+        let mut result = PdfQuadPoints::ZERO.as_pdfium();
 
         if self
             .bindings

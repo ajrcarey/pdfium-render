@@ -5,6 +5,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::matrix::PdfMatrix;
 use crate::pdf::points::PdfPoints;
+use crate::pdf::quad_points::PdfQuadPoints;
 use itertools::{max, min};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
@@ -166,6 +167,12 @@ impl PdfRect {
         )
     }
 
+    /// Returns the [PdfQuadPoints] quadrilateral representation of this [PdfRect].
+    #[inline]
+    pub fn to_quad_points(&self) -> PdfQuadPoints {
+        PdfQuadPoints::from_rect(self)
+    }
+
     #[inline]
     pub(crate) fn as_pdfium(&self) -> FS_RECTF {
         FS_RECTF {
@@ -207,7 +214,7 @@ impl Display for PdfRect {
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
-            "PdfRect(bottom: {}, left: {}, top: {}, right: {}",
+            "PdfRect(bottom: {}, left: {}, top: {}, right: {})",
             self.bottom.value, self.left.value, self.top.value, self.right.value
         ))
     }

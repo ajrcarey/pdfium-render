@@ -102,7 +102,7 @@ pub fn main() -> Result<(), PdfiumError> {
     link_annotation.set_height(PdfPoints::new(50.0))?;
     link_annotation
         .attachment_points_mut()
-        .create_attachment_point_at_end(PdfQuadPoints::from_rect(PdfRect::new_from_values(
+        .create_attachment_point_at_end(PdfQuadPoints::from_rect(&PdfRect::new_from_values(
             100.0, 100.0, 150.0, 150.0,
         )))?;
 

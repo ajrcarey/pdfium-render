@@ -1,10 +1,14 @@
 //! Defines the [PdfQuadPoints] struct, a set of four coordinates expressed in [PdfPoints]
 //! that outline the bounds of a four-sided quadrilateral.
 
-use crate::bindgen::FS_QUADPOINTSF;
+use crate::bindgen::{FPDF_BOOL, FS_QUADPOINTSF};
+use crate::bindings::PdfiumLibraryBindings;
+use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::pdf::matrix::PdfMatrix;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 
 /// A set of four coordinates expressed in [PdfPoints] that outline the bounds of a
 /// four-sided quadrilateral. The coordinates specify the quadrilateral's four vertices
@@ -32,11 +36,29 @@ pub struct PdfQuadPoints {
 }
 
 impl PdfQuadPoints {
+    /// A [PdfQuadPoints] object with the identity value (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).
+    pub const ZERO: PdfQuadPoints = PdfQuadPoints::zero();
+
     #[inline]
     pub(crate) fn from_pdfium(points: FS_QUADPOINTSF) -> Self {
         PdfQuadPoints::new_from_values(
             points.x1, points.y1, points.x2, points.y2, points.x3, points.y3, points.x4, points.y4,
         )
+    }
+
+    #[inline]
+    pub(crate) fn from_pdfium_as_result(
+        result: FPDF_BOOL,
+        points: FS_QUADPOINTSF,
+        bindings: &dyn PdfiumLibraryBindings,
+    ) -> Result<PdfQuadPoints, PdfiumError> {
+        if !bindings.is_true(result) {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        } else {
+            Ok(PdfQuadPoints::from_pdfium(points))
+        }
     }
 
     /// Creates a new [PdfQuadPoints] from the given [PdfPoints] coordinate pairs.
@@ -46,7 +68,7 @@ impl PdfQuadPoints {
     /// y values increasing as coordinates move vertically up.
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub const fn new(
         x1: PdfPoints,
         y1: PdfPoints,
         x2: PdfPoints,
@@ -75,7 +97,7 @@ impl PdfQuadPoints {
     /// y values increasing as coordinates move vertically up.
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    pub fn new_from_values(
+    pub const fn new_from_values(
         x1: f32,
         y1: f32,
         x2: f32,
@@ -97,18 +119,97 @@ impl PdfQuadPoints {
         }
     }
 
+    /// Creates a new [PdfQuadPoints] object with all values set to 0.0.
+    ///
+    /// Consider using the compile-time constant value [PdfQuadPoints::ZERO]
+    /// rather than calling this function directly.
+    #[inline]
+    pub const fn zero() -> Self {
+        Self::new_from_values(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    }
+
     /// Creates a new [PdfQuadPoints] from the given [PdfRect].
     #[inline]
-    pub fn from_rect(rect: PdfRect) -> Self {
+    pub fn from_rect(rect: &PdfRect) -> Self {
         PdfQuadPoints::new(
             rect.left,
-            rect.top,
+            rect.bottom,
+            rect.right,
+            rect.bottom,
             rect.right,
             rect.top,
             rect.left,
-            rect.bottom,
-            rect.right,
-            rect.bottom,
+            rect.top,
+        )
+    }
+
+    /// Returns the left-most extent of this [PdfQuadPoints].
+    pub fn left(&self) -> PdfPoints {
+        *vec![self.x1, self.x2, self.x3, self.x4]
+            .iter()
+            .min()
+            .unwrap()
+    }
+
+    /// Returns the right-most extent of this [PdfQuadPoints].
+    pub fn right(&self) -> PdfPoints {
+        *vec![self.x1, self.x2, self.x3, self.x4]
+            .iter()
+            .max()
+            .unwrap()
+    }
+
+    /// Returns the bottom-most extent of this [PdfQuadPoints].
+    pub fn bottom(&self) -> PdfPoints {
+        *vec![self.y1, self.y2, self.y3, self.y4]
+            .iter()
+            .min()
+            .unwrap()
+    }
+
+    /// Returns the top-most extent of this [PdfQuadPoints].
+    pub fn top(&self) -> PdfPoints {
+        *vec![self.y1, self.y2, self.y3, self.y4]
+            .iter()
+            .max()
+            .unwrap()
+    }
+
+    /// Returns the width of this [PdfQuadPoints].
+    #[inline]
+    pub fn width(&self) -> PdfPoints {
+        self.right() - self.left()
+    }
+
+    /// Returns the height of this [PdfQuadPoints].
+    #[inline]
+    pub fn height(&self) -> PdfPoints {
+        self.top() - self.bottom()
+    }
+
+    /// Returns the result of applying the given [PdfMatrix] to each corner point
+    // of this [PdfQuadPoints].
+    #[inline]
+    pub fn transform(&self, matrix: PdfMatrix) -> PdfQuadPoints {
+        let (x1, y1) = matrix.apply_to_points(self.x1, self.y1);
+        let (x2, y2) = matrix.apply_to_points(self.x2, self.y2);
+        let (x3, y3) = matrix.apply_to_points(self.x3, self.y3);
+        let (x4, y4) = matrix.apply_to_points(self.x4, self.y4);
+
+        PdfQuadPoints::new(x1, y1, x2, y2, x3, y3, x4, y4)
+    }
+
+    /// Returns the smallest [PdfRect] that can completely enclose the quadrilateral
+    /// outlined by this [PdfQuadPoints].
+    pub fn to_rect(&self) -> PdfRect {
+        let xs = vec![self.x1, self.x2, self.x3, self.x4];
+        let ys = vec![self.y1, self.y2, self.y3, self.y4];
+
+        PdfRect::new(
+            *ys.iter().min().unwrap(),
+            *xs.iter().min().unwrap(),
+            *ys.iter().max().unwrap(),
+            *xs.iter().max().unwrap(),
         )
     }
 
@@ -127,11 +228,45 @@ impl PdfQuadPoints {
     }
 }
 
+// We could derive PartialEq automatically, but it's good practice to implement PartialEq
+// by hand when implementing Hash.
+
+impl PartialEq for PdfQuadPoints {
+    fn eq(&self, other: &Self) -> bool {
+        self.x1 == other.x1
+            && self.y1 == other.y1
+            && self.x2 == other.x2
+            && self.y2 == other.y2
+            && self.x3 == other.x3
+            && self.y3 == other.y3
+            && self.x4 == other.x4
+            && self.y4 == other.y4
+    }
+}
+
+// The f32 values inside PdfQuadPoints will never be NaN or Infinity, so these implementations
+// of Eq and Hash are safe.
+
+impl Eq for PdfQuadPoints {}
+
+impl Hash for PdfQuadPoints {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u32(self.x1.value.to_bits());
+        state.write_u32(self.y1.value.to_bits());
+        state.write_u32(self.x2.value.to_bits());
+        state.write_u32(self.y2.value.to_bits());
+        state.write_u32(self.x3.value.to_bits());
+        state.write_u32(self.y3.value.to_bits());
+        state.write_u32(self.x4.value.to_bits());
+        state.write_u32(self.y4.value.to_bits());
+    }
+}
+
 impl Display for PdfQuadPoints {
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
-            "PdfQuadPoints(x1: {}, y1: {}, x2: {}, y2: {}, x3: {}, y3: {}, x4: {}, y4: {}",
+            "PdfQuadPoints(x1: {}, y1: {}, x2: {}, y2: {}, x3: {}, y3: {}, x4: {}, y4: {})",
             self.x1.value,
             self.y1.value,
             self.x2.value,
@@ -141,5 +276,55 @@ impl Display for PdfQuadPoints {
             self.x4.value,
             self.y4.value
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+
+    #[test]
+    fn test_quadpoints_extents() {
+        let r = PdfRect::new_from_values(50.0, 100.0, 300.0, 200.0);
+
+        assert_eq!(r.to_quad_points().left().value, 100.0);
+        assert_eq!(r.to_quad_points().right().value, 200.0);
+        assert_eq!(r.to_quad_points().top().value, 300.0);
+        assert_eq!(r.to_quad_points().bottom().value, 50.0);
+
+        assert_eq!(r.to_quad_points().width().value, 100.0);
+        assert_eq!(r.to_quad_points().height().value, 250.0);
+    }
+
+    #[test]
+    fn test_quadpoints_to_rect() {
+        let r = PdfRect::new_from_values(100.0, 100.0, 200.0, 200.0);
+        assert_eq!(r.to_quad_points().to_rect(), r);
+
+        let m = PdfMatrix::identity()
+            .rotate_clockwise_degrees(45.0)
+            .unwrap();
+        let r45 = r.transform(m);
+
+        let q = r.to_quad_points();
+        let q45 = q.transform(m);
+
+        assert_eq!(q.to_rect(), r);
+        assert_eq!(q45.to_rect(), r45);
+
+        // It would be incredibly elegant to test
+
+        // assert_eq!(q45.transform(m.invert()).to_rect(), r);
+
+        // but sadly floating point rounding errors means the double-transformed values
+        // are ever-so-slightly off (by a fraction of a PdfPoint). Let's test manually
+        // so we can apply a comparison threshold.
+
+        let s = q45.transform(m.invert()).to_rect();
+        let threshold = PdfPoints::new(0.001);
+        assert!((s.top - r.top).abs() < threshold);
+        assert!((s.bottom - r.bottom).abs() < threshold);
+        assert!((s.left - r.left).abs() < threshold);
+        assert!((s.right - r.right).abs() < threshold);
     }
 }

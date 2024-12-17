@@ -95,6 +95,12 @@ impl PdfPoints {
     pub fn to_mm(&self) -> f32 {
         self.to_cm() * 10.0
     }
+
+    /// Creates a new [PdfPoints] object with the absolute value of this [PdfPoints] object.
+    #[inline]
+    pub fn abs(&self) -> PdfPoints {
+        PdfPoints::new(self.value.abs())
+    }
 }
 
 impl Add<PdfPoints> for PdfPoints {

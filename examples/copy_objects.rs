@@ -29,7 +29,7 @@ pub fn main() -> Result<(), PdfiumError> {
             .map(|bounds| {
                 // Only select objects on the bottom half of the page.
 
-                bounds.top < source_page.height() / 2.0
+                bounds.top() < source_page.height() / 2.0
             })
             .unwrap_or(false)
     })?;

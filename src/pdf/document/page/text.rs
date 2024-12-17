@@ -179,11 +179,11 @@ impl<'a> PdfPageText<'a> {
             let text_page = new_page.text()?;
             let tolerance_x = bounds.width() / 2.0;
             let tolerance_y = bounds.height() / 2.0;
-            let center_height = bounds.bottom + tolerance_y;
+            let center_height = bounds.bottom() + tolerance_y;
 
             let start_index = Self::get_char_index_near_point(
                 *text_page.handle(),
-                bounds.left,
+                bounds.left(),
                 tolerance_x,
                 center_height,
                 tolerance_y,
@@ -193,7 +193,7 @@ impl<'a> PdfPageText<'a> {
 
             let end_index = Self::get_char_index_near_point(
                 *text_page.handle(),
-                bounds.right,
+                bounds.right(),
                 tolerance_x,
                 center_height,
                 tolerance_y,
