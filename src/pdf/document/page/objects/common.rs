@@ -88,10 +88,10 @@ pub trait PdfPageObjectsCommon<'a> {
 
         for object in self.iter() {
             if let Ok(bounds) = object.bounds() {
-                bottom = bottom.min(bounds.bottom.value);
-                top = top.max(bounds.top.value);
-                left = left.min(bounds.left.value);
-                right = right.max(bounds.right.value);
+                bottom = bottom.min(bounds.bottom().value);
+                top = top.max(bounds.top().value);
+                left = left.min(bounds.left().value);
+                right = right.max(bounds.right().value);
             }
         }
 
