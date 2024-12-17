@@ -269,14 +269,15 @@ pub(crate) mod internal {
                 f as c_double,
             );
 
-            if let (Some(document_handle), Some(page_handle)) =
-                (self.get_document_handle(), self.get_page_handle())
-            {
-                PdfPageIndexCache::set_page_requires_content_regeneration(
-                    document_handle,
-                    page_handle,
-                );
-            }
+            // if let (Some(document_handle), Some(page_handle)) =
+            //     (self.get_document_handle(), self.get_page_handle())
+            // {
+            //     PdfPageIndexCache::set_page_requires_content_regeneration(
+            //         document_handle,
+            //         page_handle,
+            //     );
+            // }
+
             Ok(())
         }
 
@@ -310,14 +311,14 @@ pub(crate) mod internal {
                 self.bindings()
                     .FPDFPageObj_SetMatrix(self.get_object_handle(), &matrix.as_pdfium()),
             ) {
-                if let (Some(document_handle), Some(page_handle)) =
-                    (self.get_document_handle(), self.get_page_handle())
-                {
-                    PdfPageIndexCache::set_page_requires_content_regeneration(
-                        document_handle,
-                        page_handle,
-                    );
-                }
+                // if let (Some(document_handle), Some(page_handle)) =
+                //     (self.get_document_handle(), self.get_page_handle())
+                // {
+                //     PdfPageIndexCache::set_page_requires_content_regeneration(
+                //         document_handle,
+                //         page_handle,
+                //     );
+                // }
 
                 Ok(())
             } else {
