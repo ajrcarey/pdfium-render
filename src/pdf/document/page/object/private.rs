@@ -13,9 +13,13 @@ pub(crate) mod internal {
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
-    use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
+    use crate::pdf::document::page::object::{
+        PdfPageObject, PdfPageObjectCommon, PdfPageObjectType,
+    };
     use crate::pdf::document::page::objects::PdfPageObjects;
+    use crate::pdf::document::page::PdfPageIndexCache;
     use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
+    use crate::pdf::quad_points::PdfQuadPoints;
     use crate::pdf::rect::PdfRect;
     use std::os::raw::c_double;
 
@@ -24,7 +28,15 @@ pub(crate) mod internal {
         /// Returns the internal `FPDF_PAGEOBJECT` handle for this [PdfPageObject].
         fn get_object_handle(&self) -> FPDF_PAGEOBJECT;
 
-        /// Returns the internal `FPDF_PAGE` handle for the page containing this [PdfPageObject], if any.
+        // // Returns the internal `FPDF_DOCUMENT` handle for the document containing this
+        // // [PdfPageObject], if any.
+        // fn get_document_handle(&self) -> Option<FPDF_DOCUMENT>;
+
+        // /// Sets the internal `FPDF_DOCUMENT` handle for the document containing this [PdfPageObject].
+        // fn set_document_handle(&mut self, document: FPDF_DOCUMENT);
+
+        /// Returns the internal `FPDF_PAGE` handle for the page containing this
+        /// [PdfPageObject], if any.
         fn get_page_handle(&self) -> Option<FPDF_PAGE>;
 
         /// Sets the internal `FPDF_PAGE` handle for the page containing this [PdfPageObject].
@@ -185,33 +197,55 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageObjectCommon::bounds()].
         #[inline]
-        fn bounds_impl(&self) -> Result<PdfRect, PdfiumError> {
-            let mut left = 0.0;
+        fn bounds_impl(&self) -> Result<PdfQuadPoints, PdfiumError> {
+            match PdfPageObjectType::from_pdfium(
+                self.bindings()
+                    .FPDFPageObj_GetType(self.get_object_handle()) as u32,
+            ) {
+                Ok(PdfPageObjectType::Text) | Ok(PdfPageObjectType::Image) => {
+                    // Text and image page objects support tight fitting bounds via the
+                    // FPDFPageObject_GetRotatedBounds() function.
 
-            let mut bottom = 0.0;
+                    let mut points = PdfQuadPoints::ZERO.as_pdfium();
 
-            let mut right = 0.0;
+                    let result = self
+                        .bindings()
+                        .FPDFPageObj_GetRotatedBounds(self.get_object_handle(), &mut points);
 
-            let mut top = 0.0;
+                    PdfQuadPoints::from_pdfium_as_result(result, points, self.bindings())
+                }
+                _ => {
+                    // All other page objects support the FPDFPageObj_GetBounds() function.
 
-            let result = self.bindings().FPDFPageObj_GetBounds(
-                self.get_object_handle(),
-                &mut left,
-                &mut bottom,
-                &mut right,
-                &mut top,
-            );
+                    let mut left = 0.0;
 
-            PdfRect::from_pdfium_as_result(
-                result,
-                FS_RECTF {
-                    left,
-                    top,
-                    right,
-                    bottom,
-                },
-                self.bindings(),
-            )
+                    let mut bottom = 0.0;
+
+                    let mut right = 0.0;
+
+                    let mut top = 0.0;
+
+                    let result = self.bindings().FPDFPageObj_GetBounds(
+                        self.get_object_handle(),
+                        &mut left,
+                        &mut bottom,
+                        &mut right,
+                        &mut top,
+                    );
+
+                    PdfRect::from_pdfium_as_result(
+                        result,
+                        FS_RECTF {
+                            left,
+                            top,
+                            right,
+                            bottom,
+                        },
+                        self.bindings(),
+                    )
+                    .map(|r| r.to_quad_points())
+                }
+            }
         }
 
         /// Internal implementation of [PdfPageObjectCommon::transform()].
@@ -235,6 +269,14 @@ pub(crate) mod internal {
                 f as c_double,
             );
 
+            if let (Some(document_handle), Some(page_handle)) =
+                (self.get_document_handle(), self.get_page_handle())
+            {
+                PdfPageIndexCache::set_page_requires_content_regeneration(
+                    document_handle,
+                    page_handle,
+                );
+            }
             Ok(())
         }
 
@@ -268,6 +310,15 @@ pub(crate) mod internal {
                 self.bindings()
                     .FPDFPageObj_SetMatrix(self.get_object_handle(), &matrix.as_pdfium()),
             ) {
+                if let (Some(document_handle), Some(page_handle)) =
+                    (self.get_document_handle(), self.get_page_handle())
+                {
+                    PdfPageIndexCache::set_page_requires_content_regeneration(
+                        document_handle,
+                        page_handle,
+                    );
+                }
+
                 Ok(())
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
