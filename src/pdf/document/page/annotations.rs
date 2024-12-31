@@ -21,11 +21,14 @@ use crate::pdf::document::page::annotation::{
     PdfPageAnnotation, PdfPageAnnotationCommon, PdfPageAnnotationType,
 };
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
+use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPageIndexCache};
 use crate::pdf::quad_points::PdfQuadPoints;
 use chrono::prelude::*;
 use std::ops::Range;
 use std::os::raw::c_int;
 
+/// The zero-based index of a single [PdfPageAnnotation] inside its containing
+/// [PdfPageAnnotations] collection.
 pub type PdfPageAnnotationIndex = usize;
 
 /// The annotations that have been added to a single `PdfPage`.
@@ -33,7 +36,6 @@ pub struct PdfPageAnnotations<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
     form_handle: Option<FPDF_FORMHANDLE>,
-    do_regenerate_page_content_after_each_change: bool,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -49,28 +51,22 @@ impl<'a> PdfPageAnnotations<'a> {
             document_handle,
             page_handle,
             form_handle,
-            do_regenerate_page_content_after_each_change: false,
             bindings,
         }
     }
 
-    /// Sets whether or not this [PdfPageAnnotations] collection should trigger content regeneration
-    /// on its containing [PdfPage] when the collection is mutated.
+    /// Returns the internal `FPDF_DOCUMENT` handle of the [PdfDocument] containing this
+    /// [PdfPageAnnotations] collection.
     #[inline]
-    pub(crate) fn do_regenerate_page_content_after_each_change(
-        &mut self,
-        do_regenerate_page_content_after_each_change: bool,
-    ) {
-        for mut annotation in self.iter() {
-            annotation
-                .objects_mut_impl()
-                .do_regenerate_page_content_after_each_change(
-                    do_regenerate_page_content_after_each_change,
-                );
-        }
+    pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
+    }
 
-        self.do_regenerate_page_content_after_each_change =
-            do_regenerate_page_content_after_each_change;
+    /// Returns the internal `FPDF_PAGE` handle of the [PdfPage] containing this
+    /// [PdfPageAnnotations] collection.
+    #[inline]
+    pub(crate) fn page_handle(&self) -> FPDF_PAGE {
+        self.page_handle
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotations] collection.
@@ -148,25 +144,6 @@ impl<'a> PdfPageAnnotations<'a> {
         PdfPageAnnotationsIterator::new(self)
     }
 
-    // Regenerates the content of the containing [PdfPage] if necessary after this
-    // [PdfPageAnnotations] collection has been mutated.
-    fn regenerate_content(&self) -> Result<(), PdfiumError> {
-        if self.do_regenerate_page_content_after_each_change {
-            if !self
-                .bindings
-                .is_true(self.bindings.FPDFPage_GenerateContent(self.page_handle))
-            {
-                Err(PdfiumError::PdfiumLibraryInternalError(
-                    PdfiumInternalError::Unknown,
-                ))
-            } else {
-                Ok(())
-            }
-        } else {
-            Ok(())
-        }
-    }
-
     /// Creates a new annotation of the given [PdfPageAnnotationType] by passing the result of calling
     /// `FPDFPage_CreateAnnot()` to an annotation constructor function.
     ///
@@ -185,7 +162,7 @@ impl<'a> PdfPageAnnotations<'a> {
     ) -> Result<T, PdfiumError> {
         let handle = self
             .bindings()
-            .FPDFPage_CreateAnnot(self.page_handle, annotation_type.as_pdfium());
+            .FPDFPage_CreateAnnot(self.page_handle(), annotation_type.as_pdfium());
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -193,15 +170,35 @@ impl<'a> PdfPageAnnotations<'a> {
             ))
         } else {
             let mut annotation = constructor(
-                self.document_handle,
-                self.page_handle,
+                self.document_handle(),
+                self.page_handle(),
                 handle,
                 self.bindings(),
             );
 
             annotation
                 .set_creation_date(Utc::now())
-                .and_then(|()| self.regenerate_content())
+                .and_then(|()| {
+                    if let Some(content_regeneration_strategy) =
+                        PdfPageIndexCache::get_content_regeneration_strategy_for_page(
+                            self.document_handle(),
+                            self.page_handle(),
+                        )
+                    {
+                        if content_regeneration_strategy
+                            == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+                        {
+                            PdfPage::regenerate_content_immut_for_handle(
+                                self.page_handle(),
+                                self.bindings(),
+                            )
+                        } else {
+                            Ok(())
+                        }
+                    } else {
+                        Err(PdfiumError::SourcePageIndexNotInCache)
+                    }
+                })
                 .map(|()| annotation)
         }
     }
@@ -569,18 +566,36 @@ impl<'a> PdfPageAnnotations<'a> {
         annotation: PdfPageAnnotation<'a>,
     ) -> Result<(), PdfiumError> {
         let index = self
-            .bindings
-            .FPDFPage_GetAnnotIndex(self.page_handle, annotation.handle());
+            .bindings()
+            .FPDFPage_GetAnnotIndex(self.page_handle(), annotation.handle());
 
         if index == -1 {
             return Err(PdfiumError::PageAnnotationIndexOutOfBounds);
         }
 
-        if self
-            .bindings
-            .is_true(self.bindings.FPDFPage_RemoveAnnot(self.page_handle, index))
-        {
-            self.regenerate_content()
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPage_RemoveAnnot(self.page_handle(), index),
+        ) {
+            if let Some(content_regeneration_strategy) =
+                PdfPageIndexCache::get_content_regeneration_strategy_for_page(
+                    self.document_handle(),
+                    self.page_handle(),
+                )
+            {
+                if content_regeneration_strategy
+                    == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+                {
+                    PdfPage::regenerate_content_immut_for_handle(
+                        self.page_handle(),
+                        self.bindings(),
+                    )
+                } else {
+                    Ok(())
+                }
+            } else {
+                Err(PdfiumError::SourcePageIndexNotInCache)
+            }
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,

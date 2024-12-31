@@ -10,6 +10,7 @@ use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
+/// The zero-based index of a single [PdfFormFieldOption] inside its [PdfFormFieldOptions] collection.
 pub type PdfFormFieldOptionIndex = usize;
 
 /// A collection of all selectable options in a list box or check box form field widget.

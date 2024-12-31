@@ -23,6 +23,7 @@ use crate::pdf::action::remote_destination::PdfActionRemoteDestination;
 use crate::pdf::action::unsupported::PdfActionUnsupported;
 use crate::pdf::action::uri::PdfActionUri;
 
+/// The type of action associated with a clickable link or document bookmark.
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub enum PdfActionType {
     GoToDestinationInSameDocument = PDFACTION_GOTO as isize,
@@ -117,7 +118,7 @@ impl<'a> PdfAction<'a> {
     /// Note that Pdfium does not support or recognize all PDF action types. For instance,
     /// Pdfium does not currently support or recognize the interactive Javascript action type
     /// supported by Adobe Acrobat or Foxit's commercial PDF SDK. In these cases,
-    /// Pdfium will return `PdfActionType::Unsupported`.
+    /// Pdfium will return [PdfActionType::Unsupported].
     #[inline]
     pub fn action_type(&self) -> PdfActionType {
         match self {

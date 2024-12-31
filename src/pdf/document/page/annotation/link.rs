@@ -8,6 +8,7 @@ use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotation
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
 use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdf::document::page::PdfPageObjectOwnership;
 use crate::pdf::link::PdfLink;
 
 /// A single `PdfPageAnnotation` of type `PdfPageAnnotationType::Link`.
@@ -50,11 +51,26 @@ impl<'a> PdfPageLinkAnnotation<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfLink::from_pdfium(
-                handle,
-                self.objects.document_handle(),
-                self.bindings,
-            ))
+            let document_handle = match self.objects.ownership() {
+                PdfPageObjectOwnership::Page(ownership) => Some(ownership.document_handle()),
+                PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
+                    Some(ownership.document_handle())
+                }
+                PdfPageObjectOwnership::UnattachedAnnotation(ownership) => {
+                    Some(ownership.document_handle())
+                }
+                _ => None,
+            };
+
+            if let Some(document_handle) = document_handle {
+                Ok(PdfLink::from_pdfium(
+                    handle,
+                    document_handle,
+                    self.bindings(),
+                ))
+            } else {
+                Err(PdfiumError::OwnershipNotAttachedToDocument)
+            }
         }
     }
 
@@ -62,7 +78,7 @@ impl<'a> PdfPageLinkAnnotation<'a> {
     pub fn set_link(&mut self, uri: &str) -> Result<(), PdfiumError> {
         if self
             .bindings()
-            .is_true(self.bindings().FPDFAnnot_SetURI(self.handle, uri))
+            .is_true(self.bindings().FPDFAnnot_SetURI(self.handle(), uri))
         {
             Ok(())
         } else {

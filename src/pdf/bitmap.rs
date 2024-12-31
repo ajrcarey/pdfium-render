@@ -6,7 +6,7 @@ use crate::bindgen::{
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
-use crate::pdf::document::page::render_config::PdfRenderSettings;
+use crate::pdf::document::page::render_config::PdfPageRenderSettings;
 use crate::utils::pixels::{aligned_bgr_to_rgba, aligned_rgb_to_rgba, bgra_to_rgba};
 use std::os::raw::c_int;
 
@@ -46,7 +46,7 @@ struct JsValue;
 ///
 /// While Pdfium will accept pixel sizes in either dimension up to the limits of [i32],
 /// in practice the maximum size of a bitmap image is limited to approximately 2,320,723,080 bytes
-/// (a little over 2 Gb). You can use the [PdfBitmap::bytes_required_for_size()] function
+/// (a little over 2 Gb). You can use the [PdfBitmap::bytes_required_for_size] function
 /// to estimate the maximum size of a bitmap image for a given target pixel width and height.
 pub type Pixels = i32;
 
@@ -194,9 +194,9 @@ impl<'a> PdfBitmap<'a> {
     /// Lets this [PdfBitmap] know whether it was created from a rendering configuration
     /// that instructed Pdfium to reverse the byte order of generated image data from its
     /// default of BGR8 to RGB8. The setting of this flag determines the color channel
-    /// normalization strategy used by [PdfBitmap::as_rgba_bytes()].
+    /// normalization strategy used by [PdfBitmap::as_rgba_bytes].
     #[inline]
-    pub(crate) fn set_byte_order_from_render_settings(&mut self, settings: &PdfRenderSettings) {
+    pub(crate) fn set_byte_order_from_render_settings(&mut self, settings: &PdfPageRenderSettings) {
         self.was_byte_order_reversed_during_rendering = settings.is_reversed_byte_order_flag_set
     }
 
@@ -239,10 +239,10 @@ impl<'a> PdfBitmap<'a> {
 
     /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap].
     ///
-    /// Unlike [PdfBitmap::as_rgba_bytes()], this function does not attempt any color channel normalization.
-    /// To adjust color channels in your own code, use the [PdfiumLibraryBindings::bgr_to_rgba()],
-    /// [PdfiumLibraryBindings::bgra_to_rgba()], [PdfiumLibraryBindings::rgb_to_bgra()],
-    /// and [PdfiumLibraryBindings::rgba_to_bgra()] functions.
+    /// Unlike [PdfBitmap::as_rgba_bytes], this function does not attempt any color channel normalization.
+    /// To adjust color channels in your own code, use the [PdfiumLibraryBindings::bgr_to_rgba],
+    /// [PdfiumLibraryBindings::bgra_to_rgba], [PdfiumLibraryBindings::rgb_to_bgra],
+    /// and [PdfiumLibraryBindings::rgba_to_bgra] functions.
     pub fn as_raw_bytes(&self) -> Vec<u8> {
         self.bindings.FPDFBitmap_GetBuffer_as_vec(self.handle)
     }
@@ -333,13 +333,13 @@ impl<'a> PdfBitmap<'a> {
     /// this [PdfBitmap].
     ///
     /// This function avoids a memory allocation and copy required by both
-    /// [PdfBitmap::as_rgba_bytes()] and [PdfBitmap::as_image_data()], making it preferable for
+    /// [PdfBitmap::as_rgba_bytes] and [PdfBitmap::as_image_data], making it preferable for
     /// situations where performance is paramount.
     ///
-    /// Unlike [PdfBitmap::as_rgba_bytes()], this function does not attempt any color channel normalization.
-    /// To adjust color channels in your own code, use the [PdfiumLibraryBindings::bgr_to_rgba()],
-    /// [PdfiumLibraryBindings::bgra_to_rgba()], [PdfiumLibraryBindings::rgb_to_bgra()],
-    /// and [PdfiumLibraryBindings::rgba_to_bgra()] functions.
+    /// Unlike [PdfBitmap::as_rgba_bytes], this function does not attempt any color channel normalization.
+    /// To adjust color channels in your own code, use the [PdfiumLibraryBindings::bgr_to_rgba],
+    /// [PdfiumLibraryBindings::bgra_to_rgba], [PdfiumLibraryBindings::rgb_to_bgra],
+    /// and [PdfiumLibraryBindings::rgba_to_bgra] functions.
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]
@@ -354,9 +354,9 @@ impl<'a> PdfBitmap<'a> {
     ///
     /// `canvas.getContext('2d').putImageData(image_data);`
     ///
-    /// This function is slower than calling [PdfBitmap::as_array()] because it must perform
+    /// This function is slower than calling [PdfBitmap::as_array] because it must perform
     /// an additional memory allocation in order to create the `ImageData` object. Consider calling
-    /// the [PdfBitmap::as_array()] function directly if performance is paramount.
+    /// the [PdfBitmap::as_array] function directly if performance is paramount.
     ///
     /// This function is only available when compiling to WASM.
     #[cfg(any(doc, target_arch = "wasm32"))]
@@ -396,16 +396,14 @@ mod tests {
     use crate::utils::test::test_bind_to_pdfium;
 
     #[test]
-    #[cfg(not(target_arch = "wasm32"))]
     fn test_from_bytes() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
         let test_width = 2000;
         let test_height = 4000;
 
-        let buffer_size_required = PdfBitmap::bytes_required_for_size(test_width, test_height);
-
-        let mut buffer = create_sized_buffer(buffer_size_required);
+        let mut buffer =
+            create_sized_buffer(PdfBitmap::bytes_required_for_size(test_width, test_height));
 
         let buffer_ptr = buffer.as_ptr();
 

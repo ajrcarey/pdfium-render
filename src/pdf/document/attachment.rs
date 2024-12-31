@@ -10,19 +10,14 @@ use std::io::Write;
 use std::os::raw::{c_ulong, c_void};
 
 #[cfg(not(target_arch = "wasm32"))]
-use std::fs::File;
-
-#[cfg(not(target_arch = "wasm32"))]
-use std::path::Path;
+use {std::fs::File, std::path::Path};
 
 #[cfg(target_arch = "wasm32")]
-use js_sys::{Array, Uint8Array};
-
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::JsValue;
-
-#[cfg(target_arch = "wasm32")]
-use web_sys::Blob;
+use {
+    js_sys::{Array, Uint8Array},
+    wasm_bindgen::JsValue,
+    web_sys::Blob,
+};
 
 // The following dummy declaration is used only when running cargo doc.
 // It allows documentation of WASM-specific functionality to be included
@@ -31,7 +26,10 @@ use web_sys::Blob;
 #[cfg(doc)]
 struct Blob;
 
-/// A single attached data file embedded in a `PdfDocument`.
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
+/// A single attached data file embedded in a [PdfDocument].
 pub struct PdfAttachment<'a> {
     handle: FPDF_ATTACHMENT,
     bindings: &'a dyn PdfiumLibraryBindings,

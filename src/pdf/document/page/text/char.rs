@@ -1,7 +1,7 @@
 //! Defines the [PdfPageTextChar] struct, exposing functionality related to a single character
-//! in a `PdfPageTextChars` collection.
+//! in a [PdfPageTextChars] collection.
 
-use crate::bindgen::{FPDF_PAGE, FPDF_TEXTPAGE, FS_MATRIX, FS_RECTF};
+use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_TEXTPAGE, FS_MATRIX, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
@@ -20,10 +20,17 @@ use std::ffi::c_void;
     feature = "pdfium_6666",
     feature = "pdfium_6611"
 ))]
-use crate::pdf::document::page::object::text::PdfPageTextObject;
+use {
+    crate::pdf::document::page::object::text::PdfPageTextObject,
+    crate::pdf::document::page::PdfPageObjectOwnership,
+};
 
-/// A single character in a `PdfPageTextChars` collection.
+#[cfg(doc)]
+use crate::pdf::document::page::text::PdfPageTextChars;
+
+/// A single character in a [PdfPageTextChars] collection.
 pub struct PdfPageTextChar<'a> {
+    document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
     text_page_handle: FPDF_TEXTPAGE,
     index: i32,
@@ -33,17 +40,43 @@ pub struct PdfPageTextChar<'a> {
 impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
+        document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
         text_page_handle: FPDF_TEXTPAGE,
         index: i32,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextChar {
+            document_handle,
             page_handle,
             text_page_handle,
             index,
             bindings,
         }
+    }
+
+    /// Returns the internal `FPDF_DOCUMENT` handle of the [PdfDocument] containing this [PdfPageTextChar].
+    #[inline]
+    pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
+    }
+
+    /// Returns the internal `FPDF_PAGE` handle of the [PdfPage] containing this [PdfPageTextChar].
+    #[inline]
+    pub(crate) fn page_handle(&self) -> FPDF_PAGE {
+        self.page_handle
+    }
+
+    /// Returns the internal `FPDF_TEXTPAGE` handle for this [PdfPageTextChar].
+    #[inline]
+    pub(crate) fn text_page_handle(&self) -> FPDF_TEXTPAGE {
+        self.text_page_handle
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageTextChar].
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     #[inline]
@@ -54,8 +87,8 @@ impl<'a> PdfPageTextChar<'a> {
     /// Returns the raw Unicode literal value for this character.
     ///
     /// To return Rust's Unicode `char` representation of this Unicode literal, use the
-    /// [PdfPageTextChar::unicode_char()] function. To return the string representation of this
-    /// Unicode literal, use the [PdfPageTextChar::unicode_string()] function.
+    /// [PdfPageTextChar::unicode_char] function. To return the string representation of this
+    /// Unicode literal, use the [PdfPageTextChar::unicode_string] function.
     #[inline]
     pub fn unicode_value(&self) -> u32 {
         self.bindings
@@ -65,8 +98,8 @@ impl<'a> PdfPageTextChar<'a> {
     /// Returns Rust's Unicode `char` representation for this character, if available.
     ///
     /// To return the raw Unicode literal value for this character,
-    /// use the [PdfPageTextChar::unicode_value()] function. To return the string representation of
-    /// this `char`, use the [PdfPageTextChar::unicode_string()] function.
+    /// use the [PdfPageTextChar::unicode_value] function. To return the string representation of
+    /// this `char`, use the [PdfPageTextChar::unicode_string] function.
     #[inline]
     pub fn unicode_char(&self) -> Option<char> {
         char::from_u32(self.unicode_value())
@@ -76,8 +109,8 @@ impl<'a> PdfPageTextChar<'a> {
     /// if available.
     ///
     /// To return the raw Unicode literal value for this character,
-    /// use the [PdfPageTextChar::unicode_value()] function. To return Rust's Unicode `char`
-    /// representation of this Unicode literal, use the [PdfPageTextChar::unicode_char()] function.
+    /// use the [PdfPageTextChar::unicode_value] function. To return Rust's Unicode `char`
+    /// representation of this Unicode literal, use the [PdfPageTextChar::unicode_char] function.
     #[inline]
     pub fn unicode_string(&self) -> Option<String> {
         self.unicode_char().map(|char| char.to_string())
@@ -88,7 +121,7 @@ impl<'a> PdfPageTextChar<'a> {
     /// to the character's transformation matrix.
     ///
     /// To retrieve only the specified font size, ignoring any vertical scaling, use the
-    /// [PdfPageTextChar::unscaled_font_size()] function.
+    /// [PdfPageTextChar::unscaled_font_size] function.
     #[inline]
     pub fn scaled_font_size(&self) -> PdfPoints {
         PdfPoints::new(self.unscaled_font_size().value * (self.get_vertical_scale() as f32))
@@ -99,7 +132,7 @@ impl<'a> PdfPageTextChar<'a> {
     /// Note that the effective size of the character when rendered may differ from the font size
     /// if a scaling factor has been applied to this character's transformation matrix.
     /// To retrieve the effective font size, taking vertical scaling into account, use the
-    /// [PdfPageTextChar::scaled_font_size()] function.
+    /// [PdfPageTextChar::scaled_font_size] function.
     #[inline]
     pub fn unscaled_font_size(&self) -> PdfPoints {
         PdfPoints::new(
@@ -309,8 +342,8 @@ impl<'a> PdfPageTextChar<'a> {
     /// Returns the page text object that contains this character.
     pub fn text_object(&self) -> Result<PdfPageTextObject, PdfiumError> {
         let object_handle = self
-            .bindings
-            .FPDFText_GetTextObject(self.text_page_handle, self.index);
+            .bindings()
+            .FPDFText_GetTextObject(self.text_page_handle(), self.index);
 
         if object_handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -319,9 +352,8 @@ impl<'a> PdfPageTextChar<'a> {
         } else {
             Ok(PdfPageTextObject::from_pdfium(
                 object_handle,
-                Some(self.page_handle),
-                None,
-                self.bindings,
+                PdfPageObjectOwnership::owned_by_page(self.document_handle(), self.page_handle()),
+                self.bindings(),
             ))
         }
     }
@@ -357,7 +389,7 @@ impl<'a> PdfPageTextChar<'a> {
     /// Returns the text rendering mode for this character.
     pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
         PdfPageTextRenderMode::from_pdfium(
-            self.bindings
+            self.bindings()
                 .FPDFText_GetTextRenderMode(self.text_page_handle, self.index) as u32,
         )
     }
@@ -405,14 +437,17 @@ impl<'a> PdfPageTextChar<'a> {
 
         let mut a = 0;
 
-        if self.bindings.is_true(self.bindings.FPDFText_GetStrokeColor(
-            self.text_page_handle,
-            self.index,
-            &mut r,
-            &mut g,
-            &mut b,
-            &mut a,
-        )) {
+        if self
+            .bindings()
+            .is_true(self.bindings.FPDFText_GetStrokeColor(
+                self.text_page_handle(),
+                self.index,
+                &mut r,
+                &mut g,
+                &mut b,
+                &mut a,
+            ))
+        {
             Ok(PdfColor::new(
                 r.try_into()
                     .map_err(PdfiumError::UnableToConvertPdfiumColorValueToRustu8)?,
@@ -451,8 +486,8 @@ impl<'a> PdfPageTextChar<'a> {
     /// Returns a precise bounding box for this character, taking the character's specific
     /// shape into account.
     ///
-    /// To return a loose bounding box that covers the entire glyph bounds, use the
-    /// [PdfPageTextChar::loose_bounds()] function.
+    /// To return a loose bounding box that contains the entire glyph bounds, use the
+    /// [PdfPageTextChar::loose_bounds] function.
     pub fn tight_bounds(&self) -> Result<PdfRect, PdfiumError> {
         let mut left = 0.0;
 
@@ -462,8 +497,8 @@ impl<'a> PdfPageTextChar<'a> {
 
         let mut top = 0.0;
 
-        let result = self.bindings.FPDFText_GetCharBox(
-            self.text_page_handle,
+        let result = self.bindings().FPDFText_GetCharBox(
+            self.text_page_handle(),
             self.index,
             &mut left,
             &mut right,
@@ -479,14 +514,14 @@ impl<'a> PdfPageTextChar<'a> {
                 right: right as f32,
                 bottom: bottom as f32,
             },
-            self.bindings,
+            self.bindings(),
         )
     }
 
-    /// Returns a loose bounding box for this character, covering the entire glyph bounds.
+    /// Returns a loose bounding box for this character, containing the entire glyph bounds.
     ///
     /// To return a tight bounding box that takes this character's specific shape into
-    /// account, use the [PdfPageTextChar::tight_bounds()] function.
+    /// account, use the [PdfPageTextChar::tight_bounds] function.
     pub fn loose_bounds(&self) -> Result<PdfRect, PdfiumError> {
         let mut bounds = FS_RECTF {
             left: 0.0,
@@ -495,11 +530,13 @@ impl<'a> PdfPageTextChar<'a> {
             bottom: 0.0,
         };
 
-        let result =
-            self.bindings
-                .FPDFText_GetLooseCharBox(self.text_page_handle, self.index, &mut bounds);
+        let result = self.bindings.FPDFText_GetLooseCharBox(
+            self.text_page_handle(),
+            self.index,
+            &mut bounds,
+        );
 
-        PdfRect::from_pdfium_as_result(result, bounds, self.bindings)
+        PdfRect::from_pdfium_as_result(result, bounds, self.bindings())
     }
 
     /// Returns the current raw transformation matrix for this character.
@@ -513,8 +550,8 @@ impl<'a> PdfPageTextChar<'a> {
             f: 0.0,
         };
 
-        if self.bindings.is_true(self.bindings.FPDFText_GetMatrix(
-            self.text_page_handle,
+        if self.bindings().is_true(self.bindings().FPDFText_GetMatrix(
+            self.text_page_handle(),
             self.index,
             &mut matrix,
         )) {
@@ -673,12 +710,15 @@ impl<'a> PdfPageTextChar<'a> {
 
         let mut y = 0.0;
 
-        if self.bindings.is_true(self.bindings.FPDFText_GetCharOrigin(
-            self.text_page_handle,
-            self.index,
-            &mut x,
-            &mut y,
-        )) {
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFText_GetCharOrigin(
+                self.text_page_handle(),
+                self.index,
+                &mut x,
+                &mut y,
+            ))
+        {
             Ok((PdfPoints::new(x as f32), PdfPoints::new(y as f32)))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -703,11 +743,11 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn has_descender(&self) -> bool {
         self.tight_bounds()
-            .map(|bounds| bounds.bottom.value)
+            .map(|bounds| bounds.bottom().value)
             .unwrap_or(0.0)
             < self
                 .loose_bounds()
-                .map(|bounds| bounds.bottom.value)
+                .map(|bounds| bounds.bottom().value)
                 .unwrap_or(0.0)
     }
 }

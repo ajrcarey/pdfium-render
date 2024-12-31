@@ -57,6 +57,9 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use chrono::prelude::*;
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
 /// The type of a single [PdfPageAnnotation], as defined in table 8.20 of the PDF Reference,
 /// version 1.7, on page 615.
 ///
@@ -193,7 +196,7 @@ impl PdfPageAnnotationType {
     }
 }
 
-/// A single user annotation on a `PdfPage`.
+/// A single user annotation on a [PdfPage].
 pub enum PdfPageAnnotation<'a> {
     Circle(PdfPageCircleAnnotation<'a>),
     FreeText(PdfPageFreeTextAnnotation<'a>),

@@ -8,6 +8,7 @@ use crate::pdf::document::signature::PdfSignature;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
+/// The zero-based index of a single [PdfSignature] inside its containing [PdfSignatures] collection.
 pub type PdfSignatureIndex = u16;
 
 /// The collection of [PdfSignature] objects inside a `PdfDocument`.

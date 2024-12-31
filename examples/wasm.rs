@@ -67,10 +67,10 @@ pub async fn log_page_metrics_to_console(url: String) {
                 "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
                 page_index,
                 boundary.box_type,
-                boundary.bounds.left.value,
-                boundary.bounds.top.value,
-                boundary.bounds.right.value,
-                boundary.bounds.bottom.value,
+                boundary.bounds.left().value,
+                boundary.bounds.top().value,
+                boundary.bounds.right().value,
+                boundary.bounds.bottom().value,
             );
         }
 

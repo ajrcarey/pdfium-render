@@ -10,6 +10,7 @@ use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 use std::ptr::null_mut;
 
+/// The zero-based index of a single [PdfLink] inside its containing [PdfPageLinks] collection.
 pub type PdfPageLinkIndex = usize;
 
 /// The links contained within a single `PdfPage`.

@@ -7,16 +7,16 @@ pub(crate) mod internal {
     // Instead of making the PdfPageObjectsPrivate trait private, we leave it public but place it
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
-    use crate::bindgen::FPDF_DOCUMENT;
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::PdfiumError;
     use crate::pdf::document::page::object::PdfPageObject;
     use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObjectsIterator};
+    use crate::pdf::document::page::PdfPageObjectOwnership;
 
     /// Internal crate-specific functionality common to all [PdfPageObjects] collections.
-    pub trait PdfPageObjectsPrivate<'a> {
-        /// Returns the internal `FPDF_DOCUMENT` handle for this page objects collection.
-        fn document_handle(&self) -> FPDF_DOCUMENT;
+    pub(crate) trait PdfPageObjectsPrivate<'a> {
+        /// Returns the ownership hierarchy for this page objects collection.
+        fn ownership(&self) -> &PdfPageObjectOwnership;
 
         /// Returns the [PdfiumLibraryBindings] used by this page objects collection.
         fn bindings(&self) -> &'a dyn PdfiumLibraryBindings;

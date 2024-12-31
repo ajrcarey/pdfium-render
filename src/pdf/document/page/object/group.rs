@@ -14,7 +14,9 @@ use crate::pdf::document::page::object::{
     PdfPageObjectLineJoin,
 };
 use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObjectsCommon};
-use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy};
+use crate::pdf::document::page::{
+    PdfPage, PdfPageContentRegenerationStrategy, PdfPageObjectOwnership,
+};
 use crate::pdf::document::pages::{PdfPageIndex, PdfPages};
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::PdfMatrix;
@@ -36,9 +38,9 @@ use std::collections::HashMap;
 pub struct PdfPageGroupObject<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
+    ownership: PdfPageObjectOwnership,
     object_handles: Vec<FPDF_PAGEOBJECT>,
     bindings: &'a dyn PdfiumLibraryBindings,
-    do_regenerate_page_content_after_each_change: bool,
 }
 
 impl<'a> PdfPageGroupObject<'a> {
@@ -47,27 +49,20 @@ impl<'a> PdfPageGroupObject<'a> {
         document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
-        do_regenerate_page_content_after_each_change: bool,
     ) -> Self {
         PdfPageGroupObject {
             page_handle,
             document_handle,
+            ownership: PdfPageObjectOwnership::owned_by_page(document_handle, page_handle),
             object_handles: Vec::new(),
             bindings,
-            do_regenerate_page_content_after_each_change,
         }
     }
 
     /// Creates a new, empty [PdfPageGroupObject] that can be used to hold any page objects
     /// on the given [PdfPage].
     pub fn empty(page: &'a PdfPage) -> Self {
-        Self::from_pdfium(
-            page.document_handle(),
-            page.page_handle(),
-            page.bindings(),
-            page.content_regeneration_strategy()
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        )
+        Self::from_pdfium(page.document_handle(), page.page_handle(), page.bindings())
     }
 
     /// Creates a new [PdfPageGroupObject] that includes any page objects on the given [PdfPage]
@@ -76,13 +71,8 @@ impl<'a> PdfPageGroupObject<'a> {
     where
         F: FnMut(&PdfPageObject) -> bool,
     {
-        let mut result = Self::from_pdfium(
-            page.document_handle(),
-            page.page_handle(),
-            page.bindings(),
-            page.content_regeneration_strategy()
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
+        let mut result =
+            Self::from_pdfium(page.document_handle(), page.page_handle(), page.bindings());
 
         for mut object in page.objects().iter().filter(predicate) {
             result.push(&mut object)?;
@@ -107,19 +97,38 @@ impl<'a> PdfPageGroupObject<'a> {
         page: &PdfPage<'a>,
         objects: &mut [PdfPageObject<'a>],
     ) -> Result<Self, PdfiumError> {
-        let mut result = Self::from_pdfium(
-            page.document_handle(),
-            page.page_handle(),
-            page.bindings(),
-            page.content_regeneration_strategy()
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
+        let mut result =
+            Self::from_pdfium(page.document_handle(), page.page_handle(), page.bindings());
 
         for object in objects.iter_mut() {
             result.push(object)?;
         }
 
         Ok(result)
+    }
+
+    /// Returns the internal `FPDF_DOCUMENT` handle for this group.
+    #[inline]
+    pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
+    }
+
+    /// Returns the internal `FPDF_PAGE` handle for this group.
+    #[inline]
+    pub(crate) fn page_handle(&self) -> FPDF_PAGE {
+        self.page_handle
+    }
+
+    /// Returns the ownership hierarchy for this group.
+    #[inline]
+    pub(crate) fn ownership(&self) -> &PdfPageObjectOwnership {
+        &self.ownership
+    }
+
+    /// Returns the [PdfiumLibraryBindings] used by this group.
+    #[inline]
+    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
+        self.bindings
     }
 
     /// Returns the number of page objects in this group.
@@ -137,47 +146,45 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Returns `true` if this group already contains the given page object.
     #[inline]
     pub fn contains(&self, object: &PdfPageObject) -> bool {
-        self.object_handles.contains(&object.get_object_handle())
+        self.object_handles.contains(&object.object_handle())
     }
 
     /// Adds a single [PdfPageObject] to this group.
     pub fn push(&mut self, object: &mut PdfPageObject<'a>) -> Result<(), PdfiumError> {
-        let was_object_already_attached_to_group_page =
-            if let Some(page_handle) = object.get_page_handle() {
-                if page_handle != self.page_handle {
-                    // The object is attached to a different page.
+        let page_handle = match object.ownership() {
+            PdfPageObjectOwnership::Page(ownership) => Some(ownership.page_handle()),
+            _ => None,
+        };
 
-                    // In theory, transferring ownership of the page object from its current
-                    // page to the page referenced by this group should be possible:
+        if let Some(page_handle) = page_handle {
+            if page_handle != self.page_handle() {
+                // The object is attached to a different page.
 
-                    // object.remove_object_from_page()?;
-                    // object.add_object_to_page_handle(self.page)?;
+                // In theory, transferring ownership of the page object from its current
+                // page to the page referenced by this group should be possible:
 
-                    // But in practice, as per https://github.com/ajrcarey/pdfium-render/issues/18,
-                    // transferring memory ownership of a page object from one page to another
-                    // generally segfaults Pdfium. Instead, return an error.
+                // object.remove_object_from_page()?;
+                // object.add_object_to_page_handle(self.page)?;
 
-                    return Err(PdfiumError::PageObjectAlreadyAttachedToDifferentPage);
-                } else {
-                    // The object is already attached to this group's parent page.
+                // But in practice, as per https://github.com/ajrcarey/pdfium-render/issues/18,
+                // transferring memory ownership of a page object from one page to another
+                // generally segfaults Pdfium. Instead, return an error.
 
-                    true
-                }
+                return Err(PdfiumError::OwnershipAlreadyAttachedToDifferentPage);
             } else {
-                // The object isn't attached to a page.
+                // The object is already attached to this group's parent page.
 
-                object.add_object_to_page_handle(self.page_handle)?;
+                true
+            }
+        } else {
+            // The object isn't attached to a page.
 
-                false
-            };
+            object.add_object_to_page_handle(self.document_handle(), self.page_handle())?;
 
-        self.object_handles.push(object.get_object_handle());
+            false
+        };
 
-        if !was_object_already_attached_to_group_page
-            && self.do_regenerate_page_content_after_each_change
-        {
-            PdfPage::regenerate_content_immut_for_handle(self.page_handle, self.bindings)?;
-        }
+        self.object_handles.push(object.object_handle());
 
         Ok(())
     }
@@ -186,10 +193,24 @@ impl<'a> PdfPageGroupObject<'a> {
     pub fn append(&mut self, objects: &mut [PdfPageObject<'a>]) -> Result<(), PdfiumError> {
         // Hold off regenerating page content until all objects have been processed.
 
-        let do_regenerate_page_content_after_each_change =
-            self.do_regenerate_page_content_after_each_change;
+        let content_regeneration_strategy =
+            PdfPageIndexCache::get_content_regeneration_strategy_for_page(
+                self.document_handle(),
+                self.page_handle(),
+            )
+            .unwrap_or(PdfPageContentRegenerationStrategy::AutomaticOnEveryChange);
 
-        self.do_regenerate_page_content_after_each_change = false;
+        let page_index =
+            PdfPageIndexCache::get_index_for_page(self.document_handle(), self.page_handle());
+
+        if let Some(page_index) = page_index {
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle(),
+                self.page_handle(),
+                page_index,
+                PdfPageContentRegenerationStrategy::Manual,
+            );
+        }
 
         for object in objects.iter_mut() {
             self.push(object)?;
@@ -197,11 +218,19 @@ impl<'a> PdfPageGroupObject<'a> {
 
         // Regenerate page content now, if necessary.
 
-        self.do_regenerate_page_content_after_each_change =
-            do_regenerate_page_content_after_each_change;
+        if let Some(page_index) = page_index {
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle(),
+                self.page_handle(),
+                page_index,
+                content_regeneration_strategy,
+            );
+        }
 
-        if self.do_regenerate_page_content_after_each_change {
-            PdfPage::regenerate_content_immut_for_handle(self.page_handle, self.bindings)?;
+        if content_regeneration_strategy
+            == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+        {
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
         }
 
         Ok(())
@@ -220,10 +249,24 @@ impl<'a> PdfPageGroupObject<'a> {
     pub fn remove_objects_from_page(mut self) -> Result<(), PdfiumError> {
         // Hold off regenerating page content until all objects have been processed.
 
-        let do_regenerate_page_content_after_each_change =
-            self.do_regenerate_page_content_after_each_change;
+        let content_regeneration_strategy =
+            PdfPageIndexCache::get_content_regeneration_strategy_for_page(
+                self.document_handle(),
+                self.page_handle(),
+            )
+            .unwrap_or(PdfPageContentRegenerationStrategy::AutomaticOnEveryChange);
 
-        self.do_regenerate_page_content_after_each_change = false;
+        let page_index =
+            PdfPageIndexCache::get_index_for_page(self.document_handle(), self.page_handle());
+
+        if let Some(page_index) = page_index {
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle(),
+                self.page_handle(),
+                page_index,
+                PdfPageContentRegenerationStrategy::Manual,
+            );
+        }
 
         // Remove the selected objects from the source page.
 
@@ -234,14 +277,14 @@ impl<'a> PdfPageGroupObject<'a> {
         // may be vertically reflected and translated. Attempt to mitigate this.
         // For more details, see: https://github.com/ajrcarey/pdfium-render/issues/60
 
-        let page_height = PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.page_handle));
+        let page_height = PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.page_handle()));
 
-        for index in 0..self.bindings.FPDFPage_CountObjects(self.page_handle) {
+        for index in 0..self.bindings().FPDFPage_CountObjects(self.page_handle()) {
             let mut object = PdfPageObject::from_pdfium(
-                self.bindings.FPDFPage_GetObject(self.page_handle, index),
-                Some(self.page_handle),
-                None,
-                self.bindings,
+                self.bindings()
+                    .FPDFPage_GetObject(self.page_handle(), index),
+                self.ownership().clone(),
+                self.bindings(),
             );
 
             // Undo the reflection effect.
@@ -257,11 +300,19 @@ impl<'a> PdfPageGroupObject<'a> {
 
         // Regenerate page content now, if necessary.
 
-        self.do_regenerate_page_content_after_each_change =
-            do_regenerate_page_content_after_each_change;
+        if let Some(page_index) = page_index {
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle,
+                self.page_handle,
+                page_index,
+                content_regeneration_strategy,
+            );
+        }
 
-        if self.do_regenerate_page_content_after_each_change {
-            PdfPage::regenerate_content_immut_for_handle(self.page_handle, self.bindings)?;
+        if content_regeneration_strategy
+            == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+        {
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
         }
 
         Ok(())
@@ -461,10 +512,9 @@ impl<'a> PdfPageGroupObject<'a> {
 
         for index in 0..self.bindings.FPDFPage_CountObjects(self.page_handle) {
             let object = PdfPageObject::from_pdfium(
-                self.bindings.FPDFPage_GetObject(self.page_handle, index),
-                Some(self.page_handle),
-                None,
-                self.bindings,
+                self.bindings().FPDFPage_GetObject(self.page_handle, index),
+                self.ownership().clone(),
+                self.bindings(),
             );
 
             if !self.contains(&object) {
@@ -535,7 +585,7 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn has_transparency(&self) -> bool {
         self.object_handles.iter().any(|object_handle| {
-            PdfPageObject::from_pdfium(*object_handle, Some(self.page_handle), None, self.bindings)
+            PdfPageObject::from_pdfium(*object_handle, self.ownership().clone(), self.bindings())
                 .has_transparency()
         })
     }
@@ -543,40 +593,45 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Returns the bounding box of this group of objects. Since the bounds of every object in the
     /// group must be considered, this function has runtime complexity of O(n).
     pub fn bounds(&self) -> Result<PdfRect, PdfiumError> {
-        let mut bounds: Option<PdfRect> = None;
+        let mut bottom = PdfPoints::MAX;
+        let mut top = PdfPoints::MIN;
+        let mut left = PdfPoints::MAX;
+        let mut right = PdfPoints::MIN;
+        let mut empty = true;
 
         self.object_handles.iter().for_each(|object_handle| {
             if let Ok(object_bounds) = PdfPageObject::from_pdfium(
                 *object_handle,
-                Some(self.page_handle),
-                None,
-                self.bindings,
+                self.ownership().clone(),
+                self.bindings(),
             )
             .bounds()
             {
-                if let Some(bounds) = bounds.as_mut() {
-                    if object_bounds.bottom() < bounds.bottom {
-                        bounds.bottom = object_bounds.bottom();
-                    }
+                empty = false;
 
-                    if object_bounds.left() < bounds.left {
-                        bounds.left = object_bounds.left();
-                    }
+                if object_bounds.bottom() < bottom {
+                    bottom = object_bounds.bottom();
+                }
 
-                    if object_bounds.top() > bounds.top {
-                        bounds.top = object_bounds.top();
-                    }
+                if object_bounds.left() < left {
+                    left = object_bounds.left();
+                }
 
-                    if object_bounds.right() > bounds.right {
-                        bounds.right = object_bounds.right();
-                    }
-                } else {
-                    bounds = Some(object_bounds.to_rect());
+                if object_bounds.top() > top {
+                    top = object_bounds.top();
+                }
+
+                if object_bounds.right() > right {
+                    right = object_bounds.right();
                 }
             }
         });
 
-        bounds.ok_or(PdfiumError::EmptyPageObjectGroup)
+        if empty {
+            Err(PdfiumError::EmptyPageObjectGroup)
+        } else {
+            Ok(PdfRect::new(bottom, left, top, right))
+        }
     }
 
     /// Sets the blend mode that will be applied when painting every [PdfPageObject] in this group.
@@ -686,7 +741,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Inflates an internal `FPDF_PAGEOBJECT` handle into a [PdfPageObject].
     #[inline]
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
-        PdfPageObject::from_pdfium(*handle, Some(self.page_handle), None, self.bindings)
+        PdfPageObject::from_pdfium(*handle, self.ownership().clone(), self.bindings())
     }
 
     create_transform_setters!(
@@ -776,10 +831,10 @@ mod test {
 
         let bounds = group.bounds()?;
 
-        assert_eq!(bounds.bottom.value, 428.3103);
-        assert_eq!(bounds.left.value, 62.60526);
-        assert_eq!(bounds.top.value, 807.8812);
-        assert_eq!(bounds.right.value, 544.4809);
+        assert_eq!(bounds.bottom().value, 428.3103);
+        assert_eq!(bounds.left().value, 62.60526);
+        assert_eq!(bounds.top().value, 807.8812);
+        assert_eq!(bounds.right().value, 544.4809);
 
         Ok(())
     }
@@ -852,19 +907,19 @@ mod test {
 
         let bounds = group.bounds()?;
 
-        assert_eq!(bounds.bottom.value, 100.0);
-        assert_eq!(bounds.left.value, 100.0);
-        assert_eq!(bounds.top.value, 300.0);
-        assert_eq!(bounds.right.value, 300.0);
+        assert_eq!(bounds.bottom().value, 100.0);
+        assert_eq!(bounds.left().value, 100.0);
+        assert_eq!(bounds.top().value, 300.0);
+        assert_eq!(bounds.right().value, 300.0);
 
         group.translate(PdfPoints::new(150.0), PdfPoints::new(200.0))?;
 
         let bounds = group.bounds()?;
 
-        assert_eq!(bounds.bottom.value, 300.0);
-        assert_eq!(bounds.left.value, 250.0);
-        assert_eq!(bounds.top.value, 500.0);
-        assert_eq!(bounds.right.value, 450.0);
+        assert_eq!(bounds.bottom().value, 300.0);
+        assert_eq!(bounds.left().value, 250.0);
+        assert_eq!(bounds.top().value, 500.0);
+        assert_eq!(bounds.right().value, 450.0);
 
         Ok(())
     }

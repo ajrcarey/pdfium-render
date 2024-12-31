@@ -17,9 +17,29 @@ use std::hash::{Hash, Hasher};
 /// y values increasing as coordinates move vertically up.
 #[derive(Debug, Copy, Clone)]
 pub struct PdfRect {
+    // TODO: AJRC - 28/12/24 - direct field access to be removed as part of release 0.9.0.
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfRect::bottom() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
     pub bottom: PdfPoints,
+
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfRect::left() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
     pub left: PdfPoints,
+
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfRect::top() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
     pub top: PdfPoints,
+
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfRect::left() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
     pub right: PdfPoints,
 }
 
@@ -38,6 +58,7 @@ impl PdfRect {
 
     #[inline]
     pub(crate) fn from_pdfium(rect: FS_RECTF) -> Self {
+        #[allow(deprecated)]
         Self {
             bottom: PdfPoints::new(rect.bottom),
             left: PdfPoints::new(rect.left),
@@ -68,6 +89,7 @@ impl PdfRect {
     /// y values increasing as coordinates move vertically up.
     #[inline]
     pub const fn new(bottom: PdfPoints, left: PdfPoints, top: PdfPoints, right: PdfPoints) -> Self {
+        #[allow(deprecated)]
         Self {
             bottom,
             left,
@@ -100,16 +122,44 @@ impl PdfRect {
         Self::new_from_values(0.0, 0.0, 0.0, 0.0)
     }
 
+    /// Returns the left-most extent of this [PdfRect].
+    #[inline]
+    pub const fn left(&self) -> PdfPoints {
+        #[allow(deprecated)]
+        self.left
+    }
+
+    /// Returns the right-most extent of this [PdfRect].
+    #[inline]
+    pub const fn right(&self) -> PdfPoints {
+        #[allow(deprecated)]
+        self.right
+    }
+
+    /// Returns the bottom-most extent of this [PdfRect].
+    #[inline]
+    pub const fn bottom(&self) -> PdfPoints {
+        #[allow(deprecated)]
+        self.bottom
+    }
+
+    /// Returns the top-most extent of this [PdfRect].
+    #[inline]
+    pub const fn top(&self) -> PdfPoints {
+        #[allow(deprecated)]
+        self.top
+    }
+
     /// Returns the width of this [PdfRect].
     #[inline]
     pub fn width(&self) -> PdfPoints {
-        self.right - self.left
+        self.right() - self.left()
     }
 
     /// Returns the height of this [PdfRect].
     #[inline]
     pub fn height(&self) -> PdfPoints {
-        self.top - self.bottom
+        self.top() - self.bottom()
     }
 
     #[inline]
@@ -118,25 +168,25 @@ impl PdfRect {
         self.contains_x(x) && self.contains_y(y)
     }
 
-    #[inline]
     /// Returns `true` if the given horizontal coordinate lies inside this [PdfRect].
+    #[inline]
     pub fn contains_x(&self, x: PdfPoints) -> bool {
-        self.left <= x && self.right >= x
+        self.left() <= x && self.right() >= x
     }
 
-    #[inline]
     /// Returns `true` if the given vertical coordinate lies inside this [PdfRect].
+    #[inline]
     pub fn contains_y(&self, y: PdfPoints) -> bool {
-        self.bottom <= y && self.top >= y
+        self.bottom() <= y && self.top() >= y
     }
 
     /// Returns `true` if the bounds of this [PdfRect] lie entirely within the given rectangle.
     #[inline]
     pub fn is_inside(&self, other: &PdfRect) -> bool {
-        self.left >= other.left
-            && self.right <= other.right
-            && self.top <= other.top
-            && self.bottom >= other.bottom
+        self.left() >= other.left()
+            && self.right() <= other.right()
+            && self.top() <= other.top()
+            && self.bottom() >= other.bottom()
     }
 
     /// Returns `true` if the bounds of this [PdfRect] lie at least partially within
@@ -145,19 +195,19 @@ impl PdfRect {
     pub fn does_overlap(&self, other: &PdfRect) -> bool {
         // As per https://stackoverflow.com/questions/306316/determine-if-two-rectangles-overlap-each-other
 
-        self.left < other.right
-            && self.right > other.left
-            && self.top > other.bottom
-            && self.bottom < other.top
+        self.left() < other.right()
+            && self.right() > other.left()
+            && self.top() > other.bottom()
+            && self.bottom() < other.top()
     }
 
     /// Returns the result of applying the given [PdfMatrix] to each corner point of this [PdfRect].
     #[inline]
     pub fn transform(&self, matrix: PdfMatrix) -> PdfRect {
-        let (x1, y1) = matrix.apply_to_points(self.left, self.top);
-        let (x2, y2) = matrix.apply_to_points(self.left, self.bottom);
-        let (x3, y3) = matrix.apply_to_points(self.right, self.top);
-        let (x4, y4) = matrix.apply_to_points(self.right, self.bottom);
+        let (x1, y1) = matrix.apply_to_points(self.left(), self.top());
+        let (x2, y2) = matrix.apply_to_points(self.left(), self.bottom());
+        let (x3, y3) = matrix.apply_to_points(self.right(), self.top());
+        let (x4, y4) = matrix.apply_to_points(self.right(), self.bottom());
 
         PdfRect::new(
             min([y1, y2, y3, y4]).unwrap_or(PdfPoints::ZERO),
@@ -176,10 +226,10 @@ impl PdfRect {
     #[inline]
     pub(crate) fn as_pdfium(&self) -> FS_RECTF {
         FS_RECTF {
-            left: self.left.value,
-            top: self.top.value,
-            right: self.right.value,
-            bottom: self.bottom.value,
+            left: self.left().value,
+            top: self.top().value,
+            right: self.right().value,
+            bottom: self.bottom().value,
         }
     }
 }
@@ -189,10 +239,10 @@ impl PdfRect {
 
 impl PartialEq for PdfRect {
     fn eq(&self, other: &Self) -> bool {
-        self.bottom == other.bottom
-            && self.left == other.left
-            && self.top == other.top
-            && self.right == other.right
+        self.bottom() == other.bottom()
+            && self.left() == other.left()
+            && self.top() == other.top()
+            && self.right() == other.right()
     }
 }
 
@@ -203,10 +253,10 @@ impl Eq for PdfRect {}
 
 impl Hash for PdfRect {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_u32(self.bottom.value.to_bits());
-        state.write_u32(self.left.value.to_bits());
-        state.write_u32(self.top.value.to_bits());
-        state.write_u32(self.right.value.to_bits());
+        state.write_u32(self.bottom().value.to_bits());
+        state.write_u32(self.left().value.to_bits());
+        state.write_u32(self.top().value.to_bits());
+        state.write_u32(self.right().value.to_bits());
     }
 }
 
@@ -215,7 +265,10 @@ impl Display for PdfRect {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
             "PdfRect(bottom: {}, left: {}, top: {}, right: {})",
-            self.bottom.value, self.left.value, self.top.value, self.right.value
+            self.bottom().value,
+            self.left().value,
+            self.top().value,
+            self.right().value
         ))
     }
 }
@@ -270,9 +323,9 @@ mod tests {
 
         let result = rect.transform(matrix);
 
-        assert_eq!(result.bottom, bottom + delta_y);
-        assert_eq!(result.top, top + delta_y);
-        assert_eq!(result.left, left + delta_x);
-        assert_eq!(result.right, right + delta_x);
+        assert_eq!(result.bottom(), bottom + delta_y);
+        assert_eq!(result.top(), top + delta_y);
+        assert_eq!(result.left(), left + delta_x);
+        assert_eq!(result.right(), right + delta_x);
     }
 }

@@ -27,9 +27,13 @@ use {
 #[cfg(doc)]
 struct Blob;
 
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
+/// The zero-based index of a single attachment inside its containing [PdfAttachments] collection.
 pub type PdfAttachmentIndex = u16;
 
-/// The collection of [PdfAttachment] objects embedded in a `PdfDocument`.
+/// The collection of [PdfAttachment] objects embedded in a [PdfDocument].
 pub struct PdfAttachments<'a> {
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,

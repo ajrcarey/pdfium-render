@@ -8,6 +8,7 @@ use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::object::group::PdfPageGroupObject;
+use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::PdfPageObject;
 use crate::pdf::document::page::objects::common::{
@@ -26,42 +27,37 @@ use std::os::raw::c_int;
 /// supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium will return
 /// `PdfPageObjectType::Unsupported`.
 pub struct PdfPageObjects<'a> {
-    page_handle: FPDF_PAGE,
     document_handle: FPDF_DOCUMENT,
+    page_handle: FPDF_PAGE,
+    ownership: PdfPageObjectOwnership,
     bindings: &'a dyn PdfiumLibraryBindings,
-    do_regenerate_page_content_after_each_change: bool,
 }
 
 impl<'a> PdfPageObjects<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
-        page_handle: FPDF_PAGE,
         document_handle: FPDF_DOCUMENT,
+        page_handle: FPDF_PAGE,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         Self {
-            page_handle,
             document_handle,
+            page_handle,
+            ownership: PdfPageObjectOwnership::owned_by_page(document_handle, page_handle),
             bindings,
-            do_regenerate_page_content_after_each_change: false,
         }
     }
 
-    /// Returns the internal `FPDF_PAGE` handle for the [PdfPage] containing this [PdfPageObjects] collection.
+    /// Returns the internal `FPDF_DOCUMENT` handle for this page objects collection.
     #[inline]
-    pub(crate) fn get_page_handle(&self) -> FPDF_PAGE {
-        self.page_handle
+    pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
     }
 
-    /// Sets whether or not this [PdfPageObjects] collection should trigger content regeneration
-    /// on its containing [PdfPage] when the collection is mutated.
+    /// Returns the internal `FPDF_PAGE` handle for this page objects collection.
     #[inline]
-    pub(crate) fn do_regenerate_page_content_after_each_change(
-        &mut self,
-        do_regenerate_page_content_after_each_change: bool,
-    ) {
-        self.do_regenerate_page_content_after_each_change =
-            do_regenerate_page_content_after_each_change;
+    pub(crate) fn page_handle(&self) -> FPDF_PAGE {
+        self.page_handle
     }
 
     /// Creates a new [PdfPageGroupObject] object group that includes any page objects in this
@@ -84,19 +80,14 @@ impl<'a> PdfPageObjects<'a> {
     /// you will need to manually add to it the objects you want to manipulate.
     #[inline]
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
-        PdfPageGroupObject::from_pdfium(
-            self.document_handle,
-            self.page_handle,
-            self.bindings,
-            self.do_regenerate_page_content_after_each_change,
-        )
+        PdfPageGroupObject::from_pdfium(self.document_handle(), self.page_handle(), self.bindings())
     }
 }
 
 impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
     #[inline]
-    fn document_handle(&self) -> FPDF_DOCUMENT {
-        self.document_handle
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        &self.ownership
     }
 
     #[inline]
@@ -125,9 +116,8 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
         } else {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
-                Some(self.page_handle),
-                None,
-                self.bindings,
+                self.ownership().clone(),
+                self.bindings(),
             ))
         }
     }
@@ -137,47 +127,19 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
         PdfPageObjectsIterator::new(self)
     }
 
+    #[inline]
     fn add_object_impl(
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        object.add_object_to_page(self).and_then(|_| {
-            if self.do_regenerate_page_content_after_each_change {
-                if !self
-                    .bindings
-                    .is_true(self.bindings.FPDFPage_GenerateContent(self.page_handle))
-                {
-                    Err(PdfiumError::PdfiumLibraryInternalError(
-                        PdfiumInternalError::Unknown,
-                    ))
-                } else {
-                    Ok(object)
-                }
-            } else {
-                Ok(object)
-            }
-        })
+        object.add_object_to_page(self).map(|_| object)
     }
 
+    #[inline]
     fn remove_object_impl(
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        object.remove_object_from_page().and_then(|_| {
-            if self.do_regenerate_page_content_after_each_change {
-                if self
-                    .bindings
-                    .is_true(self.bindings.FPDFPage_GenerateContent(self.page_handle))
-                {
-                    Ok(object)
-                } else {
-                    Err(PdfiumError::PdfiumLibraryInternalError(
-                        PdfiumInternalError::Unknown,
-                    ))
-                }
-            } else {
-                Ok(object)
-            }
-        })
+        object.remove_object_from_page().map(|_| object)
     }
 }

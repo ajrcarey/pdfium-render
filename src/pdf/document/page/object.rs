@@ -2,6 +2,7 @@
 
 pub(crate) mod group;
 pub(crate) mod image;
+pub(crate) mod ownership;
 pub(crate) mod path;
 pub(crate) mod private; // Keep private so that the PdfPageObjectPrivate trait is not exposed.
 pub(crate) mod shading;
@@ -10,10 +11,10 @@ pub(crate) mod unsupported;
 pub(crate) mod x_object_form;
 
 use crate::bindgen::{
-    FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE,
-    FPDF_LINECAP_ROUND, FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGE,
-    FPDF_PAGEOBJECT, FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH,
-    FPDF_PAGEOBJ_SHADING, FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
+    FPDF_DOCUMENT, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
+    FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGEOBJECT,
+    FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING,
+    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -27,6 +28,7 @@ use crate::pdf::document::page::object::text::PdfPageTextObject;
 use crate::pdf::document::page::object::unsupported::PdfPageUnsupportedObject;
 use crate::pdf::document::page::object::x_object_form::PdfPageXObjectFormObject;
 use crate::pdf::document::page::objects::PdfPageObjects;
+use crate::pdf::document::page::PdfPageObjectOwnership;
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
@@ -35,6 +37,9 @@ use crate::pdf::rect::PdfRect;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
+
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
 
 /// The type of a single renderable [PdfPageObject].
 ///
@@ -272,7 +277,7 @@ impl PdfPageObjectLineCap {
     }
 }
 
-/// A single renderable object on a `PdfPage`.
+/// A single renderable object on a [PdfPage].
 pub enum PdfPageObject<'a> {
     /// A page object containing renderable text.
     Text(PdfPageTextObject<'a>),
@@ -304,59 +309,38 @@ pub enum PdfPageObject<'a> {
 }
 
 impl<'a> PdfPageObject<'a> {
-    // Page objects can be attached either directly to a page or to an annotation.
-    // We accommodate both possibilities.
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
-        page_handle: Option<FPDF_PAGE>,
-        annotation_handle: Option<FPDF_ANNOTATION>,
+        ownership: PdfPageObjectOwnership,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         match PdfPageObjectType::from_pdfium(bindings.FPDFPageObj_GetType(object_handle) as u32)
             .unwrap_or(PdfPageObjectType::Unsupported)
         {
-            PdfPageObjectType::Unsupported => {
-                PdfPageObject::Unsupported(PdfPageUnsupportedObject::from_pdfium(
-                    object_handle,
-                    page_handle,
-                    annotation_handle,
-                    bindings,
-                ))
-            }
+            PdfPageObjectType::Unsupported => PdfPageObject::Unsupported(
+                PdfPageUnsupportedObject::from_pdfium(object_handle, ownership, bindings),
+            ),
             PdfPageObjectType::Text => PdfPageObject::Text(PdfPageTextObject::from_pdfium(
                 object_handle,
-                page_handle,
-                annotation_handle,
+                ownership,
                 bindings,
             )),
             PdfPageObjectType::Path => PdfPageObject::Path(PdfPagePathObject::from_pdfium(
                 object_handle,
-                page_handle,
-                annotation_handle,
+                ownership,
                 bindings,
             )),
             PdfPageObjectType::Image => PdfPageObject::Image(PdfPageImageObject::from_pdfium(
                 object_handle,
-                page_handle,
-                annotation_handle,
+                ownership,
                 bindings,
             )),
-            PdfPageObjectType::Shading => {
-                PdfPageObject::Shading(PdfPageShadingObject::from_pdfium(
-                    object_handle,
-                    page_handle,
-                    annotation_handle,
-                    bindings,
-                ))
-            }
-            PdfPageObjectType::XObjectForm => {
-                PdfPageObject::XObjectForm(PdfPageXObjectFormObject::from_pdfium(
-                    object_handle,
-                    page_handle,
-                    annotation_handle,
-                    bindings,
-                ))
-            }
+            PdfPageObjectType::Shading => PdfPageObject::Shading(
+                PdfPageShadingObject::from_pdfium(object_handle, ownership, bindings),
+            ),
+            PdfPageObjectType::XObjectForm => PdfPageObject::XObjectForm(
+                PdfPageXObjectFormObject::from_pdfium(object_handle, ownership, bindings),
+            ),
         }
     }
 
@@ -778,7 +762,7 @@ where
     #[inline]
     fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) -> Result<(), PdfiumError> {
         self.bindings()
-            .FPDFPageObj_SetBlendMode(self.get_object_handle(), blend_mode.as_pdfium());
+            .FPDFPageObj_SetBlendMode(self.object_handle(), blend_mode.as_pdfium());
 
         Ok(())
     }
@@ -796,7 +780,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_GetFillColor(
-                self.get_object_handle(),
+                self.object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
@@ -823,7 +807,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_SetFillColor(
-                self.get_object_handle(),
+                self.object_handle(),
                 fill_color.red() as c_uint,
                 fill_color.green() as c_uint,
                 fill_color.blue() as c_uint,
@@ -849,7 +833,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_GetStrokeColor(
-                self.get_object_handle(),
+                self.object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
@@ -876,7 +860,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_SetStrokeColor(
-                self.get_object_handle(),
+                self.object_handle(),
                 stroke_color.red() as c_uint,
                 stroke_color.green() as c_uint,
                 stroke_color.blue() as c_uint,
@@ -895,7 +879,7 @@ where
 
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_GetStrokeWidth(self.get_object_handle(), &mut width),
+                .FPDFPageObj_GetStrokeWidth(self.object_handle(), &mut width),
         ) {
             Ok(PdfPoints::new(width))
         } else {
@@ -907,7 +891,7 @@ where
     fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetStrokeWidth(self.get_object_handle(), stroke_width.value),
+                .FPDFPageObj_SetStrokeWidth(self.object_handle(), stroke_width.value),
         ) {
             Ok(())
         } else {
@@ -919,7 +903,7 @@ where
     fn line_join(&self) -> Result<PdfPageObjectLineJoin, PdfiumError> {
         PdfPageObjectLineJoin::from_pdfium(
             self.bindings()
-                .FPDFPageObj_GetLineJoin(self.get_object_handle()),
+                .FPDFPageObj_GetLineJoin(self.object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
@@ -928,7 +912,7 @@ where
     fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetLineJoin(self.get_object_handle(), line_join.as_pdfium() as c_int),
+                .FPDFPageObj_SetLineJoin(self.object_handle(), line_join.as_pdfium() as c_int),
         ) {
             Ok(())
         } else {
@@ -939,8 +923,7 @@ where
     #[inline]
     fn line_cap(&self) -> Result<PdfPageObjectLineCap, PdfiumError> {
         PdfPageObjectLineCap::from_pdfium(
-            self.bindings()
-                .FPDFPageObj_GetLineCap(self.get_object_handle()),
+            self.bindings().FPDFPageObj_GetLineCap(self.object_handle()),
         )
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
@@ -949,7 +932,7 @@ where
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetLineCap(self.get_object_handle(), line_cap.as_pdfium() as c_int),
+                .FPDFPageObj_SetLineCap(self.object_handle(), line_cap.as_pdfium() as c_int),
         ) {
             Ok(())
         } else {
@@ -963,7 +946,7 @@ where
 
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_GetDashPhase(self.get_object_handle(), &mut phase),
+                .FPDFPageObj_GetDashPhase(self.object_handle(), &mut phase),
         ) {
             Ok(PdfPoints::new(phase))
         } else {
@@ -975,7 +958,7 @@ where
     fn set_dash_phase(&mut self, dash_phase: PdfPoints) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFPageObj_SetDashPhase(self.get_object_handle(), dash_phase.value),
+                .FPDFPageObj_SetDashPhase(self.object_handle(), dash_phase.value),
         ) {
             Ok(())
         } else {
@@ -987,14 +970,14 @@ where
     fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError> {
         let dash_count = self
             .bindings()
-            .FPDFPageObj_GetDashCount(self.get_object_handle()) as usize;
+            .FPDFPageObj_GetDashCount(self.object_handle()) as usize;
 
         let mut dash_array = vec![0.0; dash_count];
 
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_GetDashArray(
-                self.get_object_handle(),
+                self.object_handle(),
                 dash_array.as_mut_ptr(),
                 dash_count,
             ))
@@ -1014,7 +997,7 @@ where
         if self
             .bindings()
             .is_true(self.bindings().FPDFPageObj_SetDashArray(
-                self.get_object_handle(),
+                self.object_handle(),
                 dash_array.as_ptr(),
                 dash_array.len(),
                 phase.value,
@@ -1042,58 +1025,23 @@ where
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
-        self.unwrap_as_trait().get_object_handle()
-    }
-
-    // #[inline]
-    // fn get_document_handle(&self) -> Option<FPDF_DOCUMENT> {
-    //     self.unwrap_as_trait().get_document_handle()
-    // }
-
-    // #[inline]
-    // fn set_document_handle(&mut self, document: FPDF_DOCUMENT) {
-    //     self.unwrap_as_trait_mut().set_document_handle(document);
-    // }
-
-    #[inline]
-    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
-        self.unwrap_as_trait().get_page_handle()
-    }
-
-    #[inline]
-    fn set_page_handle(&mut self, page: FPDF_PAGE) {
-        self.unwrap_as_trait_mut().set_page_handle(page);
-    }
-
-    #[inline]
-    fn clear_page_handle(&mut self) {
-        self.unwrap_as_trait_mut().clear_page_handle();
-    }
-
-    #[inline]
-    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
-        self.unwrap_as_trait().get_annotation_handle()
-    }
-
-    #[inline]
-    fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION) {
-        self.unwrap_as_trait_mut().set_annotation_handle(annotation);
-    }
-
-    #[inline]
-    fn clear_annotation_handle(&mut self) {
-        self.unwrap_as_trait_mut().clear_annotation_handle();
-    }
-
-    #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.unwrap_as_trait().bindings()
     }
 
     #[inline]
-    fn is_object_memory_owned_by_container(&self) -> bool {
-        self.unwrap_as_trait().is_object_memory_owned_by_container()
+    fn object_handle(&self) -> FPDF_PAGEOBJECT {
+        self.unwrap_as_trait().object_handle()
+    }
+
+    #[inline]
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        self.unwrap_as_trait().ownership()
+    }
+
+    #[inline]
+    fn set_ownership(&mut self, ownership: PdfPageObjectOwnership) {
+        self.unwrap_as_trait_mut().set_ownership(ownership);
     }
 
     #[inline]
@@ -1191,9 +1139,8 @@ impl<'a> Drop for PdfPageObject<'a> {
         // does not allocate any additional resources, so we don't need to free anything.
         // (Indeed, if we try to, Pdfium segfaults.)
 
-        if !self.is_object_memory_owned_by_container() {
-            self.bindings()
-                .FPDFPageObj_Destroy(self.get_object_handle());
+        if !self.ownership().is_owned() {
+            self.bindings().FPDFPageObj_Destroy(self.object_handle());
         }
     }
 }
@@ -1277,6 +1224,60 @@ mod tests {
 
         assert_ne!(previous_matrix, object.matrix()?);
         assert_eq!(object.matrix()?, PdfMatrix::IDENTITY);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_transform_captured_in_content_regeneration() -> Result<(), PdfiumError> {
+        // The purpose of the test is to confirm that object transformations are correctly
+        // applied to the page's content streams by automatic content regeneration.
+        // In pdfium-render versions 0.8.27 and earlier, this was not reliably the case.
+        // See: https://github.com/ajrcarey/pdfium-render/issues/168
+
+        let pdfium = test_bind_to_pdfium();
+
+        let mut document = pdfium.create_new_pdf()?;
+
+        let x = PdfPoints::new(100.0);
+        let y = PdfPoints::new(400.0);
+
+        let object_matrix_before_rotation = {
+            let mut page = document
+                .pages_mut()
+                .create_page_at_start(PdfPagePaperSize::a4())?;
+
+            let font = document
+                .fonts_mut()
+                .new_built_in(PdfFontBuiltin::TimesRoman);
+
+            let mut object = page.objects_mut().create_text_object(
+                x,
+                y,
+                "Hello world!",
+                font,
+                PdfPoints::new(20.0),
+            )?;
+
+            let object_matrix_before_rotation = object.matrix()?;
+
+            // In pdfium-render versions 0.8.27 and earlier, the following transformation
+            // will not be captured by automatic content regeneration. It will be lost
+            // when the page falls out of scope.
+            object.rotate_clockwise_degrees(45.0)?;
+
+            object_matrix_before_rotation
+        };
+
+        // The page has now been dropped since it has fallen out of scope. Re-open it,
+        // retrieve the page object, and test its transformation matrix. It should be
+        // correctly rotated, indicating the transformation was correctly captured by
+        // automatic content regeneration.
+
+        assert_eq!(
+            object_matrix_before_rotation.rotate_clockwise_degrees(45.0)?,
+            document.pages().first()?.objects().first()?.matrix()?
+        );
 
         Ok(())
     }

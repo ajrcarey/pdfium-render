@@ -1,13 +1,19 @@
 //! Defines the [PdfPoints] struct, the basic unit of measurement within the internal
-//! coordinate system inside a `PdfDocument`.
+//! coordinate system inside a [PdfDocument].
 
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 
-/// The internal coordinate system inside a `PdfDocument` is measured in Points, a
+#[cfg(doc)]
+use {
+    crate::pdf::bitmap::PdfBitmap, crate::pdf::document::page::PdfPage,
+    crate::pdf::document::PdfDocument,
+};
+
+/// The internal coordinate system inside a [PdfDocument] is measured in Points, a
 /// device-independent unit equal to 1/72 inches, roughly 0.358 mm. Points are converted to pixels
-/// when a `PdfPage` is rendered into a `PdfBitmap`.
+/// when a [PdfPage] is rendered into a [PdfBitmap].
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub struct PdfPoints {
     pub value: f32,
@@ -165,7 +171,7 @@ impl Neg for PdfPoints {
 impl Eq for PdfPoints {}
 
 #[allow(clippy::derive_ord_xor_partial_ord)]
-// We would ideally use f32::total_cmp() here, but it was not stabilised until 1.62.0.
+// We would ideally use f32::total_cmp() here, but it was not stabilized until 1.62.0.
 // Providing our own (simple) implementation allows for better backwards compatibility.
 // Strictly speaking, our implementation is not _true_ total ordering because it treats
 // +0 and -0 to be equal; but for the purposes of this library and this specific data type,

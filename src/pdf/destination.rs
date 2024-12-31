@@ -1,5 +1,5 @@
 //! Defines the [PdfDestination] struct, exposing functionality related to the target destination
-//! of a link contained within a single `PdfPage`.
+//! of a link contained within a single [PdfPage].
 
 use crate::bindgen::{
     FPDF_DEST, FPDF_DOCUMENT, FS_FLOAT, PDFDEST_VIEW_FIT, PDFDEST_VIEW_FITB, PDFDEST_VIEW_FITBH,
@@ -13,8 +13,11 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::utils::mem::create_sized_buffer;
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
 /// The view settings that a PDF viewer should apply when displaying the target
-/// `PdfPage` nominated by a [PdfDestination] in its display window.
+/// [PdfPage] nominated by a [PdfDestination] in its display window.
 #[derive(Debug, Copy, Clone)]
 pub enum PdfDestinationViewSettings {
     /// The view settings are unknown.

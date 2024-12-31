@@ -531,9 +531,8 @@ impl<'a> PdfParagraph<'a> {
                     ));
                 }
             } else {
-                current_line_fragments.push(PdfParagraphFragment::NonTextObject(
-                    object.get_object_handle(),
-                ));
+                current_line_fragments
+                    .push(PdfParagraphFragment::NonTextObject(object.object_handle()));
             }
         }
 

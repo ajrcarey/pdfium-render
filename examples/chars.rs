@@ -49,10 +49,10 @@ fn main() -> Result<(), PdfiumError> {
                     println!(
                         "{}: ({}, {}) - ({}, {})",
                         word,
-                        start.left.value,
-                        start.bottom.value,
-                        char.loose_bounds()?.left.value, // The word ends at the space's leading (left) edge
-                        char.loose_bounds()?.top.value
+                        start.left().value,
+                        start.bottom().value,
+                        char.loose_bounds()?.left().value, // The word ends at the space's leading (left) edge
+                        char.loose_bounds()?.top().value
                     );
 
                     // Prepare for the next word.
@@ -73,10 +73,10 @@ fn main() -> Result<(), PdfiumError> {
                     println!(
                         "{}: ({}, {}) - ({}, {})",
                         word,
-                        start.left.value,
-                        start.bottom.value,
-                        char.loose_bounds()?.right.value,
-                        char.loose_bounds()?.top.value
+                        start.left().value,
+                        start.bottom().value,
+                        char.loose_bounds()?.right().value,
+                        char.loose_bounds()?.top().value
                     );
                 }
             }

@@ -16,6 +16,8 @@ use {
     crate::pdf::document::page::PdfPage,
 };
 
+/// The zero-based index of a single [PdfPageTextSegment] inside its containing
+/// [PdfPageTextSegments] collection.
 pub type PdfPageTextSegmentIndex = usize;
 
 /// A collection of all the distinct rectangular areas of a single [PdfPage] occupied by
@@ -56,7 +58,7 @@ impl<'a> PdfPageTextSegments<'a> {
     #[inline]
     pub fn len(&self) -> PdfPageTextSegmentIndex {
         self.bindings
-            .FPDFText_CountRects(*self.text.handle(), self.start, self.characters)
+            .FPDFText_CountRects(self.text.text_page_handle(), self.start, self.characters)
             as PdfPageTextSegmentIndex
     }
 
@@ -99,7 +101,7 @@ impl<'a> PdfPageTextSegments<'a> {
         let mut top = 0.0;
 
         let result = self.bindings.FPDFText_GetRect(
-            *self.text.handle(),
+            self.text.text_page_handle(),
             index as c_int,
             &mut left,
             &mut top,

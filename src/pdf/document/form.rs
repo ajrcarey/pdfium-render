@@ -15,7 +15,10 @@ use std::ops::DerefMut;
 use std::pin::Pin;
 use std::ptr::null_mut;
 
-/// The internal definition type of a [PdfForm] embedded in a `PdfDocument`.
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
+/// The internal definition type of a [PdfForm] embedded in a [PdfDocument].
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfFormType {
     // The FORMTYPE_COUNT constant simply specifies the number of form types supported
@@ -51,7 +54,7 @@ impl PdfFormType {
     }
 }
 
-/// The [PdfForm] embedded inside a `PdfDocument`.
+/// The [PdfForm] embedded inside a [PdfDocument].
 ///
 /// Form fields in Pdfium are exposed as page annotations of type `PdfPageAnnotationType::Widget`
 /// or `PdfPageAnnotationType::XfaWidget`, depending on the type of form embedded inside the

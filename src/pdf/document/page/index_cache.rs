@@ -1,4 +1,5 @@
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
+use crate::pdf::document::page::PdfPageContentRegenerationStrategy;
 use crate::pdf::document::pages::PdfPageIndex;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -11,8 +12,13 @@ use std::sync::{Mutex, MutexGuard};
 static PAGE_INDEX_CACHE: Lazy<Mutex<PdfPageIndexCache>> =
     Lazy::new(|| Mutex::new(PdfPageIndexCache::new()));
 
+struct PdfPageCachedProperties {
+    index: PdfPageIndex,
+    content_regeneration_strategy: PdfPageContentRegenerationStrategy,
+}
+
 pub(crate) struct PdfPageIndexCache {
-    pages_by_index: HashMap<(FPDF_DOCUMENT, FPDF_PAGE), PdfPageIndex>,
+    pages_by_index: HashMap<(FPDF_DOCUMENT, FPDF_PAGE), PdfPageCachedProperties>,
     indices_by_page: HashMap<(FPDF_DOCUMENT, PdfPageIndex), FPDF_PAGE>,
     documents_by_maximum_index: HashMap<FPDF_DOCUMENT, PdfPageIndex>,
 }
@@ -27,40 +33,48 @@ impl PdfPageIndexCache {
         }
     }
 
-    /// Returns the current [PdfPageIndex] value for the given raw document and page handles, if any.
+    /// Returns the currently cached properties for the given raw document and page handles, if any.
     #[inline]
-    fn get(&self, document: FPDF_DOCUMENT, page: FPDF_PAGE) -> Option<PdfPageIndex> {
-        self.pages_by_index.get(&(document, page)).copied()
+    fn get(&self, document: FPDF_DOCUMENT, page: FPDF_PAGE) -> Option<&PdfPageCachedProperties> {
+        self.pages_by_index.get(&(document, page))
     }
 
-    /// Sets the current [PdfPageIndex] value for the given raw document and page handles.
+    /// Sets the currently cached properties for the given raw document and page handles.
     #[inline]
-    fn set(&mut self, document: FPDF_DOCUMENT, page: FPDF_PAGE, index: PdfPageIndex) {
-        self.pages_by_index.insert((document, page), index);
-        self.indices_by_page.insert((document, index), page);
-
+    fn set(&mut self, document: FPDF_DOCUMENT, page: FPDF_PAGE, props: PdfPageCachedProperties) {
         // Keep track of the maximum page index for this document. We'll need to know this
         // if we have to shuffle indices to accommodate page insertions or deletions.
 
         match self.documents_by_maximum_index.get(&document).copied() {
             Some(maximum) => {
-                if index > maximum {
-                    self.documents_by_maximum_index.insert(document, index);
+                if props.index > maximum {
+                    self.documents_by_maximum_index
+                        .insert(document, props.index);
                 }
             }
             None => {
-                self.documents_by_maximum_index.insert(document, index);
+                self.documents_by_maximum_index
+                    .insert(document, props.index);
             }
         }
+
+        self.indices_by_page.insert((document, props.index), page);
+        self.pages_by_index.insert((document, page), props);
     }
 
     /// Removes the cached [PdfPageIndex] value for the given raw document and page handles.
     #[inline]
-    fn remove(&mut self, document: FPDF_DOCUMENT, page: FPDF_PAGE) {
-        if let Some(index) = self.pages_by_index.remove(&(document, page)) {
-            self.indices_by_page.remove(&(document, index));
+    fn remove(
+        &mut self,
+        document: FPDF_DOCUMENT,
+        page: FPDF_PAGE,
+    ) -> Option<PdfPageCachedProperties> {
+        let props = self.pages_by_index.remove(&(document, page));
 
-            if self.documents_by_maximum_index.get(&document).copied() == Some(index) {
+        if let Some(props) = props.as_ref() {
+            self.indices_by_page.remove(&(document, props.index));
+
+            if self.documents_by_maximum_index.get(&document).copied() == Some(props.index) {
                 // This page had the maximum page index for this document. Now that it's been removed
                 // from the cache, we need to find the new maximum page index for this document.
 
@@ -85,6 +99,8 @@ impl PdfPageIndexCache {
                 }
             }
         }
+
+        props
     }
 
     /// Adjusts all cached [PdfPageIndex] values for the given document as necessary to accommodate
@@ -100,8 +116,22 @@ impl PdfPageIndexCache {
                         if let Some(page) = self.indices_by_page.get(&(document, index)).copied() {
                             // Update the indices of this page.
 
-                            self.remove(document, page);
-                            self.set(document, page, index + count);
+                            let props = self.remove(document, page);
+
+                            let content_regeneration_strategy = if let Some(props) = props {
+                                props.content_regeneration_strategy
+                            } else {
+                                PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+                            };
+
+                            self.set(
+                                document,
+                                page,
+                                PdfPageCachedProperties {
+                                    index: index + count,
+                                    content_regeneration_strategy,
+                                },
+                            );
                         }
                     }
                 }
@@ -145,8 +175,22 @@ impl PdfPageIndexCache {
                 if let Some(page) = self.indices_by_page.get(&(document, index)).copied() {
                     // Update the indices of this page.
 
-                    self.remove(document, page);
-                    self.set(document, page, index - count);
+                    let props = self.remove(document, page);
+
+                    let content_regeneration_strategy = if let Some(props) = props {
+                        props.content_regeneration_strategy
+                    } else {
+                        PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
+                    };
+
+                    self.set(
+                        document,
+                        page,
+                        PdfPageCachedProperties {
+                            index: index - count,
+                            content_regeneration_strategy,
+                        },
+                    );
                 }
             }
         } else {
@@ -173,14 +217,22 @@ impl PdfPageIndexCache {
     // The remaining methods in this implementation take care of thread-safe locking.
     // These methods form the public API of the cache.
 
-    /// Sets the current [PdfPageIndex] value for the given raw document and page handles.
+    /// Caches the given properties for the given raw document and page handles.
     #[inline]
-    pub(crate) fn set_index_for_page(
+    pub(crate) fn cache_props_for_page(
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
         index: PdfPageIndex,
+        content_regeneration_strategy: PdfPageContentRegenerationStrategy,
     ) {
-        Self::lock().set(document, page, index)
+        Self::lock().set(
+            document,
+            page,
+            PdfPageCachedProperties {
+                index,
+                content_regeneration_strategy,
+            },
+        )
     }
 
     /// Returns the current [PdfPageIndex] value for the given raw document and page handles, if any.
@@ -189,13 +241,25 @@ impl PdfPageIndexCache {
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
     ) -> Option<PdfPageIndex> {
-        Self::lock().get(document, page)
+        Self::lock().get(document, page).map(|props| props.index)
+    }
+
+    /// Returns the current [PdfPageContentRegenerationStrategy] value for the given raw document
+    /// and page handles, if any.
+    #[inline]
+    pub(crate) fn get_content_regeneration_strategy_for_page(
+        document: FPDF_DOCUMENT,
+        page: FPDF_PAGE,
+    ) -> Option<PdfPageContentRegenerationStrategy> {
+        Self::lock()
+            .get(document, page)
+            .map(|props| props.content_regeneration_strategy)
     }
 
     /// Removes the cached [PdfPageIndex] value for the given raw document and page handles.
     #[inline]
     pub(crate) fn remove_index_for_page(document: FPDF_DOCUMENT, page: FPDF_PAGE) {
-        Self::lock().remove(document, page)
+        Self::lock().remove(document, page);
     }
 
     /// Adjusts all cached [PdfPageIndex] values for the given document as necessary to accommodate
@@ -206,7 +270,7 @@ impl PdfPageIndexCache {
         index: PdfPageIndex,
         count: PdfPageIndex,
     ) {
-        Self::lock().insert(document, index, count)
+        Self::lock().insert(document, index, count);
     }
 
     /// Adjusts all cached [PdfPageIndex] values for the given document as necessary to accommodate
@@ -217,7 +281,7 @@ impl PdfPageIndexCache {
         index: PdfPageIndex,
         count: PdfPageIndex,
     ) {
-        Self::lock().delete(document, index, count)
+        Self::lock().delete(document, index, count);
     }
 }
 
@@ -305,31 +369,34 @@ mod tests {
             assert!(PdfPageIndexCache::lock()
                 .get(document_0.handle(), document_0_page_0.page_handle())
                 .is_some());
-            assert_eq!(
+            assert!(
                 PdfPageIndexCache::lock()
                     .get(document_0.handle(), document_0_page_0.page_handle())
-                    .unwrap(),
-                0
+                    .unwrap()
+                    .index
+                    == 0
             );
 
             assert!(PdfPageIndexCache::lock()
                 .get(document_0.handle(), document_0_page_1.page_handle())
                 .is_some());
-            assert_eq!(
+            assert!(
                 PdfPageIndexCache::lock()
                     .get(document_0.handle(), document_0_page_1.page_handle())
-                    .unwrap(),
-                1
+                    .unwrap()
+                    .index
+                    == 1
             );
 
             assert!(PdfPageIndexCache::lock()
                 .get(document_0.handle(), document_0_page_2.page_handle())
                 .is_some());
-            assert_eq!(
+            assert!(
                 PdfPageIndexCache::lock()
                     .get(document_0.handle(), document_0_page_2.page_handle())
-                    .unwrap(),
-                2
+                    .unwrap()
+                    .index
+                    == 2
             );
 
             assert!(PdfPageIndexCache::lock()
@@ -390,7 +457,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document_1.handle(), document_1_page_0.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     0
                 );
 
@@ -400,7 +468,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document_1.handle(), document_1_page_1.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     1
                 );
 
@@ -410,7 +479,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document_1.handle(), document_1_page_2.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     2
                 );
 
@@ -420,7 +490,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document_1.handle(), document_1_page_3.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     3
                 );
 
@@ -473,7 +544,8 @@ mod tests {
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .get(document.handle(), page.page_handle())
-                    .unwrap(),
+                    .unwrap()
+                    .index,
                 0
             );
 
@@ -536,7 +608,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document.handle(), page.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     index as PdfPageIndex
                 );
             }
@@ -567,7 +640,8 @@ mod tests {
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .get(document.handle(), inserted.page_handle())
-                    .unwrap(),
+                    .unwrap()
+                    .index,
                 0
             );
 
@@ -580,7 +654,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document.handle(), page.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     index as PdfPageIndex + 1
                 );
             }
@@ -611,7 +686,8 @@ mod tests {
             assert_eq!(
                 PdfPageIndexCache::lock()
                     .get(document.handle(), inserted.page_handle())
-                    .unwrap(),
+                    .unwrap()
+                    .index,
                 50
             );
 
@@ -630,7 +706,8 @@ mod tests {
                     assert_eq!(
                         PdfPageIndexCache::lock()
                             .get(document.handle(), page.page_handle())
-                            .unwrap(),
+                            .unwrap()
+                            .index,
                         index as PdfPageIndex + 1
                     );
                 }
@@ -642,7 +719,8 @@ mod tests {
                     assert_eq!(
                         PdfPageIndexCache::lock()
                             .get(document.handle(), page.page_handle())
-                            .unwrap(),
+                            .unwrap()
+                            .index,
                         index as PdfPageIndex + 2
                     );
                 }
@@ -697,7 +775,7 @@ mod tests {
 
                 assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                 assert_eq!(
-                    PdfPageIndexCache::lock().get(document, page).unwrap(),
+                    PdfPageIndexCache::lock().get(document, page).unwrap().index,
                     index as PdfPageIndex
                 );
             }
@@ -735,7 +813,7 @@ mod tests {
 
                     assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
-                        PdfPageIndexCache::lock().get(document, page).unwrap(),
+                        PdfPageIndexCache::lock().get(document, page).unwrap().index,
                         index as PdfPageIndex - 1
                     );
                 }
@@ -779,7 +857,7 @@ mod tests {
 
                     assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
-                        PdfPageIndexCache::lock().get(document, page).unwrap(),
+                        PdfPageIndexCache::lock().get(document, page).unwrap().index,
                         index as PdfPageIndex - 1
                     );
                 } else if index > 50 {
@@ -792,7 +870,7 @@ mod tests {
 
                     assert!(PdfPageIndexCache::lock().get(document, page).is_some());
                     assert_eq!(
-                        PdfPageIndexCache::lock().get(document, page).unwrap(),
+                        PdfPageIndexCache::lock().get(document, page).unwrap().index,
                         index as PdfPageIndex - 2
                     );
                 }
@@ -848,7 +926,8 @@ mod tests {
                 assert_eq!(
                     PdfPageIndexCache::lock()
                         .get(document.handle(), page.page_handle())
-                        .unwrap(),
+                        .unwrap()
+                        .index,
                     index as PdfPageIndex
                 );
             }

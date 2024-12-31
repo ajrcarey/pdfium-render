@@ -1,5 +1,5 @@
-//! Defines the [PdfFontGlyphs] struct, a collection of all the `PdfFontGlyph` objects in a
-//! `PdfFont`.
+//! Defines the [PdfFontGlyphs] struct, a collection of all the [PdfFontGlyph] objects in a
+//! [PdfFont].
 
 use crate::bindgen::FPDF_FONT;
 use crate::bindings::PdfiumLibraryBindings;
@@ -9,9 +9,13 @@ use std::cell::Cell;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_uint;
 
+#[cfg(doc)]
+use crate::pdf::font::PdfFont;
+
 /// The zero-based index of a single [PdfFontGlyph] inside its containing [PdfFontGlyphs] collection.
 pub type PdfFontGlyphIndex = u16;
 
+/// A collection of all the [PdfFontGlyph] objects in a [PdfFont].
 pub struct PdfFontGlyphs<'a> {
     handle: FPDF_FONT,
     len: Cell<Option<PdfFontGlyphIndex>>,
@@ -32,7 +36,7 @@ impl<'a> PdfFontGlyphs<'a> {
     ///
     /// We avoid doing this on instantiation as it may not take constant time.
     /// We only incur the cost of initializing this value if the user actually requests the
-    /// [PdfFontGlyphs] collection by calling the [PdfFont::glyphs()] function.
+    /// [PdfFontGlyphs] collection by calling the [PdfFont::glyphs] function.
     #[inline]
     pub(crate) fn initialize_len(&self) {
         if self.len.get().is_none() {

@@ -7,6 +7,9 @@ use crate::error::PdfiumError;
 use bitflags::bitflags;
 use std::os::raw::c_int;
 
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
 bitflags! {
     struct FpdfPermissions: u32 {
         const RESERVED_BIT_1 =                          0b00000000000000000000000000000001;
@@ -24,7 +27,7 @@ bitflags! {
     }
 }
 
-/// The revision of the standard security handler for a single `PdfDocument`.
+/// The revision of the standard security handler for a single [PdfDocument].
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfSecurityHandlerRevision {
     Unprotected,
@@ -45,7 +48,7 @@ impl PdfSecurityHandlerRevision {
     }
 }
 
-/// The collection of document permissions and security handler settings for a single `PdfDocument`.
+/// The collection of document permissions and security handler settings for a single [PdfDocument].
 ///
 /// Note that Pdfium currently only offers support for reading the existing permissions of a
 /// document. It does not support changing existing permissions or adding new permissions to
@@ -73,7 +76,7 @@ impl<'a> PdfPermissions<'a> {
         self.bindings
     }
 
-    /// Returns the raw permissions bitflags for the containing `PdfDocument`.
+    /// Returns the raw permissions bitflags for the containing [PdfDocument].
     #[inline]
     fn get_permissions_bits(&self) -> FpdfPermissions {
         FpdfPermissions::from_bits_truncate(
@@ -81,7 +84,7 @@ impl<'a> PdfPermissions<'a> {
         )
     }
 
-    /// Returns the revision of the standard security handler used by the containing `PdfDocument`.
+    /// Returns the revision of the standard security handler used by the containing [PdfDocument].
     /// As of PDF version 1.7, possible revision numbers are 2, 3, or 4.
     pub fn security_handler_revision(&self) -> Result<PdfSecurityHandlerRevision, PdfiumError> {
         PdfSecurityHandlerRevision::from_pdfium(
@@ -91,7 +94,7 @@ impl<'a> PdfPermissions<'a> {
         .ok_or(PdfiumError::UnknownPdfSecurityHandlerRevision)
     }
 
-    /// Returns `true` if the containing `PdfDocument` can be printed to a representation
+    /// Returns `true` if the containing [PdfDocument] can be printed to a representation
     /// from which a faithful digital copy of the original content could be recovered.
     pub fn can_print_high_quality(&self) -> Result<bool, PdfiumError> {
         let permissions = self.get_permissions_bits();
@@ -110,7 +113,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` can be only be printed to a low-level
+    /// Returns `true` if the containing [PdfDocument] can be only be printed to a low-level
     /// representation of the appearance of the document, possibly of degraded quality,
     /// from which a faithful digital copy of the original content could _not_ be recovered.
     pub fn can_print_only_low_quality(&self) -> Result<bool, PdfiumError> {
@@ -129,7 +132,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` can be _assembled_; that is, the
+    /// Returns `true` if the containing [PdfDocument] can be _assembled_; that is, the
     /// document can have pages inserted, rotated, or deleted, can have bookmarks created,
     /// or can have thumbnail page images created.
     pub fn can_assemble_document(&self) -> Result<bool, PdfiumError> {
@@ -148,7 +151,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` allows general modification of
+    /// Returns `true` if the containing [PdfDocument] allows general modification of
     /// the document contents.
     ///
     /// For security handler revisions 3 and later, general document modification can be disabled
@@ -164,7 +167,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` permits text and graphics to be extracted.
+    /// Returns `true` if the containing [PdfDocument] permits text and graphics to be extracted.
     pub fn can_extract_text_and_graphics(&self) -> Result<bool, PdfiumError> {
         let permissions = self.get_permissions_bits();
 
@@ -182,7 +185,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` permits any existing form fields,
+    /// Returns `true` if the containing [PdfDocument] permits any existing form fields,
     /// including signature fields, to be filled in by a user.
     pub fn can_fill_existing_interactive_form_fields(&self) -> Result<bool, PdfiumError> {
         let permissions = self.get_permissions_bits();
@@ -200,7 +203,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` allows the creation of new form fields,
+    /// Returns `true` if the containing [PdfDocument] allows the creation of new form fields,
     /// including new signature fields.
     pub fn can_create_new_interactive_form_fields(&self) -> Result<bool, PdfiumError> {
         let permissions = self.get_permissions_bits();
@@ -216,7 +219,7 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 
-    /// Returns `true` if the containing `PdfDocument` allows the addition or modification
+    /// Returns `true` if the containing [PdfDocument] allows the addition or modification
     /// of text annotations.
     pub fn can_add_or_modify_text_annotations(&self) -> Result<bool, PdfiumError> {
         let permissions = self.get_permissions_bits();

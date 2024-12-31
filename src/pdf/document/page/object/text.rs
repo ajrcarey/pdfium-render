@@ -2,7 +2,7 @@
 //! page object defining a piece of formatted text.
 
 use crate::bindgen::{
-    FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_FONT, FPDF_PAGE, FPDF_PAGEOBJECT, FPDF_TEXT_RENDERMODE,
+    FPDF_DOCUMENT, FPDF_FONT, FPDF_PAGEOBJECT, FPDF_TEXT_RENDERMODE,
     FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_CLIP, FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL,
     FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_CLIP,
     FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL_STROKE,
@@ -16,7 +16,9 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::fonts::ToPdfFontToken;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
-use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
+use crate::pdf::document::page::object::{
+    PdfPageObject, PdfPageObjectCommon, PdfPageObjectOwnership,
+};
 use crate::pdf::document::page::text::chars::PdfPageTextChars;
 use crate::pdf::document::page::text::PdfPageText;
 use crate::pdf::document::PdfDocument;
@@ -140,8 +142,7 @@ impl PdfPageTextRenderMode {
 /// be attached to a page by using the `PdfPageObjects::add_text_object()` function.
 pub struct PdfPageTextObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
-    page_handle: Option<FPDF_PAGE>,
-    annotation_handle: Option<FPDF_ANNOTATION>,
+    ownership: PdfPageObjectOwnership,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -149,14 +150,12 @@ impl<'a> PdfPageTextObject<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
-        page_handle: Option<FPDF_PAGE>,
-        annotation_handle: Option<FPDF_ANNOTATION>,
+        ownership: PdfPageObjectOwnership,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextObject {
             object_handle,
-            page_handle,
-            annotation_handle,
+            ownership,
             bindings,
         }
     }
@@ -167,9 +166,9 @@ impl<'a> PdfPageTextObject<'a> {
     ///
     /// A single space will be used if the given text is empty, in order to avoid
     /// unexpected behaviour from Pdfium when dealing with empty strings.
-    // Specifically, FPDFPageObj_SetText() will crash if we try to apply an empty string to a
-    // text object, and FPDFText_LoadPage() will crash if any text object on the page contains
-    // an empty string (so it isn't enough to avoid calling FPDFPageObj_SetText() for an empty
+    // Specifically, `FPDFPageObj_SetText()` will crash if we try to apply an empty string to a
+    // text object, and `FPDFText_LoadPage()` will crash if any text object on the page contains
+    // an empty string (so it isn't enough to avoid calling `FPDFPageObj_SetText()` for an empty
     // text object, we _have_ to set a non-empty string to avoid segfaults).
     #[inline]
     pub fn new(
@@ -205,8 +204,7 @@ impl<'a> PdfPageTextObject<'a> {
         } else {
             let mut result = PdfPageTextObject {
                 object_handle: handle,
-                page_handle: None,
-                annotation_handle: None,
+                ownership: PdfPageObjectOwnership::unowned(),
                 bindings,
             };
 
@@ -295,12 +293,18 @@ impl<'a> PdfPageTextObject<'a> {
         // length and call FPDFTextObj_GetText() again with a pointer to the buffer;
         // this will write the text to the buffer in UTF16-LE format.
 
-        if let Some(page_handle) = self.page_handle {
-            let text_handle = self.bindings.FPDFText_LoadPage(page_handle);
+        let page_handle = match self.ownership() {
+            PdfPageObjectOwnership::Page(ownership) => Some(ownership.page_handle()),
+            PdfPageObjectOwnership::AttachedAnnotation(ownership) => Some(ownership.page_handle()),
+            _ => None,
+        };
+
+        if let Some(page_handle) = page_handle {
+            let text_handle = self.bindings().FPDFText_LoadPage(page_handle);
 
             if !text_handle.is_null() {
                 let buffer_length = self.bindings().FPDFTextObj_GetText(
-                    self.object_handle,
+                    self.object_handle(),
                     text_handle,
                     std::ptr::null_mut(),
                     0,
@@ -315,7 +319,7 @@ impl<'a> PdfPageTextObject<'a> {
                 let mut buffer = create_byte_buffer(buffer_length as usize);
 
                 let result = self.bindings().FPDFTextObj_GetText(
-                    self.object_handle,
+                    self.object_handle(),
                     text_handle,
                     buffer.as_mut_ptr() as *mut FPDF_WCHAR,
                     buffer_length,
@@ -350,7 +354,7 @@ impl<'a> PdfPageTextObject<'a> {
 
         if self.bindings().is_true(
             self.bindings()
-                .FPDFText_SetText_str(self.object_handle, text),
+                .FPDFText_SetText_str(self.object_handle(), text),
         ) {
             Ok(())
         } else {
@@ -367,7 +371,7 @@ impl<'a> PdfPageTextObject<'a> {
     ) -> Result<(), PdfiumError> {
         if self.bindings().is_true(
             self.bindings()
-                .FPDFTextObj_SetTextRenderMode(self.object_handle, render_mode.as_pdfium()),
+                .FPDFTextObj_SetTextRenderMode(self.object_handle(), render_mode.as_pdfium()),
         ) {
             Ok(())
         } else {
@@ -405,7 +409,7 @@ impl<'a> PdfPageTextObject<'a> {
         let mut maximum_descent = object_bottom;
 
         for char in self.chars(text)?.iter() {
-            let char_bottom = char.tight_bounds()?.bottom;
+            let char_bottom = char.tight_bounds()?.bottom();
 
             if char_bottom < maximum_descent {
                 maximum_descent = char_bottom;
@@ -438,38 +442,18 @@ impl<'a> PdfPageTextObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
+    fn object_handle(&self) -> FPDF_PAGEOBJECT {
         self.object_handle
     }
 
     #[inline]
-    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
-        self.page_handle
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        &self.ownership
     }
 
     #[inline]
-    fn set_page_handle(&mut self, page: FPDF_PAGE) {
-        self.page_handle = Some(page);
-    }
-
-    #[inline]
-    fn clear_page_handle(&mut self) {
-        self.page_handle = None;
-    }
-
-    #[inline]
-    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
-        self.annotation_handle
-    }
-
-    #[inline]
-    fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION) {
-        self.annotation_handle = Some(annotation);
-    }
-
-    #[inline]
-    fn clear_annotation_handle(&mut self) {
-        self.annotation_handle = None;
+    fn set_ownership(&mut self, ownership: PdfPageObjectOwnership) {
+        self.ownership = ownership;
     }
 
     #[inline]

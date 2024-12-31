@@ -33,11 +33,54 @@ pub struct PdfQuadPoints {
     pub y3: PdfPoints,
     pub x4: PdfPoints,
     pub y4: PdfPoints,
+    // TODO: AJRC - 28/12/24 - directly available fields are in place purely to achieve
+    // API-compatibility with PdfRect as part of changes to bounds() function implementation
+    // in page objects. Direct field access should be removed in favour of accessor functions
+    // as part of release 0.9.0.
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfQuadPoints::bottom() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
+    pub bottom: PdfPoints,
+
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfQuadPoints::left() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
+    pub left: PdfPoints,
+
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfQuadPoints::top() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
+    pub top: PdfPoints,
+
+    #[deprecated(
+        since = "0.8.28",
+        note = "Use the PdfQuadPoints::right() function instead of direct field access. Direct field access will be removed in release 0.9.0."
+    )]
+    pub right: PdfPoints,
 }
 
 impl PdfQuadPoints {
     /// A [PdfQuadPoints] object with the identity value (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).
-    pub const ZERO: PdfQuadPoints = PdfQuadPoints::zero();
+    #[allow(deprecated)]
+    pub const ZERO: PdfQuadPoints = PdfQuadPoints {
+        // TODO: AJRC - 28/12/24 - this in-place initialiser can be reduced to
+        // PdfQuadPoints::zero() once deprecated features are removed as part of release 0.9.0.
+        x1: PdfPoints::zero(),
+        y1: PdfPoints::zero(),
+        x2: PdfPoints::zero(),
+        y2: PdfPoints::zero(),
+        x3: PdfPoints::zero(),
+        y3: PdfPoints::zero(),
+        x4: PdfPoints::zero(),
+        y4: PdfPoints::zero(),
+        bottom: PdfPoints::zero(),
+        left: PdfPoints::zero(),
+        top: PdfPoints::zero(),
+        right: PdfPoints::zero(),
+    };
 
     #[inline]
     pub(crate) fn from_pdfium(points: FS_QUADPOINTSF) -> Self {
@@ -68,7 +111,9 @@ impl PdfQuadPoints {
     /// y values increasing as coordinates move vertically up.
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    pub const fn new(
+    // TODO: AJRC - 28/12/24 - return to const function once left, right, bottom, top fields
+    // removed as part of release 0.9.0.
+    pub fn new(
         x1: PdfPoints,
         y1: PdfPoints,
         x2: PdfPoints,
@@ -78,6 +123,7 @@ impl PdfQuadPoints {
         x4: PdfPoints,
         y4: PdfPoints,
     ) -> Self {
+        #[allow(deprecated)]
         Self {
             x1,
             y1,
@@ -87,6 +133,10 @@ impl PdfQuadPoints {
             y3,
             x4,
             y4,
+            left: *vec![x1, x2, x3, x4].iter().min().unwrap(),
+            right: *vec![x1, x2, x3, x4].iter().max().unwrap(),
+            bottom: *vec![y1, y2, y3, y4].iter().min().unwrap(),
+            top: *vec![y1, y2, y3, y4].iter().max().unwrap(),
         }
     }
 
@@ -97,7 +147,9 @@ impl PdfQuadPoints {
     /// y values increasing as coordinates move vertically up.
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    pub const fn new_from_values(
+    // TODO: AJRC - 28/12/24 - return to const function once left, right, bottom, top fields
+    // removed as part of release 0.9.0.
+    pub fn new_from_values(
         x1: f32,
         y1: f32,
         x2: f32,
@@ -107,16 +159,16 @@ impl PdfQuadPoints {
         x4: f32,
         y4: f32,
     ) -> Self {
-        Self {
-            x1: PdfPoints::new(x1),
-            y1: PdfPoints::new(y1),
-            x2: PdfPoints::new(x2),
-            y2: PdfPoints::new(y2),
-            x3: PdfPoints::new(x3),
-            y3: PdfPoints::new(y3),
-            x4: PdfPoints::new(x4),
-            y4: PdfPoints::new(y4),
-        }
+        Self::new(
+            PdfPoints::new(x1),
+            PdfPoints::new(y1),
+            PdfPoints::new(x2),
+            PdfPoints::new(y2),
+            PdfPoints::new(x3),
+            PdfPoints::new(y3),
+            PdfPoints::new(x4),
+            PdfPoints::new(y4),
+        )
     }
 
     /// Creates a new [PdfQuadPoints] object with all values set to 0.0.
@@ -124,7 +176,9 @@ impl PdfQuadPoints {
     /// Consider using the compile-time constant value [PdfQuadPoints::ZERO]
     /// rather than calling this function directly.
     #[inline]
-    pub const fn zero() -> Self {
+    // TODO: AJRC - 28/12/24 - return to const function once left, right, bottom, top fields
+    // removed as part of release 0.9.0.
+    pub fn zero() -> Self {
         Self::new_from_values(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 
@@ -132,47 +186,59 @@ impl PdfQuadPoints {
     #[inline]
     pub fn from_rect(rect: &PdfRect) -> Self {
         PdfQuadPoints::new(
-            rect.left,
-            rect.bottom,
-            rect.right,
-            rect.bottom,
-            rect.right,
-            rect.top,
-            rect.left,
-            rect.top,
+            rect.left(),
+            rect.bottom(),
+            rect.right(),
+            rect.bottom(),
+            rect.right(),
+            rect.top(),
+            rect.left(),
+            rect.top(),
         )
     }
 
     /// Returns the left-most extent of this [PdfQuadPoints].
     pub fn left(&self) -> PdfPoints {
-        *vec![self.x1, self.x2, self.x3, self.x4]
-            .iter()
-            .min()
-            .unwrap()
+        #[allow(deprecated)]
+        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
+        self.left
+        // *vec![self.x1, self.x2, self.x3, self.x4]
+        //     .iter()
+        //     .min()
+        //     .unwrap()
     }
 
     /// Returns the right-most extent of this [PdfQuadPoints].
     pub fn right(&self) -> PdfPoints {
-        *vec![self.x1, self.x2, self.x3, self.x4]
-            .iter()
-            .max()
-            .unwrap()
+        #[allow(deprecated)]
+        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
+        self.right
+        // *vec![self.x1, self.x2, self.x3, self.x4]
+        //     .iter()
+        //     .max()
+        //     .unwrap()
     }
 
     /// Returns the bottom-most extent of this [PdfQuadPoints].
     pub fn bottom(&self) -> PdfPoints {
-        *vec![self.y1, self.y2, self.y3, self.y4]
-            .iter()
-            .min()
-            .unwrap()
+        #[allow(deprecated)]
+        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
+        self.bottom
+        // *vec![self.y1, self.y2, self.y3, self.y4]
+        //     .iter()
+        //     .min()
+        //     .unwrap()
     }
 
     /// Returns the top-most extent of this [PdfQuadPoints].
     pub fn top(&self) -> PdfPoints {
-        *vec![self.y1, self.y2, self.y3, self.y4]
-            .iter()
-            .max()
-            .unwrap()
+        #[allow(deprecated)]
+        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
+        self.top
+        // *vec![self.y1, self.y2, self.y3, self.y4]
+        //     .iter()
+        //     .max()
+        //     .unwrap()
     }
 
     /// Returns the width of this [PdfQuadPoints].
@@ -322,9 +388,9 @@ mod tests {
 
         let s = q45.transform(m.invert()).to_rect();
         let threshold = PdfPoints::new(0.001);
-        assert!((s.top - r.top).abs() < threshold);
-        assert!((s.bottom - r.bottom).abs() < threshold);
-        assert!((s.left - r.left).abs() < threshold);
-        assert!((s.right - r.right).abs() < threshold);
+        assert!((s.top() - r.top()).abs() < threshold);
+        assert!((s.bottom() - r.bottom()).abs() < threshold);
+        assert!((s.left() - r.left()).abs() < threshold);
+        assert!((s.right() - r.right()).abs() < threshold);
     }
 }

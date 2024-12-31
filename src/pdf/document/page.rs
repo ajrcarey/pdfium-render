@@ -19,6 +19,8 @@ pub mod paragraph;
 #[cfg(feature = "flatten")]
 mod flatten; // Keep internal flatten operation private.
 
+use object::ownership::PdfPageObjectOwnership;
+
 use crate::bindgen::{
     FLATTEN_FAIL, FLATTEN_NOTHINGTODO, FLATTEN_SUCCESS, FLAT_PRINT, FPDF_DOCUMENT, FPDF_FORMHANDLE,
     FPDF_PAGE,
@@ -33,7 +35,7 @@ use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::page::links::PdfPageLinks;
 use crate::pdf::document::page::objects::common::PdfPageObjectsCommon;
 use crate::pdf::document::page::objects::PdfPageObjects;
-use crate::pdf::document::page::render_config::{PdfRenderConfig, PdfRenderSettings};
+use crate::pdf::document::page::render_config::{PdfPageRenderSettings, PdfRenderConfig};
 use crate::pdf::document::page::size::PdfPagePaperSize;
 use crate::pdf::document::page::text::PdfPageText;
 use crate::pdf::font::PdfFont;
@@ -220,7 +222,7 @@ impl<'a> PdfPage<'a> {
             ),
             boundaries: PdfPageBoundaries::from_pdfium(page_handle, bindings),
             links: PdfPageLinks::from_pdfium(page_handle, document_handle, bindings),
-            objects: PdfPageObjects::from_pdfium(page_handle, document_handle, bindings),
+            objects: PdfPageObjects::from_pdfium(document_handle, page_handle, bindings),
             bindings,
         };
 
@@ -380,12 +382,6 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the collection of text boxes contained within this [PdfPage].
     pub fn text(&self) -> Result<PdfPageText, PdfiumError> {
-        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
-            && self.is_content_regeneration_required
-        {
-            self.regenerate_content_immut()?;
-        }
-
         let text_handle = self.bindings().FPDFText_LoadPage(self.page_handle);
 
         if text_handle.is_null() {
@@ -399,33 +395,11 @@ impl<'a> PdfPage<'a> {
 
     /// Returns an immutable collection of the annotations that have been added to this [PdfPage].
     pub fn annotations(&self) -> &PdfPageAnnotations<'a> {
-        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
-            && self.is_content_regeneration_required
-        {
-            let result = self.regenerate_content_immut();
-
-            debug_assert!(result.is_ok());
-        }
-
         &self.annotations
     }
 
     /// Returns a mutable collection of the annotations that have been added to this [PdfPage].
     pub fn annotations_mut(&mut self) -> &mut PdfPageAnnotations<'a> {
-        // We can't know for sure whether the user will update any annotations,
-        // and we can't track what happens in the PdfPageAnnotations instance after we return
-        // a mutable reference to it, but if the user is going to the trouble of retrieving
-        // a mutable reference it seems best to assume they're intending to update something.
-
-        self.is_content_regeneration_required = self.regeneration_strategy
-            != PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
-
-        self.annotations
-            .do_regenerate_page_content_after_each_change(
-                self.regeneration_strategy
-                    == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-            );
-
         &mut self.annotations
     }
 
@@ -455,32 +429,11 @@ impl<'a> PdfPage<'a> {
 
     /// Returns an immutable collection of all the page objects on this [PdfPage].
     pub fn objects(&self) -> &PdfPageObjects<'a> {
-        if self.regeneration_strategy == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
-            && self.is_content_regeneration_required
-        {
-            let result = self.regenerate_content_immut();
-
-            debug_assert!(result.is_ok());
-        }
-
         &self.objects
     }
 
     /// Returns a mutable collection of all the page objects on this [PdfPage].
     pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
-        // We can't know for sure whether the user will update any page objects,
-        // and we can't track what happens in the PdfPageObjects instance after we return
-        // a mutable reference to it, but if the user is going to the trouble of retrieving
-        // a mutable reference it seems best to assume they're intending to update something.
-
-        self.is_content_regeneration_required = self.regeneration_strategy
-            != PdfPageContentRegenerationStrategy::AutomaticOnEveryChange;
-
-        self.objects.do_regenerate_page_content_after_each_change(
-            self.regeneration_strategy
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
-
         &mut self.objects
     }
 
@@ -675,7 +628,7 @@ impl<'a> PdfPage<'a> {
     pub(crate) fn render_into_bitmap_with_settings(
         &self,
         bitmap: &mut PdfBitmap,
-        settings: PdfRenderSettings,
+        settings: PdfPageRenderSettings,
     ) -> Result<(), PdfiumError> {
         let bitmap_handle = *bitmap.handle();
 
@@ -998,10 +951,17 @@ impl<'a> PdfPage<'a> {
         strategy: PdfPageContentRegenerationStrategy,
     ) {
         self.regeneration_strategy = strategy;
-        self.objects.do_regenerate_page_content_after_each_change(
-            self.regeneration_strategy
-                == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
+
+        if let Some(index) =
+            PdfPageIndexCache::get_index_for_page(self.document_handle(), self.page_handle())
+        {
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle(),
+                self.page_handle(),
+                index,
+                strategy,
+            );
+        }
     }
 
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
@@ -1034,6 +994,9 @@ impl<'a> PdfPage<'a> {
 
     /// Commits any staged but unsaved changes to the page identified by the given internal
     /// `FPDF_PAGE` handle to the underlying [PdfDocument] containing that page.
+    ///
+    /// This function always commits changes, irrespective of the page's currently set
+    /// content regeneration strategy.
     pub(crate) fn regenerate_content_immut_for_handle(
         page: FPDF_PAGE,
         bindings: &dyn PdfiumLibraryBindings,
@@ -1059,10 +1022,11 @@ impl<'a> PdfPage<'a> {
                 .bindings
                 .FPDF_LoadPage(self.document_handle, page_index as c_int);
 
-            PdfPageIndexCache::set_index_for_page(
+            PdfPageIndexCache::cache_props_for_page(
                 self.document_handle,
                 self.page_handle,
                 page_index,
+                self.content_regeneration_strategy(),
             );
         }
     }

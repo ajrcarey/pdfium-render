@@ -74,29 +74,28 @@ pub enum PdfSearchDirection {
 /// Yields the results of searching for a given string within the collection of Unicode characters
 /// visible on a single [PdfPage].
 pub struct PdfPageTextSearch<'a> {
-    handle: FPDF_SCHHANDLE,
+    search_handle: FPDF_SCHHANDLE,
     text_page: &'a PdfPageText<'a>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfPageTextSearch<'a> {
     pub(crate) fn from_pdfium(
-        handle: FPDF_SCHHANDLE,
+        search_handle: FPDF_SCHHANDLE,
         text_page: &'a PdfPageText<'a>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextSearch {
-            handle,
+            search_handle,
             text_page,
             bindings,
         }
     }
 
     /// Returns the internal `FPDF_SCHHANDLE` handle for this [PdfPageTextSearch] object.
-    #[allow(unused)]
     #[inline]
-    pub(crate) fn handle(&self) -> FPDF_SCHHANDLE {
-        self.handle
+    pub(crate) fn search_handle(&self) -> FPDF_SCHHANDLE {
+        self.search_handle
     }
 
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPageTextSearch] object.
@@ -123,14 +122,16 @@ impl<'a> PdfPageTextSearch<'a> {
     /// in the given direction.
     pub fn get_next_result(&self, direction: PdfSearchDirection) -> Option<PdfPageTextSegments> {
         let has_next = if direction == PdfSearchDirection::SearchForward {
-            self.bindings.FPDFText_FindNext(self.handle) != 0
+            self.bindings().FPDFText_FindNext(self.search_handle()) != 0
         } else {
-            self.bindings.FPDFText_FindPrev(self.handle) != 0
+            self.bindings().FPDFText_FindPrev(self.search_handle()) != 0
         };
 
         if has_next {
-            let start_index = self.bindings.FPDFText_GetSchResultIndex(self.handle);
-            let count = self.bindings.FPDFText_GetSchCount(self.handle);
+            let start_index = self
+                .bindings()
+                .FPDFText_GetSchResultIndex(self.search_handle());
+            let count = self.bindings().FPDFText_GetSchCount(self.search_handle());
 
             return Some(self.text_page.segments_subset(
                 start_index as PdfPageTextCharIndex,
@@ -153,7 +154,7 @@ impl<'a> Drop for PdfPageTextSearch<'a> {
     /// Closes this [PdfPageTextSearch] object, releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings.FPDFText_FindClose(self.handle);
+        self.bindings().FPDFText_FindClose(self.search_handle());
     }
 }
 

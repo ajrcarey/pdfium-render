@@ -33,10 +33,10 @@ fn main() -> Result<(), PdfiumError> {
                 let config = PdfRenderConfig::new().set_target_width(2000);
 
                 let (clip_left, clip_top) =
-                    page.points_to_pixels(bounds.left, bounds.top, &config)?;
+                    page.points_to_pixels(bounds.left(), bounds.top(), &config)?;
 
                 let (clip_right, clip_bottom) =
-                    page.points_to_pixels(bounds.right, bounds.bottom, &config)?;
+                    page.points_to_pixels(bounds.right(), bounds.bottom(), &config)?;
 
                 // Render the portion of the page within the clipping rectangle...
 

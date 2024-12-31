@@ -9,6 +9,7 @@ use crate::pdf::document::page::object::path::PdfPagePathObject;
 use crate::pdf::document::page::object::text::PdfPageTextObject;
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdf::document::page::PdfPageObjectOwnership;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use std::ops::{Range, RangeInclusive};
@@ -22,6 +23,10 @@ use image_024::DynamicImage;
 #[cfg(feature = "image_023")]
 use image_023::{DynamicImage, GenericImageView};
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPageObjects;
+
+/// The zero-based index of a single [PdfPageObject] inside its containing [PdfPageObjects] collection.
 pub type PdfPageObjectIndex = usize;
 
 /// Functionality common to all containers of multiple [PdfPageObject] objects.
@@ -382,17 +387,32 @@ where
         font: impl ToPdfFontToken,
         font_size: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        let mut object = PdfPageTextObject::new_from_handles(
-            self.document_handle(),
-            text,
-            font.token().handle(),
-            font_size,
-            self.bindings(),
-        )?;
+        let document_handle = match self.ownership() {
+            PdfPageObjectOwnership::Page(ownership) => Some(ownership.document_handle()),
+            PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
+                Some(ownership.document_handle())
+            }
+            PdfPageObjectOwnership::UnattachedAnnotation(ownership) => {
+                Some(ownership.document_handle())
+            }
+            _ => None,
+        };
 
-        object.translate(x, y)?;
+        if let Some(document_handle) = document_handle {
+            let mut object = PdfPageTextObject::new_from_handles(
+                document_handle,
+                text,
+                font.token().handle(),
+                font_size,
+                self.bindings(),
+            )?;
 
-        self.add_text_object(object)
+            object.translate(x, y)?;
+
+            self.add_text_object(object)
+        } else {
+            Err(PdfiumError::OwnershipNotAttachedToPage)
+        }
     }
 
     #[inline]
@@ -563,41 +583,55 @@ where
         width: Option<PdfPoints>,
         height: Option<PdfPoints>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        let image_width = image.width();
-
-        let image_height = image.height();
-
-        let mut object =
-            PdfPageImageObject::new_from_handle(self.document_handle(), self.bindings())?;
-
-        object.set_image(image)?;
-
-        // Apply specified dimensions, if provided.
-
-        match (width, height) {
-            (Some(width), Some(height)) => {
-                object.scale(width.value, height.value)?;
+        let document_handle = match self.ownership() {
+            PdfPageObjectOwnership::Page(ownership) => Some(ownership.document_handle()),
+            PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
+                Some(ownership.document_handle())
             }
-            (Some(width), None) => {
-                let aspect_ratio = image_height as f32 / image_width as f32;
-
-                let height = width * aspect_ratio;
-
-                object.scale(width.value, height.value)?;
+            PdfPageObjectOwnership::UnattachedAnnotation(ownership) => {
+                Some(ownership.document_handle())
             }
-            (None, Some(height)) => {
-                let aspect_ratio = image_height as f32 / image_width as f32;
+            _ => None,
+        };
 
-                let width = height / aspect_ratio;
+        if let Some(document_handle) = document_handle {
+            let image_width = image.width();
 
-                object.scale(width.value, height.value)?;
+            let image_height = image.height();
+
+            let mut object = PdfPageImageObject::new_from_handle(document_handle, self.bindings())?;
+
+            object.set_image(image)?;
+
+            // Apply specified dimensions, if provided.
+
+            match (width, height) {
+                (Some(width), Some(height)) => {
+                    object.scale(width.value, height.value)?;
+                }
+                (Some(width), None) => {
+                    let aspect_ratio = image_height as f32 / image_width as f32;
+
+                    let height = width * aspect_ratio;
+
+                    object.scale(width.value, height.value)?;
+                }
+                (None, Some(height)) => {
+                    let aspect_ratio = image_height as f32 / image_width as f32;
+
+                    let width = height / aspect_ratio;
+
+                    object.scale(width.value, height.value)?;
+                }
+                (None, None) => {}
             }
-            (None, None) => {}
+
+            object.translate(x, y)?;
+
+            self.add_image_object(object)
+        } else {
+            Err(PdfiumError::OwnershipNotAttachedToPage)
         }
-
-        object.translate(x, y)?;
-
-        self.add_image_object(object)
     }
 
     #[inline]

@@ -187,10 +187,10 @@ pub(crate) mod internal {
             let height = bounds.height();
 
             self.set_bounds(PdfRect::new(
-                bounds.bottom,
-                bounds.left,
-                bounds.bottom + height,
-                bounds.left + width,
+                bounds.bottom(),
+                bounds.left(),
+                bounds.bottom() + height,
+                bounds.left() + width,
             ))
         }
 
@@ -203,10 +203,10 @@ pub(crate) mod internal {
             let width = bounds.width();
 
             self.set_bounds(PdfRect::new(
-                bounds.bottom,
-                bounds.left,
-                bounds.bottom + height,
-                bounds.left + width,
+                bounds.bottom(),
+                bounds.left(),
+                bounds.bottom() + height,
+                bounds.left() + width,
             ))
         }
 

@@ -3,6 +3,9 @@
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
 /// A standardized paper size.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfPagePaperStandardSize {
@@ -342,7 +345,7 @@ impl PdfPagePaperStandardSize {
     }
 }
 
-/// The paper size of a `PdfPage`.
+/// The paper size of a [PdfPage].
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfPagePaperSize {
     /// A known paper size in portrait orientation.

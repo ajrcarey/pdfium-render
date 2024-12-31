@@ -8,7 +8,10 @@ use crate::bindgen::{
 };
 use crate::error::PdfiumError;
 
-/// The color space of any displayable object on a `PdfPage`.
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
+/// The color space of any displayable object on a [PdfPage].
 ///
 /// Colors can be described in any of a variety of color systems called _color spaces_.
 /// Some color spaces are related to device color representation (e.g. grayscale, RGB, CMYK);
@@ -36,7 +39,7 @@ use crate::error::PdfiumError;
 /// Non-RGB color spaces typically define a transform that enables color values in the color
 /// space to be converted to an RGB approximation for on-screen display.
 ///
-/// For more information on color spaces and their utilisation in PDF files, see Section 4.5
+/// For more information on color spaces and their utilization in PDF files, see Section 4.5
 /// of the PDF Reference Manual version 1.7, starting on page 235.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfColorSpace {

@@ -5,7 +5,7 @@
 name = "pdfium-render-wasm-example"
 version = "1.0.0"
 edition = "2018"
-authors = ["Alastair Carey <alastair@duetto.dev>"]
+authors = ["Alastair Carey <alastair@alastaircarey.com>"]
 publish = true
 
 [lib]

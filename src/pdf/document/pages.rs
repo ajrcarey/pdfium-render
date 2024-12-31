@@ -11,7 +11,7 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::page::object::group::PdfPageGroupObject;
 use crate::pdf::document::page::size::PdfPagePaperSize;
-use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy};
+use crate::pdf::document::page::PdfPage;
 use crate::pdf::document::PdfDocument;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
@@ -137,8 +137,13 @@ impl<'a> PdfPages<'a> {
 
         let result = self.pdfium_page_handle_to_result(index, page_handle);
 
-        if result.is_ok() {
-            PdfPageIndexCache::set_index_for_page(self.document_handle, page_handle, index);
+        if let Ok(page) = result.as_ref() {
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle,
+                page_handle,
+                index,
+                page.content_regeneration_strategy(),
+            );
         }
 
         result
@@ -249,7 +254,12 @@ impl<'a> PdfPages<'a> {
 
         if let Ok(page) = result.as_ref() {
             PdfPageIndexCache::insert_pages_at_index(self.document_handle, index, 1);
-            PdfPageIndexCache::set_index_for_page(self.document_handle, page.page_handle(), index);
+            PdfPageIndexCache::cache_props_for_page(
+                self.document_handle,
+                page.page_handle(),
+                index,
+                page.content_regeneration_strategy(),
+            );
         }
 
         result
@@ -603,8 +613,6 @@ impl<'a> PdfPages<'a> {
                 self.document_handle,
                 page.page_handle(),
                 self.bindings,
-                page.content_regeneration_strategy()
-                    == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
             );
 
             watermarker(

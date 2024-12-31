@@ -227,7 +227,7 @@ pub trait PdfiumLibraryBindings {
     /// Returns Pdfium's internal `FPDF_PAGEOBJECT` handle for the given [PdfPageObject].
     #[inline]
     fn get_handle_from_object(&self, object: &PdfPageObject) -> FPDF_PAGEOBJECT {
-        object.get_object_handle()
+        object.object_handle()
     }
 
     /// Returns the API version of the Pdfium FPDF_* API currently in use.

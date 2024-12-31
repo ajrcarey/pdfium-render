@@ -56,10 +56,10 @@ pub fn main() -> Result<(), PdfiumError> {
                 "Page {} has defined {:#?} box ({}, {}) - ({}, {})",
                 index,
                 boundary.box_type,
-                boundary.bounds.left.value,
-                boundary.bounds.top.value,
-                boundary.bounds.right.value,
-                boundary.bounds.bottom.value,
+                boundary.bounds.left().value,
+                boundary.bounds.top().value,
+                boundary.bounds.right().value,
+                boundary.bounds.bottom().value,
             );
         }
 

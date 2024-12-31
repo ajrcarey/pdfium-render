@@ -2,14 +2,16 @@
 //! page object defining a path.
 
 use crate::bindgen::{
-    FPDF_ANNOTATION, FPDF_BOOL, FPDF_DOCUMENT, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE,
-    FPDF_FILLMODE_WINDING, FPDF_PAGE, FPDF_PAGEOBJECT,
+    FPDF_BOOL, FPDF_DOCUMENT, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING,
+    FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
-use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
+use crate::pdf::document::page::object::{
+    PdfPageObject, PdfPageObjectCommon, PdfPageObjectOwnership,
+};
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::path::segment::{PdfPathSegment, PdfPathSegmentType};
@@ -143,8 +145,7 @@ impl Default for PdfPathFillMode {
 /// `PdfPageObjects::add_path_object()` function.
 pub struct PdfPagePathObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
-    page_handle: Option<FPDF_PAGE>,
-    annotation_handle: Option<FPDF_ANNOTATION>,
+    ownership: PdfPageObjectOwnership,
     bindings: &'a dyn PdfiumLibraryBindings,
     current_point_x: PdfPoints,
     current_point_y: PdfPoints,
@@ -154,14 +155,12 @@ impl<'a> PdfPagePathObject<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
-        page_handle: Option<FPDF_PAGE>,
-        annotation_handle: Option<FPDF_ANNOTATION>,
+        ownership: PdfPageObjectOwnership,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPagePathObject {
             object_handle,
-            page_handle,
-            annotation_handle,
+            ownership,
             bindings,
             current_point_x: PdfPoints::ZERO,
             current_point_y: PdfPoints::ZERO,
@@ -220,8 +219,7 @@ impl<'a> PdfPagePathObject<'a> {
         } else {
             let mut result = PdfPagePathObject {
                 object_handle: handle,
-                page_handle: None,
-                annotation_handle: None,
+                ownership: PdfPageObjectOwnership::unowned(),
                 bindings,
                 current_point_x: x,
                 current_point_y: y,
@@ -382,14 +380,14 @@ impl<'a> PdfPagePathObject<'a> {
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::new_from_bindings(
             bindings,
-            rect.left,
-            rect.bottom,
+            rect.left(),
+            rect.bottom(),
             stroke_color,
             stroke_width,
             fill_color,
         )?;
 
-        result.rect_to(rect.right, rect.top)?;
+        result.rect_to(rect.right(), rect.top())?;
 
         Ok(result)
     }
@@ -428,14 +426,14 @@ impl<'a> PdfPagePathObject<'a> {
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::new_from_bindings(
             bindings,
-            rect.left,
-            rect.bottom,
+            rect.left(),
+            rect.bottom(),
             stroke_color,
             stroke_width,
             fill_color,
         )?;
 
-        result.circle_to(rect.right, rect.top)?;
+        result.circle_to(rect.right(), rect.top())?;
 
         Ok(result)
     }
@@ -526,14 +524,14 @@ impl<'a> PdfPagePathObject<'a> {
     ) -> Result<Self, PdfiumError> {
         let mut result = Self::new_from_bindings(
             bindings,
-            rect.left,
-            rect.bottom,
+            rect.left(),
+            rect.bottom(),
             stroke_color,
             stroke_width,
             fill_color,
         )?;
 
-        result.ellipse_to(rect.right, rect.top)?;
+        result.ellipse_to(rect.right(), rect.top())?;
 
         Ok(result)
     }
@@ -622,8 +620,8 @@ impl<'a> PdfPagePathObject<'a> {
     /// Begins a new sub-path in this [PdfPagePathObject] by moving the current point to the
     /// given coordinates, omitting any connecting line segment.
     pub fn move_to(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
-        if self.bindings.is_true(self.bindings.FPDFPath_MoveTo(
-            self.object_handle,
+        if self.bindings().is_true(self.bindings().FPDFPath_MoveTo(
+            self.object_handle(),
             x.value,
             y.value,
         )) {
@@ -641,8 +639,8 @@ impl<'a> PdfPagePathObject<'a> {
     /// Appends a straight line segment to this [PdfPagePathObject] from the current point to the
     /// given coordinates. The new current point is set to the given coordinates.
     pub fn line_to(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
-        if self.bindings.is_true(self.bindings.FPDFPath_LineTo(
-            self.object_handle,
+        if self.bindings().is_true(self.bindings().FPDFPath_LineTo(
+            self.object_handle(),
             x.value,
             y.value,
         )) {
@@ -669,8 +667,8 @@ impl<'a> PdfPagePathObject<'a> {
         control2_x: PdfPoints,
         control2_y: PdfPoints,
     ) -> Result<(), PdfiumError> {
-        if self.bindings.is_true(self.bindings.FPDFPath_BezierTo(
-            self.object_handle,
+        if self.bindings().is_true(self.bindings().FPDFPath_BezierTo(
+            self.object_handle(),
             control1_x.value,
             control1_y.value,
             control2_x.value,
@@ -794,7 +792,7 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn close_path(&mut self) -> Result<(), PdfiumError> {
         if self
             .bindings
-            .is_true(self.bindings.FPDFPath_Close(self.object_handle))
+            .is_true(self.bindings().FPDFPath_Close(self.object_handle))
         {
             Ok(())
         } else {
@@ -809,10 +807,10 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn fill_mode(&self) -> Result<PdfPathFillMode, PdfiumError> {
         let mut raw_fill_mode: c_int = 0;
 
-        let mut _raw_stroke: FPDF_BOOL = self.bindings.FALSE();
+        let mut _raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
-        if self.bindings.is_true(self.bindings.FPDFPath_GetDrawMode(
-            self.get_object_handle(),
+        if self.bindings().is_true(self.bindings.FPDFPath_GetDrawMode(
+            self.object_handle(),
             &mut raw_fill_mode,
             &mut _raw_stroke,
         )) {
@@ -832,14 +830,17 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn is_stroked(&self) -> Result<bool, PdfiumError> {
         let mut _raw_fill_mode: c_int = 0;
 
-        let mut raw_stroke: FPDF_BOOL = self.bindings.FALSE();
+        let mut raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
-        if self.bindings.is_true(self.bindings.FPDFPath_GetDrawMode(
-            self.get_object_handle(),
-            &mut _raw_fill_mode,
-            &mut raw_stroke,
-        )) {
-            Ok(self.bindings.is_true(raw_stroke))
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFPath_GetDrawMode(
+                self.object_handle(),
+                &mut _raw_fill_mode,
+                &mut raw_stroke,
+            ))
+        {
+            Ok(self.bindings().is_true(raw_stroke))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
@@ -857,11 +858,14 @@ impl<'a> PdfPagePathObject<'a> {
         fill_mode: PdfPathFillMode,
         do_stroke: bool,
     ) -> Result<(), PdfiumError> {
-        if self.bindings.is_true(self.bindings.FPDFPath_SetDrawMode(
-            self.get_object_handle(),
-            fill_mode.as_pdfium() as c_int,
-            self.bindings.bool_to_pdfium(do_stroke),
-        )) {
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFPath_SetDrawMode(
+                self.object_handle(),
+                fill_mode.as_pdfium() as c_int,
+                self.bindings.bool_to_pdfium(do_stroke),
+            ))
+        {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -873,7 +877,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// Returns the collection of path segments currently defined by this [PdfPagePathObject].
     #[inline]
     pub fn segments(&self) -> PdfPagePathObjectSegments {
-        PdfPagePathObjectSegments::from_pdfium(self.object_handle, self.bindings())
+        PdfPagePathObjectSegments::from_pdfium(self.object_handle(), self.bindings())
     }
 
     create_transform_setters!(
@@ -899,38 +903,18 @@ impl<'a> PdfPagePathObject<'a> {
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     #[inline]
-    fn get_object_handle(&self) -> FPDF_PAGEOBJECT {
+    fn object_handle(&self) -> FPDF_PAGEOBJECT {
         self.object_handle
     }
 
     #[inline]
-    fn get_page_handle(&self) -> Option<FPDF_PAGE> {
-        self.page_handle
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        &self.ownership
     }
 
     #[inline]
-    fn set_page_handle(&mut self, page: FPDF_PAGE) {
-        self.page_handle = Some(page);
-    }
-
-    #[inline]
-    fn clear_page_handle(&mut self) {
-        self.page_handle = None;
-    }
-
-    #[inline]
-    fn get_annotation_handle(&self) -> Option<FPDF_ANNOTATION> {
-        self.annotation_handle
-    }
-
-    #[inline]
-    fn set_annotation_handle(&mut self, annotation: FPDF_ANNOTATION) {
-        self.annotation_handle = Some(annotation);
-    }
-
-    #[inline]
-    fn clear_annotation_handle(&mut self) {
-        self.annotation_handle = None;
+    fn set_ownership(&mut self, ownership: PdfPageObjectOwnership) {
+        self.ownership = ownership;
     }
 
     #[inline]

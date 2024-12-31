@@ -9,6 +9,7 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
 use vecmath::{mat3_add, mat3_det, mat3_inv, mat3_sub, mat3_transposed, row_mat3_mul, Matrix3};
 
+/// The floating-point data type used internally by a [PdfMatrix].
 pub type PdfMatrixValue = f32;
 
 /// Six floating-point values, labelled `a`, `b`, `c`, `d`, `e`, and `f`, that represent
@@ -288,12 +289,12 @@ impl PdfMatrix {
 
 impl PartialEq for PdfMatrix {
     fn eq(&self, other: &Self) -> bool {
-        self.a() == other.a()
-            && self.b() == other.b()
-            && self.c() == other.c()
-            && self.d() == other.d()
-            && self.e() == other.e()
-            && self.f() == other.f()
+        (self.a() - other.a()).abs() < 0.0001
+            && (self.b() - other.b()).abs() < 0.0001
+            && (self.c() - other.c()).abs() < 0.0001
+            && (self.d() - other.d()).abs() < 0.0001
+            && (self.e() - other.e()).abs() < 0.0001
+            && (self.f() - other.f()).abs() < 0.0001
     }
 }
 

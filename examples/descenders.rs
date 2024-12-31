@@ -41,7 +41,7 @@ fn main() -> Result<(), PdfiumError> {
                     "Character {}: \"{}\" descends {} points below the baseline",
                     index,
                     char.unicode_string().unwrap(),
-                    object.get_vertical_translation().value - char.tight_bounds()?.bottom.value
+                    object.get_vertical_translation().value - char.tight_bounds()?.bottom().value
                 );
             }
         }

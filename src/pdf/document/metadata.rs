@@ -1,4 +1,4 @@
-//! Defines the [PdfMetadata] struct, a collection of all the metadata tags in a `PdfDocument`.
+//! Defines the [PdfMetadata] struct, a collection of all the metadata tags in a [PdfDocument].
 
 use crate::bindgen::FPDF_DOCUMENT;
 use crate::bindings::PdfiumLibraryBindings;
@@ -7,7 +7,10 @@ use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::os::raw::c_void;
 use std::slice::Iter;
 
-/// Valid metadata tag types in a `PdfDocument`.
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
+/// Valid metadata tag types in a [PdfDocument].
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdfDocumentMetadataTagType {
     Title,
@@ -20,7 +23,7 @@ pub enum PdfDocumentMetadataTagType {
     ModificationDate,
 }
 
-/// A single metadata tag in a `PdfDocument`.
+/// A single metadata tag in a [PdfDocument].
 #[derive(Debug, Clone, PartialEq)]
 pub struct PdfDocumentMetadataTag {
     tag: PdfDocumentMetadataTagType,
@@ -46,7 +49,7 @@ impl PdfDocumentMetadataTag {
     }
 }
 
-/// A collection of all the metadata tags in a `PdfDocument`.
+/// A collection of all the metadata tags in a [PdfDocument].
 pub struct PdfMetadata<'a> {
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
