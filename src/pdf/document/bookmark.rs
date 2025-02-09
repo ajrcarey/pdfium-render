@@ -8,6 +8,7 @@ use crate::pdf::destination::PdfDestination;
 use crate::pdf::document::bookmarks::PdfBookmarksIterator;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+use std::hash::{Hash, Hasher};
 use std::os::raw::c_void;
 
 #[cfg(doc)]
@@ -17,11 +18,42 @@ use {
 };
 
 /// A single bookmark in a [PdfBookmarks] collection.
+#[derive(Clone)]
 pub struct PdfBookmark<'a> {
     bookmark_handle: FPDF_BOOKMARK,
     parent: Option<FPDF_BOOKMARK>,
     document_handle: FPDF_DOCUMENT,
     bindings: &'a dyn PdfiumLibraryBindings,
+}
+
+/// Two bookmarks are equal if they are the same bookmark from the same PdfDocument.
+///
+/// - Equality does not consider whether or not the bookmark's parent is available.  One
+///   PdfBookmark object will compare equal to another if they refer to the same bookmark, even if
+///   the parent is available for one of but not the other.
+/// - Two bookmarks derived from different PdfDocument objects will always compare unequal, even
+///   both PdfDocument objects have opened the same underlying PDF file and both PdfBookmark
+///   objects refer to logically the same bookmark.
+impl<'a> PartialEq for PdfBookmark<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        // It is sufficient to only consider bookmark_handle because:
+        // - The handle is a pointer to an internal Pdfium structure, so different bookmarks must
+        //   have different handles.
+        // - The structure is allocated and retained by Pdfium for as long as the document is open,
+        //   so the same bookmark will always give the same handle.
+        self.bookmark_handle == other.bookmark_handle
+    }
+}
+
+impl<'a> Eq for PdfBookmark<'a> {}
+
+impl<'a> Hash for PdfBookmark<'a> {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        self.bookmark_handle.hash(state);
+    }
 }
 
 impl<'a> PdfBookmark<'a> {
@@ -55,17 +87,6 @@ impl<'a> PdfBookmark<'a> {
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
-    }
-
-    /// Creates a clone of this [PdfBookmark] that points to the same internal `FPDF_BOOKMARK` handle.
-    #[inline]
-    pub(crate) fn clone(&self) -> PdfBookmark<'a> {
-        Self::from_pdfium(
-            self.bookmark_handle,
-            self.parent,
-            self.document_handle,
-            self.bindings,
-        )
     }
 
     /// Returns the title of this [PdfBookmark], if any.
@@ -273,6 +294,7 @@ impl<'a> PdfBookmark<'a> {
 mod tests {
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
+    use std::hash::{DefaultHasher, Hash, Hasher};
 
     #[test]
     fn test_bookmarks() -> Result<(), PdfiumError> {
@@ -500,10 +522,46 @@ mod tests {
         ];
         assert_eq!(all_bookmarks, expected);
 
+        // Test that each bookmark is equal it itself but no two bookmarks are equal to each other.
+        let all_bookmarks: Vec<_> = document.bookmarks().iter().collect();
+        for i in 0..all_bookmarks.len() {
+            assert!(all_bookmarks[i] == all_bookmarks[i]);
+            assert_eq!(hash(&all_bookmarks[i]), hash(&all_bookmarks[i]));
+            for j in (i + 1)..all_bookmarks.len() {
+                assert!(all_bookmarks[i] != all_bookmarks[j]);
+            }
+        }
+
+        // Get all the bookmarks again, and test that the second iteration returned an equal set of
+        // bookmarks
+        let all_bookmarks2: Vec<_> = document.bookmarks().iter().collect();
+        assert!(all_bookmarks == all_bookmarks2);
+
+        // Bookmarks should be equal to their clone
+        let the_clone = all_bookmarks[0].clone();
+        assert!(all_bookmarks[0] == the_clone);
+        assert_eq!(hash(&all_bookmarks[0]), hash(&the_clone));
+
+        // Load the document a second time, and assert that the bookmarks are different.
+        let document2 = pdfium.load_pdf_from_file("./test/test-toc.pdf", None)?;
+        let all_bookmarks2: Vec<_> = document2.bookmarks().iter().collect();
+        assert_eq!(all_bookmarks.len(), all_bookmarks2.len());
+        for i in 0..all_bookmarks.len() {
+            for j in 0..all_bookmarks.len() {
+                assert!(all_bookmarks[i] != all_bookmarks2[j]);
+            }
+        }
+
         Ok(())
     }
 
     fn title(bookmark: PdfBookmark) -> String {
         bookmark.title().expect("Bookmark Title")
+    }
+
+    fn hash(b: &PdfBookmark) -> u64 {
+        let mut s = DefaultHasher::new();
+        b.hash(&mut s);
+        s.finish()
     }
 }
