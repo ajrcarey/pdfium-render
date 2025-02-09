@@ -26,21 +26,24 @@ pub struct PdfBookmark<'a> {
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
-/// Two bookmarks are equal if they are the same bookmark from the same PdfDocument.
-///
-/// - Equality does not consider whether or not the bookmark's parent is available.  One
-///   PdfBookmark object will compare equal to another if they refer to the same bookmark, even if
-///   the parent is available for one of but not the other.
-/// - Two bookmarks derived from different PdfDocument objects will always compare unequal, even
-///   both PdfDocument objects have opened the same underlying PDF file and both PdfBookmark
-///   objects refer to logically the same bookmark.
 impl<'a> PartialEq for PdfBookmark<'a> {
     fn eq(&self, other: &Self) -> bool {
-        // It is sufficient to only consider bookmark_handle because:
+        // Two bookmarks are equal if they are the same bookmark from the same PdfDocument.
+
+        // Equality does not consider whether or not the bookmark's parent is available. One
+        // PdfBookmark object will compare equal to another if they refer to the same bookmark,
+        // even if the parent is available for one of but not the other.
+
+        // Two bookmarks derived from different PdfDocument objects will always compare unequal,
+        // even if both PdfDocument objects have opened the same underlying PDF file and both
+        // PdfBookmark objects refer to the same bookmark.
+
+        // Consequently, it is sufficient to only consider bookmark_handle because:
         // - The handle is a pointer to an internal Pdfium structure, so different bookmarks must
         //   have different handles.
         // - The structure is allocated and retained by Pdfium for as long as the document is open,
         //   so the same bookmark will always give the same handle.
+
         self.bookmark_handle == other.bookmark_handle
     }
 }
@@ -298,6 +301,16 @@ mod tests {
 
     #[test]
     fn test_bookmarks() -> Result<(), PdfiumError> {
+        fn title(bookmark: PdfBookmark) -> String {
+            bookmark.title().expect("Bookmark Title")
+        }
+
+        fn hash(b: &PdfBookmark) -> u64 {
+            let mut s = DefaultHasher::new();
+            b.hash(&mut s);
+            s.finish()
+        }
+
         let pdfium = test_bind_to_pdfium();
         let document = pdfium.load_pdf_from_file("./test/test-toc.pdf", None)?;
 
@@ -553,15 +566,5 @@ mod tests {
         }
 
         Ok(())
-    }
-
-    fn title(bookmark: PdfBookmark) -> String {
-        bookmark.title().expect("Bookmark Title")
-    }
-
-    fn hash(b: &PdfBookmark) -> u64 {
-        let mut s = DefaultHasher::new();
-        b.hash(&mut s);
-        s.finish()
     }
 }
