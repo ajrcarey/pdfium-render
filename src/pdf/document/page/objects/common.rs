@@ -313,7 +313,7 @@ pub trait PdfPageObjectsCommon<'a> {
     /// will be triggered on the page.
     ///
     /// This function is only available when this crate's `image` feature is enabled.
-    #[cfg(feature = "image")]
+    #[cfg(feature = "any_image")]
     fn create_image_object(
         &mut self,
         x: PdfPoints,
@@ -574,7 +574,7 @@ where
         self.add_path_object(object)
     }
 
-    #[cfg(feature = "image")]
+    #[cfg(feature = "any_image")]
     fn create_image_object(
         &mut self,
         x: PdfPoints,
