@@ -64,6 +64,7 @@ pub const PDFDEST_VIEW_FITBV: u32 = 8;
 pub const _STDINT_H: u32 = 1;
 pub const _FEATURES_H: u32 = 1;
 pub const _DEFAULT_SOURCE: u32 = 1;
+pub const __GLIBC_USE_ISOC2Y: u32 = 0;
 pub const __GLIBC_USE_ISOC23: u32 = 0;
 pub const __USE_ISOC11: u32 = 1;
 pub const __USE_ISOC99: u32 = 1;
@@ -97,7 +98,7 @@ pub const __STDC_IEC_60559_COMPLEX__: u32 = 201404;
 pub const __STDC_ISO_10646__: u32 = 201706;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 40;
+pub const __GLIBC_MINOR__: u32 = 41;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI: u32 = 0;
@@ -2802,6 +2803,17 @@ extern "C" {
     pub fn FPDFPageObj_GetType(page_object: FPDF_PAGEOBJECT) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = " Experimental API.\n Gets active state for |page_object| within page.\n\n   page_object - handle to a page object.\n   active      - pointer to variable that will receive if the page object is\n                 active. This is a required parameter. Not filled if FALSE\n                 is returned.\n\n For page objects where |active| is filled with FALSE, the |page_object| is\n treated as if it wasn't in the document even though it is still held\n internally.\n\n Returns TRUE if the operation succeeded, FALSE if it failed."]
+    pub fn FPDFPageObj_GetIsActive(
+        page_object: FPDF_PAGEOBJECT,
+        active: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Sets if |page_object| is active within page.\n\n   page_object - handle to a page object.\n   active      - a boolean specifying if the object is active.\n\n Returns TRUE on success.\n\n Page objects all start in the active state by default, and remain in that\n state unless this function is called.\n\n When |active| is false, this makes the |page_object| be treated as if it\n wasn't in the document even though it is still held internally."]
+    pub fn FPDFPageObj_SetIsActive(page_object: FPDF_PAGEOBJECT, active: FPDF_BOOL) -> FPDF_BOOL;
+}
+extern "C" {
     #[doc = " Transform |page_object| by the given matrix.\n\n   page_object - handle to a page object.\n   a           - matrix value.\n   b           - matrix value.\n   c           - matrix value.\n   d           - matrix value.\n   e           - matrix value.\n   f           - matrix value.\n\n The matrix is composed as:\n   |a c e|\n   |b d f|\n and can be used to scale, rotate, shear and translate the |page_object|."]
     pub fn FPDFPageObj_Transform(
         page_object: FPDF_PAGEOBJECT,
@@ -3069,6 +3081,16 @@ extern "C" {
         image_object: FPDF_PAGEOBJECT,
         width: *mut ::std::os::raw::c_uint,
         height: *mut ::std::os::raw::c_uint,
+    ) -> FPDF_BOOL;
+}
+extern "C" {
+    #[doc = " Experimental API.\n Get ICC profile decoded data of |image_object|. If the |image_object| is not\n an image object or if it does not have an image, then the return value will\n be false. It also returns false if the |image_object| has no ICC profile.\n |buffer| is only modified if ICC profile exists and |buflen| is longer than\n the length of the ICC profile decoded data.\n\n   image_object - handle to an image object; must not be NULL.\n   page         - handle to the page containing |image_object|; must not be\n                  NULL. Required for retrieving the image's colorspace.\n   buffer       - Buffer to receive ICC profile data; may be NULL if querying\n                  required size via |out_buflen|.\n   buflen       - Length of the buffer in bytes. Ignored if |buffer| is NULL.\n   out_buflen   - Pointer to receive the ICC profile data size in bytes; must\n                  not be NULL. Will be set if this API returns true.\n\n Returns true if |out_buflen| is not null and an ICC profile exists for the\n given |image_object|."]
+    pub fn FPDFImageObj_GetIccProfileDataDecoded(
+        image_object: FPDF_PAGEOBJECT,
+        page: FPDF_PAGE,
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
     ) -> FPDF_BOOL;
 }
 extern "C" {

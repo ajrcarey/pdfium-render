@@ -12,7 +12,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  PDFIUM_RELEASE_TAG: 6721 # September 2024, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F6721
+  PDFIUM_RELEASE_TAG: 6996 # February 2025, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F6996
 
 jobs:
   build:
@@ -81,6 +81,8 @@ jobs:
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6666"
     - name: Check backward compatibility with pdfium_6721 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6721"
+    - name: Check backward compatibility with pdfium_6996 and dynamic bindings
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6996"
 
     # Compatibility checks for static bindings
 
@@ -120,6 +122,8 @@ jobs:
       run: cargo check --no-default-features --features="image, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6666"
     - name: Check backward compatibility with pdfium_6721 and static bindings
       run: cargo check --no-default-features --features="image, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6721"
+    - name: Check backward compatibility with pdfium_6996 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6996"
 
     # Compatibility checks for WASM bindings
 
@@ -159,3 +163,5 @@ jobs:
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_6666
     - name: Check backward compatibility with pdfium_6721 and WASM bindings
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_6721
+    - name: Check backward compatibility with pdfium_6996 and WASM bindings
+      run: bash .github/scripts/wasm_api_compat_test.sh pdfium_6996

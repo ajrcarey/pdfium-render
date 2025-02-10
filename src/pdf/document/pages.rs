@@ -707,19 +707,19 @@ mod tests {
     }
 
     const fn expected_page_0_size() -> PdfRect {
-        PdfRect::new_from_values(0.0, 0.0, 841.8897, 595.3039)
+        PdfRect::new_from_values(0.0, 0.0, 841.8898, 595.30396)
     }
 
     const fn expected_page_1_size() -> PdfRect {
-        PdfRect::new_from_values(0.0, 0.0, 595.3039, 841.8897)
+        PdfRect::new_from_values(0.0, 0.0, 595.30396, 841.8898)
     }
 
     const fn expected_page_2_size() -> PdfRect {
-        PdfRect::new_from_values(0.0, 0.0, 1190.5513, 841.8897)
+        PdfRect::new_from_values(0.0, 0.0, 1190.5511, 841.8898)
     }
 
     const fn expected_page_3_size() -> PdfRect {
-        PdfRect::new_from_values(0.0, 0.0, 419.55588, 595.3039)
+        PdfRect::new_from_values(0.0, 0.0, 419.5559, 595.30396)
     }
 
     const fn expected_page_4_size() -> PdfRect {

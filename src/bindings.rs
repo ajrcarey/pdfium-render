@@ -64,6 +64,7 @@ use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_6996",
     feature = "pdfium_6721",
     feature = "pdfium_6666",
     feature = "pdfium_6611",
@@ -824,6 +825,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -1628,6 +1630,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -1745,6 +1748,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -1798,6 +1802,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -1852,6 +1857,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -1911,6 +1917,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -1981,6 +1988,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -2059,6 +2067,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -2092,6 +2101,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -2109,6 +2119,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -2198,6 +2209,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -2871,6 +2883,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666"
     ))]
@@ -4267,6 +4280,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -4453,6 +4467,7 @@ pub trait PdfiumLibraryBindings {
     /// Returns the handle to the attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -4477,6 +4492,7 @@ pub trait PdfiumLibraryBindings {
     /// See [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment_str].
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -4504,6 +4520,7 @@ pub trait PdfiumLibraryBindings {
     /// Returns a handle to the new attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -5423,6 +5440,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -5434,6 +5452,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -6150,6 +6169,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -6181,6 +6201,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -7247,6 +7268,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -7357,6 +7379,45 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
+    /// Gets the active state for `page_object` within its containing page.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `active`      - pointer to variable that will receive `true` if the page object
+    ///                    is active. This is a required parameter. Not filled if this
+    ///                    function returns `false`.
+    ///
+    /// For page objects where `active` is filled with `false`, the `page_object` is
+    /// treated as if it wasn't in the document even though it is still held
+    /// internally.
+    ///
+    /// Returns `true` if the operation succeeded, `false` if it failed.
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_GetIsActive(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        active: *mut FPDF_BOOL,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
+    /// Sets whether `page_object` is active within its containing page.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    ///    `active`      - a boolean specifying if the object is active.
+    ///
+    /// Returns `true` on success.
+    ///
+    /// Page objects all start in the active state by default, and remain in that
+    /// state unless this function is called.
+    ///
+    /// When `active` is false, this makes the `page_object` be treated as if it
+    /// wasn't in the document even though it is still held internally.
+    #[allow(non_snake_case)]
+    fn FPDFPageObj_SetIsActive(&self, page_object: FPDF_PAGEOBJECT, active: FPDF_BOOL)
+        -> FPDF_BOOL;
+
     /// Transforms `page_object` by the given matrix.
     ///
     ///    `page_object` - handle to a page object.
@@ -7395,6 +7456,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -7471,6 +7533,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611",
@@ -7536,7 +7599,7 @@ pub trait PdfiumLibraryBindings {
         mark: FPDF_PAGEOBJECTMARK,
     ) -> FPDF_BOOL;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
     /// Gets the name of a content mark.
     ///
     ///    `mark`       - handle to a content mark.
@@ -7612,7 +7675,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
     /// Gets the key of a property in a content mark.
     ///
     ///    `mark`       - handle to a content mark.
@@ -7719,7 +7782,7 @@ pub trait PdfiumLibraryBindings {
         out_value: *mut c_int,
     ) -> FPDF_BOOL;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
     /// Gets the value of a string property in a content mark by key.
     ///
     ///    `mark`       - handle to a content mark.
@@ -7792,7 +7855,7 @@ pub trait PdfiumLibraryBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
     /// Gets the value of a blob property in a content mark by key.
     ///
     ///    `mark`       - handle to a content mark.
@@ -7915,7 +7978,7 @@ pub trait PdfiumLibraryBindings {
         value: &str,
     ) -> FPDF_BOOL;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
     /// Sets the value of a blob property in a content mark by key. If a parameter
     /// with key `key` exists, its value is set to `value`. Otherwise, it is added as
     /// a new parameter.
@@ -8248,7 +8311,7 @@ pub trait PdfiumLibraryBindings {
         metadata: *mut FPDF_IMAGEOBJ_METADATA,
     ) -> FPDF_BOOL;
 
-    /// Gets the image size in pixels. Faster method to get only image size.
+    /// Gets the image size in pixels. This is a faster method to get only image size.
     ///
     ///    `image_object` - handle to an image object.
     ///
@@ -8263,6 +8326,41 @@ pub trait PdfiumLibraryBindings {
         image_object: FPDF_PAGEOBJECT,
         width: *mut c_uint,
         height: *mut c_uint,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_6996"))]
+    /// Gets the ICC profile decoded data of `image_object`.
+    ///
+    /// If the given `image_object` is not an image object, or if it does not have
+    /// an image, then the return value will be `false`. This function also returns
+    /// `false` if the `image_object` has no ICC profile.
+    ///
+    /// `buffer` is only modified if ICC profile exists and `buflen` is longer than
+    /// the length of the ICC profile decoded data.
+    ///
+    ///   `image_object` - handle to an image object; must not be `NULL`.
+    ///
+    ///   `page`         - handle to the page containing `image_object`; must not be
+    ///                    `NULL`. Required for retrieving the image's colorspace.
+    ///
+    ///   `buffer`       - Buffer to receive ICC profile data; may be `NULL` if querying
+    ///                    required size via `out_buflen`.
+    ///
+    ///   `buflen`       - Length of the buffer in bytes. Ignored if `buffer` is `NULL`.
+    ///
+    ///   `out_buflen`   - Pointer to receive the ICC profile data size in bytes; must
+    ///                    not be `NULL`. Will be set if this function returns `true`.
+    ///
+    /// Returns `true` if `out_buflen` is not `NULL` and an ICC profile exists for the
+    /// given `image_object`.
+    #[allow(non_snake_case)]
+    fn FPDFImageObj_GetIccProfileDataDecoded(
+        &self,
+        image_object: FPDF_PAGEOBJECT,
+        page: FPDF_PAGE,
+        buffer: *mut u8,
+        buflen: usize,
+        out_buflen: *mut usize,
     ) -> FPDF_BOOL;
 
     /// Creates a new path object at an initial position.
@@ -8638,6 +8736,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666"
     ))]
@@ -8666,6 +8765,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666"
     ))]
@@ -9305,6 +9405,7 @@ pub trait PdfiumLibraryBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666"
     ))]

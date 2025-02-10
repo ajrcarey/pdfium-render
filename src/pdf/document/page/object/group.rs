@@ -831,10 +831,10 @@ mod test {
 
         let bounds = group.bounds()?;
 
-        assert_eq!(bounds.bottom().value, 428.3103);
+        assert_eq!(bounds.bottom().value, 428.31033);
         assert_eq!(bounds.left().value, 62.60526);
         assert_eq!(bounds.top().value, 807.8812);
-        assert_eq!(bounds.right().value, 544.4809);
+        assert_eq!(bounds.right().value, 544.48096);
 
         Ok(())
     }

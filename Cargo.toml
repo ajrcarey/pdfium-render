@@ -100,13 +100,14 @@ image_023 = ["dep:image_023"]
 # To explicitly bind against an older version, select one of the feature flags below when
 # taking pdfium-render as a dependency in your project's Cargo.toml.
 
-pdfium_latest = ["pdfium_6721"]
+pdfium_latest = ["pdfium_6996"]
 pdfium_future = [
     # For testing changes in Pdfium source control that are yet to be released.
     "pdfium_use_skia",
     "pdfium_enable_xfa",
     "pdfium_enable_v8",
 ]
+pdfium_6996 = []
 pdfium_6721 = []
 pdfium_6666 = []
 pdfium_6611 = []

@@ -16,6 +16,7 @@ use std::ffi::c_void;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_6996",
     feature = "pdfium_6721",
     feature = "pdfium_6666",
     feature = "pdfium_6611"
@@ -335,6 +336,7 @@ impl<'a> PdfPageTextChar<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611"
@@ -360,6 +362,7 @@ impl<'a> PdfPageTextChar<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
         feature = "pdfium_6611"
