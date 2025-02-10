@@ -88,9 +88,10 @@ flatten = []
 # a dependency in your project's Cargo.toml.
 
 image_latest = ["image_025"]
-image_025 = ["dep:image_025"]
-image_024 = ["dep:image_024"]
-image_023 = ["dep:image_023"]
+image_025 = ["dep:image_025", "any_image"]
+image_024 = ["dep:image_024", "any_image"]
+image_023 = ["dep:image_023", "any_image"]
+any_image=  [] # A feature shared by all image versions, so that we can easily cfg on any image version
 
 # PdfiumLibraryBindings supports pinning its API definitions to a specific Pdfium release.
 # This allows pdfium-render consumers to safely upgrade their pdfium-render dependency without
