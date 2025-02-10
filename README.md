@@ -69,13 +69,13 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated
 items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
+Release 0.8.29 corrects a bug in the handling of the `image_*` crate features that prevented use of image functionality when using `image_024` or `image_023`, thanks to an excellent contribution from <https://github.com/t-moe>.
+
 Release 0.8.28 increments the `pdfium_latest` feature to `pdfium_6996` to match new Pdfium release 6996 at <https://github.com/bblanchon/pdfium-binaries>, fixes an edge case in page object handling where it was possible to apply a change to a page object - a transformation, for example - that might not be captured during automatic content regeneration of the containing page, and adds trait implementations for `Eq`, `Hash`, and `Clone` to `PdfBookmark`, thanks to an excellent contribution from <https://github.com/mlaiosa>.
 
 Release 0.8.27 adds a new `axum_once_cell` example demonstrating how to use Pdfium safely across asynchronous tasks with Axum, thanks to an excellent contribution from <https://github.com/danwritecode>, and fixes two bugs related to memory safety in the WASM bindings implementation, thanks to an excellent contribution from <https://github.com/samsieber>. The first bug affected certain UTF-16 string handling operations; the second bug could result in data corruption when working with raw bitmap pixel buffers.
 
 Release 0.8.26 relaxes the minimum supported Rust version to 1.61 based on user feedback, increments the `pdfium_latest` feature to `pdfium_6721` to match new Pdfium release 6721 at <https://github.com/bblanchon/pdfium-binaries>, adds new crate features `image_025`, `image_024`, and `image_023` to allow explicitly pinning the version of `image` that should be used by `pdfium-render`, sets `image` to `image_025`, and adjusts bookmark traversal so that bookmarks are returned in a more natural order, thanks to an excellent contribution from <https://github.com/mlaiosa>.
-
-Release 0.8.25 establishes a minimum supported Rust version of 1.60 for `pdfium-render`, increments the `pdfium_latest` feature to `pdfium_6666` to match new Pdfium release 6666 at <https://github.com/bblanchon/pdfium-binaries>, adds new crate features `pdfium_use_skia`, `pdfium_use_win32`, `pdfium_enable_xfa`, and `pdfium_enable_v8` to make available certain Pdfium functions that require Pdfium to be built with specific compile-time flags, and adds bindings for all remaining `FPDF_*` functions in the Pdfium API to `PdfiumLibraryBindings`, an important milestone leading up to release 0.9.0.
 
 ## Binding to Pdfium
 
@@ -240,7 +240,7 @@ The `image`, `thread_safe`, and `pdfium_latest` features are enabled by default.
 
 ## Minimum supported Rust version
 
-With the `image` feature enabled, the minimum supported Rust version of `pdfium-render` will align with the minimum supported Rust version of `image` (at the time of writing, Rust 1.79 for `image` version 0.25). With the `image` feature disabled, the minimum supported Rust version of `pdfium-render` is 1.61.
+With the `image` feature enabled, the minimum supported Rust version of `pdfium-render` will align with the minimum supported Rust version of `image` (at the time of writing, Rust 1.80.1 for `image` version 0.25). With the `image` feature disabled, the minimum supported Rust version of `pdfium-render` is 1.61.
 
 ## Porting existing Pdfium code from other languages
 
@@ -290,12 +290,11 @@ The initial focus of this crate was on rendering pages in a PDF file; consequent
 * Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
-Some functions and type definitions have been renamed or revised since their initial implementations.
-The initial implementations are still available but are marked as deprecated. These deprecated items
-will be removed in release 0.9.0.
+Some functions and type definitions have been renamed or revised since their initial implementations. The initial implementations are still available but are marked as deprecated. These deprecated items will be removed in release 0.9.0.
 
 ## Version history
 
+* 0.8.29: corrects a bug in the handling of the `image_*` crate features that prevented use of image functionality when using `image_024` or `image_023`, thanks to an excellent contribution from <https://github.com/t-moe>.
 * 0.8.28: increments the `pdfium_latest` feature to `pdfium_6996` to match new Pdfium release 6996 at <https://github.com/bblanchon/pdfium-binaries>; adds bindings for new functions `FPDFPageObj_GetIsActive()`, `FPDFPageObj_SetIsActive()`, and `FPDFImageObj_GetIccProfileDataDecoded()`; adds new `PdfSignature::modification_detection_permission()` function; adds `PdfQuadPoints::transform()` and additional utility functions to reach parity with `PdfRect`; changes return type of `PdfPageObject::bounds()` from `PdfRect` to `PdfQuadPoints`; deprecates direct `PdfRect` field access in favour of accessor functions; adds new `PdfPageObjectOwnership` struct to better model page object ownership across pages and annotations; fixes a bug in content regeneration that could drop trailing transformations to page objects; adds trait implementations for `Eq`, `Hash`, and `Clone` to `PdfBookmark`, thanks to an excellent contribution from <https://github.com/mlaiosa>. Deprecated items will be removed in release 0.9.0.
 * 0.8.27: adds new `examples/axum_once_cell.rs` example, thanks to an excellent contribution from <https://github.com/danwritecode>; fixes a WASM-specific bug in string termination detection when copying `FPDF_WIDESTRING` buffers to Pdfium's WASM address space; deprecates the memory-unsafe WASM implementation of `FPDFBitmap_GetBuffer` in favour of `FPDFBitmap_GetBuffer_as_vec` and `FPDFBitmap_GetBuffer_as_array` (renamed from `FPDFBitmap_GetArray`), thanks to an excellent contribution from <https://github.com/samsieber>; establishes upper bound on `wasm-bindgen` dependency to avoid a build failure during Github workflow automated build that was introduced in `wasm-bindgen-macros` versions 0.2.96 and later, as described at <https://github.com/ajrcarey/pdfium-render/issues/177>; completes expansion of all `FPDF_*` doc comments in `PdfiumLibraryBindings` trait. Deprecated items will be removed in release 0.9.0.
 * 0.8.26: relaxes version constraint on `chrono` dependency based on user feedback, relaxing the minimum supported Rust version to 1.61; increments the `pdfium_latest` feature to `pdfium_6721` to match new Pdfium release 6721 at <https://github.com/bblanchon/pdfium-binaries>; synchronises `pdfium_future` feature against current Google mainline; adds new crate features `image_025`, `image_024`, and `image_023` to allow explicitly pinning the version of `image` that should be used by `pdfium-render`, sets `image` to `image_025`; adjusts bookmark traversal so that bookmarks are returned in a more natural order, thanks to an excellent contribution from <https://github.com/mlaiosa>.

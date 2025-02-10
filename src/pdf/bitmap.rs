@@ -287,7 +287,7 @@ impl<'a> PdfBitmap<'a> {
     /// Returns a new `Image::DynamicImage` created from the bitmap buffer backing this [PdfBitmap].
     ///
     /// This function is only available when this crate's `image` feature is enabled.
-    #[cfg(feature = "any_image")]
+    #[cfg(feature = "image_api")]
     pub fn as_image(&self) -> DynamicImage {
         let bytes = self.as_rgba_bytes();
 
