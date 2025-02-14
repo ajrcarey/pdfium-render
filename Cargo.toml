@@ -57,7 +57,7 @@ windows = { version = "0", optional = true }
 [build-dependencies]
 # Bindgen 0.70.0 and later cause build failures when compiling to WASM. For more details, see:
 # https://github.com/ajrcarey/pdfium-render/issues/156
-bindgen = { version = "<=0.69.4", optional = true }
+bindgen = { version = "0.71.1", optional = true }
 
 [dev-dependencies]
 # Dependencies specific to examples. Dependencies for the WASM example in examples/wasm.rs
