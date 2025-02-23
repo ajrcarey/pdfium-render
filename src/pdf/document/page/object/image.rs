@@ -17,6 +17,7 @@ use crate::pdf::points::PdfPoints;
 use crate::utils::mem::create_byte_buffer;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
+use std::io::{Read, Seek};
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_void};
 
@@ -45,10 +46,7 @@ use {
 };
 
 #[cfg(doc)]
-use {
-    crate::pdf::document::page::object::PdfPageObjectType,
-    crate::pdf::document::page::PdfPage,
-};
+use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
 
 /// A single [PdfPageObject] of type [PdfPageObjectType::Image]. The page object defines a
 /// single image, where the image data is sourced from a [PdfBitmap] buffer.
@@ -137,14 +135,36 @@ impl<'a> PdfPageImageObject<'a> {
     ///
     /// This function is not available when compiling to WASM.
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn new_from_jpeg(
+    pub fn new_from_jpeg_file(
         document: &PdfDocument<'a>,
         path: &(impl AsRef<Path> + ?Sized),
     ) -> Result<Self, PdfiumError> {
+        Self::new_from_jpeg_reader(document, File::open(path).map_err(PdfiumError::IoError)?)
+    }
+
+    /// Creates a new [PdfPageImageObject] containing JPEG image data loaded from the
+    /// given reader. Because Pdfium must know the total content length in advance prior to
+    /// loading any portion of it, the given reader must implement the [Seek] trait
+    /// as well as the [Read] trait.
+    ///
+    /// The returned page object will not be rendered until it is added to
+    /// a [PdfPage] using the `PdfPageObjects::add_image_object()` function.
+    ///
+    /// The returned page object will have its width and height both set to 1.0 points.
+    /// Use the [PdfPageImageObject::scale] function to apply a horizontal and vertical scale
+    /// to the object after it is created, or use one of the [PdfPageImageObject::new_with_width()],
+    /// [PdfPageImageObject::new_with_height()], or [PdfPageImageObject::new_with_size()] functions
+    /// to scale the page object to a specific width and/or height at the time the object is created.
+    ///
+    /// This function is not available when compiling to WASM.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn new_from_jpeg_reader<R: Read + Seek>(
+        document: &PdfDocument<'a>,
+        reader: R,
+    ) -> Result<Self, PdfiumError> {
         let object = Self::new_from_handle(document.handle(), document.bindings())?;
 
-        let mut reader =
-            get_pdfium_file_accessor_from_reader(File::open(path).map_err(PdfiumError::IoError)?);
+        let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
         let result = document.bindings().FPDFImageObj_LoadJpegFileInline(
             std::ptr::null_mut(),
