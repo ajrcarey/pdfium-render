@@ -70,13 +70,13 @@ _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete l
 
 _Note: Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>._
 
+Release 0.8.30 adds the `core_graphics` crate feature to ease linking to statically compiled Pdfium builds on macOS that require the CoreGraphics framework.
+
 Release 0.8.29 corrects a bug in the handling of the `image_*` crate features that prevented use of image functionality when using `image_024` or `image_023`, thanks to an excellent contribution from <https://github.com/t-moe>, adds the `PdfLink::rect()` function for returning the area on the page that the user can use to interact with a given `PdfLink`, thanks to an excellent contribution from <https://github.com/mlaiosa>, and adds the `PdfPageImageObject::new_from_jpeg_file()` and `PdfPageImageObject::new_from_jpeg_reader()` functions, allowing loading of image data directly from a suitably-encoded JPEG even if `pdfium-render`'s `image_*` crate features are disabled.
 
 Release 0.8.28 increments the `pdfium_latest` feature to `pdfium_6996` to match new Pdfium release 6996 at <https://github.com/bblanchon/pdfium-binaries>, fixes an edge case in page object handling where it was possible to apply a change to a page object - a transformation, for example - that might not be captured during automatic content regeneration of the containing page, and adds trait implementations for `Eq`, `Hash`, and `Clone` to `PdfBookmark`, thanks to an excellent contribution from <https://github.com/mlaiosa>.
 
 Release 0.8.27 adds a new `axum_once_cell` example demonstrating how to use Pdfium safely across asynchronous tasks with Axum, thanks to an excellent contribution from <https://github.com/danwritecode>, and fixes two bugs related to memory safety in the WASM bindings implementation, thanks to an excellent contribution from <https://github.com/samsieber>. The first bug affected certain UTF-16 string handling operations; the second bug could result in data corruption when working with raw bitmap pixel buffers.
-
-Release 0.8.26 relaxes the minimum supported Rust version to 1.61 based on user feedback, increments the `pdfium_latest` feature to `pdfium_6721` to match new Pdfium release 6721 at <https://github.com/bblanchon/pdfium-binaries>, adds new crate features `image_025`, `image_024`, and `image_023` to allow explicitly pinning the version of `image` that should be used by `pdfium-render`, sets `image` to `image_025`, and adjusts bookmark traversal so that bookmarks are returned in a more natural order, thanks to an excellent contribution from <https://github.com/mlaiosa>.
 
 ## Binding to Pdfium
 
@@ -181,6 +181,8 @@ To link against the LLVM C++ standard library (`libc++`), use the optional `libc
 
 Alternatively, use the `link-cplusplus` crate to link against a C++ standard library. `link-cplusplus` offers more options for deciding which standard library should be selected, including automatically selecting the build platform's installed default.
 
+On macOS systems, it may be necessary use the optional `core_graphics` feature to link against the CoreGraphics framework. This will resolve linker errors of the form `Undefined symbols ... _CG[Bitmap | ColorSpace | Context]*`.
+
 `pdfium-render` will not build Pdfium for you; you must build Pdfium yourself, source a pre-built static archive from elsewhere, or use a dynamically built library downloaded from one of the sources listed above in the "Dynamic linking" section. If you wish to build a static library yourself, an overview of the build process - including a sample build script - is available at <https://github.com/ajrcarey/pdfium-render/issues/53>.
 
 ## Compiling to WASM
@@ -207,6 +209,7 @@ This crate provides the following optional features:
 * `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page and page object rendering functionality. Projects that do not require page or page object rendering can disable this feature to avoid compiling the `image` crate into their binaries. It is possible to control the specific version of `image` that will be used by `pdfium-render`; see the "Crate features for selecting `image` versions" section below.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
+* `core_graphics`: links against the CoreGraphics library on macOS systems when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
 * `sync`: provides implementations of the `Send` and `Sync` traits for the `Pdfium` and `PdfDocument` structs. This is useful for creating static instances that can be used with `lazy_static` or `once_cell`, although those instances are not guaranteed to be thread-safe. Use entirely at your own risk. Requires the `thread_safe` feature.
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium. See the "Multithreading" section above.
@@ -295,6 +298,7 @@ Some functions and type definitions have been renamed or revised since their ini
 
 ## Version history
 
+* 0.8.30: adds the `core_graphics` crate feature to ease linking to statically compiled Pdfium builds on macOS that require the CoreGraphics framework.
 * 0.8.29: corrects a bug in the handling of the `image_*` crate features that prevented use of image functionality when using `image_024` or `image_023`, thanks to an excellent contribution from <https://github.com/t-moe>; adds new `PdfLink::rect()` function, thanks to an excellent contribution from <https://github.com/mlaiosa>; adds new `PdfPageImageObject::new_from_jpeg_file()` and `PdfPageImageObject::new_from_jpeg_reader()` functions.
 * 0.8.28: increments the `pdfium_latest` feature to `pdfium_6996` to match new Pdfium release 6996 at <https://github.com/bblanchon/pdfium-binaries>; adds bindings for new functions `FPDFPageObj_GetIsActive()`, `FPDFPageObj_SetIsActive()`, and `FPDFImageObj_GetIccProfileDataDecoded()`; adds new `PdfSignature::modification_detection_permission()` function; adds `PdfQuadPoints::transform()` and additional utility functions to reach parity with `PdfRect`; changes return type of `PdfPageObject::bounds()` from `PdfRect` to `PdfQuadPoints`; deprecates direct `PdfRect` field access in favour of accessor functions; adds new `PdfPageObjectOwnership` struct to better model page object ownership across pages and annotations; fixes a bug in content regeneration that could drop trailing transformations to page objects; adds trait implementations for `Eq`, `Hash`, and `Clone` to `PdfBookmark`, thanks to an excellent contribution from <https://github.com/mlaiosa>. Deprecated items will be removed in release 0.9.0.
 * 0.8.27: adds new `examples/axum_once_cell.rs` example, thanks to an excellent contribution from <https://github.com/danwritecode>; fixes a WASM-specific bug in string termination detection when copying `FPDF_WIDESTRING` buffers to Pdfium's WASM address space; deprecates the memory-unsafe WASM implementation of `FPDFBitmap_GetBuffer` in favour of `FPDFBitmap_GetBuffer_as_vec` and `FPDFBitmap_GetBuffer_as_array` (renamed from `FPDFBitmap_GetArray`), thanks to an excellent contribution from <https://github.com/samsieber>; establishes upper bound on `wasm-bindgen` dependency to avoid a build failure during Github workflow automated build that was introduced in `wasm-bindgen-macros` versions 0.2.96 and later, as described at <https://github.com/ajrcarey/pdfium-render/issues/177>; completes expansion of all `FPDF_*` doc comments in `PdfiumLibraryBindings` trait. Deprecated items will be removed in release 0.9.0.

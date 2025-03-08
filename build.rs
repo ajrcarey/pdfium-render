@@ -189,6 +189,9 @@ fn statically_link_pdfium() {
 
         #[cfg(feature = "libc++")]
         println!("cargo:rustc-link-lib=dylib=c++");
+
+        #[cfg(feature = "core_graphics")]
+        println!("cargo:rustc-link-lib=framework=CoreGraphics");
     } else if let Ok(path) = std::env::var("PDFIUM_DYNAMIC_LIB_PATH") {
         // Instruct cargo to dynamically link the given library during the build.
 
