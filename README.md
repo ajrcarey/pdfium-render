@@ -181,7 +181,13 @@ To link against the LLVM C++ standard library (`libc++`), use the optional `libc
 
 Alternatively, use the `link-cplusplus` crate to link against a C++ standard library. `link-cplusplus` offers more options for deciding which standard library should be selected, including automatically selecting the build platform's installed default.
 
-On macOS systems, it may be necessary use the optional `core_graphics` feature to link against the CoreGraphics framework. This will resolve linker errors of the form `Undefined symbols ... _CG[Bitmap | ColorSpace | Context]*`.
+On macOS systems, it may also be necessary to use the optional `core_graphics` feature to link against the CoreGraphics framework. `pdfium-render` will pass the following additional flag to `cargo`:
+
+```rust
+    cargo:rustc-link-lib=framework=CoreGraphics
+```
+
+This will resolve linker errors of the form `Undefined symbols ... _CG[Bitmap | ColorSpace | Context]*`.
 
 `pdfium-render` will not build Pdfium for you; you must build Pdfium yourself, source a pre-built static archive from elsewhere, or use a dynamically built library downloaded from one of the sources listed above in the "Dynamic linking" section. If you wish to build a static library yourself, an overview of the build process - including a sample build script - is available at <https://github.com/ajrcarey/pdfium-render/issues/53>.
 
