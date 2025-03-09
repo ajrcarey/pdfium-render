@@ -186,13 +186,13 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         &mut self,
         _object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        unimplemented!()
+        Err(PdfiumError::PageObjectsCollectionIsImmutable)
     }
 
     fn remove_object_impl(
         &mut self,
         _object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        unimplemented!()
+        Err(PdfiumError::PageObjectsCollectionIsImmutable)
     }
 }

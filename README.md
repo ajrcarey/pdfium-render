@@ -187,7 +187,7 @@ On macOS systems, it may also be necessary to use the optional `core_graphics` f
     cargo:rustc-link-lib=framework=CoreGraphics
 ```
 
-This will resolve linker errors of the form `Undefined symbols ... _CG[Bitmap | ColorSpace | Context]*`.
+This will resolve linker errors of the form `Undefined symbols ... [ _CGBitmap ... | _CGColorSpace ... | _CGContext ... ]`.
 
 `pdfium-render` will not build Pdfium for you; you must build Pdfium yourself, source a pre-built static archive from elsewhere, or use a dynamically built library downloaded from one of the sources listed above in the "Dynamic linking" section. If you wish to build a static library yourself, an overview of the build process - including a sample build script - is available at <https://github.com/ajrcarey/pdfium-render/issues/53>.
 

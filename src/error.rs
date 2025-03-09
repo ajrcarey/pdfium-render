@@ -117,6 +117,10 @@ pub enum PdfiumError {
     NoAttachmentPointsInPageAnnotation,
     CoordinateConversionFunctionIndicatedError,
 
+    /// Pdfium does not support adding or removing page objects from the page objects
+    // collection inside a PdfPageXObjectFormObject object.
+    PageObjectsCollectionIsImmutable,
+
     /// A call to `FPDFDest_GetView()` returned a valid `FPDFDEST_VIEW_*` value, but the number
     /// of view parameters returned does not match the PDF specification.
     PdfDestinationViewInvalidParameters,
