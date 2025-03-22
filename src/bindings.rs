@@ -48,8 +48,8 @@ struct HDC;
 
 pub mod version;
 
-use crate::bindgen::{
-    size_t, FPDF_CharsetFontMap, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION,
+pub use crate::bindgen::{
+    FPDF_CharsetFontMap, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION,
     FPDF_ANNOTATION_SUBTYPE, FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP,
     FPDF_BOOKMARK, FPDF_BOOL, FPDF_CLIPPATH, FPDF_COLORSCHEME, FPDF_DEST, FPDF_DOCUMENT,
     FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT,
@@ -72,14 +72,15 @@ use crate::bindgen::{
     feature = "pdfium_6555",
     feature = "pdfium_6490",
 ))]
-use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
+pub use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 
 #[cfg(feature = "pdfium_use_skia")]
-use crate::bindgen::FPDF_SKIA_CANVAS;
+pub use crate::bindgen::FPDF_SKIA_CANVAS;
 
 #[cfg(feature = "pdfium_enable_xfa")]
-use crate::bindgen::{FPDF_BSTR, FPDF_RESULT};
+pub use crate::bindgen::{FPDF_BSTR, FPDF_RESULT};
 
+use crate::bindgen::size_t;
 use crate::bindings::version::PdfiumApiVersion;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
