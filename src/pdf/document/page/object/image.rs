@@ -323,7 +323,7 @@ impl<'a> PdfPageImageObject<'a> {
         self.get_processed_bitmap_with_size(
             document,
             width,
-            ((width as f32 * aspect_ratio) as u32)
+            ((width as f32 / aspect_ratio) as u32)
                 .try_into()
                 .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?,
         )
@@ -350,7 +350,7 @@ impl<'a> PdfPageImageObject<'a> {
         self.get_processed_image_with_size(
             document,
             width,
-            ((width as f32 * aspect_ratio) as u32)
+            ((width as f32 / aspect_ratio) as u32)
                 .try_into()
                 .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?,
         )
@@ -373,7 +373,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         self.get_processed_bitmap_with_size(
             document,
-            ((height as f32 / aspect_ratio) as u32)
+            ((height as f32 * aspect_ratio) as u32)
                 .try_into()
                 .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?,
             height,
@@ -400,7 +400,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         self.get_processed_image_with_size(
             document,
-            ((height as f32 / aspect_ratio) as u32)
+            ((height as f32 * aspect_ratio) as u32)
                 .try_into()
                 .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?,
             height,
@@ -973,6 +973,7 @@ impl<'a> Iterator for PdfPageImageObjectFiltersIterator<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
 
@@ -1051,5 +1052,32 @@ mod tests {
         }
 
         true
+    }
+
+    #[test]
+    fn test_image_scaling_keeps_aspect_ratio() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let mut document = pdfium.create_new_pdf()?;
+        let mut page = document
+            .pages_mut()
+            .create_page_at_end(PdfPagePaperSize::a4())?;
+
+        let image = DynamicImage::new_rgb8(100, 200);
+        let object = page.objects_mut().create_image_object(
+            PdfPoints::new(0.0),
+            PdfPoints::new(0.0),
+            &image,
+            Some(PdfPoints::new(image.width() as f32)),
+            Some(PdfPoints::new(image.height() as f32)),
+        )?;
+        let image_object = object.as_image_object().unwrap();
+
+        assert_eq!(image_object.get_processed_bitmap_with_width(&document, 50)?.height(), 100);
+        assert_eq!(image_object.get_processed_image_with_width(&document, 50)?.height(), 100);
+        assert_eq!(image_object.get_processed_bitmap_with_height(&document, 50)?.width(), 25);
+        assert_eq!(image_object.get_processed_image_with_height(&document, 50)?.width(), 25);
+
+        Ok(())
     }
 }
