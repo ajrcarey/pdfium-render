@@ -1,5 +1,6 @@
 pub(crate) mod pixels {
 
+    const BYTES_PER_GRAYSCALE_PIXEL: usize = 1;
     const BYTES_PER_THREE_CHANNEL_PIXEL: usize = 3;
 
     const BYTES_PER_FOUR_CHANNEL_PIXEL: usize = 4;
@@ -130,6 +131,16 @@ pub(crate) mod pixels {
         // Expanding from three-channel to four-channel pixel data by adding an alpha channel
         // is the same irrespective of the pixel color format.
         aligned_rgb_to_rgba(bgr, width, stride)
+    }
+
+    #[inline]
+    pub(crate) fn aligned_grayscale(grayscale: &[u8], width: usize, stride: usize) -> Vec<u8> {
+        grayscale.chunks_exact(stride)
+            .flat_map(|scanline| {
+                &scanline[..width * BYTES_PER_GRAYSCALE_PIXEL]
+            })
+            .copied()
+            .collect::<Vec<u8>>()
     }
 }
 
