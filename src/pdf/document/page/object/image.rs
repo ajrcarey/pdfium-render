@@ -27,7 +27,9 @@ use {crate::utils::files::get_pdfium_file_accessor_from_reader, std::fs::File, s
 #[cfg(any(feature = "image_latest", feature = "image_025"))]
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
-    crate::utils::pixels::{aligned_bgr_to_rgba, aligned_grayscale, bgra_to_rgba, rgba_to_bgra},
+    crate::utils::pixels::{
+        aligned_bgr_to_rgba, aligned_grayscale_to_unaligned, bgra_to_rgba, rgba_to_bgra,
+    },
     image_025::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
 };
 
@@ -586,10 +588,11 @@ impl<'a> PdfPageImageObject<'a> {
             )
             .map(DynamicImage::ImageRgba8),
             PdfBitmapFormat::Gray => GrayImage::from_raw(
-                width as u32, 
-                height as u32, 
-                aligned_grayscale(buffer, width as usize, stride as usize)
-            ).map(DynamicImage::ImageLuma8),
+                width as u32,
+                height as u32,
+                aligned_grayscale_to_unaligned(buffer, width as usize, stride as usize),
+            )
+            .map(DynamicImage::ImageLuma8),
         }
         .ok_or(PdfiumError::ImageError)
     }
@@ -1066,7 +1069,7 @@ mod tests {
             .create_page_at_end(PdfPagePaperSize::a4())?;
 
         let image = DynamicImage::new_rgb8(100, 200);
-        
+
         let object = page.objects_mut().create_image_object(
             PdfPoints::new(0.0),
             PdfPoints::new(0.0),
@@ -1074,13 +1077,33 @@ mod tests {
             Some(PdfPoints::new(image.width() as f32)),
             Some(PdfPoints::new(image.height() as f32)),
         )?;
-        
+
         let image_object = object.as_image_object().unwrap();
 
-        assert_eq!(image_object.get_processed_bitmap_with_width(&document, 50)?.height(), 100);
-        assert_eq!(image_object.get_processed_image_with_width(&document, 50)?.height(), 100);
-        assert_eq!(image_object.get_processed_bitmap_with_height(&document, 50)?.width(), 25);
-        assert_eq!(image_object.get_processed_image_with_height(&document, 50)?.width(), 25);
+        assert_eq!(
+            image_object
+                .get_processed_bitmap_with_width(&document, 50)?
+                .height(),
+            100
+        );
+        assert_eq!(
+            image_object
+                .get_processed_image_with_width(&document, 50)?
+                .height(),
+            100
+        );
+        assert_eq!(
+            image_object
+                .get_processed_bitmap_with_height(&document, 50)?
+                .width(),
+            25
+        );
+        assert_eq!(
+            image_object
+                .get_processed_image_with_height(&document, 50)?
+                .width(),
+            25
+        );
 
         Ok(())
     }

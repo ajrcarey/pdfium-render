@@ -2,7 +2,6 @@ pub(crate) mod pixels {
 
     const BYTES_PER_GRAYSCALE_PIXEL: usize = 1;
     const BYTES_PER_THREE_CHANNEL_PIXEL: usize = 3;
-
     const BYTES_PER_FOUR_CHANNEL_PIXEL: usize = 4;
 
     /// Converts the given byte array, containing pixel data encoded as three-channel RGB,
@@ -133,14 +132,24 @@ pub(crate) mod pixels {
         aligned_rgb_to_rgba(bgr, width, stride)
     }
 
+    /// Converts the given byte array, containing pixel data encoded as one-channel grayscale
+    /// with one or more empty alignment bytes alignment bytes, into unaligned pixel data.
+    ///
+    /// Alignment bytes are used to ensure that the stride of a bitmap - the length in bytes of
+    /// a single scanline - is always a multiple of four, irrespective of the pixel data format.
+    /// The number of empty alignment bytes to be skipped is determined from the given width
+    /// and stride parameters.
     #[inline]
-    pub(crate) fn aligned_grayscale(grayscale: &[u8], width: usize, stride: usize) -> Vec<u8> {
-        grayscale.chunks_exact(stride)
-            .flat_map(|scanline| {
-                &scanline[..width * BYTES_PER_GRAYSCALE_PIXEL]
-            })
+    pub(crate) fn aligned_grayscale_to_unaligned(
+        grayscale: &[u8],
+        width: usize,
+        stride: usize,
+    ) -> Vec<u8> {
+        grayscale
+            .chunks_exact(stride)
+            .flat_map(|scanline| &scanline[..width * BYTES_PER_GRAYSCALE_PIXEL])
             .copied()
-            .collect::<Vec<u8>>()
+            .collect::<Vec<_>>()
     }
 }
 
@@ -581,6 +590,15 @@ mod tests {
             result,
             [2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15]
         );
+    }
+
+    #[test]
+    fn test_aligned_grayscale_to_unaligned() {
+        let data: [u8; 16] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+        let result = aligned_grayscale_to_unaligned(data.as_slice(), 1, 4);
+
+        assert_eq!(result, [0, 4, 8, 12]);
     }
 
     // Tests of date time conversion functions.
