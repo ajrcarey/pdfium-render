@@ -1059,11 +1059,13 @@ mod tests {
         let pdfium = test_bind_to_pdfium();
 
         let mut document = pdfium.create_new_pdf()?;
+
         let mut page = document
             .pages_mut()
             .create_page_at_end(PdfPagePaperSize::a4())?;
 
         let image = DynamicImage::new_rgb8(100, 200);
+        
         let object = page.objects_mut().create_image_object(
             PdfPoints::new(0.0),
             PdfPoints::new(0.0),
@@ -1071,6 +1073,7 @@ mod tests {
             Some(PdfPoints::new(image.width() as f32)),
             Some(PdfPoints::new(image.height() as f32)),
         )?;
+        
         let image_object = object.as_image_object().unwrap();
 
         assert_eq!(image_object.get_processed_bitmap_with_width(&document, 50)?.height(), 100);
