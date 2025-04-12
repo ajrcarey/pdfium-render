@@ -64,7 +64,7 @@ use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document
 ///
 /// Creating a detached page image object offers more scope for customization, but you must
 /// add the object to a containing [PdfPage] manually. To create a detached page image object,
-/// use the [PdfPageImageObject::new()] or [PdfPageImageObject::new_from_jpeg()] functions.
+/// use the [PdfPageImageObject::new()] or [PdfPageImageObject::new_from_jpeg_file()] functions.
 /// The detached page image object can later be attached to a page by using the
 /// `PdfPageObjects::add_image_object()` function.
 pub struct PdfPageImageObject<'a> {
