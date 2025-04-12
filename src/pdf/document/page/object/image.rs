@@ -597,7 +597,7 @@ impl<'a> PdfPageImageObject<'a> {
         .ok_or(PdfiumError::ImageError)
     }
 
-    /// Return the expected pixel width and height of the processed image from Pdfium's metadata.
+    /// Returns the expected pixel width and height of the processed image from Pdfium's metadata.
     pub(crate) fn get_current_width_and_height_from_metadata(
         &self,
     ) -> Result<(Pixels, Pixels), PdfiumError> {
@@ -616,6 +616,24 @@ impl<'a> PdfPageImageObject<'a> {
         })?;
 
         Ok((width, height))
+    }
+
+    /// Returns the expected pixel width of the processed image for this [PdfPageImageObject],
+    /// taking into account any image filters, image mask, and object transforms applied
+    /// to this page object.
+    #[inline]
+    pub fn width(&self) -> Result<Pixels, PdfiumError> {
+        self.get_current_width_and_height_from_metadata()
+            .map(|(width, _height)| width)
+    }
+
+    /// Returns the expected pixel height of the processed image for this [PdfPageImageObject],
+    /// taking into account any image filters, image mask, and object transforms applied
+    /// to this page object.
+    #[inline]
+    pub fn height(&self) -> Result<Pixels, PdfiumError> {
+        self.get_current_width_and_height_from_metadata()
+            .map(|(_width, height)| height)
     }
 
     /// Applies the byte data in the given [DynamicImage] to this [PdfPageImageObject].
