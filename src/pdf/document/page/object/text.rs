@@ -30,6 +30,7 @@ use crate::{create_transform_getters, create_transform_setters};
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7123",
     feature = "pdfium_6996",
     feature = "pdfium_6721",
     feature = "pdfium_6666",
@@ -394,6 +395,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7123",
         feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
@@ -408,6 +410,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7123",
         feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",
@@ -425,6 +428,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7123",
         feature = "pdfium_6996",
         feature = "pdfium_6721",
         feature = "pdfium_6666",

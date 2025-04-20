@@ -68,9 +68,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-_Note: Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>._
-
-Release 0.8.31 corrects a bug in the retrieval of bounding boxes for text object characters.
+Release 0.8.31 increments the `pdfium_latest` feature to `pdfium_7123` to match new Pdfium release 7123 at <https://github.com/bblanchon/pdfium-binaries>, and corrects a bug in the retrieval of bounding boxes for text object characters.
 
 Release 0.8.30 corrects a bug in the processing of page image object dimensions, thanks to an excellent contribution from <https://github.com/jarettmillard>, corrects a byte alignment bug that could occur when working with aligned grayscale bitmaps, thanks to an excellent contribution from <https://github.com/samsieber>, adds the `PdfPageImageObject::width()` and `PdfPageImageObject::height()` functions for retrieving the expected pixel width and height of a `PdfPageImageObject` without the need to render it to a bitmap, and adds the `core_graphics` crate feature to ease linking to statically compiled Pdfium builds on macOS that require the CoreGraphics framework.
 
@@ -234,8 +232,8 @@ Release 0.8.26 introduced new features to explicitly control the version of the 
 Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`:
 
 * `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes.
-* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_6996`.
-* `pdfium_6996`, `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
+* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_7123`.
+* `pdfium_7123`, `pdfium_6996`, `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API. Note that Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>._
 
 A small number of functions in the Pdfium API are gated behind compile-time flags that determine whether these functions are included when building Pdfium. `pdfium-render` release 0.8.25 introduced new crate features to control whether these functions appear in the `PdfiumLibraryBindings` trait:
 
@@ -290,7 +288,7 @@ Image pixel data in Pdfium is encoded in either three-channel BGR or four-channe
 
 ## Development status
 
-As at Pdfium release `pdfium_6996` there are 429 `FPDF_*` functions in the Pdfium API. Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
+As at Pdfium release `pdfium_7123` there are 429 `FPDF_*` functions in the Pdfium API. Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
 
 The initial focus of this crate was on rendering pages in a PDF file; consequently, high-level implementations of `FPDF_*` functions related to page rendering were prioritised. By 1.0, the functionality of all `FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain functions specific to interactive scripting, user interaction, and printing.
 
@@ -304,7 +302,7 @@ Some functions and type definitions have been renamed or revised since their ini
 
 ## Version history
 
-* 0.8.31: provides a new implementation of `PdfPageText::chars_for_object()` that takes advantage of the `FPDFText_GetTextObject()` function introduced in Pdfium release 6611 to substantially simplify the implementation, resolving a character bounds problem discussed in <https://github.com/ajrcarey/pdfium-render/issues/198>.
+* 0.8.31: increments the `pdfium_latest` feature to `pdfium_7123` to match new Pdfium release 7123 at <https://github.com/bblanchon/pdfium-binaries>; provides a new implementation of `PdfPageText::chars_for_object()` that takes advantage of the `FPDFText_GetTextObject()` function introduced in Pdfium release 6611 to substantially simplify the implementation, resolving a character bounds problem discussed in <https://github.com/ajrcarey/pdfium-render/issues/198>.
 * 0.8.30: corrects a bug in the processing of page image object dimensions, thanks to an excellent contribution from <https://github.com/jarettmillard>; corrects a byte alignment bug that could occur when working with aligned grayscale bitmaps, thanks to an excellent contribution from <https://github.com/samsieber>; adds the `PdfPageImageObject::width()` and `PdfPageImageObject::height()` functions for retrieving the expected pixel width and height of a `PdfPageImageObject` without the need to render it to a bitmap; adds the `core_graphics` crate feature to ease linking to statically compiled Pdfium builds on macOS that require the CoreGraphics framework.
 * 0.8.29: corrects a bug in the handling of the `image_*` crate features that prevented use of image functionality when using `image_024` or `image_023`, thanks to an excellent contribution from <https://github.com/t-moe>; adds new `PdfLink::rect()` function, thanks to an excellent contribution from <https://github.com/mlaiosa>; adds new `PdfPageImageObject::new_from_jpeg_file()` and `PdfPageImageObject::new_from_jpeg_reader()` functions.
 * 0.8.28: increments the `pdfium_latest` feature to `pdfium_6996` to match new Pdfium release 6996 at <https://github.com/bblanchon/pdfium-binaries>; adds bindings for new functions `FPDFPageObj_GetIsActive()`, `FPDFPageObj_SetIsActive()`, and `FPDFImageObj_GetIccProfileDataDecoded()`; adds new `PdfSignature::modification_detection_permission()` function; adds `PdfQuadPoints::transform()` and additional utility functions to reach parity with `PdfRect`; changes return type of `PdfPageObject::bounds()` from `PdfRect` to `PdfQuadPoints`; deprecates direct `PdfRect` field access in favour of accessor functions; adds new `PdfPageObjectOwnership` struct to better model page object ownership across pages and annotations; fixes a bug in content regeneration that could drop trailing transformations to page objects; adds trait implementations for `Eq`, `Hash`, and `Clone` to `PdfBookmark`, thanks to an excellent contribution from <https://github.com/mlaiosa>. Deprecated items will be removed in release 0.9.0.

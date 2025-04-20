@@ -145,6 +145,8 @@ fn build_bindings_for_one_pdfium_release(release: &str) -> Result<(), BuildError
             // https://github.com/rust-lang/rust-bindgen/issues/1671
             // Long term, the solution is for Bindgen to switch to converting size_t to
             // std::os::raw::c_size_t instead of usize, but c_size_t is not yet stabilized.
+            .layout_tests(false) // bindgen 0.71.1 outputs FPDF_BSTR size checks
+            // that break WASM builds when this flag is enabled
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new())) // Tell cargo to invalidate
             // the built crate whenever any of the included header files change.
             .clang_args(

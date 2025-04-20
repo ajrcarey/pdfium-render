@@ -4,6 +4,7 @@
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PdfiumApiVersion {
     Future, // For changes published to Pdfium's repository but yet to be released in a binary
+    V7123,
     V6996,
     V6721,
     V6666,
@@ -29,6 +30,9 @@ impl PdfiumApiVersion {
     pub(crate) fn current() -> Self {
         #[cfg(feature = "pdfium_future")]
         return PdfiumApiVersion::Future;
+
+        #[cfg(feature = "pdfium_7123")]
+        return PdfiumApiVersion::V7123;
 
         #[cfg(feature = "pdfium_6996")]
         return PdfiumApiVersion::V6996;
