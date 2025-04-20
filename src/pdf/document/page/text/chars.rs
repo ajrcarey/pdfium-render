@@ -1,30 +1,22 @@
-//! Defines the [PdfPageTextChars] struct, a collection of all the [PdfPageTextChar]
-//! characters inside a bounded rectangular region of a single [PdfPage].
+//! Defines the [PdfPageTextChars] struct, a collection of nominated [PdfPageTextChar]
+//! characters selected from a single [PdfPage].
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_TEXTPAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::text::char::PdfPageTextChar;
-use crate::pdf::document::page::{
-    PdfPage, PdfPageContentRegenerationStrategy, PdfPageIndexCache, PdfPageText,
-};
-use crate::pdf::document::pages::PdfPageIndex;
+use crate::pdf::document::page::PdfPageText;
 use crate::pdf::points::PdfPoints;
-use std::ops::Range;
-use std::os::raw::c_int;
 
 /// The zero-based index of a single [PdfPageTextChar] inside its containing [PdfPageTextChars] collection.
 pub type PdfPageTextCharIndex = usize;
 
-/// A collection of all the [PdfPageTextChar] characters inside a bounded rectangular region
-/// of a single [PdfPage].
+/// A collection of nominated [PdfPageTextChar] characters selected from a single [PdfPage].
 pub struct PdfPageTextChars<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
     text_page_handle: FPDF_TEXTPAGE,
-    source_page: Option<PdfPage<'a>>,
-    start: i32,
-    len: i32,
+    char_indices: Vec<i32>,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
@@ -34,52 +26,14 @@ impl<'a> PdfPageTextChars<'a> {
         document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
         text_page_handle: FPDF_TEXTPAGE,
-        start: i32,
-        len: i32,
+        char_indices: Vec<i32>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextChars {
             document_handle,
             page_handle,
             text_page_handle,
-            source_page: None,
-            start,
-            len,
-            bindings,
-        }
-    }
-
-    /// Creates a new [PdfPageTextChars] instance for the given character range
-    /// by loading the text page for the given page index in the given document handle.
-    /// The newly created [PdfPageTextChars] instance will take ownership of both the page
-    /// and its text page, disposing of both when the [PdfPageTextChars] instance leaves scope.
-    pub(crate) fn new_with_owned_page(
-        document_handle: FPDF_DOCUMENT,
-        page_index: c_int,
-        start: i32,
-        len: i32,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
-        let page_handle = bindings.FPDF_LoadPage(document_handle, page_index);
-
-        PdfPageIndexCache::cache_props_for_page(
-            document_handle,
-            page_handle,
-            page_index as PdfPageIndex,
-            PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-        );
-
-        let page = PdfPage::from_pdfium(document_handle, page_handle, None, None, bindings);
-
-        let text_page_handle = bindings.FPDFText_LoadPage(page.page_handle());
-
-        PdfPageTextChars {
-            document_handle,
-            page_handle,
-            text_page_handle,
-            source_page: Some(page),
-            start,
-            len,
+            char_indices,
             bindings,
         }
     }
@@ -111,29 +65,27 @@ impl<'a> PdfPageTextChars<'a> {
     }
 
     /// Returns the index in the containing [PdfPage] of the first character in this
-    /// [PdfPageTextChars] collection.
+    /// [PdfPageTextChars] collection, if any.
     #[inline]
-    pub fn first_char_index(&self) -> PdfPageTextCharIndex {
-        self.start as PdfPageTextCharIndex
+    pub fn first_char_index(&self) -> Option<PdfPageTextCharIndex> {
+        self.char_indices
+            .first()
+            .map(|index| *index as PdfPageTextCharIndex)
     }
 
     /// Returns the number of individual characters in this [PdfPageTextChars] collection.
     #[inline]
     pub fn len(&self) -> PdfPageTextCharIndex {
-        self.len as PdfPageTextCharIndex
+        self.char_indices.len()
     }
 
     /// Returns the index in the containing [PdfPage] of the last character in this
-    /// [PdfPageTextChars] collection.
+    /// [PdfPageTextChars] collection, if any.
     #[inline]
-    pub fn last_char_index(&self) -> PdfPageTextCharIndex {
-        (self.start + self.len - 1) as PdfPageTextCharIndex
-    }
-
-    /// Returns the valid index range of this [PdfPageTextChars] collection.
-    #[inline]
-    pub fn as_range(&self) -> Range<PdfPageTextCharIndex> {
-        self.first_char_index()..self.last_char_index()
+    pub fn last_char_index(&self) -> Option<PdfPageTextCharIndex> {
+        self.char_indices
+            .last()
+            .map(|index| *index as PdfPageTextCharIndex)
     }
 
     /// Returns `true` if this [PdfPageTextChars] collection is empty.
@@ -145,18 +97,15 @@ impl<'a> PdfPageTextChars<'a> {
     /// Returns a single [PdfPageTextChar] from this [PdfPageTextChars] collection.
     #[inline]
     pub fn get(&self, index: PdfPageTextCharIndex) -> Result<PdfPageTextChar, PdfiumError> {
-        let index = index as i32;
-
-        if index < self.start || index >= self.start + self.len {
-            Err(PdfiumError::CharIndexOutOfBounds)
-        } else {
-            Ok(PdfPageTextChar::from_pdfium(
+        match self.char_indices.get(index) {
+            Some(index) => Ok(PdfPageTextChar::from_pdfium(
                 self.document_handle(),
                 self.page_handle(),
                 self.text_page_handle(),
-                index,
+                *index as i32,
                 self.bindings(),
-            ))
+            )),
+            None => Err(PdfiumError::CharIndexOutOfBounds),
         }
     }
 
@@ -197,20 +146,6 @@ impl<'a> PdfPageTextChars<'a> {
     }
 }
 
-impl<'a> Drop for PdfPageTextChars<'a> {
-    /// Closes this [PdfPageTextChars] object, releasing held memory.
-    #[inline]
-    fn drop(&mut self) {
-        if let Some(page) = self.source_page.take() {
-            // This PdfPageTextChars instance had ownership over the page and text page
-            // to which it was bound. Release those resources now.
-
-            self.bindings().FPDFText_ClosePage(self.text_page_handle());
-            assert!(page.delete().is_ok());
-        }
-    }
-}
-
 /// An iterator over all the [PdfPageTextChar] objects in a [PdfPageTextChars] collection.
 pub struct PdfPageTextCharsIterator<'a> {
     chars: &'a PdfPageTextChars<'a>,
@@ -219,10 +154,10 @@ pub struct PdfPageTextCharsIterator<'a> {
 
 impl<'a> PdfPageTextCharsIterator<'a> {
     #[inline]
-    pub(crate) fn new(chars: &'a PdfPageTextChars<'a>) -> Self {
+    pub(crate) fn new(chars: &'a PdfPageTextChars) -> Self {
         PdfPageTextCharsIterator {
             chars,
-            next_index: chars.first_char_index(),
+            next_index: 0,
         }
     }
 }

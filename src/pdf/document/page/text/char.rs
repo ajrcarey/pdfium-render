@@ -3,11 +3,13 @@
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_TEXTPAGE, FS_MATRIX, FS_RECTF};
 use crate::bindings::PdfiumLibraryBindings;
+use crate::create_transform_getters;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::object::text::PdfPageTextRenderMode;
 use crate::pdf::document::page::text::chars::PdfPageTextCharIndex;
 use crate::pdf::font::{FpdfFontDescriptorFlags, PdfFontWeight};
+use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::utils::mem::create_byte_buffer;
@@ -543,7 +545,7 @@ impl<'a> PdfPageTextChar<'a> {
     }
 
     /// Returns the current raw transformation matrix for this character.
-    fn matrix(&self) -> Result<FS_MATRIX, PdfiumError> {
+    fn get_matrix_impl(&self) -> Result<PdfMatrix, PdfiumError> {
         let mut matrix = FS_MATRIX {
             a: 0.0,
             b: 0.0,
@@ -558,7 +560,7 @@ impl<'a> PdfPageTextChar<'a> {
             self.index,
             &mut matrix,
         )) {
-            Ok(matrix)
+            Ok(PdfMatrix::from_pdfium(matrix))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
@@ -566,146 +568,11 @@ impl<'a> PdfPageTextChar<'a> {
         }
     }
 
-    /// Returns the current horizontal and vertical translation of the origin of this character.
-    #[inline]
-    pub fn get_translation(&self) -> (PdfPoints, PdfPoints) {
-        (
-            self.get_horizontal_translation(),
-            self.get_vertical_translation(),
-        )
-    }
-
-    /// Returns the current horizontal translation of the origin of this character.
-    #[inline]
-    pub fn get_horizontal_translation(&self) -> PdfPoints {
-        self.matrix()
-            .map(|matrix| PdfPoints::new(matrix.e))
-            .unwrap_or(PdfPoints::ZERO)
-    }
-
-    /// Returns the current vertical translation of the origin of this character.
-    #[inline]
-    pub fn get_vertical_translation(&self) -> PdfPoints {
-        self.matrix()
-            .map(|matrix| PdfPoints::new(matrix.f))
-            .unwrap_or(PdfPoints::ZERO)
-    }
-
-    /// Returns the current horizontal and vertical scale factors applied to this character.
-    #[inline]
-    pub fn get_scale(&self) -> (f64, f64) {
-        (self.get_horizontal_scale(), self.get_vertical_scale())
-    }
-
-    /// Returns the current horizontal scale factor applied to this character.
-    #[inline]
-    pub fn get_horizontal_scale(&self) -> f64 {
-        self.matrix().map(|matrix| matrix.a).unwrap_or(0.0) as f64
-    }
-
-    /// Returns the current vertical scale factor applied to this character.
-    #[inline]
-    pub fn get_vertical_scale(&self) -> f64 {
-        self.matrix().map(|matrix| matrix.d).unwrap_or(0.0) as f64
-    }
-
-    /// Returns the counter-clockwise rotation applied to this character, in degrees.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_rotation_counter_clockwise_degrees(&self) -> f32 {
-        self.get_rotation_counter_clockwise_radians().to_degrees()
-    }
-
-    /// Returns the clockwise rotation applied to this character, in degrees.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_rotation_clockwise_degrees(&self) -> f32 {
-        -self.get_rotation_counter_clockwise_degrees()
-    }
-
-    /// Returns the counter-clockwise rotation applied to this character, in radians.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_rotation_counter_clockwise_radians(&self) -> f32 {
-        self.matrix()
-            .map(|matrix| matrix.b.atan2(matrix.a))
-            .unwrap_or(0.0)
-    }
-
-    /// Returns the clockwise rotation applied to this character, in radians.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_rotation_clockwise_radians(&self) -> f32 {
-        -self.get_rotation_counter_clockwise_radians()
-    }
-
-    /// Returns the current x axis and y axis skew angles applied to this character, in degrees.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_skew_degrees(&self) -> (f32, f32) {
-        (
-            self.get_x_axis_skew_degrees(),
-            self.get_y_axis_skew_degrees(),
-        )
-    }
-
-    /// Returns the current x axis skew angle applied to this character, in degrees.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_x_axis_skew_degrees(&self) -> f32 {
-        self.get_x_axis_skew_radians().to_degrees()
-    }
-
-    /// Returns the current y axis skew applied to this character, in degrees.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_y_axis_skew_degrees(&self) -> f32 {
-        self.get_y_axis_skew_radians().to_degrees()
-    }
-
-    /// Returns the current x axis and y axis skew angles applied to this character, in radians.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_skew_radians(&self) -> (f32, f32) {
-        (
-            self.get_x_axis_skew_radians(),
-            self.get_y_axis_skew_radians(),
-        )
-    }
-
-    /// Returns the current x axis skew applied to this character, in radians.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_x_axis_skew_radians(&self) -> f32 {
-        self.matrix().map(|matrix| matrix.b.atan()).unwrap_or(0.0)
-    }
-
-    /// Returns the current y axis skew applied to this character, in radians.
-    ///
-    /// If the character is both rotated and skewed, the return value of this function will reflect
-    /// the combined operation.
-    #[inline]
-    pub fn get_y_axis_skew_radians(&self) -> f32 {
-        self.matrix().map(|matrix| matrix.c.atan()).unwrap_or(0.0)
-    }
+    create_transform_getters!(
+        "this [PdfPageTextChar]",
+        "this [PdfPageTextChar].",
+        "this [PdfPageTextChar],"
+    );
 
     /// Returns the origin x and y positions of this character relative to its containing page.
     pub fn origin(&self) -> Result<(PdfPoints, PdfPoints), PdfiumError> {

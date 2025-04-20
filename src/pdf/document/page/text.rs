@@ -14,13 +14,10 @@ use crate::pdf::document::page::annotation::PdfPageAnnotation;
 use crate::pdf::document::page::annotation::PdfPageAnnotationCommon;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::text::PdfPageTextObject;
-use crate::pdf::document::page::object::PdfPageObjectCommon;
-use crate::pdf::document::page::objects::common::PdfPageObjectsCommon;
 use crate::pdf::document::page::text::chars::{PdfPageTextCharIndex, PdfPageTextChars};
 use crate::pdf::document::page::text::search::{PdfPageTextSearch, PdfSearchOptions};
 use crate::pdf::document::page::text::segments::PdfPageTextSegments;
-use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPageIndexCache};
-use crate::pdf::document::pages::PdfPageIndex;
+use crate::pdf::document::page::PdfPage;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
@@ -31,6 +28,15 @@ use bytemuck::cast_slice;
 use std::fmt::{Display, Formatter};
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
+
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_6996",
+    feature = "pdfium_6721",
+    feature = "pdfium_6666",
+    feature = "pdfium_6611",
+))]
+use crate::pdf::document::page::object::PdfPageObjectCommon;
 
 /// The collection of Unicode characters visible on a single [PdfPage].
 ///
@@ -115,12 +121,18 @@ impl<'a> PdfPageText<'a> {
             self.page.document_handle(),
             self.page.page_handle(),
             self.text_page_handle(),
-            0,
-            self.len(),
+            (0..self.len()).collect(),
             self.bindings(),
         )
     }
 
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+    ))]
     /// Returns a collection of all the `PdfPageTextChar` characters in the given [PdfPageTextObject].
     ///
     /// The return result will be empty if the given [PdfPageTextObject] is not attached to the
@@ -130,101 +142,28 @@ impl<'a> PdfPageText<'a> {
         &self,
         object: &PdfPageTextObject,
     ) -> Result<PdfPageTextChars, PdfiumError> {
-        // To avoid any possibility of returning the wrong characters in the event
-        // of overlapping text objects, we create a new page, create a copy of the target
-        // text object on the new page, and return the PdfPageTextChars object _for the
-        // copy_, rather than the object itself.
+        let chars_inside_bounds = self
+            .chars_inside_rect(object.bounds()?.to_rect())
+            .map_err(|_| PdfiumError::NoCharsInPageObject)?;
 
-        let page_index = self
-            .bindings()
-            .FPDF_GetPageCount(self.page.document_handle());
+        // The collection contains _all_ characters inside the bounds of the
+        // given text object, including characters from any overlapping objects.
+        // Filter the collection so it contains only characters from the
+        // given text object.
 
-        let (document_handle, start_index, end_index) = {
-            // We must avoid several potential lifetime traps. First, the newly created page
-            // and its text page must live at least as long as the PdfPageTextChars object we
-            // return; second, we need to tidy up both the text page and the page once
-            // the PdfPageTextChars object we return falls out of scope (indeed, we need to
-            // delete the newly created page from the document).
-
-            // To manage the lifetimes correctly, we give the PdfPageTextChars object itself
-            // ownership over the newly created page and its text page. The PdfPageTextChars
-            // object will take responsibility for disposing of its own parent objects
-            // when it falls out of scope, including removing the page from the document.
-
-            // We cannot transfer the ownership of a new PdfPage instance to PdfPageTextChars
-            // because PdfPageTextChars is itself created as an indirect child of a PdfPage.
-            // This creates a cyclical relationship between the two objects. To avoid intractable
-            // borrowing problems, we pass raw handles only.
-
-            // Create the new temporary page...
-
-            let page_handle = self.bindings().FPDFPage_New(
-                self.page.document_handle(),
-                page_index,
-                self.page.width().value as c_double,
-                self.page.height().value as c_double,
-            );
-
-            let mut new_page = PdfPage::from_pdfium(
-                self.page.document_handle(),
-                page_handle,
-                None,
-                None,
-                self.bindings,
-            );
-
-            PdfPageIndexCache::cache_props_for_page(
-                self.page.document_handle(),
-                page_handle,
-                page_index as PdfPageIndex,
-                PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
-            );
-
-            // ... copy the target object onto the new page...
-
-            let copy = object.try_copy_impl(self.page.document_handle(), self.bindings)?;
-            let copy = new_page.objects_mut().add_object(copy)?;
-
-            // ... get the character range for the target object's bounds...
-
-            let bounds = copy.bounds()?;
-            let text_page = new_page.text()?;
-            let tolerance_x = bounds.width() / 2.0;
-            let tolerance_y = bounds.height() / 2.0;
-            let center_height = bounds.bottom() + tolerance_y;
-
-            let start_index = Self::get_char_index_near_point(
-                text_page.text_page_handle(),
-                bounds.left(),
-                tolerance_x,
-                center_height,
-                tolerance_y,
-                self.bindings(),
-            )
-            .ok_or(PdfiumError::NoCharsInRect)?;
-
-            let end_index = Self::get_char_index_near_point(
-                text_page.text_page_handle(),
-                bounds.right(),
-                tolerance_x,
-                center_height,
-                tolerance_y,
-                self.bindings(),
-            )
-            .map(|end| end.saturating_sub(start_index))
-            .ok_or(PdfiumError::NoCharsInRect)?;
-
-            (new_page.document_handle(), start_index, end_index)
-        };
-
-        // ... and use raw handles and indices to create a new PdfPageTextChars instance
-        // that isn't bound to the lifetime of the current object.
-
-        Ok(PdfPageTextChars::new_with_owned_page(
-            document_handle,
-            page_index,
-            start_index as i32,
-            end_index as i32 + 1,
+        Ok(PdfPageTextChars::new(
+            self.page.document_handle(),
+            self.page.page_handle(),
+            self.text_page_handle(),
+            chars_inside_bounds
+                .iter()
+                .filter(|char| {
+                    self.bindings
+                        .FPDFText_GetTextObject(self.text_page_handle(), char.index() as i32)
+                        == object.object_handle()
+                })
+                .map(|char| char.index() as i32)
+                .collect(),
             self.bindings(),
         ))
     }
@@ -260,8 +199,8 @@ impl<'a> PdfPageText<'a> {
                 self.page.document_handle(),
                 self.page.page_handle(),
                 self.text_page_handle(),
-                start.index() as i32,
-                end.index().saturating_sub(start.index()) as i32 + 1,
+                (start.index() as i32..end.index().saturating_sub(start.index()) as i32 + 1)
+                    .collect(),
                 self.bindings,
             )),
             _ => Err(PdfiumError::NoCharsInRect),

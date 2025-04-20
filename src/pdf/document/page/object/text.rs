@@ -19,8 +19,7 @@ use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::{
     PdfPageObject, PdfPageObjectCommon, PdfPageObjectOwnership,
 };
-use crate::pdf::document::page::text::chars::PdfPageTextChars;
-use crate::pdf::document::page::text::PdfPageText;
+
 use crate::pdf::document::PdfDocument;
 use crate::pdf::font::PdfFont;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
@@ -28,6 +27,18 @@ use crate::pdf::points::PdfPoints;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use crate::{create_transform_getters, create_transform_setters};
+
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_6996",
+    feature = "pdfium_6721",
+    feature = "pdfium_6666",
+    feature = "pdfium_6611",
+))]
+use {
+    crate::pdf::document::page::text::chars::PdfPageTextChars,
+    crate::pdf::document::page::text::PdfPageText,
+};
 
 /// The text rendering modes supported by the PDF standard, as listed in table 5.3
 /// on page 402 in the PDF Reference manual version 1.7.
@@ -381,6 +392,13 @@ impl<'a> PdfPageTextObject<'a> {
         }
     }
 
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+    ))]
     /// Returns a collection of the characters contained within this [PdfPageTextObject],
     /// using character retrieval functionality provided by the given [PdfPageText] object.
     #[inline]
@@ -388,6 +406,13 @@ impl<'a> PdfPageTextObject<'a> {
         text.chars_for_object(self)
     }
 
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+    ))]
     /// Returns `true` if any of the characters contained within this [PdfPageTextObject] have a
     /// glyph shape that descends below the font baseline.
     ///
@@ -398,6 +423,13 @@ impl<'a> PdfPageTextObject<'a> {
             .map(|chars| chars.iter().any(|char| char.has_descender()))
     }
 
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+    ))]
     /// Returns the descent of this [PdfPageTextObject]. The descent is the maximum distance below
     /// the baseline reached by any glyph in any of the characters contained in this text object,
     /// expressed as a negative points value.
