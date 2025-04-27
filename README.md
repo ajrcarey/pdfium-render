@@ -222,7 +222,7 @@ This crate provides the following optional features:
 
 Release 0.8.26 introduced new features to explicitly control the version of the `image` crate used by `pdfium-render`:
 
-* `image`: uses the latest version of the `image` crate. This is currently `image_025`.
+* `image_latest`: uses the latest version of the `image` crate. This is currently `image_025`.
 * `image_025`: uses `image` crate version `0.25`.
 * `image_024`: uses `image` crate version `0.24`.
 * `image_023`: uses `image` crate version `0.23`.
@@ -233,7 +233,9 @@ Release 0.8.24 introduced new features to explicitly control the version of the 
 
 * `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes.
 * `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_7123`.
-* `pdfium_7123`, `pdfium_6996`, `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API. Note that Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>._
+* `pdfium_7123`, `pdfium_6996` (but see note below), `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
+
+Note that Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>.
 
 A small number of functions in the Pdfium API are gated behind compile-time flags that determine whether these functions are included when building Pdfium. `pdfium-render` release 0.8.25 introduced new crate features to control whether these functions appear in the `PdfiumLibraryBindings` trait:
 
@@ -244,7 +246,7 @@ A small number of functions in the Pdfium API are gated behind compile-time flag
 
 #### Default features
 
-The `image`, `thread_safe`, and `pdfium_latest` features are enabled by default. All other features are disabled by default.
+The `pdfium_latest`, `image_latest`, and `thread_safe` features are enabled by default. All other features are disabled by default.
 
 ## Minimum supported Rust version
 

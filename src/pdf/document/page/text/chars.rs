@@ -8,6 +8,9 @@ use crate::pdf::document::page::text::char::PdfPageTextChar;
 use crate::pdf::document::page::PdfPageText;
 use crate::pdf::points::PdfPoints;
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
 /// The zero-based index of a single [PdfPageTextChar] inside its containing [PdfPageTextChars] collection.
 pub type PdfPageTextCharIndex = usize;
 

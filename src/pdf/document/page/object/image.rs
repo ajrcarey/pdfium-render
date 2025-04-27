@@ -17,12 +17,16 @@ use crate::pdf::points::PdfPoints;
 use crate::utils::mem::create_byte_buffer;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
-use std::io::{Read, Seek};
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_void};
 
 #[cfg(not(target_arch = "wasm32"))]
-use {crate::utils::files::get_pdfium_file_accessor_from_reader, std::fs::File, std::path::Path};
+use {
+    crate::utils::files::get_pdfium_file_accessor_from_reader,
+    std::fs::File,
+    std::io::{Read, Seek},
+    std::path::Path,
+};
 
 #[cfg(any(feature = "image_latest", feature = "image_025"))]
 use {
