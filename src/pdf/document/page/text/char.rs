@@ -398,7 +398,7 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn render_mode(&self) -> Result<PdfPageTextRenderMode, PdfiumError> {
         PdfPageTextRenderMode::from_pdfium(
             self.bindings()
-                .FPDFText_GetTextRenderMode(self.text_page_handle, self.index) as u32,
+                .FPDFText_GetTextRenderMode(self.text_page_handle, self.index),
         )
     }
 
