@@ -41,6 +41,9 @@ use {
     crate::pdf::document::page::text::PdfPageText,
 };
 
+#[cfg(doc)]
+use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+
 /// The text rendering modes supported by the PDF standard, as listed in table 5.3
 /// on page 402 in the PDF Reference manual version 1.7.
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
@@ -75,8 +78,8 @@ pub enum PdfPageTextRenderMode {
 
 impl PdfPageTextRenderMode {
     #[inline]
-    pub(crate) fn from_pdfium(value: u32) -> Result<PdfPageTextRenderMode, PdfiumError> {
-        match value as i32 {
+    pub(crate) fn from_pdfium(value: i32) -> Result<PdfPageTextRenderMode, PdfiumError> {
+        match value {
             FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_UNKNOWN => Ok(PdfPageTextRenderMode::Unknown),
             FPDF_TEXT_RENDERMODE_FPDF_TEXTRENDERMODE_FILL => {
                 Ok(PdfPageTextRenderMode::FilledUnstroked)
@@ -136,10 +139,10 @@ impl PdfPageTextRenderMode {
     }
 }
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::Text`. The page object defines a single
+/// A single [PdfPageObject] of type [PdfPageObjectType::Text]. The page object defines a single
 /// piece of formatted text.
 ///
-/// Page objects can be created either attached to a `PdfPage` (in which case the page object's
+/// Page objects can be created either attached to a [PdfPage] (in which case the page object's
 /// memory is owned by the containing page) or detached from any page (in which case the page
 /// object's memory is owned by the object). Page objects are not rendered until they are
 /// attached to a page; page objects that are never attached to a page will be lost when they
@@ -149,7 +152,7 @@ impl PdfPageTextRenderMode {
 /// is to call the `PdfPageObjects::create_text_object()` function.
 ///
 /// Creating a detached page text object offers more scope for customization, but you must
-/// add the object to a containing `PdfPage` manually. To create a detached page text object,
+/// add the object to a containing [PdfPage] manually. To create a detached page text object,
 /// use the [PdfPageTextObject::new()] function. The detached page text object can later
 /// be attached to a page by using the `PdfPageObjects::add_text_object()` function.
 pub struct PdfPageTextObject<'a> {
@@ -173,7 +176,7 @@ impl<'a> PdfPageTextObject<'a> {
     }
 
     /// Creates a new [PdfPageTextObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
+    /// will not be rendered until it is added to a [PdfPage] using the
     /// `PdfPageObjects::add_text_object()` function.
     ///
     /// A single space will be used if the given text is empty, in order to avoid
@@ -230,7 +233,7 @@ impl<'a> PdfPageTextObject<'a> {
     pub fn render_mode(&self) -> PdfPageTextRenderMode {
         PdfPageTextRenderMode::from_pdfium(
             self.bindings()
-                .FPDFTextObj_GetTextRenderMode(self.object_handle) as u32,
+                .FPDFTextObj_GetTextRenderMode(self.object_handle),
         )
         .unwrap_or(PdfPageTextRenderMode::Unknown)
     }
@@ -277,7 +280,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Returns the text contained within this [PdfPageTextObject].
     ///
-    /// Text retrieval in Pdfium is handled by the [PdfPageText] object owned by the `PdfPage`
+    /// Text retrieval in Pdfium is handled by the [PdfPageText] object owned by the [PdfPage]
     /// containing this [PdfPageTextObject]. If this text object has not been attached to a page
     /// then text retrieval will be unavailable and an empty string will be returned.
     ///

@@ -20,6 +20,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
+use crate::pdf::document::page::annotation::{PdfPageAnnotation, PdfPageAnnotationCommon};
 use crate::pdf::document::page::object::image::PdfPageImageObject;
 use crate::pdf::document::page::object::path::PdfPagePathObject;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
@@ -28,7 +29,7 @@ use crate::pdf::document::page::object::text::PdfPageTextObject;
 use crate::pdf::document::page::object::unsupported::PdfPageUnsupportedObject;
 use crate::pdf::document::page::object::x_object_form::PdfPageXObjectFormObject;
 use crate::pdf::document::page::objects::PdfPageObjects;
-use crate::pdf::document::page::PdfPageObjectOwnership;
+use crate::pdf::document::page::{PdfPage, PdfPageObjectOwnership};
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
@@ -37,9 +38,6 @@ use crate::pdf::rect::PdfRect;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
-
-#[cfg(doc)]
-use crate::pdf::document::page::PdfPage;
 
 /// The type of a single renderable [PdfPageObject].
 ///
@@ -732,10 +730,27 @@ pub trait PdfPageObjectCommon<'a> {
     /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
     /// original object will not be transferred to the copy.
     ///
-    /// The returned page object will be detached from any existing `PdfPage`. Its lifetime
+    /// The returned page object will be detached from any existing [PdfPage]. Its lifetime
     /// will be bound to the lifetime of the given destination [PdfDocument].
     fn try_copy<'b>(&self, document: &'b PdfDocument<'b>)
         -> Result<PdfPageObject<'b>, PdfiumError>;
+
+    /// Moves the ownership of this [PdfPageObject] to the given [PdfPage], regenerating
+    /// page content as necessary.
+    ///
+    /// An error will be returned if the destination page is in a different [PdfDocument]
+    /// than this object. Pdfium Pdfium only supports safely moving objects within the
+    /// same document, not across documents.
+    fn move_to_page(&mut self, page: &mut PdfPage) -> Result<(), PdfiumError>;
+
+    /// Moves the ownership of this [PdfPageObject] to the given [PdfPageAnnotation],
+    /// regenerating page content as necessary.
+    ///
+    /// An error will be returned if the destination annotation is in a different [PdfDocument]
+    /// than this object. Pdfium Pdfium only supports safely moving objects within the
+    /// same document, not across documents.
+    fn move_to_annotation(&mut self, annotation: &mut PdfPageAnnotation)
+        -> Result<(), PdfiumError>;
 }
 
 // Blanket implementation for all PdfPageObject types.
@@ -1020,6 +1035,35 @@ where
         document: &'b PdfDocument<'b>,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
         self.try_copy_impl(document.handle(), document.bindings())
+    }
+
+    fn move_to_page(&mut self, page: &mut PdfPage) -> Result<(), PdfiumError> {
+        match self.ownership() {
+            PdfPageObjectOwnership::Page(_) => self.remove_object_from_page()?,
+            PdfPageObjectOwnership::AttachedAnnotation(_)
+            | PdfPageObjectOwnership::UnattachedAnnotation(_) => {
+                self.remove_object_from_annotation()?
+            }
+            _ => {}
+        }
+
+        self.add_object_to_page(page.objects())
+    }
+
+    fn move_to_annotation(
+        &mut self,
+        annotation: &mut PdfPageAnnotation,
+    ) -> Result<(), PdfiumError> {
+        match self.ownership() {
+            PdfPageObjectOwnership::Page(_) => self.remove_object_from_page()?,
+            PdfPageObjectOwnership::AttachedAnnotation(_)
+            | PdfPageObjectOwnership::UnattachedAnnotation(_) => {
+                self.remove_object_from_annotation()?
+            }
+            _ => {}
+        }
+
+        self.add_object_to_annotation(annotation.objects())
     }
 }
 

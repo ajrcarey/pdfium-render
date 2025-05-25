@@ -1,5 +1,5 @@
 //! Defines the [PdfPageObjectsCommon] trait, providing functionality common to all
-//! containers of multiple `PdfPageObject` objects.
+//! containers of multiple [PdfPageObject] objects.
 
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
@@ -11,7 +11,6 @@ use crate::pdf::document::page::object::x_object_form::PdfPageXObjectFormObject;
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
 use crate::pdf::document::page::PdfPageObjectOwnership;
-use crate::pdf::document::PdfDocument;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use std::ops::{Range, RangeInclusive};
@@ -26,7 +25,11 @@ use image_024::DynamicImage;
 use image_023::{DynamicImage, GenericImageView};
 
 #[cfg(doc)]
-use crate::pdf::document::page::PdfPageObjects;
+use {
+    crate::pdf::document::page::PdfPage,
+    crate::pdf::document::page::PdfPageContentRegenerationStrategy,
+    crate::pdf::document::page::PdfPageObjects,
+};
 
 /// The zero-based index of a single [PdfPageObject] inside its containing [PdfPageObjects] collection.
 pub type PdfPageObjectIndex = usize;
@@ -106,19 +109,19 @@ pub trait PdfPageObjectsCommon<'a> {
     }
 
     /// Adds the given [PdfPageObject] to this page objects collection. The object's
-    /// memory ownership will be transferred to the `PdfPage` containing this page objects
+    /// memory ownership will be transferred to the [PdfPage] containing this page objects
     /// collection, and the updated page object will be returned.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn add_object(&mut self, object: PdfPageObject<'a>) -> Result<PdfPageObject<'a>, PdfiumError>;
 
     /// Adds the given [PdfPageTextObject] to this page objects collection,
     /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     #[inline]
     fn add_text_object(
@@ -132,8 +135,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// from the given arguments and adds it to this page objects collection,
     /// returning the text object wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn create_text_object(
         &mut self,
@@ -147,8 +150,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// Adds the given [PdfPagePathObject] to this page objects collection,
     /// returning the path object wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     #[inline]
     fn add_path_object(
@@ -176,8 +179,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// stroke settings applied. The new path object will be added to this page objects collection
     /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn create_path_object_line(
         &mut self,
@@ -189,25 +192,12 @@ pub trait PdfPageObjectsCommon<'a> {
         stroke_width: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError>;
 
-    /// Creates a new [PdfPageXObjectFormObject] from the source document's page at the given page
-    /// index. The new XObject form object will be added to this page objects collection and then
-    /// returned, wrapped inside a generic [PdfPageObject] wrapper.
-    ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
-    /// will be triggered on the page.
-    fn create_x_object_form_object(
-        &mut self,
-        src_doc: &PdfDocument,
-        src_page_index: i32,
-    ) -> Result<PdfPageObject<'a>, PdfiumError>;
-
     /// Creates a new [PdfPagePathObject] for the given cubic Bézier curve, with the given
     /// stroke settings applied. The new path object will be added to this page objects collection
     /// and then returned, wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     #[allow(clippy::too_many_arguments)]
     fn create_path_object_bezier(
@@ -230,8 +220,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// this page objects collection and then returned, wrapped inside a generic
     /// [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn create_path_object_rect(
         &mut self,
@@ -247,8 +237,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// will be added to this page objects collection and then returned, wrapped inside a generic
     /// [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn create_path_object_circle(
         &mut self,
@@ -264,8 +254,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// stroked. The new path object will be added to this page objects collection and then
     /// returned, wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn create_path_object_circle_at(
         &mut self,
@@ -283,8 +273,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// will be added to this page objects collection and then returned, wrapped inside a generic
     /// [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn create_path_object_ellipse(
         &mut self,
@@ -300,8 +290,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// stroked. The new path object will be added to this page objects collection and then
     /// returned, wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     #[allow(clippy::too_many_arguments)]
     fn create_path_object_ellipse_at(
@@ -318,8 +308,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// Adds the given [PdfPageImageObject] to this page objects collection,
     /// returning the image object wrapped inside a generic [PdfPageObject] wrapper.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     #[inline]
     fn add_image_object(
@@ -337,8 +327,8 @@ pub trait PdfPageObjectsCommon<'a> {
     /// If provided, the given width and/or height will be applied to the newly created object to
     /// scale its size.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then the content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     ///
     /// This function is only available when this crate's `image` feature is enabled.
@@ -353,13 +343,13 @@ pub trait PdfPageObjectsCommon<'a> {
     ) -> Result<PdfPageObject<'a>, PdfiumError>;
 
     /// Removes the given [PdfPageObject] from this page objects collection. The object's
-    /// memory ownership will be removed from the `PdfPage` containing this page objects
+    /// memory ownership will be removed from the [PdfPage] containing this page objects
     /// collection, and the updated page object will be returned. It can be added back to a
     /// page objects collection or dropped, at which point the memory owned by the object will
     /// be freed.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn remove_object(
         &mut self,
@@ -367,13 +357,13 @@ pub trait PdfPageObjectsCommon<'a> {
     ) -> Result<PdfPageObject<'a>, PdfiumError>;
 
     /// Removes the [PdfPageObject] at the given index from this page objects collection.
-    /// The object's memory ownership will be removed from the `PdfPage` containing this page objects
+    /// The object's memory ownership will be removed from the [PdfPage] containing this page objects
     /// collection, and the updated page object will be returned. It can be added back into a
     /// page objects collection or discarded, at which point the memory owned by the object will
     /// be freed.
     ///
-    /// If the containing `PdfPage` has a content regeneration strategy of
-    /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
     /// will be triggered on the page.
     fn remove_object_at_index(
         &mut self,
@@ -465,42 +455,6 @@ where
         )?;
 
         self.add_path_object(object)
-    }
-
-    #[inline]
-    fn create_x_object_form_object(
-        &mut self,
-        src_doc: &PdfDocument,
-        src_page_index: i32,
-    ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        let document_handle = match self.ownership() {
-            PdfPageObjectOwnership::Page(ownership) => Some(ownership.document_handle()),
-            PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
-                Some(ownership.document_handle())
-            }
-            PdfPageObjectOwnership::UnattachedAnnotation(ownership) => {
-                Some(ownership.document_handle())
-            }
-            _ => None,
-        };
-
-        if let Some(document_handle) = document_handle {
-            let xobject_handle = self.bindings().FPDF_NewXObjectFromPage(
-                document_handle,
-                src_doc.handle(),
-                src_page_index,
-            );
-            let form_handle = self
-                .bindings()
-                .FPDF_NewFormObjectFromXObject(xobject_handle);
-            let object =
-                PdfPageXObjectFormObject::from_pdfium(form_handle, self.ownership().clone(), self.bindings());
-            let ret = self.add_x_object_form_object(object);
-            self.bindings().FPDF_CloseXObject(xobject_handle);
-            ret
-        } else {
-            Err(PdfiumError::OwnershipNotAttachedToPage)
-        }
     }
 
     #[inline]

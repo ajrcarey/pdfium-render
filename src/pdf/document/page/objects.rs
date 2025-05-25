@@ -1,5 +1,5 @@
 //! Defines the [PdfPageObjects] struct, exposing functionality related to the
-//! page objects contained within a single `PdfPage`.
+//! page objects contained within a single [PdfPage].
 
 pub mod common;
 pub(crate) mod private; // Keep private so that the PdfPageObjectsPrivate trait is not exposed.
@@ -10,14 +10,20 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::object::group::PdfPageGroupObject;
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
+use crate::pdf::document::page::object::x_object_form::PdfPageXObjectFormObject;
 use crate::pdf::document::page::object::PdfPageObject;
 use crate::pdf::document::page::objects::common::{
     PdfPageObjectIndex, PdfPageObjectsCommon, PdfPageObjectsIterator,
 };
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdf::document::page::PdfPageIndexCache;
+use crate::pdf::document::PdfDocument;
 use std::os::raw::c_int;
 
-/// The page objects contained within a single `PdfPage`.
+#[cfg(doc)]
+use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+
+/// The page objects contained within a single [PdfPage].
 ///
 /// Content on a page is structured as a stream of [PdfPageObject] objects of different types:
 /// text objects, image objects, path objects, and so on.
@@ -25,7 +31,7 @@ use std::os::raw::c_int;
 /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
 /// Pdfium does not currently support or recognize the External Object ("XObject") page object type
 /// supported by Adobe Acrobat and Foxit's commercial PDF SDK. In these cases, Pdfium will return
-/// `PdfPageObjectType::Unsupported`.
+/// [PdfPageObjectType::Unsupported].
 pub struct PdfPageObjects<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
@@ -81,6 +87,39 @@ impl<'a> PdfPageObjects<'a> {
     #[inline]
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
         PdfPageGroupObject::from_pdfium(self.document_handle(), self.page_handle(), self.bindings())
+    }
+
+    /// Creates a new [PdfPageXObjectFormObject] object from the page objects on this [PdfPage].
+    /// The newly created object will be configured for use in the given destination [PdfDocument].
+    pub fn create_x_object_form_object(
+        &self,
+        destination: &mut PdfDocument<'a>,
+    ) -> Result<PdfPageXObjectFormObject<'a>, PdfiumError> {
+        let page_index =
+            PdfPageIndexCache::get_index_for_page(self.document_handle(), self.page_handle());
+
+        match page_index {
+            Some(page_index) => {
+                let x_object = self.bindings().FPDF_NewXObjectFromPage(
+                    destination.handle(),
+                    self.document_handle(),
+                    page_index as c_int,
+                );
+
+                let object_handle = self.bindings().FPDF_NewFormObjectFromXObject(x_object);
+
+                let object = PdfPageXObjectFormObject::from_pdfium(
+                    object_handle,
+                    self.ownership().clone(),
+                    self.bindings(),
+                );
+
+                self.bindings().FPDF_CloseXObject(x_object);
+
+                Ok(object)
+            }
+            None => Err(PdfiumError::SourcePageIndexNotInCache),
+        }
     }
 }
 

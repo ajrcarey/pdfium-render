@@ -11,7 +11,10 @@ use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivat
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_ulong;
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::XObjectForm`. The page object contains a
+#[cfg(doc)]
+use crate::pdf::document::page::object::PdfPageObjectType;
+
+/// A single [PdfPageObject] of type [PdfPageObjectType::XObjectForm]. The page object contains a
 /// content stream that itself may consist of multiple other page objects. When this page object
 /// is rendered, it renders all its constituent page objects, effectively serving as a template or
 /// stamping object.
@@ -179,8 +182,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         PdfPageObjectsIterator::new(self)
     }
 
-    // The child objects collection is read-only, so add_object_impl() and remove_object_impl()
-    // are necessarily incomplete.
+    // The child objects collection is read-only.
 
     fn add_object_impl(
         &mut self,

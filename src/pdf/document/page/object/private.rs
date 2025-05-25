@@ -73,6 +73,20 @@ pub(crate) mod internal {
                         self.bindings()
                             .FPDFPage_RemoveObject(ownership.page_handle(), self.object_handle()),
                     ) {
+                        match PdfPageIndexCache::get_content_regeneration_strategy_for_page(
+                            ownership.document_handle(),
+                            ownership.page_handle(),
+                        ) {
+                            Some(PdfPageContentRegenerationStrategy::AutomaticOnEveryChange)
+                            | None => {
+                                PdfPage::regenerate_content_immut_for_handle(
+                                    ownership.page_handle(),
+                                    self.bindings(),
+                                )?;
+                            }
+                            _ => {}
+                        }
+
                         self.set_ownership(PdfPageObjectOwnership::unowned());
                         self.regenerate_content_after_mutation()
                     } else {
@@ -147,6 +161,22 @@ pub(crate) mod internal {
                             self.bindings()
                                 .FPDFAnnot_RemoveObject(ownership.annotation_handle(), index),
                         ) {
+                            match PdfPageIndexCache::get_content_regeneration_strategy_for_page(
+                                ownership.document_handle(),
+                                ownership.page_handle(),
+                            ) {
+                                Some(
+                                    PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+                                )
+                                | None => {
+                                    PdfPage::regenerate_content_immut_for_handle(
+                                        ownership.page_handle(),
+                                        self.bindings(),
+                                    )?;
+                                }
+                                _ => {}
+                            }
+
                             self.set_ownership(PdfPageObjectOwnership::unowned());
                             self.regenerate_content_after_mutation()
                         } else {
