@@ -6,6 +6,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
 use crate::pdf::color::PdfColor;
+use crate::pdf::document::page::annotation::PdfPageAnnotation;
 use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::page::object::path::PdfPathFillMode;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
@@ -25,6 +26,7 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::Pdfium;
+use crate::prelude::PdfPageXObjectFormObject;
 use std::collections::HashMap;
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
@@ -169,6 +171,11 @@ impl<'a> PdfPageGroupObject<'a> {
                 // But in practice, as per https://github.com/ajrcarey/pdfium-render/issues/18,
                 // transferring memory ownership of a page object from one page to another
                 // generally segfaults Pdfium. Instead, return an error.
+                // TODO: AJRC - 26/5/25 - this may not be the case where the pages are in the
+                // same document. Refer to https://github.com/ajrcarey/pdfium-render/issues/18
+                // and test. We may be able to relax this restriction. It would be necessary
+                // to rethink the ownership hierarchy of the group, since it would no longer
+                // necessarily be fixed to a single page.
 
                 return Err(PdfiumError::OwnershipAlreadyAttachedToDifferentPage);
             } else {
@@ -330,7 +337,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
     /// Retains only the [PdfPageObject] objects in this group specified by the given predicate function.
     ///
-    /// Unretained objects are only removed from this group. They remain on the source [PdfPage] that
+    /// Non-retained objects are only removed from this group. They remain on the source [PdfPage] that
     /// currently contains them.
     pub fn retain<F>(&mut self, f: F)
     where
@@ -365,21 +372,35 @@ impl<'a> PdfPageGroupObject<'a> {
         });
     }
 
+    #[inline]
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function is no longer relevant, as the PdfPageGroupObject::copy_to_page() function can copy all object types."
+    )]
     /// Retains only the [PdfPageObject] objects in this group that can be copied.
     ///
     /// Objects that cannot be copied are only removed from this group. They remain on the source
     /// [PdfPage] that currently contains them.
-    #[inline]
     pub fn retain_if_copyable(&mut self) {
+        #[allow(deprecated)]
         self.retain(|object| object.is_copyable());
     }
 
-    /// Returns `true` if all the [PdfPageObject] objects in this group can be copied.
     #[inline]
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function is no longer relevant, as the PdfPageGroupObject::copy_to_page() function can copy all object types."
+    )]
+    /// Returns `true` if all the [PdfPageObject] objects in this group can be copied.
     pub fn is_copyable(&self) -> bool {
+        #[allow(deprecated)]
         self.iter().all(|object| object.is_copyable())
     }
 
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function is no longer relevant, as the PdfPageGroupObject::copy_to_page() function can copy all object types."
+    )]
     /// Attempts to copy all the [PdfPageObject] objects in this group, placing the copied objects
     /// onto the given existing destination [PdfPage].
     ///
@@ -395,6 +416,7 @@ impl<'a> PdfPageGroupObject<'a> {
         &self,
         destination: &mut PdfPage<'b>,
     ) -> Result<PdfPageGroupObject<'b>, PdfiumError> {
+        #[allow(deprecated)]
         if !self.is_copyable() {
             return Err(PdfiumError::GroupContainsNonCopyablePageObjects);
         }
@@ -413,6 +435,146 @@ impl<'a> PdfPageGroupObject<'a> {
         Ok(group)
     }
 
+    /// Moves the ownership of all the [PdfPageObject] objects in this group to the given
+    /// [PdfPage], consuming the group. Page content will be regenerated as necessary.
+    ///
+    /// An error will be returned if the destination page is in a different [PdfDocument]
+    /// than the source objects. Pdfium only supports safely moving objects within the
+    /// same document, not across documents.
+    pub fn move_to_page(mut self, page: &mut PdfPage) -> Result<(), PdfiumError> {
+        self.apply_to_each(|object| object.move_to_page(page))?;
+        self.object_handles.clear();
+        Ok(())
+    }
+
+    /// Moves the ownership of all the [PdfPageObject] objects in this group to the given
+    /// [PdfPageAnnotation], consuming the group. Page content will be regenerated as necessary.
+    ///
+    /// An error will be returned if the destination annotation is in a different [PdfDocument]
+    /// than the source objects. Pdfium only supports safely moving objects within the
+    /// same document, not across documents.
+    pub fn move_to_annotation(
+        mut self,
+        annotation: &mut PdfPageAnnotation,
+    ) -> Result<(), PdfiumError> {
+        self.apply_to_each(|object| object.move_to_annotation(annotation))?;
+        self.object_handles.clear();
+        Ok(())
+    }
+
+    /// Copies all the [PdfPageObject] objects in this group into a new [PdfPageXObjectFormObject],
+    /// then adds the new form object to the page objects collection of the given [PdfPage],
+    /// returning the new form object.
+    pub fn copy_to_page(
+        &mut self,
+        page: &mut PdfPage<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        // We can use the PdfPageXObjectForm object to effect a group copy. Since the
+        // PdfPageXObjectForm can only create a form from an entire page, we must first
+        // prepare a page containing just the items in this group. Once we have prepared
+        // that page, then we can create the form object, and from there we can copy the
+        // form object onto a new page.
+
+        let src_doc_handle = self.document_handle();
+        let src_page_handle = self.page_handle();
+
+        // First, create a new temporary page in the source document...
+
+        let tmp_page_index = self.bindings().FPDF_GetPageCount(src_doc_handle);
+
+        let tmp_page = self.bindings().FPDFPage_New(
+            src_doc_handle,
+            tmp_page_index,
+            page.width().value as f64,
+            page.height().value as f64,
+        );
+
+        PdfPageIndexCache::cache_props_for_page(
+            src_doc_handle,
+            tmp_page,
+            tmp_page_index as u16,
+            PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+        );
+
+        // ... move the objects in this group across to the temporary page...
+
+        self.apply_to_each(|object| {
+            match object.ownership() {
+                PdfPageObjectOwnership::Page(_) => object.remove_object_from_page()?,
+                PdfPageObjectOwnership::AttachedAnnotation(_)
+                | PdfPageObjectOwnership::UnattachedAnnotation(_) => {
+                    object.remove_object_from_annotation()?
+                }
+                _ => {}
+            }
+
+            object.add_object_to_page_handle(src_doc_handle, tmp_page)?;
+
+            Ok(())
+        })?;
+        PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
+        PdfPage::regenerate_content_immut_for_handle(tmp_page, self.bindings())?;
+
+        // ... create the form object from the temporary page...
+
+        let x_object = self.bindings().FPDF_NewXObjectFromPage(
+            page.document_handle(),
+            src_doc_handle,
+            tmp_page_index,
+        );
+
+        let object_handle = self.bindings().FPDF_NewFormObjectFromXObject(x_object);
+        if object_handle.is_null() {
+            return Err(PdfiumError::PdfiumLibraryInternalError(
+                crate::error::PdfiumInternalError::Unknown,
+            ));
+        }
+
+        let mut object = PdfPageXObjectFormObject::from_pdfium(
+            object_handle,
+            PdfPageObjectOwnership::Unowned,
+            self.bindings(),
+        );
+        
+        self.bindings().FPDF_CloseXObject(x_object);
+        
+        // ... move objects on the temporary page back to their original locations...
+
+        self.apply_to_each(|object| {
+            match object.ownership() {
+                PdfPageObjectOwnership::Page(ownership) => {
+                    if ownership.page_handle() != src_page_handle {
+                        object.remove_object_from_page()?
+                    }
+                }
+                PdfPageObjectOwnership::AttachedAnnotation(_)
+                | PdfPageObjectOwnership::UnattachedAnnotation(_) => {
+                    object.remove_object_from_annotation()?
+                }
+                _ => {}
+            }
+            object.add_object_to_page_handle(src_doc_handle, src_page_handle)?;
+
+            Ok(())
+        })?;
+        PdfPage::regenerate_content_immut_for_handle(tmp_page, self.bindings())?;
+        PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
+
+        PdfPageIndexCache::remove_index_for_page(src_doc_handle, tmp_page);
+        self.bindings().FPDFPage_Delete(src_doc_handle, tmp_page_index);
+
+        // ... and, finally, place the form object on the destination page.
+
+        object.move_to_page(page)?;
+
+        Ok(PdfPageObject::XObjectForm(object))
+    }
+
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function has been retired in favour of the PdfPageGroupObject::copy_to_page() function."
+    )]
+    #[inline]
     /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
     /// objects in this group into a new page at the start of the given destination [PdfDocument]
     /// then removing all objects from the new page _not_ in this group.
@@ -427,14 +589,19 @@ impl<'a> PdfPageGroupObject<'a> {
     ///
     /// The new page will have the same size and bounding box configuration as the page containing
     /// the objects in this group.
-    #[inline]
     pub fn copy_onto_new_page_at_start(
         &self,
         destination: &PdfDocument,
     ) -> Result<(), PdfiumError> {
+        #[allow(deprecated)]
         self.copy_onto_new_page_at_index(0, destination)
     }
 
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function has been retired in favour of the PdfPageGroupObject::copy_to_page() function."
+    )]
+    #[inline]
     /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
     /// objects in this group into a new page at the end of the given destination [PdfDocument]
     /// then removing all objects from the new page _not_ in this group.
@@ -449,11 +616,15 @@ impl<'a> PdfPageGroupObject<'a> {
     ///
     /// The new page will have the same size and bounding box configuration as the page containing
     /// the objects in this group.
-    #[inline]
     pub fn copy_onto_new_page_at_end(&self, destination: &PdfDocument) -> Result<(), PdfiumError> {
+        #[allow(deprecated)]
         self.copy_onto_new_page_at_index(destination.pages().len(), destination)
     }
 
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function has been retired in favour of the PdfPageGroupObject::copy_to_page() function."
+    )]
     /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
     /// objects in this group into a new page in the given destination [PdfDocument] at the given
     /// page index, then removing all objects from the new page _not_ in this group.
@@ -483,7 +654,7 @@ impl<'a> PdfPageGroupObject<'a> {
         // First, we create a new in-memory document and import the source page for this
         // page object group into that new document.
 
-        let cache = Pdfium::pdfium_document_handle_to_result(
+        let temp = Pdfium::pdfium_document_handle_to_result(
             self.bindings.FPDF_CreateNewDocument(),
             self.bindings,
         )?;
@@ -494,7 +665,7 @@ impl<'a> PdfPageGroupObject<'a> {
             PdfPages::copy_page_range_between_documents(
                 self.document_handle,
                 source_page_index..=source_page_index,
-                cache.handle(),
+                temp.handle(),
                 0,
                 self.bindings,
             )?;
@@ -528,8 +699,7 @@ impl<'a> PdfPageGroupObject<'a> {
         // We now have a map of objects that should be removed from the in-memory page; after
         // we remove them, only the copies of the objects in this group will remain on the page.
 
-        cache
-            .pages()
+        temp.pages()
             .get(0)?
             .objects()
             .create_group(|object| {
@@ -545,7 +715,7 @@ impl<'a> PdfPageGroupObject<'a> {
         // we now copy the page back into the given destination.
 
         PdfPages::copy_page_range_between_documents(
-            cache.handle(),
+            temp.handle(),
             0..=0,
             destination.handle(),
             index,
@@ -709,9 +879,9 @@ impl<'a> PdfPageGroupObject<'a> {
 
     /// Applies the given closure to each [PdfPageObject] in this group.
     #[inline]
-    pub(crate) fn apply_to_each<F, T>(&mut self, f: F) -> Result<(), PdfiumError>
+    pub(crate) fn apply_to_each<F, T>(&mut self, mut f: F) -> Result<(), PdfiumError>
     where
-        F: Fn(&mut PdfPageObject<'a>) -> Result<T, PdfiumError>,
+        F: FnMut(&mut PdfPageObject<'a>) -> Result<T, PdfiumError>,
     {
         let mut error = None;
 

@@ -13,6 +13,7 @@ pub(crate) mod internal {
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
+    use crate::pdf::document::page::object::group::PdfPageGroupObject;
     use crate::pdf::document::page::object::{
         PdfPageObject, PdfPageObjectCommon, PdfPageObjectOwnership, PdfPageObjectType,
     };
@@ -400,6 +401,42 @@ pub(crate) mod internal {
             document_handle: FPDF_DOCUMENT,
             bindings: &'b dyn PdfiumLibraryBindings,
         ) -> Result<PdfPageObject<'b>, PdfiumError>;
+
+        /// Copies this [PdfPageObject] object into a new [PdfPageXObjectFormObject], then adds
+        /// the new form object to the page objects collection of the given [PdfPage],
+        /// returning the new form object.
+        fn copy_to_page_impl<'b>(
+            &mut self,
+            page: &mut PdfPage<'b>,
+        ) -> Result<PdfPageObject<'b>, PdfiumError> {
+            let mut object = PdfPageObject::from_pdfium(
+                self.object_handle(),
+                self.ownership().clone(),
+                page.bindings(),
+            );
+
+            let (document_handle, page_handle) = match object.ownership() {
+                PdfPageObjectOwnership::Page(ownership) => (
+                    Some(ownership.document_handle()),
+                    Some(ownership.page_handle()),
+                ),
+                PdfPageObjectOwnership::AttachedAnnotation(ownership) => (
+                    Some(ownership.document_handle()),
+                    Some(ownership.page_handle()),
+                ),
+                _ => (None, None),
+            };
+
+            if let (Some(document_handle), Some(page_handle)) = (document_handle, page_handle) {
+                let mut group =
+                    PdfPageGroupObject::from_pdfium(document_handle, page_handle, page.bindings());
+
+                group.push(&mut object)?;
+                group.copy_to_page(page)
+            } else {
+                Err(PdfiumError::OwnershipNotAttachedToPage)
+            }
+        }
     }
 }
 

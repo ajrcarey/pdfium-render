@@ -89,12 +89,12 @@ impl<'a> PdfPageObjects<'a> {
         PdfPageGroupObject::from_pdfium(self.document_handle(), self.page_handle(), self.bindings())
     }
 
-    /// Creates a new [PdfPageXObjectFormObject] object from the page objects on this [PdfPage].
-    /// The newly created object will be configured for use in the given destination [PdfDocument].
-    pub fn create_x_object_form_object(
+    /// Creates a new [PdfPageXObjectFormObject] object from the page objects on this [PdfPage],
+    /// ready to use in the given destination [PdfDocument].
+    pub fn copy_into_x_object_form_object(
         &self,
         destination: &mut PdfDocument<'a>,
-    ) -> Result<PdfPageXObjectFormObject<'a>, PdfiumError> {
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let page_index =
             PdfPageIndexCache::get_index_for_page(self.document_handle(), self.page_handle());
 
@@ -107,6 +107,11 @@ impl<'a> PdfPageObjects<'a> {
                 );
 
                 let object_handle = self.bindings().FPDF_NewFormObjectFromXObject(x_object);
+                if object_handle.is_null() {
+                    return Err(PdfiumError::PdfiumLibraryInternalError(
+                        crate::error::PdfiumInternalError::Unknown,
+                    ));
+                }
 
                 let object = PdfPageXObjectFormObject::from_pdfium(
                     object_handle,
@@ -116,7 +121,7 @@ impl<'a> PdfPageObjects<'a> {
 
                 self.bindings().FPDF_CloseXObject(x_object);
 
-                Ok(object)
+                Ok(PdfPageObject::XObjectForm(object))
             }
             None => Err(PdfiumError::SourcePageIndexNotInCache),
         }

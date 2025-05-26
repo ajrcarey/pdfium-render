@@ -1,5 +1,5 @@
 //! Defines the [PdfPage] struct, exposing functionality related to a single page in a
-//! `PdfPages` collection.
+//! [PdfPages] collection.
 
 pub mod annotation;
 pub mod annotations;
@@ -47,7 +47,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 use std::os::raw::{c_double, c_int};
 
 #[cfg(doc)]
-use crate::pdf::document::PdfDocument;
+use crate::pdf::document::{PdfDocument, PdfPages};
 
 /// The orientation of a [PdfPage].
 #[derive(Copy, Clone, Debug, PartialEq)]

@@ -691,6 +691,10 @@ pub trait PdfPageObjectCommon<'a> {
     /// dash patterns, but will not save dash patterns to PDF files.
     fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError>;
 
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function has been retired in favour of the PdfPageObject::copy_to_page() function."
+    )]
     /// Returns `true` if this [PdfPageObject] can be successfully copied by calling its
     /// `try_copy()` function.
     ///
@@ -711,6 +715,10 @@ pub trait PdfPageObjectCommon<'a> {
     /// original object will not be transferred to the copy.
     fn is_copyable(&self) -> bool;
 
+    #[deprecated(
+        since = "0.8.32",
+        note = "This function has been retired in favour of the PdfPageObject::copy_to_page() function."
+    )]
     /// Attempts to copy this [PdfPageObject] by creating a new page object and copying across
     /// all the properties of this [PdfPageObject] to the new page object.
     ///
@@ -735,11 +743,19 @@ pub trait PdfPageObjectCommon<'a> {
     fn try_copy<'b>(&self, document: &'b PdfDocument<'b>)
         -> Result<PdfPageObject<'b>, PdfiumError>;
 
+    /// Copies this [PdfPageObject] object into a new [PdfPageXObjectFormObject], then adds
+    /// the new form object to the page objects collection of the given [PdfPage],
+    /// returning the new form object.
+    fn copy_to_page<'b>(
+        &mut self,
+        page: &mut PdfPage<'b>,
+    ) -> Result<PdfPageObject<'b>, PdfiumError>;
+
     /// Moves the ownership of this [PdfPageObject] to the given [PdfPage], regenerating
     /// page content as necessary.
     ///
     /// An error will be returned if the destination page is in a different [PdfDocument]
-    /// than this object. Pdfium Pdfium only supports safely moving objects within the
+    /// than this object. Pdfium only supports safely moving objects within the
     /// same document, not across documents.
     fn move_to_page(&mut self, page: &mut PdfPage) -> Result<(), PdfiumError>;
 
@@ -747,7 +763,7 @@ pub trait PdfPageObjectCommon<'a> {
     /// regenerating page content as necessary.
     ///
     /// An error will be returned if the destination annotation is in a different [PdfDocument]
-    /// than this object. Pdfium Pdfium only supports safely moving objects within the
+    /// than this object. Pdfium only supports safely moving objects within the
     /// same document, not across documents.
     fn move_to_annotation(&mut self, annotation: &mut PdfPageAnnotation)
         -> Result<(), PdfiumError>;
@@ -1037,6 +1053,14 @@ where
         self.try_copy_impl(document.handle(), document.bindings())
     }
 
+    #[inline]
+    fn copy_to_page<'b>(
+        &mut self,
+        page: &mut PdfPage<'b>,
+    ) -> Result<PdfPageObject<'b>, PdfiumError> {
+        self.copy_to_page_impl(page)
+    }
+
     fn move_to_page(&mut self, page: &mut PdfPage) -> Result<(), PdfiumError> {
         match self.ownership() {
             PdfPageObjectOwnership::Page(_) => self.remove_object_from_page()?,
@@ -1124,6 +1148,14 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
         bindings: &'b dyn PdfiumLibraryBindings,
     ) -> Result<PdfPageObject<'b>, PdfiumError> {
         self.unwrap_as_trait().try_copy_impl(document, bindings)
+    }
+
+    #[inline]
+    fn copy_to_page_impl<'b>(
+        &mut self,
+        page: &mut PdfPage<'b>,
+    ) -> Result<PdfPageObject<'b>, PdfiumError> {
+        self.unwrap_as_trait_mut().copy_to_page_impl(page)
     }
 }
 
