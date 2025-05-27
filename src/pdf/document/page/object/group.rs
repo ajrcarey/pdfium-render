@@ -535,9 +535,9 @@ impl<'a> PdfPageGroupObject<'a> {
             PdfPageObjectOwnership::Unowned,
             self.bindings(),
         );
-        
+
         self.bindings().FPDF_CloseXObject(x_object);
-        
+
         // ... move objects on the temporary page back to their original locations...
 
         self.apply_to_each(|object| {
@@ -561,7 +561,8 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
 
         PdfPageIndexCache::remove_index_for_page(src_doc_handle, tmp_page);
-        self.bindings().FPDFPage_Delete(src_doc_handle, tmp_page_index);
+        self.bindings()
+            .FPDFPage_Delete(src_doc_handle, tmp_page_index);
 
         // ... and, finally, place the form object on the destination page.
 

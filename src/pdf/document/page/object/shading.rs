@@ -6,6 +6,9 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectOwnership};
+use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
+use crate::pdf::points::PdfPoints;
+use crate::{create_transform_getters, create_transform_setters};
 
 /// A single `PdfPageObject` of type `PdfPageObjectType::Shading`.
 pub struct PdfPageShadingObject<'a> {
@@ -26,6 +29,26 @@ impl<'a> PdfPageShadingObject<'a> {
             bindings,
         }
     }
+
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "this [PdfPageImageObject]",
+        "this [PdfPageImageObject].",
+        "this [PdfPageImageObject],"
+    );
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!(
+        "this [PdfPageImageObject]",
+        "this [PdfPageImageObject].",
+        "this [PdfPageImageObject],"
+    );
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageShadingObject<'a> {

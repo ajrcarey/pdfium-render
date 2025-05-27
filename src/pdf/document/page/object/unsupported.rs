@@ -7,6 +7,9 @@ use crate::error::PdfiumError;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::PdfPageObject;
 use crate::pdf::document::page::object::PdfPageObjectOwnership;
+use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
+use crate::pdf::points::PdfPoints;
+use crate::{create_transform_getters, create_transform_setters};
 
 /// A single `PdfPageObject` of any object type not supported by Pdfium.
 pub struct PdfPageUnsupportedObject<'a> {
@@ -27,6 +30,26 @@ impl<'a> PdfPageUnsupportedObject<'a> {
             bindings,
         }
     }
+
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "this [PdfPageImageObject]",
+        "this [PdfPageImageObject].",
+        "this [PdfPageImageObject],"
+    );
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!(
+        "this [PdfPageImageObject]",
+        "this [PdfPageImageObject].",
+        "this [PdfPageImageObject],"
+    );
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageUnsupportedObject<'a> {

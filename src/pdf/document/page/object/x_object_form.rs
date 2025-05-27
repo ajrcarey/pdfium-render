@@ -8,6 +8,9 @@ use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectOwnership};
 use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObjectsIterator};
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
+use crate::pdf::points::PdfPoints;
+use crate::{create_transform_getters, create_transform_setters};
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_ulong;
 
@@ -101,6 +104,26 @@ impl<'a> PdfPageXObjectFormObject<'a> {
     pub fn iter(&'a self) -> PdfPageObjectsIterator<'a> {
         self.iter_impl()
     }
+
+    create_transform_setters!(
+        &mut Self,
+        Result<(), PdfiumError>,
+        "this [PdfPageImageObject]",
+        "this [PdfPageImageObject].",
+        "this [PdfPageImageObject],"
+    );
+
+    // The transform_impl() function required by the create_transform_setters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
+
+    create_transform_getters!(
+        "this [PdfPageImageObject]",
+        "this [PdfPageImageObject].",
+        "this [PdfPageImageObject],"
+    );
+
+    // The get_matrix_impl() function required by the create_transform_getters!() macro
+    // is provided by the PdfPageObjectPrivate trait.
 }
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageXObjectFormObject<'a> {
