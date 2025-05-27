@@ -108,18 +108,18 @@ impl<'a> PdfPageXObjectFormObject<'a> {
     create_transform_setters!(
         &mut Self,
         Result<(), PdfiumError>,
-        "this [PdfPageImageObject]",
-        "this [PdfPageImageObject].",
-        "this [PdfPageImageObject],"
+        "this [PdfPageXObjectFormObject]",
+        "this [PdfPageXObjectFormObject].",
+        "this [PdfPageXObjectFormObject],"
     );
 
     // The transform_impl() function required by the create_transform_setters!() macro
     // is provided by the PdfPageObjectPrivate trait.
 
     create_transform_getters!(
-        "this [PdfPageImageObject]",
-        "this [PdfPageImageObject].",
-        "this [PdfPageImageObject],"
+        "this [PdfPageXObjectFormObject]",
+        "this [PdfPageXObjectFormObject].",
+        "this [PdfPageXObjectFormObject],"
     );
 
     // The get_matrix_impl() function required by the create_transform_getters!() macro

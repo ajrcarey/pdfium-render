@@ -20,14 +20,17 @@ use crate::pdf::document::page::{
 };
 use crate::pdf::document::pages::{PdfPageIndex, PdfPages};
 use crate::pdf::document::PdfDocument;
-use crate::pdf::matrix::PdfMatrix;
-use crate::pdf::matrix::PdfMatrixValue;
+use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::Pdfium;
 use crate::prelude::PdfPageXObjectFormObject;
 use std::collections::HashMap;
+use std::ffi::c_double;
+
+#[cfg(doc)]
+use crate::pdf::document::page::object::text::PdfPageTextObject;
 
 /// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
 /// The page objects contained in the group can be manipulated and transformed together
@@ -469,11 +472,39 @@ impl<'a> PdfPageGroupObject<'a> {
         &mut self,
         page: &mut PdfPage<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        // We can use the PdfPageXObjectForm object to effect a group copy. Since the
-        // PdfPageXObjectForm can only create a form from an entire page, we must first
-        // prepare a page containing just the items in this group. Once we have prepared
-        // that page, then we can create the form object, and from there we can copy the
-        // form object onto a new page.
+        let mut object = self.copy_into_x_object_form_object_from_handles(
+            page.document_handle(),
+            page.width(),
+            page.height(),
+        )?;
+
+        object.move_to_page(page)?;
+
+        Ok(object)
+    }
+
+    /// Creates a new [PdfPageXObjectFormObject] object from the page objects in this group,
+    /// ready to use in the given destination [PdfDocument].
+    pub fn copy_into_x_object_form_object(
+        &mut self,
+        document: &mut PdfDocument<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        self.copy_into_x_object_form_object_from_handles(
+            document.handle(),
+            PdfPoints::new(self.bindings().FPDF_GetPageWidthF(self.page_handle())),
+            PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.page_handle())),
+        )
+    }
+
+    pub(crate) fn copy_into_x_object_form_object_from_handles(
+        &mut self,
+        document_handle: FPDF_DOCUMENT,
+        destination_page_width: PdfPoints,
+        destination_page_height: PdfPoints,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        // Since the PdfPageXObjectForm can only create a form from an entire page, we first
+        // prepare a temporary page containing just the items in this group. Once we have
+        // prepared that page, then we can create the form object.
 
         let src_doc_handle = self.document_handle();
         let src_page_handle = self.page_handle();
@@ -485,8 +516,8 @@ impl<'a> PdfPageGroupObject<'a> {
         let tmp_page = self.bindings().FPDFPage_New(
             src_doc_handle,
             tmp_page_index,
-            page.width().value as f64,
-            page.height().value as f64,
+            destination_page_width.value as c_double,
+            destination_page_height.value as c_double,
         );
 
         PdfPageIndexCache::cache_props_for_page(
@@ -518,7 +549,7 @@ impl<'a> PdfPageGroupObject<'a> {
         // ... create the form object from the temporary page...
 
         let x_object = self.bindings().FPDF_NewXObjectFromPage(
-            page.document_handle(),
+            document_handle,
             src_doc_handle,
             tmp_page_index,
         );
@@ -530,7 +561,7 @@ impl<'a> PdfPageGroupObject<'a> {
             ));
         }
 
-        let mut object = PdfPageXObjectFormObject::from_pdfium(
+        let object = PdfPageXObjectFormObject::from_pdfium(
             object_handle,
             PdfPageObjectOwnership::Unowned,
             self.bindings(),
@@ -538,7 +569,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
         self.bindings().FPDF_CloseXObject(x_object);
 
-        // ... move objects on the temporary page back to their original locations...
+        // ... and move objects on the temporary page back to their original locations.
 
         self.apply_to_each(|object| {
             match object.ownership() {
@@ -563,10 +594,6 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPageIndexCache::remove_index_for_page(src_doc_handle, tmp_page);
         self.bindings()
             .FPDFPage_Delete(src_doc_handle, tmp_page_index);
-
-        // ... and, finally, place the form object on the destination page.
-
-        object.move_to_page(page)?;
 
         Ok(PdfPageObject::XObjectForm(object))
     }
@@ -732,13 +759,13 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPageGroupObjectIterator::new(self)
     }
 
-    /// Returns the text contained within all `PdfPageTextObject` objects in this group.
+    /// Returns the text contained within all [PdfPageTextObject] objects in this group.
     #[inline]
     pub fn text(&self) -> String {
         self.text_separated("")
     }
 
-    /// Returns the text contained within all `PdfPageTextObject` objects in this group,
+    /// Returns the text contained within all [PdfPageTextObject] objects in this group,
     /// separating each text fragment with the given separator.
     pub fn text_separated(&self, separator: &str) -> String {
         let mut strings = Vec::with_capacity(self.len());
