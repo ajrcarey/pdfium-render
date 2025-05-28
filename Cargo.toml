@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.8.31"
+version = "0.8.32"
 edition = "2018"
 rust-version = "1.61"
 publish = true

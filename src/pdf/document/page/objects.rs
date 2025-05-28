@@ -115,7 +115,7 @@ impl<'a> PdfPageObjects<'a> {
 
                 let object = PdfPageXObjectFormObject::from_pdfium(
                     object_handle,
-                    self.ownership().clone(),
+                    PdfPageObjectOwnership::Unowned,
                     self.bindings(),
                 );
 
