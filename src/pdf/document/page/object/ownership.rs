@@ -1,5 +1,17 @@
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
 
+/// The parent ownership hierarchy for a page object bound to a specific [PdfDocument].
+#[derive(Copy, Clone)]
+pub(crate) struct PdfPageObjectOwnedByDocument {
+    document_handle: FPDF_DOCUMENT,
+}
+
+impl PdfPageObjectOwnedByDocument {
+    pub fn document_handle(&self) -> FPDF_DOCUMENT {
+        self.document_handle
+    }
+}
+
 /// The parent ownership hierarchy for a page object contained by a [PdfPage].
 #[derive(Copy, Clone)]
 pub(crate) struct PdfPageObjectOwnedByPage {
@@ -17,7 +29,7 @@ impl PdfPageObjectOwnedByPage {
     }
 }
 
-/// The parent ownership hierarchy for a page object contained by a [PdfAnnotation]
+/// The parent ownership hierarchy for a page object contained by a [PdfPageAnnotation]
 /// that is itself attached to a [PdfPage].
 #[derive(Copy, Clone)]
 pub(crate) struct PdfPageObjectOwnedByAttachedAnnotation {
@@ -40,8 +52,8 @@ impl PdfPageObjectOwnedByAttachedAnnotation {
     }
 }
 
-/// The parent ownership hierarchy for a page object contained by a [PdfAnnotation]
-/// where the [PdfAnnotation] is not currently attached to any [PdfPage].
+/// The parent ownership hierarchy for a page object contained by a [PdfPageAnnotation]
+/// where the [PdfPageAnnotation] is not currently attached to any [PdfPage].
 #[derive(Copy, Clone)]
 pub(crate) struct PdfPageObjectOwnedByUnattachedAnnotation {
     document_handle: FPDF_DOCUMENT,
@@ -63,14 +75,18 @@ pub(crate) enum PdfPageObjectOwnership {
     /// The object is not currently owned by an object container.
     Unowned,
 
+    /// The object is not currently owned by an object container, but is bound to a specific [PdfDocument].
+    /// It can only be attached to a [PdfPage] or [PdfPageAnnotation] within that document.
+    Document(PdfPageObjectOwnedByDocument),
+
     /// The object is currently owned by an object container attached to a [PdfPage].
     Page(PdfPageObjectOwnedByPage),
 
-    /// The object is currently owned by an object container attached to a [PdfAnnotation]
+    /// The object is currently owned by an object container attached to a [PdfPageAnnotation]
     /// that is itself attached to a [PdfPage].
     AttachedAnnotation(PdfPageObjectOwnedByAttachedAnnotation),
 
-    /// The object is currently owned by an object container attached to a [PdfAnnotation]
+    /// The object is currently owned by an object container attached to a [PdfPageAnnotation]
     /// that is not currently attached to any [PdfPage].
     UnattachedAnnotation(PdfPageObjectOwnedByUnattachedAnnotation),
 }
@@ -78,6 +94,10 @@ pub(crate) enum PdfPageObjectOwnership {
 impl PdfPageObjectOwnership {
     pub fn unowned() -> Self {
         Self::Unowned
+    }
+
+    pub fn owned_by_document(document_handle: FPDF_DOCUMENT) -> Self {
+        Self::Document(PdfPageObjectOwnedByDocument { document_handle })
     }
 
     pub fn owned_by_page(document_handle: FPDF_DOCUMENT, page_handle: FPDF_PAGE) -> Self {

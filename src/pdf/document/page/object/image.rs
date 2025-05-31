@@ -52,7 +52,11 @@ use {
 };
 
 #[cfg(doc)]
-use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+use {
+    crate::pdf::document::page::object::PdfPageObjectType,
+    crate::pdf::document::page::objects::common::PdfPageObjectsCommon,
+    crate::pdf::document::page::PdfPage,
+};
 
 /// A single [PdfPageObject] of type [PdfPageObjectType::Image]. The page object defines a
 /// single image, where the image data is sourced from a [PdfBitmap] buffer.
@@ -64,13 +68,13 @@ use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document
 /// fall out of scope.
 ///
 /// The simplest way to create a page image object that is immediately attached to a page
-/// is to call the `PdfPageObjects::create_image_object()` function.
+/// is to call the [PdfPageObjectsCommon::create_image_object()] function.
 ///
 /// Creating a detached page image object offers more scope for customization, but you must
 /// add the object to a containing [PdfPage] manually. To create a detached page image object,
 /// use the [PdfPageImageObject::new()] or [PdfPageImageObject::new_from_jpeg_file()] functions.
 /// The detached page image object can later be attached to a page by using the
-/// `PdfPageObjects::add_image_object()` function.
+/// [PdfPageObjectsCommon::add_image_object()] function.
 pub struct PdfPageImageObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,
@@ -93,7 +97,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Creates a new [PdfPageImageObject] from the given [DynamicImage]. The returned
     /// page object will not be rendered until it is added to a [PdfPage] using the
-    /// `PdfPageObjects::add_image_object()` function.
+    /// [PdfPageObjectsCommon::add_image_object()] function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
     /// Use the [PdfPageImageObject::scale()] function to apply a horizontal and vertical scale
@@ -131,7 +135,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Creates a new [PdfPageImageObject] containing JPEG image data loaded from the
     /// given file path. The returned page object will not be rendered until it is added to
-    /// a [PdfPage] using the `PdfPageObjects::add_image_object()` function.
+    /// a [PdfPage] using the [PdfPageObjectsCommon::add_image_object()] function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
     /// Use the [PdfPageImageObject::scale] function to apply a horizontal and vertical scale
@@ -154,7 +158,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// as well as the [Read] trait.
     ///
     /// The returned page object will not be rendered until it is added to
-    /// a [PdfPage] using the `PdfPageObjects::add_image_object()` function.
+    /// a [PdfPage] using the [PdfPageObjectsCommon::add_image_object()] function.
     ///
     /// The returned page object will have its width and height both set to 1.0 points.
     /// Use the [PdfPageImageObject::scale] function to apply a horizontal and vertical scale
@@ -188,8 +192,8 @@ impl<'a> PdfPageImageObject<'a> {
         }
     }
 
-    // Takes a raw FPDF_DOCUMENT handle to avoid cascading lifetime problems
-    // associated with borrowing PdfDocument<'a>.
+    // Takes a raw `FPDF_DOCUMENT` handle to avoid cascading lifetime problems
+    // associated with borrowing `PdfDocument<'a>`.
     pub(crate) fn new_from_handle(
         document: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
@@ -212,7 +216,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled
     /// horizontally to match the given width; its height will be adjusted to maintain the aspect
     /// ratio of the given image. The returned page object will not be rendered until it is
-    /// added to a [PdfPage] using the `PdfPageObjects::add_image_object()` function.
+    /// added to a [PdfPage] using the [PdfPageObjectsCommon::add_image_object()] function.
     ///
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image_api")]
@@ -231,7 +235,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled
     /// vertically to match the given height; its width will be adjusted to maintain the aspect
     /// ratio of the given image. The returned page object will not be rendered until it is
-    /// added to a [PdfPage] using the `PdfPageObjects::add_image_object()` function.
+    /// added to a [PdfPage] using the [PdfPageObjectsCommon::add_image_object()] function.
     ///
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image_api")]
@@ -249,7 +253,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Creates a new [PdfPageImageObject] from the given arguments. The page object will be scaled to
     /// match the given width and height. The returned page object will not be rendered until it is
-    /// added to a [PdfPage] using the `PdfPageObjects::add_image_object()` function.
+    /// added to a [PdfPage] using the [PdfPageObjectsCommon::add_image_object()] function.
     ///
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image_api")]

@@ -18,6 +18,7 @@ pub(crate) mod internal {
     use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
     use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
     use crate::pdf::document::page::annotation::{PdfPageAnnotationCommon, PdfPageAnnotationType};
+    use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
     use crate::pdf::points::PdfPoints;
     use crate::pdf::rect::PdfRect;
     use crate::utils::dates::date_time_to_pdf_string;
@@ -27,12 +28,15 @@ pub(crate) mod internal {
     use std::os::raw::c_uint;
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
-    pub trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
+    pub(crate) trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
         /// Returns the internal `FPDF_ANNOTATION` handle for this [PdfPageAnnotation].
         fn handle(&self) -> FPDF_ANNOTATION;
 
         /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotation].
         fn bindings(&self) -> &dyn PdfiumLibraryBindings;
+
+        /// Returns the ownership hierarchy for this [PdfPageAnnotation].
+        fn ownership(&self) -> &PdfPageObjectOwnership;
 
         /// Returns the [PdfPageAnnotationType] of this [PdfPageAnnotation].
         fn get_annotation_type(&self) -> PdfPageAnnotationType {
@@ -230,7 +234,7 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageAnnotationCommon::set_creator()].
         #[inline]
-        fn set_creator(&mut self, creator: &str) -> Result<(), PdfiumError> {
+        fn set_creator_impl(&mut self, creator: &str) -> Result<(), PdfiumError> {
             self.set_string_value("T", creator)
         }
 
@@ -443,21 +447,7 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::objects()].
         fn objects_impl(&self) -> &PdfPageAnnotationObjects;
 
-        /// Internal mutable accessor available for all [PdfPageAnnotation] types.
-        /// This differs from the public interface, which makes mutable page object access
-        /// available only for the ink annotation and stamp annotation types, since those
-        /// are the only annotation types for which Pdfium itself supports adding or removing
-        /// page objects.
-        fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a>;
-
         /// Internal implementation of [PdfPageAnnotationCommon::attachment_points()].
         fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints;
-
-        /// Internal mutable accessor available for all [PdfPageAnnotation] types.
-        /// This differs from the public interface, which makes mutable attachment point access
-        /// available only for markup annotations and the Link annotation, since those
-        /// are the only annotation types for which Pdfium itself supports adding or removing
-        /// attachment points.
-        fn attachment_points_mut_impl(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a>;
     }
 }

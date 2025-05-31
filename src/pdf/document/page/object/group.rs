@@ -487,10 +487,10 @@ impl<'a> PdfPageGroupObject<'a> {
     /// ready to use in the given destination [PdfDocument].
     pub fn copy_into_x_object_form_object(
         &mut self,
-        document: &mut PdfDocument<'a>,
+        destination: &mut PdfDocument<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         self.copy_into_x_object_form_object_from_handles(
-            document.handle(),
+            destination.handle(),
             PdfPoints::new(self.bindings().FPDF_GetPageWidthF(self.page_handle())),
             PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.page_handle())),
         )
@@ -498,7 +498,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
     pub(crate) fn copy_into_x_object_form_object_from_handles(
         &mut self,
-        document_handle: FPDF_DOCUMENT,
+        destination_document_handle: FPDF_DOCUMENT,
         destination_page_width: PdfPoints,
         destination_page_height: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
@@ -549,7 +549,7 @@ impl<'a> PdfPageGroupObject<'a> {
         // ... create the form object from the temporary page...
 
         let x_object = self.bindings().FPDF_NewXObjectFromPage(
-            document_handle,
+            destination_document_handle,
             src_doc_handle,
             tmp_page_index,
         );
@@ -563,7 +563,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
         let object = PdfPageXObjectFormObject::from_pdfium(
             object_handle,
-            PdfPageObjectOwnership::Unowned,
+            PdfPageObjectOwnership::owned_by_document(destination_document_handle),
             self.bindings(),
         );
 

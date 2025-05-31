@@ -15,7 +15,11 @@ use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_ulong;
 
 #[cfg(doc)]
-use crate::pdf::document::page::object::PdfPageObjectType;
+use {
+    crate::pdf::document::page::object::group::PdfPageGroupObject,
+    crate::pdf::document::page::object::PdfPageObjectType,
+    crate::pdf::document::page::objects::PdfPageObjects,
+};
 
 /// A single [PdfPageObject] of type [PdfPageObjectType::XObjectForm]. The page object contains a
 /// content stream that itself may consist of multiple other page objects. When this page object
@@ -24,6 +28,10 @@ use crate::pdf::document::page::object::PdfPageObjectType;
 ///
 /// Despite the page object name including "form", this page object type bears no relation
 /// to an interactive form containing form fields.
+///
+/// New [PdfPageObjectType::XObjectForm] objects can be created by calling either the
+/// [PdfPageObjects::copy_into_x_object_form_object()] function or the
+/// [PdfPageGroupObject::copy_into_x_object_form_object()] function.
 pub struct PdfPageXObjectFormObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,

@@ -1,13 +1,18 @@
 //! Defines the [PdfPagePopupAnnotation] struct, exposing functionality related to a single
-//! user annotation of type `PdfPageAnnotationType::Popup`.
+//! user annotation of type [PdfPageAnnotationType::Popup].
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
 use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
+use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
+use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
 
-/// A single `PdfPageAnnotation` of type `PdfPageAnnotationType::Popup`.
+#[cfg(doc)]
+use crate::pdf::document::page::annotation::{PdfPageAnnotation, PdfPageAnnotationType};
+
+/// A single [PdfPageAnnotation] of type [PdfPageAnnotationType::Popup].
 pub struct PdfPagePopupAnnotation<'a> {
     handle: FPDF_ANNOTATION,
     objects: PdfPageAnnotationObjects<'a>,
@@ -46,6 +51,11 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPagePopupAnnotation<'a> {
     }
 
     #[inline]
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        &self.objects_impl().ownership()
+    }
+
+    #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
     }
@@ -56,17 +66,7 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPagePopupAnnotation<'a> {
     }
 
     #[inline]
-    fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a> {
-        &mut self.objects
-    }
-
-    #[inline]
     fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
         &self.attachment_points
-    }
-
-    #[inline]
-    fn attachment_points_mut_impl(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a> {
-        &mut self.attachment_points
     }
 }

@@ -7,8 +7,13 @@ use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotation
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
 use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
 use crate::pdf::document::page::annotation::PdfPageAnnotationType;
+use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
+use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
 
-/// A single `PdfPageAnnotation` of any annotation type not supported by Pdfium.
+#[cfg(doc)]
+use crate::pdf::document::page::annotation::PdfPageAnnotation;
+
+/// A single [PdfPageAnnotation] of any annotation type not supported by Pdfium.
 pub struct PdfPageUnsupportedAnnotation<'a> {
     annotation_type: PdfPageAnnotationType,
     handle: FPDF_ANNOTATION,
@@ -57,6 +62,11 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnsupportedAnnotation<'a> {
     }
 
     #[inline]
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        &self.objects_impl().ownership()
+    }
+
+    #[inline]
     fn bindings(&self) -> &dyn PdfiumLibraryBindings {
         self.bindings
     }
@@ -67,17 +77,7 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnsupportedAnnotation<'a> {
     }
 
     #[inline]
-    fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a> {
-        &mut self.objects
-    }
-
-    #[inline]
     fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
         &self.attachment_points
-    }
-
-    #[inline]
-    fn attachment_points_mut_impl(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a> {
-        &mut self.attachment_points
     }
 }

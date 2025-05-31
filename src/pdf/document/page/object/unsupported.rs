@@ -1,5 +1,5 @@
 //! Defines the [PdfPageUnsupportedObject] struct, exposing functionality related to a single
-//! page object of type `PdfPageObjectType::Unsupported`.
+//! page object of type [PdfPageObjectType::Unsupported].
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
@@ -11,7 +11,10 @@ use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use crate::{create_transform_getters, create_transform_setters};
 
-/// A single `PdfPageObject` of any object type not supported by Pdfium.
+#[cfg(doc)]
+use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+
+/// A single [PdfPageObject] of any object type not supported by Pdfium.
 pub struct PdfPageUnsupportedObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,

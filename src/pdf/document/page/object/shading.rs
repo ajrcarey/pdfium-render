@@ -1,5 +1,5 @@
 //! Defines the [PdfPageShadingObject] struct, exposing functionality related to a single
-//! page object of type `PdfPageObjectType::Shading`.
+//! page object of type [PdfPageObjectType::Shading].
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGEOBJECT};
 use crate::bindings::PdfiumLibraryBindings;
@@ -10,7 +10,10 @@ use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use crate::{create_transform_getters, create_transform_setters};
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::Shading`.
+#[cfg(doc)]
+use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+
+/// A single [PdfPageObject] of type [PdfPageObjectType::Shading].
 pub struct PdfPageShadingObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,

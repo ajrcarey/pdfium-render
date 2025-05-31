@@ -42,7 +42,11 @@ use {
 };
 
 #[cfg(doc)]
-use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+use {
+    crate::pdf::document::page::object::PdfPageObjectType,
+    crate::pdf::document::page::objects::common::PdfPageObjectsCommon,
+    crate::pdf::document::page::PdfPage,
+};
 
 /// The text rendering modes supported by the PDF standard, as listed in table 5.3
 /// on page 402 in the PDF Reference manual version 1.7.
@@ -149,12 +153,12 @@ impl PdfPageTextRenderMode {
 /// fall out of scope.
 ///
 /// The simplest way to create a page text object that is immediately attached to a page
-/// is to call the `PdfPageObjects::create_text_object()` function.
+/// is to call the [PdfPageObjectsCommon::create_text_object()] function.
 ///
 /// Creating a detached page text object offers more scope for customization, but you must
 /// add the object to a containing [PdfPage] manually. To create a detached page text object,
 /// use the [PdfPageTextObject::new()] function. The detached page text object can later
-/// be attached to a page by using the `PdfPageObjects::add_text_object()` function.
+/// be attached to a page by using the [PdfPageObjectsCommon::add_text_object()] function.
 pub struct PdfPageTextObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,
@@ -177,7 +181,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Creates a new [PdfPageTextObject] from the given arguments. The returned page object
     /// will not be rendered until it is added to a [PdfPage] using the
-    /// `PdfPageObjects::add_text_object()` function.
+    /// [PdfPageObjectsCommon::add_text_object()] function.
     ///
     /// A single space will be used if the given text is empty, in order to avoid
     /// unexpected behaviour from Pdfium when dealing with empty strings.
@@ -201,8 +205,8 @@ impl<'a> PdfPageTextObject<'a> {
         )
     }
 
-    // Take raw FPDF_DOCUMENT and FPDF_FONT handles to avoid cascading lifetime problems
-    // associated with borrowing PdfDocument<'a> and/or PdfFont<'a>.
+    // Take raw `FPDF_DOCUMENT` and `FPDF_FONT` handles to avoid cascading lifetime problems
+    // associated with borrowing `PdfDocument<'a>` and/or `PdfFont<'a>`.
     pub(crate) fn new_from_handles(
         document: FPDF_DOCUMENT,
         text: impl ToString,

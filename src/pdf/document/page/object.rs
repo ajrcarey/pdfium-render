@@ -39,6 +39,8 @@ use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
+use super::annotation::private::internal::PdfPageAnnotationPrivate;
+
 /// The type of a single renderable [PdfPageObject].
 ///
 /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
@@ -1063,12 +1065,17 @@ where
 
     fn move_to_page(&mut self, page: &mut PdfPage) -> Result<(), PdfiumError> {
         match self.ownership() {
+            PdfPageObjectOwnership::Document(ownership) => {
+                if ownership.document_handle() != page.document_handle() {
+                    return Err(PdfiumError::CannotMoveObjectAcrossDocuments);
+                }
+            }
             PdfPageObjectOwnership::Page(_) => self.remove_object_from_page()?,
             PdfPageObjectOwnership::AttachedAnnotation(_)
             | PdfPageObjectOwnership::UnattachedAnnotation(_) => {
                 self.remove_object_from_annotation()?
             }
-            _ => {}
+            PdfPageObjectOwnership::Unowned => {}
         }
 
         self.add_object_to_page(page.objects())
@@ -1079,12 +1086,31 @@ where
         annotation: &mut PdfPageAnnotation,
     ) -> Result<(), PdfiumError> {
         match self.ownership() {
+            PdfPageObjectOwnership::Document(ownership) => {
+                let annotation_document_handle = match annotation.ownership() {
+                    PdfPageObjectOwnership::Document(ownership) => {
+                        Some(ownership.document_handle())
+                    }
+                    PdfPageObjectOwnership::Page(ownership) => Some(ownership.document_handle()),
+                    PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
+                        Some(ownership.document_handle())
+                    }
+                    PdfPageObjectOwnership::UnattachedAnnotation(_)
+                    | PdfPageObjectOwnership::Unowned => None,
+                };
+
+                if let Some(annotation_document_handle) = annotation_document_handle {
+                    if ownership.document_handle() != annotation_document_handle {
+                        return Err(PdfiumError::CannotMoveObjectAcrossDocuments);
+                    }
+                }
+            }
             PdfPageObjectOwnership::Page(_) => self.remove_object_from_page()?,
             PdfPageObjectOwnership::AttachedAnnotation(_)
             | PdfPageObjectOwnership::UnattachedAnnotation(_) => {
                 self.remove_object_from_annotation()?
             }
-            _ => {}
+            PdfPageObjectOwnership::Unowned => {}
         }
 
         self.add_object_to_annotation(annotation.objects())

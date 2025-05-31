@@ -22,6 +22,13 @@ use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
+#[cfg(doc)]
+use {
+    crate::pdf::document::page::object::PdfPageObjectType,
+    crate::pdf::document::page::objects::common::PdfPageObjectsCommon,
+    crate::pdf::document::page::PdfPage,
+};
+
 /// Sets the method used to determine the path region to fill.
 ///
 /// The default fill mode used by `pdfium-render` when creating new [PdfPagePathObject]
@@ -96,7 +103,7 @@ impl Default for PdfPathFillMode {
     }
 }
 
-/// A single `PdfPageObject` of type `PdfPageObjectType::Path`. The page object defines a path.
+/// A single [PdfPageObject] of type [PdfPageObjectType::Path]. The page object defines a path.
 ///
 /// Paths define shapes, trajectories, and regions of all sorts. They are used to draw
 /// lines, define the shapes of filled areas, and specify boundaries for clipping other
@@ -142,7 +149,7 @@ impl Default for PdfPathFillMode {
 ///   centered at a particular origin point with given horizontal and vertical radii.
 ///
 /// The detached path object can later be attached to a page by calling the
-/// `PdfPageObjects::add_path_object()` function.
+/// [PdfPageObjectsCommon::add_path_object()] function.
 pub struct PdfPagePathObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,
@@ -168,8 +175,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with the given initial position and with the given fill and stroke
     /// settings applied. Both the stroke color and the stroke width must be provided for the
@@ -279,8 +286,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with a line with the given start and end coordinates,
     /// and with the given stroke settings applied.
@@ -335,8 +342,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with a cubic Bézier curve with the given start, end,
     /// and control point coordinates, and with the given stroke settings applied.
@@ -393,8 +400,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with a path for the given rectangle, with the given
     /// fill and stroke settings applied. Both the stroke color and the stroke width must be
@@ -439,8 +446,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with a circle that fills the given rectangle, with the given
     /// fill and stroke settings applied. Both the stroke color and the stroke width must be
@@ -487,8 +494,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with a circle centered at the given coordinates, with the
     /// given radius, and with the given fill and stroke settings applied. Both the stroke color
@@ -537,8 +544,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with an ellipse that fills the given rectangle, with the given
     /// fill and stroke settings applied. Both the stroke color and the stroke width must be
@@ -587,8 +594,8 @@ impl<'a> PdfPagePathObject<'a> {
     }
 
     /// Creates a new [PdfPagePathObject] from the given arguments. The returned page object
-    /// will not be rendered until it is added to a `PdfPage` using the
-    /// `PdfPageObjects::add_path_object()` function.
+    /// will not be rendered until it is added to a [PdfPage] using the
+    /// [PdfPageObjectsCommon::add_path_object()] function.
     ///
     /// The new path will be created with an ellipse centered at the given coordinates, with the
     /// given horizontal and vertical radii, and with the given fill and stroke settings applied.

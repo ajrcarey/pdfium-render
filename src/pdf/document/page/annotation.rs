@@ -53,6 +53,7 @@ use crate::pdf::document::page::annotation::unsupported::PdfPageUnsupportedAnnot
 use crate::pdf::document::page::annotation::widget::PdfPageWidgetAnnotation;
 use crate::pdf::document::page::annotation::xfa_widget::PdfPageXfaWidgetAnnotation;
 use crate::pdf::document::page::field::PdfFormField;
+use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use chrono::prelude::*;
@@ -388,6 +389,7 @@ impl<'a> PdfPageAnnotation<'a> {
     }
 
     #[inline]
+    #[allow(dead_code)] // We don't currently use unwrap_as_trait_mut(), but we expect to in the future
     pub(crate) fn unwrap_as_trait_mut(&mut self) -> &mut dyn PdfPageAnnotationPrivate<'a> {
         match self {
             PdfPageAnnotation::Circle(annotation) => annotation,
@@ -928,6 +930,9 @@ pub trait PdfPageAnnotationCommon {
     /// Returns the name of the creator of this [PdfPageAnnotation], if any.
     fn creator(&self) -> Option<String>;
 
+    /// Sets the name of the creator of this [PdfPageAnnotation].
+    fn set_creator(&mut self, creator: &str) -> Result<(), PdfiumError>;
+
     /// Returns the date and time when this [PdfPageAnnotation] was originally created, if any.
     fn creation_date(&self) -> Option<String>;
 
@@ -1045,6 +1050,11 @@ where
     }
 
     #[inline]
+    fn set_creator(&mut self, creator: &str) -> Result<(), PdfiumError> {
+        self.set_creator_impl(creator)
+    }
+
+    #[inline]
     fn creation_date(&self) -> Option<String> {
         self.creation_date_impl()
     }
@@ -1107,23 +1117,18 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageAnnotation<'a> {
     }
 
     #[inline]
+    fn ownership(&self) -> &PdfPageObjectOwnership {
+        self.unwrap_as_trait().ownership()
+    }
+
+    #[inline]
     fn objects_impl(&self) -> &PdfPageAnnotationObjects {
         self.unwrap_as_trait().objects_impl()
     }
 
     #[inline]
-    fn objects_mut_impl(&mut self) -> &mut PdfPageAnnotationObjects<'a> {
-        self.unwrap_as_trait_mut().objects_mut_impl()
-    }
-
-    #[inline]
     fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
         self.unwrap_as_trait().attachment_points_impl()
-    }
-
-    #[inline]
-    fn attachment_points_mut_impl(&mut self) -> &mut PdfPageAnnotationAttachmentPoints<'a> {
-        self.unwrap_as_trait_mut().attachment_points_mut_impl()
     }
 }
 
