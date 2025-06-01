@@ -145,15 +145,14 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if index >= self.len() {
-            return Err(PdfiumError::PageObjectIndexOutOfBounds);
-        }
-
         let object_handle = self
             .bindings
             .FPDFPage_GetObject(self.page_handle, index as c_int);
 
         if object_handle.is_null() {
+            if index >= self.len() {
+                return Err(PdfiumError::PageObjectIndexOutOfBounds);
+            }
             Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
             ))
