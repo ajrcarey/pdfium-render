@@ -701,6 +701,8 @@ FPDF_EXPORT FPDF_PAGE FPDF_CALLCONV FPDF_LoadPage(FPDF_DOCUMENT document,
 // Return value:
 //          Page width (excluding non-displayable area) measured in points.
 //          One point is 1/72 inch (around 0.3528 mm).
+// Comments:
+//          Changing the rotation of |page| affects the return value.
 FPDF_EXPORT float FPDF_CALLCONV FPDF_GetPageWidthF(FPDF_PAGE page);
 
 // Function: FPDF_GetPageWidth
@@ -713,6 +715,8 @@ FPDF_EXPORT float FPDF_CALLCONV FPDF_GetPageWidthF(FPDF_PAGE page);
 // Note:
 //          Prefer FPDF_GetPageWidthF() above. This will be deprecated in the
 //          future.
+// Comments:
+//          Changing the rotation of |page| affects the return value.
 FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageWidth(FPDF_PAGE page);
 
 // Experimental API
@@ -723,6 +727,8 @@ FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageWidth(FPDF_PAGE page);
 // Return value:
 //          Page height (excluding non-displayable area) measured in points.
 //          One point is 1/72 inch (around 0.3528 mm)
+// Comments:
+//          Changing the rotation of |page| affects the return value.
 FPDF_EXPORT float FPDF_CALLCONV FPDF_GetPageHeightF(FPDF_PAGE page);
 
 // Function: FPDF_GetPageHeight
@@ -735,6 +741,8 @@ FPDF_EXPORT float FPDF_CALLCONV FPDF_GetPageHeightF(FPDF_PAGE page);
 // Note:
 //          Prefer FPDF_GetPageHeightF() above. This will be deprecated in the
 //          future.
+// Comments:
+//          Changing the rotation of |page| affects the return value.
 FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageHeight(FPDF_PAGE page);
 
 // Experimental API.

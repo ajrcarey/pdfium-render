@@ -270,7 +270,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_AddInstalledFont(void* mapper,
 // Function: FPDF_SetSystemFontInfo
 //          Set the system font info interface into PDFium
 // Parameters:
-//          pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure
+//          font_info       -   Pointer to a FPDF_SYSFONTINFO structure
 // Return Value:
 //          None
 // Comments:
@@ -281,7 +281,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_AddInstalledFont(void* mapper,
 //          Call this with NULL to tell PDFium to stop using a previously set
 //          |FPDF_SYSFONTINFO|.
 FPDF_EXPORT void FPDF_CALLCONV
-FPDF_SetSystemFontInfo(FPDF_SYSFONTINFO* pFontInfo);
+FPDF_SetSystemFontInfo(FPDF_SYSFONTINFO* font_info);
 
 // Function: FPDF_GetDefaultSystemFontInfo
 //          Get default system font info interface for current platform
@@ -301,14 +301,14 @@ FPDF_EXPORT FPDF_SYSFONTINFO* FPDF_CALLCONV FPDF_GetDefaultSystemFontInfo();
 // Function: FPDF_FreeDefaultSystemFontInfo
 //           Free a default system font info interface
 // Parameters:
-//           pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure
+//           font_info       -   Pointer to a FPDF_SYSFONTINFO structure
 // Return Value:
 //           None
 // Comments:
 //           This function should be called on the output from
 //           FPDF_GetDefaultSystemFontInfo() once it is no longer needed.
 FPDF_EXPORT void FPDF_CALLCONV
-FPDF_FreeDefaultSystemFontInfo(FPDF_SYSFONTINFO* pFontInfo);
+FPDF_FreeDefaultSystemFontInfo(FPDF_SYSFONTINFO* font_info);
 
 #ifdef __cplusplus
 }

@@ -895,19 +895,19 @@ unsafe extern "C" {
     pub fn FPDF_LoadPage(document: FPDF_DOCUMENT, page_index: ::std::os::raw::c_int) -> FPDF_PAGE;
 }
 unsafe extern "C" {
-    #[doc = " Experimental API\n Function: FPDF_GetPageWidthF\n          Get page width.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage().\n Return value:\n          Page width (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)."]
+    #[doc = " Experimental API\n Function: FPDF_GetPageWidthF\n          Get page width.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage().\n Return value:\n          Page width (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm).\n Comments:\n          Changing the rotation of |page| affects the return value."]
     pub fn FPDF_GetPageWidthF(page: FPDF_PAGE) -> f32;
 }
 unsafe extern "C" {
-    #[doc = " Function: FPDF_GetPageWidth\n          Get page width.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n Return value:\n          Page width (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm).\n Note:\n          Prefer FPDF_GetPageWidthF() above. This will be deprecated in the\n          future."]
+    #[doc = " Function: FPDF_GetPageWidth\n          Get page width.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n Return value:\n          Page width (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm).\n Note:\n          Prefer FPDF_GetPageWidthF() above. This will be deprecated in the\n          future.\n Comments:\n          Changing the rotation of |page| affects the return value."]
     pub fn FPDF_GetPageWidth(page: FPDF_PAGE) -> f64;
 }
 unsafe extern "C" {
-    #[doc = " Experimental API\n Function: FPDF_GetPageHeightF\n          Get page height.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage().\n Return value:\n          Page height (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)"]
+    #[doc = " Experimental API\n Function: FPDF_GetPageHeightF\n          Get page height.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage().\n Return value:\n          Page height (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)\n Comments:\n          Changing the rotation of |page| affects the return value."]
     pub fn FPDF_GetPageHeightF(page: FPDF_PAGE) -> f32;
 }
 unsafe extern "C" {
-    #[doc = " Function: FPDF_GetPageHeight\n          Get page height.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n Return value:\n          Page height (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)\n Note:\n          Prefer FPDF_GetPageHeightF() above. This will be deprecated in the\n          future."]
+    #[doc = " Function: FPDF_GetPageHeight\n          Get page height.\n Parameters:\n          page        -   Handle to the page. Returned by FPDF_LoadPage.\n Return value:\n          Page height (excluding non-displayable area) measured in points.\n          One point is 1/72 inch (around 0.3528 mm)\n Note:\n          Prefer FPDF_GetPageHeightF() above. This will be deprecated in the\n          future.\n Comments:\n          Changing the rotation of |page| affects the return value."]
     pub fn FPDF_GetPageHeight(page: FPDF_PAGE) -> f64;
 }
 unsafe extern "C" {
@@ -1604,6 +1604,14 @@ unsafe extern "C" {
         out_buflen: *mut ::std::os::raw::c_ulong,
     ) -> FPDF_BOOL;
 }
+unsafe extern "C" {
+    #[doc = " Experimental API.\n Get the MIME type (Subtype) of the embedded file |attachment|. |buffer| is\n only modified if |buflen| is longer than the length of the MIME type string.\n If the Subtype is not found or if there is no file stream, an empty string\n would be copied to |buffer| and the return value would be 2. On other errors,\n nothing would be added to |buffer| and the return value would be 0.\n\n   attachment - handle to an attachment.\n   buffer     - buffer for holding the MIME type string encoded in UTF-16LE.\n   buflen     - length of the buffer in bytes.\n\n Returns the length of the MIME type string in bytes."]
+    pub fn FPDFAttachment_GetSubtype(
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
 pub const FPDF_FILEIDTYPE_FILEIDTYPE_PERMANENT: FPDF_FILEIDTYPE = 0;
 pub const FPDF_FILEIDTYPE_FILEIDTYPE_CHANGING: FPDF_FILEIDTYPE = 1;
 #[doc = " The file identifier entry type. See section 14.4 \"File Identifiers\" of the\n ISO 32000-1:2008 spec."]
@@ -1989,6 +1997,14 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = " Insert |page_object| into |page|.\n\n   page        - handle to a page\n   page_object - handle to a page object. The |page_object| will be\n                 automatically freed."]
     pub fn FPDFPage_InsertObject(page: FPDF_PAGE, page_object: FPDF_PAGEOBJECT);
+}
+unsafe extern "C" {
+    #[doc = " Insert |page_object| into |page| at the specified |index|.\n\n   page        - handle to a page\n   page_object - handle to a page object as previously obtained by\n                 FPDFPageObj_CreateNew{Path|Rect}() or\n                 FPDFPageObj_New{Text|Image}Obj(). Ownership of the object\n                 is transferred back to PDFium.\n   index       - the index position to insert the object at. If index equals\n                 the current object count, the object will be appended to the\n                 end. If index is greater than the object count, the function\n                 will fail and return false.\n\n Returns true if successful."]
+    pub fn FPDFPage_InsertObjectAtIndex(
+        page: FPDF_PAGE,
+        page_object: FPDF_PAGEOBJECT,
+        index: usize,
+    ) -> FPDF_BOOL;
 }
 unsafe extern "C" {
     #[doc = " Experimental API.\n Remove |page_object| from |page|.\n\n   page        - handle to a page\n   page_object - handle to a page object to be removed.\n\n Returns TRUE on success.\n\n Ownership is transferred to the caller. Call FPDFPageObj_Destroy() to free\n it.\n Note that when removing a |page_object| of type FPDF_PAGEOBJ_TEXT, all\n FPDF_TEXTPAGE handles for |page| are no longer valid."]
@@ -2686,6 +2702,13 @@ unsafe extern "C" {
         form_object: FPDF_PAGEOBJECT,
         index: ::std::os::raw::c_ulong,
     ) -> FPDF_PAGEOBJECT;
+}
+unsafe extern "C" {
+    #[doc = " Experimental API.\n\n Remove |page_object| from |form_object|.\n\n   form_object - handle to a form object.\n   page_object - handle to a page object to be removed from the form.\n\n Returns TRUE on success.\n\n Ownership of the removed |page_object| is transferred to the caller.\n Call FPDFPageObj_Destroy() on the removed page_object to free it."]
+    pub fn FPDFFormObj_RemoveObject(
+        form_object: FPDF_PAGEOBJECT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL;
 }
 unsafe extern "C" {
     #[doc = " Get the character index in |text_page| internal character list.\n\n   text_page  - a text page information structure.\n   nTextIndex - index of the text returned from FPDFText_GetText().\n\n Returns the index of the character in internal character list. -1 for error."]
@@ -4352,16 +4375,16 @@ unsafe extern "C" {
     );
 }
 unsafe extern "C" {
-    #[doc = " Function: FPDF_SetSystemFontInfo\n          Set the system font info interface into PDFium\n Parameters:\n          pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n          None\n Comments:\n          Platform support implementation should implement required methods of\n          FFDF_SYSFONTINFO interface, then call this function during PDFium\n          initialization process.\n\n          Call this with NULL to tell PDFium to stop using a previously set\n          |FPDF_SYSFONTINFO|."]
-    pub fn FPDF_SetSystemFontInfo(pFontInfo: *mut FPDF_SYSFONTINFO);
+    #[doc = " Function: FPDF_SetSystemFontInfo\n          Set the system font info interface into PDFium\n Parameters:\n          font_info       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n          None\n Comments:\n          Platform support implementation should implement required methods of\n          FFDF_SYSFONTINFO interface, then call this function during PDFium\n          initialization process.\n\n          Call this with NULL to tell PDFium to stop using a previously set\n          |FPDF_SYSFONTINFO|."]
+    pub fn FPDF_SetSystemFontInfo(font_info: *mut FPDF_SYSFONTINFO);
 }
 unsafe extern "C" {
     #[doc = " Function: FPDF_GetDefaultSystemFontInfo\n          Get default system font info interface for current platform\n Parameters:\n          None\n Return Value:\n          Pointer to a FPDF_SYSFONTINFO structure describing the default\n          interface, or NULL if the platform doesn't have a default interface.\n          Application should call FPDF_FreeDefaultSystemFontInfo to free the\n          returned pointer.\n Comments:\n          For some platforms, PDFium implements a default version of system\n          font info interface. The default implementation can be passed to\n          FPDF_SetSystemFontInfo()."]
     pub fn FPDF_GetDefaultSystemFontInfo() -> *mut FPDF_SYSFONTINFO;
 }
 unsafe extern "C" {
-    #[doc = " Function: FPDF_FreeDefaultSystemFontInfo\n           Free a default system font info interface\n Parameters:\n           pFontInfo       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n           None\n Comments:\n           This function should be called on the output from\n           FPDF_GetDefaultSystemFontInfo() once it is no longer needed."]
-    pub fn FPDF_FreeDefaultSystemFontInfo(pFontInfo: *mut FPDF_SYSFONTINFO);
+    #[doc = " Function: FPDF_FreeDefaultSystemFontInfo\n           Free a default system font info interface\n Parameters:\n           font_info       -   Pointer to a FPDF_SYSFONTINFO structure\n Return Value:\n           None\n Comments:\n           This function should be called on the output from\n           FPDF_GetDefaultSystemFontInfo() once it is no longer needed."]
+    pub fn FPDF_FreeDefaultSystemFontInfo(font_info: *mut FPDF_SYSFONTINFO);
 }
 #[doc = " Interface for checking whether sections of the file are available."]
 #[repr(C)]
@@ -4727,6 +4750,14 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    #[doc = " Experimental API.\n Sets the form field flags for an interactive form annotation.\n\n   handle       -   the handle to the form fill module, returned by\n                    FPDFDOC_InitFormFillEnvironment().\n   annot        -   handle to an interactive form annotation.\n   flags        -   the form field flags to be set.\n\n Returns true if successful."]
+    pub fn FPDFAnnot_SetFormFieldFlags(
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        flags: ::std::os::raw::c_int,
+    ) -> FPDF_BOOL;
+}
+unsafe extern "C" {
     #[doc = " Experimental API.\n Retrieves an interactive form annotation whose rectangle contains a given\n point on a page. Must call FPDFPage_CloseAnnot() when the annotation returned\n is no longer needed.\n\n\n    hHandle     -   handle to the form fill module, returned by\n                    FPDFDOC_InitFormFillEnvironment().\n    page        -   handle to the page, returned by FPDF_LoadPage function.\n    point       -   position in PDF \"user space\".\n\n Returns the interactive form annotation whose rectangle contains the given\n coordinates on the page. If there is no such annotation, return NULL."]
     pub fn FPDFAnnot_GetFormFieldAtPoint(
         hHandle: FPDF_FORMHANDLE,
@@ -4799,6 +4830,16 @@ unsafe extern "C" {
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut f32,
+    ) -> FPDF_BOOL;
+}
+unsafe extern "C" {
+    #[doc = " Experimental API.\n Set the text color of an annotation.\n\n   handle   - handle to the form fill module, returned by\n              FPDFDOC_InitFormFillEnvironment.\n   annot    - handle to an annotation.\n   R        - the red component for the text color.\n   G        - the green component for the text color.\n   B        - the blue component for the text color.\n\n Returns true if successful.\n\n Currently supported subtypes: freetext.\n The range for the color components is 0 to 255."]
+    pub fn FPDFAnnot_SetFontColor(
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: ::std::os::raw::c_uint,
+        G: ::std::os::raw::c_uint,
+        B: ::std::os::raw::c_uint,
     ) -> FPDF_BOOL;
 }
 unsafe extern "C" {

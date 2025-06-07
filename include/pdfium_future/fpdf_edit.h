@@ -187,6 +187,24 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_SetRotation(FPDF_PAGE page, int rotate);
 FPDF_EXPORT void FPDF_CALLCONV
 FPDFPage_InsertObject(FPDF_PAGE page, FPDF_PAGEOBJECT page_object);
 
+// Insert |page_object| into |page| at the specified |index|.
+//
+//   page        - handle to a page
+//   page_object - handle to a page object as previously obtained by
+//                 FPDFPageObj_CreateNew{Path|Rect}() or
+//                 FPDFPageObj_New{Text|Image}Obj(). Ownership of the object
+//                 is transferred back to PDFium.
+//   index       - the index position to insert the object at. If index equals
+//                 the current object count, the object will be appended to the
+//                 end. If index is greater than the object count, the function
+//                 will fail and return false.
+//
+// Returns true if successful.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFPage_InsertObjectAtIndex(FPDF_PAGE page,
+                             FPDF_PAGEOBJECT page_object,
+                             size_t index);
+
 // Experimental API.
 // Remove |page_object| from |page|.
 //
@@ -1616,6 +1634,21 @@ FPDFFormObj_CountObjects(FPDF_PAGEOBJECT form_object);
 // Returns the handle to the page object, or NULL on error.
 FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV
 FPDFFormObj_GetObject(FPDF_PAGEOBJECT form_object, unsigned long index);
+
+// Experimental API.
+//
+// Remove |page_object| from |form_object|.
+//
+//   form_object - handle to a form object.
+//   page_object - handle to a page object to be removed from the form.
+//
+// Returns TRUE on success.
+//
+// Ownership of the removed |page_object| is transferred to the caller.
+// Call FPDFPageObj_Destroy() on the removed page_object to free it.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFFormObj_RemoveObject(FPDF_PAGEOBJECT form_object,
+                         FPDF_PAGEOBJECT page_object);
 
 #ifdef __cplusplus
 }  // extern "C"

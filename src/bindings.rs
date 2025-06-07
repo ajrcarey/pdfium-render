@@ -1129,7 +1129,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `src_doc`  - Document to read the viewer preferences from.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDF_CopyViewerPreferences(
         &self,
@@ -1143,6 +1143,8 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Returns the page width (excluding non-displayable area) measured in points.
     /// One point is 1/72 inch (around 0.3528 mm).
+    ///
+    /// Note that changing the rotation of the page affects the return value.
     #[allow(non_snake_case)]
     fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
 
@@ -1155,6 +1157,8 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Note: prefer the [PdfiumLibraryBindings::FPDF_GetPageWidthF] function above.
     /// This function will be deprecated in the future.
+    ///
+    /// Note that changing the rotation of the page affects the return value.
     #[deprecated(
         since = "0.8.25",
         note = "Prefer FPDF_GetPageWidthF() over FPDF_GetPageWidth(). FPDF_GetPageWidth() is deprecated and will likely be removed in a future version of Pdfium."
@@ -1168,6 +1172,8 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Returns the page height (excluding non-displayable area) measured in points.
     /// One point is 1/72 inch (around 0.3528 mm).
+    ///
+    /// Note that changing the rotation of the page affects the return value.
     #[allow(non_snake_case)]
     fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float;
 
@@ -1180,6 +1186,8 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Note: prefer the [PdfiumLibraryBindings::FPDF_GetPageHeightF] function above.
     /// This function will be deprecated in the future.
+    ///
+    /// Note that changing the rotation of the page affects the return value.
     #[deprecated(
         since = "0.8.25",
         note = "Prefer FPDF_GetPageHeightF() over FPDF_GetPageHeight(). FPDF_GetPageHeight() is deprecated and will likely be removed in a future version of Pdfium."
@@ -1740,7 +1748,7 @@ pub trait PdfiumLibraryBindings {
     ///                          minimum buffer size to contain the key. Not
     ///                          filled if `FALSE` is returned.
     ///
-    /// Returns `TRUE` if the operation was successful, `FALSE` otherwise.
+    /// Returns `true` if the operation was successful.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetName(
         &self,
@@ -1853,7 +1861,7 @@ pub trait PdfiumLibraryBindings {
     ///   `out_value`          - A pointer to variable that will receive the
     ///                          value. Not filled if `FALSE` is returned.
     ///
-    /// Returns `TRUE` if the name maps to a boolean value, `FALSE` otherwise.
+    /// Returns `true` if the name maps to a boolean value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
@@ -1882,7 +1890,7 @@ pub trait PdfiumLibraryBindings {
     ///   `out_value` - A pointer to variable that will receive the value. Not
     ///                 filled if false is returned.
     ///
-    /// Returns `TRUE` if the attribute maps to a boolean value, `FALSE` otherwise.
+    /// Returns `true` if the attribute maps to a boolean value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
@@ -1914,7 +1922,7 @@ pub trait PdfiumLibraryBindings {
     ///   `out_value`          - A pointer to variable that will receive the
     ///                          value. Not filled if `FALSE` is returned.
     ///
-    /// Returns `TRUE` if the name maps to a number value, `FALSE` otherwise.
+    /// Returns `true` if the name maps to a number value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
@@ -1943,7 +1951,7 @@ pub trait PdfiumLibraryBindings {
     ///   `out_value` - A pointer to variable that will receive the value. Not
     ///                 filled if false is returned.
     ///
-    /// Returns `TRUE` if the attribute maps to a number value, `FALSE` otherwise.
+    /// Returns `true` if the attribute maps to a number value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
@@ -1982,9 +1990,9 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `out_buflen`         - A pointer to variable that will receive the
     ///                          minimum buffer size to contain the key. Not
-    ///                          filled if `FALSE` is returned.
+    ///                          filled if `false` is returned.
     ///
-    /// Returns `TRUE` if the name maps to a string value, `FALSE` otherwise.
+    /// Returns `true` if the name maps to a string value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetStringValue(
         &self,
@@ -2020,10 +2028,10 @@ pub trait PdfiumLibraryBindings {
     ///   `buflen`     - The length of the buffer.
     ///
     ///   `out_buflen` - A pointer to variable that will receive the minimum
-    ///                  buffer size to contain the key. Not filled if `FALSE` is
+    ///                  buffer size to contain the key. Not filled if `false` is
     ///                  returned.
     ///
-    /// Returns `TRUE` if the attribute maps to a string value, `FALSE` otherwise.
+    /// Returns `true` if the attribute maps to a string value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetStringValue(
         &self,
@@ -2064,7 +2072,7 @@ pub trait PdfiumLibraryBindings {
     ///                          minimum buffer size to contain the key. Not
     ///                          filled if `FALSE` is returned.
     ///
-    /// Returns `TRUE` if the name maps to a string value, `FALSE` otherwise.
+    /// Returns `TRUE` if the name maps to a string value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
@@ -2098,9 +2106,9 @@ pub trait PdfiumLibraryBindings {
     ///   `buflen`     - The length of the buffer.
     ///
     ///   `out_buflen` - A pointer to variable that will receive the minimum buffer size
-    ///                  to contain the key. Not filled if `FALSE` is returned.
+    ///                  to contain the key. Not filled if `false` is returned.
     ///
-    /// Returns `TRUE` if the attribute maps to a string value, `FALSE` otherwise.
+    /// Returns `true` if the attribute maps to a string value.
     #[allow(non_snake_case)]
     fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
@@ -2240,7 +2248,7 @@ pub trait PdfiumLibraryBindings {
         feature = "pdfium_6084",
         feature = "pdfium_6043",
     ))]
-    /// Experimental API. Moves the given pages to a new index position.
+    /// Moves the given pages to a new index position.
     ///
     ///   `page_indices`     - the ordered list of pages to move. No duplicates allowed.
     ///
@@ -2303,7 +2311,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int);
 
-    /// Experimental API. Gets the bounding box of the page. This is the intersection between
+    /// Gets the bounding box of the page. This is the intersection between
     /// its media box and its crop box.
     ///
     ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -2315,7 +2323,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
-    /// Experimental API. Gets the size of the page at the given index.
+    /// Gets the size of the page at the given index.
     ///
     ///    `document`    -   Handle to document. Returned by [PdfiumLibraryBindings::FPDF_LoadDocument].
     ///
@@ -3768,8 +3776,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `end` - ending point
     ///
-    /// Returns `true` if the annotation is of type line and `start` and `end` are not
-    /// `NULL`, `false` otherwise.
+    /// Returns `true` if the annotation is of type line and `start` and `end` are not `NULL`.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetLine(
         &self,
@@ -3788,7 +3795,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `border_width`       - border width, in default user space units.
     ///
-    /// Returns `true` if setting the border for `annot` succeeds, `false` otherwise.
+    /// Returns `true` if setting the border for `annot` succeeds.
     ///
     /// If `annot` contains an appearance stream that overrides the border values,
     /// then the appearance stream will be removed on success.
@@ -3811,8 +3818,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `border_width`       - border width, in default user space units.
     ///
-    /// Returns `true` if `horizontal_radius`, `vertical_radius` and `border_width` are
-    /// not `NULL`, `false` otherwise.
+    /// Returns `true` if `horizontal_radius`, `vertical_radius` and `border_width` are not `NULL`.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetBorder(
         &self,
@@ -3831,7 +3837,7 @@ pub trait PdfiumLibraryBindings {
     /// denoting the size of the null terminator in the buffer. On other errors,
     /// nothing is written to `buffer` and 0 is returned.
     ///
-    ///   `hHandle`     -   handle to the form fill module, returned by
+    ///   `form`        -   handle to the form fill module, returned by
     ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment()].
     ///
     ///   `annot`       -   handle to an interactive form annotation.
@@ -3846,7 +3852,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormAdditionalActionJavaScript(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         event: c_int,
         buffer: *mut FPDF_WCHAR,
@@ -3859,7 +3865,7 @@ pub trait PdfiumLibraryBindings {
     /// In case of error, nothing will be added to `buffer` and the return value will be 0.
     /// Note that return value of empty string is 2 for `\0\0`.
     ///
-    ///   `hHandle`     -   handle to the form fill module, returned by
+    ///   `form`        -   handle to the form fill module, returned by
     ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment()].
     ///
     ///   `annot`       -   handle to an interactive form annotation.
@@ -3873,7 +3879,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAlternateName(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
@@ -3986,7 +3992,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `value`  - receives the value, must not be `NULL`.
     ///
-    /// Returns `true` if value found, `false` otherwise.
+    /// Returns `true` if value found.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetNumberValue(
         &self,
@@ -4114,23 +4120,39 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the annotation flags of `annot`.
     ///
-    ///    `hHandle`    -   handle to the form fill module, returned by
-    ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
-    ///    `annot`      -   handle to an interactive form annotation.
+    ///    `handle`    -   the handle to the form fill module, returned by
+    ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `annot`     -   handle to an interactive form annotation.
     ///
     /// Returns the annotation flags specific to interactive forms.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldFlags(
+    fn FPDFAnnot_GetFormFieldFlags(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
+
+    #[cfg(feature = "pdfium_future")]
+    /// Sets the form field flags for an interactive form annotation.
+    ///
+    ///   `form`         -   the handle to the form fill module, returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///   `annot`        -   handle to an interactive form annotation.
+    ///
+    ///   `flags`        -   the form field flags to be set.
+    ///
+    /// Returns `true` if successful.
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFormFieldFlags(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
-    ) -> c_int;
+        flags: c_int,
+    ) -> FPDF_BOOL;
 
     /// Retrieves an interactive form annotation whose rectangle contains a given
     /// point on a page. Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the
     /// annotation returned is no longer needed.
     ///
-    ///    `hHandle`    -   handle to the form fill module, returned by
+    ///    `form`       -   handle to the form fill module, returned by
     ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`       -   handle to the page, returned by [PdfiumLibraryBindings::FPDF_LoadPage] function.
@@ -4142,7 +4164,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         point: *const FS_POINTF,
     ) -> FPDF_ANNOTATION;
@@ -4152,7 +4174,7 @@ pub trait PdfiumLibraryBindings {
     /// In case of error, nothing will be added to `buffer` and the return value will
     /// be 0. Note that return value of empty string is 2 for "\0\0".
     ///
-    ///    `hHandle`     -   handle to the form fill module, returned by
+    ///    `form`        -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `annot`       -   handle to an interactive form annotation.
@@ -4165,7 +4187,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldName(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
@@ -4173,7 +4195,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the form field type of `annot`, which is an interactive form annotation.
     ///
-    ///    `hHandle`     -   handle to the form fill module, returned by
+    ///    `form`        -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `annot`       -   handle to an interactive form annotation.
@@ -4181,15 +4203,14 @@ pub trait PdfiumLibraryBindings {
     /// Returns the type of the form field (one of the `FPDF_FORMFIELD_*` values) on
     /// success. Returns -1 on error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldType(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
-        -> c_int;
+    fn FPDFAnnot_GetFormFieldType(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
 
     /// Gets the value of `annot`, which is an interactive form annotation.
     /// `buffer` is only modified if `buflen` is longer than the length of contents.
     /// In case of error, nothing will be added to `buffer` and the return value will
     /// be 0. Note that return value of empty string is 2 for "\0\0".
     ///
-    ///    `hHandle`     -   handle to the form fill module, returned by
+    ///    `form`        -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `annot`       -   handle to an interactive form annotation.
@@ -4202,7 +4223,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldValue(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
@@ -4211,7 +4232,7 @@ pub trait PdfiumLibraryBindings {
     /// Gets the number of options in the `annot`'s "Opt" dictionary. Intended for
     /// use with listbox and combobox widget annotations.
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
@@ -4219,7 +4240,7 @@ pub trait PdfiumLibraryBindings {
     /// Returns the number of options in "Opt" dictionary on success. Return value
     /// will be -1 if annotation does not have an "Opt" dictionary or other error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionCount(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
+    fn FPDFAnnot_GetOptionCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
 
     /// Gets the string value for the label of the option at `index` in `annot`'s
     /// "Opt" dictionary. Intended for use with listbox and combobox widget
@@ -4228,7 +4249,7 @@ pub trait PdfiumLibraryBindings {
     /// will be added to `buffer` and the return value will be 0. Note that
     /// return value of empty string is 2 for "\0\0".
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
@@ -4245,7 +4266,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetOptionLabel(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         index: c_int,
         buffer: *mut FPDF_WCHAR,
@@ -4255,19 +4276,18 @@ pub trait PdfiumLibraryBindings {
     /// Determines whether or not the option at `index` in `annot`'s "Opt" dictionary
     /// is selected. Intended for use with listbox and combobox widget annotations.
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
     ///
     ///   `index`   - numeric index of the option in the "Opt" array.
     ///
-    /// Returns `true` if the option at `index` in `annot`'s "Opt" dictionary is
-    /// selected, `false` otherwise.
+    /// Returns `true` if the option at `index` in `annot`'s "Opt" dictionary is selected.
     #[allow(non_snake_case)]
     fn FPDFAnnot_IsOptionSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         index: c_int,
     ) -> FPDF_BOOL;
@@ -4276,7 +4296,7 @@ pub trait PdfiumLibraryBindings {
     /// If 0, the font is to be auto-sized: its size is computed as a function of
     /// the height of the annotation rectangle.
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
@@ -4288,9 +4308,38 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontSize(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[cfg(feature = "pdfium_future")]
+    /// Experimental API.
+    /// Set the text color of an annotation.
+    ///
+    ///   `form`     - handle to the form fill module, returned by
+    ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///   `annot`    - handle to an annotation.
+    ///
+    ///   `R`        - the red component for the text color.
+    ///
+    ///   `G`        - the green component for the text color.
+    ///
+    ///   `B`        - the blue component for the text color.
+    ///
+    /// Returns `true` if successful.
+    ///
+    /// Currently supported subtypes: freetext.
+    /// The range for the color components is 0 to 255.
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFontColor(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: c_uint,
+        G: c_uint,
+        B: c_uint,
     ) -> FPDF_BOOL;
 
     #[cfg(any(
@@ -4305,7 +4354,7 @@ pub trait PdfiumLibraryBindings {
     ))]
     /// Gets the RGB value of the font color for an `annot` with variable text.
     ///
-    ///   `hHandle`      - handle to the form fill module, returned by
+    ///   `form`         - handle to the form fill module, returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`        - handle to an annotation.
@@ -4317,7 +4366,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontColor(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         R: *mut c_uint,
         G: *mut c_uint,
@@ -4327,50 +4376,50 @@ pub trait PdfiumLibraryBindings {
     /// Determines if `annot` is a form widget that is checked. Intended for use with
     /// checkbox and radio button widgets.
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    /// Returns `true` if `annot` is a form widget and is checked, `false` otherwise.
+    /// Returns `true` if `annot` is a form widget and is checked.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsChecked(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+    fn FPDFAnnot_IsChecked(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
     /// Sets the list of focusable annotation subtypes. Annotations of subtype
     /// `FPDF_ANNOT_WIDGET` are by default focusable. New subtypes set using this API
     /// will override the existing subtypes.
     ///
-    ///   `hHandle`  - handle to the form fill module, returned by
+    ///   `form`     - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `subtypes` - list of annotation subtype which can be tabbed over.
     ///
     ///   `count`    - total number of annotation subtype in list.
     ///
-    /// Returns `true` if list of annotation subtype is set successfully, `false` otherwise.
+    /// Returns `true` if list of annotation subtype is set successfully.
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFocusableSubtypes(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL;
 
     /// Gets the count of focusable annotation subtypes as set by host
-    /// for a `hHandle`.
+    /// for a `form`.
     ///
-    ///   `hHandle`  - handle to the form fill module, returned by
+    ///   `form`     - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     /// Returns the count of focusable annotation subtypes or `-1` on error.
     ///
     /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypesCount(&self, hHandle: FPDF_FORMHANDLE) -> c_int;
+    fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int;
 
     /// Gets the list of focusable annotation subtype as set by host.
     ///
-    ///   `hHandle`  - handle to the form fill module, returned by
+    ///   `form`     - handle to the form fill module, returned by
     ///                [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `subtypes` - receives the list of annotation subtype which can be tabbed
@@ -4380,14 +4429,13 @@ pub trait PdfiumLibraryBindings {
     ///
     ///   `count`    - size of `subtypes`.
     ///
-    /// Returns `true` on success and set list of annotation subtype to `subtypes`,
-    /// `false` otherwise.
+    /// Returns `true` on success and sets list of annotation subtype to `subtypes`.
     ///
     /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFocusableSubtypes(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL;
@@ -4407,18 +4455,15 @@ pub trait PdfiumLibraryBindings {
     /// control group. Here, `annot`, an interactive form annotation, should be
     /// either a radio button or a checkbox.
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
     ///
     /// Returns number of controls in its control group or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormControlCount(
-        &self,
-        hHandle: FPDF_FORMHANDLE,
-        annot: FPDF_ANNOTATION,
-    ) -> c_int;
+    fn FPDFAnnot_GetFormControlCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
+        -> c_int;
 
     /// Gets the index of `annot` in `annot`'s control group.
     ///
@@ -4426,18 +4471,15 @@ pub trait PdfiumLibraryBindings {
     /// control group. Here, `annot`, an interactive form annotation, should be
     /// either a radio button or a checkbox.
     ///
-    ///   `hHandle` - handle to the form fill module, returned by
+    ///   `form`    - handle to the form fill module, returned by
     ///               [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///   `annot`   - handle to an annotation.
     ///
     /// Returns index of a given `annot` in its control group or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormControlIndex(
-        &self,
-        hHandle: FPDF_FORMHANDLE,
-        annot: FPDF_ANNOTATION,
-    ) -> c_int;
+    fn FPDFAnnot_GetFormControlIndex(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
+        -> c_int;
 
     /// Gets the export value of `annot` which is an interactive form annotation.
     ///
@@ -4447,7 +4489,7 @@ pub trait PdfiumLibraryBindings {
     /// In case of error, nothing will be added to `buffer` and the return value
     /// will be 0. Note that return value of empty string is 2 for "\0\0".
     ///
-    ///    `hHandle`     -   handle to the form fill module, returned by
+    ///    `form`        -   handle to the form fill module, returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `annot`       -   handle to an interactive form annotation.
@@ -4460,7 +4502,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldExportValue(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
@@ -4582,33 +4624,33 @@ pub trait PdfiumLibraryBindings {
         form_info: *mut FPDF_FORMFILLINFO,
     ) -> FPDF_FORMHANDLE;
 
-    /// Takes ownership of `hHandle` and exits the form fill environment.
+    /// Takes ownership of `form` and exits the form fill environment.
     ///
-    ///    `hHandle`  -   Handle to the form fill module, as returned by
+    ///    `form`     -   Handle to the form fill module, as returned by
     ///                   [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    /// This function is a no-op when `hHandle` is null.
+    /// This function is a no-op when `form` is null.
     #[allow(non_snake_case)]
-    fn FPDFDOC_ExitFormFillEnvironment(&self, hHandle: FPDF_FORMHANDLE);
+    fn FPDFDOC_ExitFormFillEnvironment(&self, form: FPDF_FORMHANDLE);
 
     /// This method is required for implementing all the form related
     /// functions. Should be invoked after user successfully loaded a
     /// PDF page, and [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment] has been invoked.
     ///
-    ///    `hHandle`   -   Handle to the form fill module, as returned by
+    ///    `form`      -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     #[allow(non_snake_case)]
-    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
+    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE);
 
     /// This method is required for implementing all the form related
     /// functions. Should be invoked before user closes the PDF page.
     ///
     ///    `page`      -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    ///    `hHandle`   -   Handle to the form fill module, as returned by
+    ///    `form`      -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     #[allow(non_snake_case)]
-    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE);
+    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE);
 
     /// Gets the document's page mode.
     ///
@@ -4633,26 +4675,26 @@ pub trait PdfiumLibraryBindings {
     /// This method is required for performing document-level JavaScript actions.
     /// It should be invoked after the PDF document has been loaded.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     /// If there is document-level JavaScript action embedded in the document, this method
     /// will execute the JavaScript action. Otherwise, the method will do nothing.
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE);
+    fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE);
 
     /// This method is required for performing open-action when the document is opened.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     /// This method will do nothing if there are no open-actions embedded in the document.
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE);
+    fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE);
 
     /// This method is required for performing the document's additional-action.
     ///
-    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///    `form`        -   Handle to the form fill module. Returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `aaType`      -   The type of the additional-actions which are defined above.
@@ -4660,14 +4702,14 @@ pub trait PdfiumLibraryBindings {
     /// This method will do nothing if there is no document additional-action corresponding
     /// to the specified `aaType`.
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int);
+    fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int);
 
     /// This method is required for performing the page object's additional-action when
     /// opened or closed.
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `aaType`      -   The type of the page object's additional-actions
@@ -4676,11 +4718,11 @@ pub trait PdfiumLibraryBindings {
     /// This method will do nothing if no additional-action corresponding to the specified
     /// `aaType` exists.
     #[allow(non_snake_case)]
-    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int);
+    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int);
 
     /// Call this member function when the mouse cursor moves.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4691,11 +4733,11 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` on  success, `false` otherwise.
+    /// Returns `true` on  success.
     #[allow(non_snake_case)]
     fn FORM_OnMouseMove(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4704,7 +4746,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when the user scrolls the mouse wheel.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4721,7 +4763,7 @@ pub trait PdfiumLibraryBindings {
     ///                      in units of platform-agnostic wheel deltas. Negative
     ///                      values mean down.
     ///
-    /// Returns `true` indicates success, `false` otherwise.
+    /// Returns `true` indicates success.
     ///
     /// For `delta_x` and `delta_y`, the caller must normalize platform-specific wheel deltas,
     /// e.g. on Windows, a delta value of `240` for a `WM_MOUSEWHEEL` event normalizes to `2`,
@@ -4729,7 +4771,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_OnMouseWheel(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_coord: *const FS_POINTF,
@@ -4741,7 +4783,7 @@ pub trait PdfiumLibraryBindings {
     /// point already has focus, nothing happens. If there is no annotation at the point,
     /// removes form focus.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4756,7 +4798,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_OnFocus(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4765,7 +4807,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when the user presses the left mouse button.
     ///
-    ///    `hHandle     -   Handle to the form fill module, as returned by
+    ///    `form`       -   Handle to the form fill module, as returned by
     ///                     [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`       -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4776,11 +4818,11 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `page_y`     -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4794,7 +4836,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_OnRButtonDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4803,7 +4845,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when the user releases the left mouse button.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4814,11 +4856,11 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in device coordinates.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FORM_OnLButtonUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4832,7 +4874,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_OnRButtonUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4841,7 +4883,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when the user double clicks the left mouse button.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4852,11 +4894,11 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDoubleClick(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
@@ -4865,7 +4907,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when a non-system key is pressed.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4875,11 +4917,11 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FORM_OnKeyDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nKeyCode: c_int,
         modifier: c_int,
@@ -4887,7 +4929,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when a non-system key is released.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4897,14 +4939,14 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     ///
     /// Note: currently unimplemented, always returns `false`. PDFium reserves this API
     /// and may implement it in the future on an as-needed basis.
     #[allow(non_snake_case)]
     fn FORM_OnKeyUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nKeyCode: c_int,
         modifier: c_int,
@@ -4912,7 +4954,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this member function when a keystroke translates to a non-system character.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4921,11 +4963,11 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FORM_OnChar(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nChar: c_int,
         modifier: c_int,
@@ -4933,7 +4975,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Call this function to obtain the text within the current focused field, if any.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4948,7 +4990,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_GetFocusedText(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         buffer: *mut c_void,
         buflen: c_ulong,
@@ -4957,7 +4999,7 @@ pub trait PdfiumLibraryBindings {
     /// Call this function to obtain selected text within a form text field or
     /// form combo-box text field.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4972,7 +5014,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_GetSelectedText(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         buffer: *mut c_void,
         buflen: c_ulong,
@@ -4984,7 +5026,7 @@ pub trait PdfiumLibraryBindings {
     /// append the replacement text after the current caret position. After the insertion,
     /// the inserted text will be selected.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -4993,7 +5035,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_ReplaceAndKeepSelection(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     );
@@ -5004,7 +5046,7 @@ pub trait PdfiumLibraryBindings {
     /// will append the replacement text after the current caret position. After the insertion,
     /// the selection range will be set to empty.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -5013,7 +5055,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_ReplaceSelection(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     );
@@ -5021,75 +5063,75 @@ pub trait PdfiumLibraryBindings {
     /// Call this function to select all the text within the currently focused form text field
     /// or form combo-box text field.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Finds out if it is possible for the current focused widget in a given form to perform
     /// an undo operation.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
     /// Returns `true` if it is possible to undo.
     #[allow(non_snake_case)]
-    fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Finds out if it is possible for the current focused widget in a given form to perform
     /// a redo operation.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
     /// Returns `true` if it is possible to redo.
     #[allow(non_snake_case)]
-    fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Makes the current focused widget perform an undo operation.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
     /// Returns `true` if the undo operation succeeded.
     #[allow(non_snake_case)]
-    fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Makes the current focused widget perform a redo operation.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
     /// Returns `true` if the redo operation succeeded.
     #[allow(non_snake_case)]
-    fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Calls this member function to force to kill the focus of the form field which has focus.
     /// If it would kill the focus of a form field, saves the value of form field if was
     /// changed by the user.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL;
+    fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL;
 
     /// Calls this member function to get the currently focused annotation.
     ///
-    ///    `handle`      -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page_index`  -   Buffer to hold the index number of the page which contains
@@ -5108,28 +5150,28 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_GetFocusedAnnot(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page_index: *mut c_int,
         annot: *mut FPDF_ANNOTATION,
     ) -> FPDF_BOOL;
 
     /// Calls this member function to set the currently focused annotation.
     ///
-    ///    `handle`      -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `annot`       -   Handle to an annotation.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     ///
     /// Note: `annot` must not be `NULL`. To kill focus, use
     /// [PdfiumLibraryBindings::FORM_ForceToKillFocus] instead.
     #[allow(non_snake_case)]
-    fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+    fn FORM_SetFocusedAnnot(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
     /// Gets the form field type by point.
     ///
-    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///    `form`        -   Handle to the form fill module. Returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -5143,7 +5185,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_HasFormFieldAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         page_x: f64,
         page_y: f64,
@@ -5151,7 +5193,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Gets the form field z-order by point.
     ///
-    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///    `form`        -   Handle to the form fill module. Returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -5165,7 +5207,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_FormFieldZOrderAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         page_x: f64,
         page_y: f64,
@@ -5173,7 +5215,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Sets the highlight color of the specified (or all) form fields in the document.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `doc`         -   Handle to the document, as returned by
@@ -5189,14 +5231,14 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         field_type: c_int,
         color: FPDF_DWORD,
     );
 
     /// Sets the transparency of the form field highlight color in the document.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `doc`         -   Handle to the document, as returned by
@@ -5204,20 +5246,20 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `alpha`       -   The transparency of the form field highlight color, between `0` - `255`.
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightAlpha(&self, handle: FPDF_FORMHANDLE, alpha: c_uchar);
+    fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar);
 
     /// Removes the form field highlight color in the document.
     ///
-    ///    `hHandle`     -   Handle to the form fill module, as returned by
+    ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     /// Please refresh the client window to remove the highlight immediately if necessary.
     #[allow(non_snake_case)]
-    fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE);
+    fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE);
 
     /// Renders form fields and pop-up windows on a page to a device independent bitmap.
     ///
-    ///    `hHandle`      -   Handle to the form fill module, as returned by
+    ///    `form`         -   Handle to the form fill module, as returned by
     ///                       [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `bitmap`       -   Handle to the device independent bitmap (as the output
@@ -5252,7 +5294,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(clippy::too_many_arguments)]
     fn FPDF_FFLDraw(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -5268,7 +5310,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(clippy::too_many_arguments)]
     /// Renders form fields and pop-up windows on a page to a SKIA canvas.
     ///
-    ///    `hHandle`      -   Handle to the form fill module, as returned by
+    ///    `form`         -   Handle to the form fill module, as returned by
     ///                       [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `bitmap`       -   Handle to the device independent bitmap (as the output
@@ -5301,7 +5343,7 @@ pub trait PdfiumLibraryBindings {
     /// the page contents.
     fn FPDF_FFLDrawSkia(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         canvas: FPDF_SKIA_CANVAS,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -5323,7 +5365,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Selects or deselects the value at the given `index` of the focused annotation.
     ///
-    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///    `form`        -   Handle to the form fill module. Returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -5342,7 +5384,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_SetIndexSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         index: c_int,
         selected: FPDF_BOOL,
@@ -5350,7 +5392,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Returns whether or not the value at `index` of the focused annotation is currently selected.
     ///
-    ///    `hHandle`     -   Handle to the form fill module. Returned by
+    ///    `form`        -   Handle to the form fill module. Returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
     ///    `page`        -   Handle to the page. Returned by [PdfiumLibraryBindings::FPDF_LoadPage].
@@ -5366,7 +5408,7 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FORM_IsIndexSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         index: c_int,
     ) -> FPDF_BOOL;
@@ -5375,7 +5417,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `document`     -   Handle to document from [PdfiumLibraryBindings::FPDF_LoadDocument].
     ///
-    /// Returns `true` upon success, `false` otherwise. If XFA support is not built into
+    /// Returns `true` upon success. If XFA support is not built into
     /// PDFium, performs no action and always returns `false`.
     #[allow(non_snake_case)]
     fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
@@ -5502,7 +5544,7 @@ pub trait PdfiumLibraryBindings {
 
     /// Sets the system font info interface into PDFium.
     ///
-    ///    `pFontInfo` -   Pointer to a `FPDF_SYSFONTINFO` structure.
+    ///    `font_info` -   Pointer to a `FPDF_SYSFONTINFO` structure.
     ///
     /// Platform support implementation should implement required methods of
     /// `FFDF_SYSFONTINFO` interface, then call this function during PDFium initialization
@@ -5510,7 +5552,7 @@ pub trait PdfiumLibraryBindings {
     ///
     /// Call this with `NULL` to tell PDFium to stop using a previously set `FPDF_SYSFONTINFO`.
     #[allow(non_snake_case)]
-    fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO);
+    fn FPDF_SetSystemFontInfo(&self, font_info: *mut FPDF_SYSFONTINFO);
 
     /// Gets default system font info interface for current platform.
     ///
@@ -5526,12 +5568,12 @@ pub trait PdfiumLibraryBindings {
 
     /// Frees a default system font info interface.
     ///
-    ///    `pFontInfo`   -   Pointer to a `FPDF_SYSFONTINFO` structure.
+    ///    `font_info`   -   Pointer to a `FPDF_SYSFONTINFO` structure.
     ///
     /// This function should be called on the output from
     /// [PdfiumLibraryBindings::FPDF_GetDefaultSystemFontInfo] once it is no longer needed.
     #[allow(non_snake_case)]
-    fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO);
+    fn FPDF_FreeDefaultSystemFontInfo(&self, font_info: *mut FPDF_SYSFONTINFO);
 
     /// Gets the first child of `bookmark`, or the first top-level bookmark item.
     ///
@@ -6973,6 +7015,24 @@ pub trait PdfiumLibraryBindings {
         index: c_ulong,
     ) -> FPDF_PAGEOBJECT;
 
+    #[cfg(feature = "pdfium_future")]
+    /// Removes `page_object` from `form_object`.
+    ///
+    ///   `form_object` - handle to a form object.
+    ///
+    ///   `page_object` - handle to a page object to be removed from the form.
+    ///
+    /// Returns `true` on success.
+    ///
+    /// Ownership of the removed `page_object` is transferred to the caller.
+    /// Call [PdfiumLibraryBindings::FPDFPageObj_Destroy]` on the removed page_object to free it.
+    #[allow(non_snake_case)]
+    fn FPDFFormObj_RemoveObject(
+        &self,
+        form_object: FPDF_PAGEOBJECT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL;
+
     /// Creates a new text object using a loaded font.
     ///
     ///    `document`   - handle to the document.
@@ -7040,7 +7100,7 @@ pub trait PdfiumLibraryBindings {
     /// Gets a bitmap rasterization of `text_object`. To render correctly, the caller
     /// must provide the `document` associated with `text_object`. If there is a `page`
     /// associated with `text_object`, the caller should provide that as well.
-    /// The returned bitmap will be owned by the caller, and `FPDFBitmap_Destroy()`
+    /// The returned bitmap will be owned by the caller, and [PdfiumLibraryBindings::FPDFBitmap_Destroy]
     /// must be called on the returned bitmap when it is no longer needed.
     ///
     ///    `document`    - handle to a document associated with `text_object`.
@@ -7076,7 +7136,7 @@ pub trait PdfiumLibraryBindings {
     ///    `size` - pointer to the font size of the text object, measured in points
     ///             (about 1/72 inch).
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFTextObj_GetFontSize(&self, text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL;
 
@@ -7095,7 +7155,7 @@ pub trait PdfiumLibraryBindings {
     ///    `y`      - the vertical position of the new current point.
     ///
     /// Note that no line will be created between the previous current point and the
-    /// new one. Returns `true` on success, `false` otherwise.
+    /// new one. Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
@@ -7128,7 +7188,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `y3`     - the vertical position of the ending point of the Bezier curve.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     fn FPDFPath_BezierTo(
@@ -7147,7 +7207,7 @@ pub trait PdfiumLibraryBindings {
     ///    `path`   - the handle to the path object.
     ///
     /// This will add a line between the current point and the initial point of the subpath,
-    /// thus terminating the current subpath. Returns `true` on success, `false` otherwise.
+    /// thus terminating the current subpath. Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
@@ -7159,7 +7219,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `stroke`   - a boolean specifying if the path should be stroked or not.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPath_SetDrawMode(
         &self,
@@ -7176,7 +7236,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `stroke`   - a boolean specifying if the path is stroked or not.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPath_GetDrawMode(
         &self,
@@ -7208,7 +7268,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `text`         - the UTF-16LE encoded string containing the text to be added.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFText_SetText_str].
@@ -7223,7 +7283,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `text`         - the string containing the text to be added.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFText_SetText_str(&self, text_object: FPDF_PAGEOBJECT, text: &str) -> FPDF_BOOL {
@@ -7241,7 +7301,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `count`        - number of elements in |charcodes|.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFText_SetCharcodes(
         &self,
@@ -7343,13 +7403,37 @@ pub trait PdfiumLibraryBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT);
 
+    #[cfg(feature = "pdfium_future")]
+    /// Inserts `page_object` into `page` at the specified `index`.
+    ///
+    ///    `page`        - handle to a page
+    ///
+    ///    `page_object` - handle to a page object as previously obtained by
+    ///                    `FPDFPageObj_CreateNewPath()`, `FPDFPageObj_CreateNewRect()`,
+    ///                    `FPDFPageObj_NewText()`, or `FPDFPageObj_NewImageObj()`.
+    ///                    Ownership of the object is transferred back to PDFium.
+    ///
+    ///    `index`       - the index position to insert the object at. If index equals
+    ///                    the current object count, the object will be appended to the
+    ///                    end. If index is greater than the object count, the function
+    ///                    will fail and return false.
+    ///
+    /// Returns `true` on success.
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertObjectAtIndex(
+        &self,
+        page: FPDF_PAGE,
+        page_object: FPDF_PAGEOBJECT,
+        index: usize,
+    ) -> FPDF_BOOL;
+
     /// Removes `page_object` from `page`.
     ///
     ///    `page`        - handle to a page
     ///
     ///    `page_object` - handle to a page object to be removed.
     ///
-    /// Returns `true` on success, `false` otherwise. Ownership is transferred to the caller.
+    /// Returns `true` on success. Ownership is transferred to the caller.
     /// Call [PdfiumLibraryBindings::FPDFPageObj_Destroy] to free it. Note that when removing
     /// a `page_object` of type `FPDF_PAGEOBJ_TEXT`, all `FPDF_TEXTPAGE` handles for `page`
     /// are no longer valid.
@@ -7734,7 +7818,7 @@ pub trait PdfiumLibraryBindings {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the operation was successful, `false` otherwise.
+    /// Returns `true` if the operation was successful.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamKey(
         &self,
@@ -7779,7 +7863,7 @@ pub trait PdfiumLibraryBindings {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the key. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the operation was successful, `false` otherwise.
+    /// Returns `true` if the operation was successful.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamKey(
         &self,
@@ -7815,7 +7899,7 @@ pub trait PdfiumLibraryBindings {
     ///    `out_value` - pointer to variable that will receive the value. Not filled if
     ///                  `false` is returned.
     ///
-    /// Returns `true` if the key maps to a number value, `false` otherwise.
+    /// Returns `true` if the key maps to a number value.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamIntValue(
         &self,
@@ -7845,7 +7929,7 @@ pub trait PdfiumLibraryBindings {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
+    /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamStringValue(
         &self,
@@ -7890,7 +7974,7 @@ pub trait PdfiumLibraryBindings {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the value. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
+    /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamStringValue(
         &self,
@@ -7922,7 +8006,7 @@ pub trait PdfiumLibraryBindings {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
+    /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamBlobValue(
         &self,
@@ -7967,7 +8051,7 @@ pub trait PdfiumLibraryBindings {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the value. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value, `false` otherwise.
+    /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_GetParamBlobValue(
         &self,
@@ -7992,7 +8076,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `value`       - int value to set.
     ///
-    /// Returns `true` if the operation succeeded, `false` otherwise.
+    /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetIntParam(
         &self,
@@ -8017,7 +8101,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `value`       - string value to set.
     ///
-    /// Returns `true` if the operation succeeded, `false` otherwise.
+    /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetStringParam(
         &self,
@@ -8049,7 +8133,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `value_len`   - size in bytes of `value`.
     ///
-    /// Returns `true` if the operation succeeded, `false` otherwise.
+    /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetBlobParam(
         &self,
@@ -8096,7 +8180,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `value_len`   - size in bytes of `value`.
     ///
-    /// Returns `true` if the operation succeeded, `false` otherwise.
+    /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetBlobParam(
         &self,
@@ -8116,7 +8200,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `key`         - string key of the property.
     ///
-    /// Returns `true` if the operation succeeded, `false` otherwise.
+    /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_RemoveParam(
         &self,
@@ -8788,7 +8872,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `segment` - handle to a segment.
     ///
-    /// Returns close flag for non-`NULL` segment, `false` otherwise.
+    /// Returns close flag for non-`NULL` segment.
     #[allow(non_snake_case)]
     fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
@@ -9277,7 +9361,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `index`    - the index of the embedded file to be deleted.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
 
@@ -9306,7 +9390,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `key`        - the key to look for, encoded in UTF-8.
     ///
-    /// Returns `true` if `key` exists, `false` otherwise.
+    /// Returns `true` if `key` exists.
     #[allow(non_snake_case)]
     fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL;
 
@@ -9335,7 +9419,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `value`      - the string value to be set, encoded in UTF-16LE.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAttachment_SetStringValue_str].
@@ -9359,7 +9443,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `value`      - the string value to be set.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAttachment_SetStringValue_str(
@@ -9413,7 +9497,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `len`        - length of file data in bytes.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFAttachment_SetFile(
         &self,
@@ -9443,7 +9527,7 @@ pub trait PdfiumLibraryBindings {
     ///    `out_buflen` - pointer to the variable that will receive the minimum buffer
     ///                   size to contain the file data of `attachment`.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFAttachment_GetFile(
         &self,
@@ -9452,6 +9536,28 @@ pub trait PdfiumLibraryBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL;
+
+    #[cfg(feature = "pdfium_future")]
+    /// Get the MIME type (Subtype) of the embedded file `attachment`. `buffer` is
+    /// only modified if `buflen` is longer than the length of the MIME type string.
+    /// If the Subtype is not found or if there is no file stream, an empty string
+    /// would be copied to `buffer` and the return value would be 2. On other errors,
+    /// nothing would be added to `buffer` and the return value would be 0.
+    ///
+    ///   `attachment` - handle to an attachment.
+    ///
+    ///   `buffer`     - buffer for holding the MIME type string encoded in UTF-16LE.
+    ///
+    ///   `buflen`     - length of the buffer in bytes.
+    ///
+    /// Returns the length of the MIME type string in bytes.
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetSubtype(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
 
     /// Determines if `document` represents a tagged PDF.
     ///
@@ -9476,7 +9582,7 @@ pub trait PdfiumLibraryBindings {
     ///
     ///    `language` - the language to set to.
     ///
-    /// Returns `true` on success, `false` otherwise.
+    /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL;
 }

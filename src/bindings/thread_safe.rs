@@ -2014,27 +2014,27 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormAdditionalActionJavaScript(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         event: c_int,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FPDFAnnot_GetFormAdditionalActionJavaScript(hHandle, annot, event, buffer, buflen)
+            .FPDFAnnot_GetFormAdditionalActionJavaScript(form, annot, event, buffer, buflen)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAlternateName(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FPDFAnnot_GetFormFieldAlternateName(hHandle, annot, buffer, buflen)
+            .FPDFAnnot_GetFormFieldAlternateName(form, annot, buffer, buflen)
     }
 
     #[inline]
@@ -2128,103 +2128,121 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldFlags(
+    fn FPDFAnnot_GetFormFieldFlags(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+        self.bindings.FPDFAnnot_GetFormFieldFlags(form, annot)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFormFieldFlags(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
-    ) -> c_int {
-        self.bindings.FPDFAnnot_GetFormFieldFlags(handle, annot)
+        flags: c_int,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFAnnot_SetFormFieldFlags(form, annot, flags)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         point: *const FS_POINTF,
     ) -> FPDF_ANNOTATION {
         self.bindings
-            .FPDFAnnot_GetFormFieldAtPoint(hHandle, page, point)
+            .FPDFAnnot_GetFormFieldAtPoint(form, page, point)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldName(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FPDFAnnot_GetFormFieldName(hHandle, annot, buffer, buflen)
+            .FPDFAnnot_GetFormFieldName(form, annot, buffer, buflen)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldType(
-        &self,
-        hHandle: FPDF_FORMHANDLE,
-        annot: FPDF_ANNOTATION,
-    ) -> c_int {
-        self.bindings.FPDFAnnot_GetFormFieldType(hHandle, annot)
+    fn FPDFAnnot_GetFormFieldType(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+        self.bindings.FPDFAnnot_GetFormFieldType(form, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldValue(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FPDFAnnot_GetFormFieldValue(hHandle, annot, buffer, buflen)
+            .FPDFAnnot_GetFormFieldValue(form, annot, buffer, buflen)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionCount(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
-        self.bindings.FPDFAnnot_GetOptionCount(hHandle, annot)
+    fn FPDFAnnot_GetOptionCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+        self.bindings.FPDFAnnot_GetOptionCount(form, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetOptionLabel(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         index: c_int,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FPDFAnnot_GetOptionLabel(hHandle, annot, index, buffer, buflen)
+            .FPDFAnnot_GetOptionLabel(form, annot, index, buffer, buflen)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_IsOptionSelected(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         index: c_int,
     ) -> FPDF_BOOL {
-        self.bindings
-            .FPDFAnnot_IsOptionSelected(handle, annot, index)
+        self.bindings.FPDFAnnot_IsOptionSelected(form, annot, index)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontSize(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut c_float,
     ) -> FPDF_BOOL {
-        self.bindings.FPDFAnnot_GetFontSize(hHandle, annot, value)
+        self.bindings.FPDFAnnot_GetFontSize(form, annot, value)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFontColor(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: c_uint,
+        G: c_uint,
+        B: c_uint,
+    ) -> FPDF_BOOL {
+        self.bindings.FPDFAnnot_SetFontColor(form, annot, R, G, B)
     }
 
     #[cfg(any(
@@ -2241,50 +2259,49 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontColor(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         R: *mut c_uint,
         G: *mut c_uint,
         B: *mut c_uint,
     ) -> FPDF_BOOL {
-        self.bindings
-            .FPDFAnnot_GetFontColor(hHandle, annot, R, G, B)
+        self.bindings.FPDFAnnot_GetFontColor(form, annot, R, G, B)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsChecked(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
-        self.bindings.FPDFAnnot_IsChecked(hHandle, annot)
+    fn FPDFAnnot_IsChecked(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+        self.bindings.FPDFAnnot_IsChecked(form, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFocusableSubtypes(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL {
         self.bindings
-            .FPDFAnnot_SetFocusableSubtypes(hHandle, subtypes, count)
+            .FPDFAnnot_SetFocusableSubtypes(form, subtypes, count)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypesCount(&self, hHandle: FPDF_FORMHANDLE) -> c_int {
-        self.bindings.FPDFAnnot_GetFocusableSubtypesCount(hHandle)
+    fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int {
+        self.bindings.FPDFAnnot_GetFocusableSubtypesCount(form)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFocusableSubtypes(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL {
         self.bindings
-            .FPDFAnnot_GetFocusableSubtypes(hHandle, subtypes, count)
+            .FPDFAnnot_GetFocusableSubtypes(form, subtypes, count)
     }
 
     #[inline]
@@ -2297,33 +2314,33 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlCount(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
     ) -> c_int {
-        self.bindings.FPDFAnnot_GetFormControlCount(hHandle, annot)
+        self.bindings.FPDFAnnot_GetFormControlCount(form, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlIndex(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
     ) -> c_int {
-        self.bindings.FPDFAnnot_GetFormControlIndex(hHandle, annot)
+        self.bindings.FPDFAnnot_GetFormControlIndex(form, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldExportValue(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FPDFAnnot_GetFormFieldExportValue(hHandle, annot, buffer, buflen)
+            .FPDFAnnot_GetFormFieldExportValue(form, annot, buffer, buflen)
     }
 
     #[inline]
@@ -2415,47 +2432,47 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE) {
-        self.bindings.FORM_DoDocumentJSAction(hHandle)
+    fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE) {
+        self.bindings.FORM_DoDocumentJSAction(form)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE) {
-        self.bindings.FORM_DoDocumentOpenAction(hHandle)
+    fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE) {
+        self.bindings.FORM_DoDocumentOpenAction(form)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
-        self.bindings.FORM_DoDocumentAAction(hHandle, aaType)
+    fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int) {
+        self.bindings.FORM_DoDocumentAAction(form, aaType)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
-        self.bindings.FORM_DoPageAAction(page, hHandle, aaType)
+    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int) {
+        self.bindings.FORM_DoPageAAction(page, form, aaType)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnMouseMove(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnMouseMove(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnMouseMove(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnMouseWheel(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_coord: *const FS_POINTF,
@@ -2463,290 +2480,286 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         delta_y: c_int,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnMouseWheel(hHandle, page, modifier, page_coord, delta_x, delta_y)
+            .FORM_OnMouseWheel(form, page, modifier, page_coord, delta_x, delta_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnFocus(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnFocus(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnFocus(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnLButtonDown(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnLButtonDown(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnRButtonDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnRButtonDown(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnRButtonDown(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnLButtonUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnLButtonUp(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnLButtonUp(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnRButtonUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnRButtonUp(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnRButtonUp(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDoubleClick(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_OnLButtonDoubleClick(hHandle, page, modifier, page_x, page_y)
+            .FORM_OnLButtonDoubleClick(form, page, modifier, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnKeyDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nKeyCode: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        self.bindings
-            .FORM_OnKeyDown(hHandle, page, nKeyCode, modifier)
+        self.bindings.FORM_OnKeyDown(form, page, nKeyCode, modifier)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnKeyUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nKeyCode: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        self.bindings
-            .FORM_OnKeyUp(hHandle, page, nKeyCode, modifier)
+        self.bindings.FORM_OnKeyUp(form, page, nKeyCode, modifier)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnChar(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nChar: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        self.bindings.FORM_OnChar(hHandle, page, nChar, modifier)
+        self.bindings.FORM_OnChar(form, page, nChar, modifier)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_GetFocusedText(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FORM_GetFocusedText(hHandle, page, buffer, buflen)
+            .FORM_GetFocusedText(form, page, buffer, buflen)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_GetSelectedText(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
         self.bindings
-            .FORM_GetSelectedText(hHandle, page, buffer, buflen)
+            .FORM_GetSelectedText(form, page, buffer, buflen)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_ReplaceAndKeepSelection(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
         self.bindings
-            .FORM_ReplaceAndKeepSelection(hHandle, page, wsText)
+            .FORM_ReplaceAndKeepSelection(form, page, wsText)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_ReplaceSelection(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
-        self.bindings.FORM_ReplaceSelection(hHandle, page, wsText)
+        self.bindings.FORM_ReplaceSelection(form, page, wsText)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        self.bindings.FORM_SelectAllText(hHandle, page)
+    fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        self.bindings.FORM_SelectAllText(form, page)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        self.bindings.FORM_CanUndo(hHandle, page)
+    fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        self.bindings.FORM_CanUndo(form, page)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        self.bindings.FORM_CanRedo(hHandle, page)
+    fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        self.bindings.FORM_CanRedo(form, page)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        self.bindings.FORM_Undo(hHandle, page)
-    }
-
-    #[inline]
-    #[doc = " Function: FORM_Redo\n       Make the current focused widget perform a redo operation.\n Parameters:\n       hHandle     -   Handle to the form fill module, as returned by\n                       FPDFDOC_InitFormFillEnvironment().\n       page        -   Handle to the page, as returned by FPDF_LoadPage().\n Return Value:\n       True if the redo operation succeeded."]
-    #[allow(non_snake_case)]
-    fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        self.bindings.FORM_Redo(hHandle, page)
+    fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        self.bindings.FORM_Undo(form, page)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL {
-        self.bindings.FORM_ForceToKillFocus(hHandle)
+    fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        self.bindings.FORM_Redo(form, page)
+    }
+
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL {
+        self.bindings.FORM_ForceToKillFocus(form)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_GetFocusedAnnot(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page_index: *mut c_int,
         annot: *mut FPDF_ANNOTATION,
     ) -> FPDF_BOOL {
-        self.bindings
-            .FORM_GetFocusedAnnot(handle, page_index, annot)
+        self.bindings.FORM_GetFocusedAnnot(form, page_index, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
-        self.bindings.FORM_SetFocusedAnnot(handle, annot)
+    fn FORM_SetFocusedAnnot(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+        self.bindings.FORM_SetFocusedAnnot(form, annot)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPage_HasFormFieldAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         page_x: f64,
         page_y: f64,
     ) -> c_int {
         self.bindings
-            .FPDFPage_HasFormFieldAtPoint(hHandle, page, page_x, page_y)
+            .FPDFPage_HasFormFieldAtPoint(form, page, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPage_FormFieldZOrderAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         page_x: f64,
         page_y: f64,
     ) -> c_int {
         self.bindings
-            .FPDFPage_FormFieldZOrderAtPoint(hHandle, page, page_x, page_y)
+            .FPDFPage_FormFieldZOrderAtPoint(form, page, page_x, page_y)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         field_type: c_int,
         color: FPDF_DWORD,
     ) {
         self.bindings
-            .FPDF_SetFormFieldHighlightColor(handle, field_type, color)
+            .FPDF_SetFormFieldHighlightColor(form, field_type, color)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightAlpha(&self, handle: FPDF_FORMHANDLE, alpha: c_uchar) {
-        self.bindings.FPDF_SetFormFieldHighlightAlpha(handle, alpha)
+    fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar) {
+        self.bindings.FPDF_SetFormFieldHighlightAlpha(form, alpha)
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE) {
-        self.bindings.FPDF_RemoveFormFieldHighlight(hHandle)
+    fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE) {
+        self.bindings.FPDF_RemoveFormFieldHighlight(form)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_FFLDraw(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -2757,7 +2770,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         flags: c_int,
     ) {
         self.bindings.FPDF_FFLDraw(
-            handle, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
+            form, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
         )
     }
 
@@ -2766,7 +2779,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[allow(non_snake_case)]
     fn FPDF_FFLDrawSkia(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         canvas: FPDF_SKIA_CANVAS,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -2777,7 +2790,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         flags: c_int,
     ) {
         self.bindings.FPDF_FFLDrawSkia(
-            hHandle, canvas, page, start_x, start_y, size_x, size_y, rotate, flags,
+            form, canvas, page, start_x, start_y, size_x, size_y, rotate, flags,
         );
     }
 
@@ -2791,24 +2804,24 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[allow(non_snake_case)]
     fn FORM_SetIndexSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         index: c_int,
         selected: FPDF_BOOL,
     ) -> FPDF_BOOL {
         self.bindings
-            .FORM_SetIndexSelected(hHandle, page, index, selected)
+            .FORM_SetIndexSelected(form, page, index, selected)
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_IsIndexSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         index: c_int,
     ) -> FPDF_BOOL {
-        self.bindings.FORM_IsIndexSelected(hHandle, page, index)
+        self.bindings.FORM_IsIndexSelected(form, page, index)
     }
 
     #[inline]
@@ -3676,6 +3689,18 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFFormObj_GetObject(form_object, index)
     }
 
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFormObj_RemoveObject(
+        &self,
+        form_object: FPDF_PAGEOBJECT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFFormObj_RemoveObject(form_object, page_object)
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_CreateTextObj(
@@ -3894,6 +3919,19 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) {
         self.bindings.FPDFPage_InsertObject(page, page_obj)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertObjectAtIndex(
+        &self,
+        page: FPDF_PAGE,
+        page_object: FPDF_PAGEOBJECT,
+        index: usize,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFPage_InsertObjectAtIndex(page, page_object, index)
     }
 
     #[inline]
@@ -5157,6 +5195,19 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     ) -> FPDF_BOOL {
         self.bindings
             .FPDFAttachment_GetFile(attachment, buffer, buflen, out_buflen)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetSubtype(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        self.bindings
+            .FPDFAttachment_GetSubtype(attachment, buffer, buflen)
     }
 
     #[inline]

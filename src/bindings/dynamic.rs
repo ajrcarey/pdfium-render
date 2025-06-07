@@ -1002,6 +1002,12 @@ pub(crate) struct DynamicPdfiumBindings {
         unsafe extern "C" fn(annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL,
     extern_FPDFAnnot_GetFormFieldFlags:
         unsafe extern "C" fn(handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int,
+    #[cfg(feature = "pdfium_future")]
+    extern_FPDFAnnot_SetFormFieldFlags: unsafe extern "C" fn(
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        flags: c_int,
+    ) -> FPDF_BOOL,
     extern_FPDFAnnot_GetFormFieldAtPoint: unsafe extern "C" fn(
         hHandle: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -1039,6 +1045,14 @@ pub(crate) struct DynamicPdfiumBindings {
         hHandle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut f32,
+    ) -> FPDF_BOOL,
+    #[cfg(feature = "pdfium_future")]
+    extern_FPDFAnnot_SetFontColor: unsafe extern "C" fn(
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: c_uint,
+        G: c_uint,
+        B: c_uint,
     ) -> FPDF_BOOL,
     #[cfg(any(
         feature = "pdfium_future",
@@ -1581,6 +1595,11 @@ pub(crate) struct DynamicPdfiumBindings {
     extern_FPDFFormObj_CountObjects: unsafe extern "C" fn(form_object: FPDF_PAGEOBJECT) -> c_int,
     extern_FPDFFormObj_GetObject:
         unsafe extern "C" fn(form_object: FPDF_PAGEOBJECT, index: c_ulong) -> FPDF_PAGEOBJECT,
+    #[cfg(feature = "pdfium_future")]
+    extern_FPDFFormObj_RemoveObject: unsafe extern "C" fn(
+        form_object: FPDF_PAGEOBJECT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL,
     extern_FPDFPageObj_CreateTextObj: unsafe extern "C" fn(
         document: FPDF_DOCUMENT,
         font: FPDF_FONT,
@@ -1674,6 +1693,12 @@ pub(crate) struct DynamicPdfiumBindings {
         stroke: *mut FPDF_BOOL,
     ) -> FPDF_BOOL,
     extern_FPDFPage_InsertObject: unsafe extern "C" fn(page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT),
+    #[cfg(feature = "pdfium_future")]
+    extern_FPDFPage_InsertObjectAtIndex: unsafe extern "C" fn(
+        page: FPDF_PAGE,
+        page_object: FPDF_PAGEOBJECT,
+        index: usize,
+    ) -> FPDF_BOOL,
     extern_FPDFPage_RemoveObject:
         unsafe extern "C" fn(page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) -> FPDF_BOOL,
     extern_FPDFPage_CountObjects: unsafe extern "C" fn(page: FPDF_PAGE) -> c_int,
@@ -2248,6 +2273,12 @@ pub(crate) struct DynamicPdfiumBindings {
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL,
+    #[cfg(feature = "pdfium_future")]
+    extern_FPDFAttachment_GetSubtype: unsafe extern "C" fn(
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong,
     extern_FPDFCatalog_IsTagged: unsafe extern "C" fn(document: FPDF_DOCUMENT) -> FPDF_BOOL,
     #[cfg(any(
         feature = "pdfium_future",
@@ -2746,6 +2777,11 @@ impl DynamicPdfiumBindings {
                 &library,
                 "FPDFAnnot_GetFormFieldFlags",
             )?),
+            #[cfg(feature = "pdfium_future")]
+            extern_FPDFAnnot_SetFormFieldFlags: *(Self::bind(
+                &library,
+                "FPDFAnnot_SetFormFieldFlags",
+            )?),
             extern_FPDFAnnot_GetFormFieldAtPoint: *(Self::bind(
                 &library,
                 "FPDFAnnot_GetFormFieldAtPoint",
@@ -2769,6 +2805,8 @@ impl DynamicPdfiumBindings {
                 "FPDFAnnot_IsOptionSelected",
             )?),
             extern_FPDFAnnot_GetFontSize: *(Self::bind(&library, "FPDFAnnot_GetFontSize")?),
+            #[cfg(feature = "pdfium_future")]
+            extern_FPDFAnnot_SetFontColor: *(Self::bind(&library, "FPDFAnnot_SetFontColor")?),
             #[cfg(any(
                 feature = "pdfium_future",
                 feature = "pdfium_7123",
@@ -3111,6 +3149,11 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDFFormObj_CountObjects: *(Self::bind(&library, "FPDFFormObj_CountObjects")?),
             extern_FPDFFormObj_GetObject: *(Self::bind(&library, "FPDFFormObj_GetObject")?),
+            #[cfg(feature = "pdfium_future")]
+            extern_FPDFFormObj_RemoveObject: (*Self::bind(
+                &library,
+                "FPDFFormObject_RemoveObject",
+            )?),
             extern_FPDFPageObj_CreateTextObj: *(Self::bind(&library, "FPDFPageObj_CreateTextObj")?),
             extern_FPDFTextObj_GetTextRenderMode: *(Self::bind(
                 &library,
@@ -3155,6 +3198,11 @@ impl DynamicPdfiumBindings {
             extern_FPDFPath_SetDrawMode: *(Self::bind(&library, "FPDFPath_SetDrawMode")?),
             extern_FPDFPath_GetDrawMode: *(Self::bind(&library, "FPDFPath_GetDrawMode")?),
             extern_FPDFPage_InsertObject: *(Self::bind(&library, "FPDFPage_InsertObject")?),
+            #[cfg(feature = "pdfium_future")]
+            extern_FPDFPage_InsertObjectAtIndex: *(Self::bind(
+                &library,
+                "FPDFPage_InsertObjectAtIndex",
+            )?),
             extern_FPDFPage_RemoveObject: *(Self::bind(&library, "FPDFPage_RemoveObject")?),
             extern_FPDFPage_CountObjects: *(Self::bind(&library, "FPDFPage_CountObjects")?),
             extern_FPDFPage_GetObject: *(Self::bind(&library, "FPDFPage_GetObject")?),
@@ -3430,6 +3478,8 @@ impl DynamicPdfiumBindings {
             )?),
             extern_FPDFAttachment_SetFile: *(Self::bind(&library, "FPDFAttachment_SetFile")?),
             extern_FPDFAttachment_GetFile: *(Self::bind(&library, "FPDFAttachment_GetFile")?),
+            #[cfg(feature = "pdfium_future")]
+            extern_FPDFAttachment_GetSubtype: *(Self::bind(&library, "FPDFAttachment_GetSubtype")?),
             extern_FPDFCatalog_IsTagged: *(Self::bind(&library, "FPDFCatalog_IsTagged")?),
             #[cfg(any(
                 feature = "pdfium_future",
@@ -5468,7 +5518,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormAdditionalActionJavaScript(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         event: c_int,
         buffer: *mut FPDF_WCHAR,
@@ -5476,7 +5526,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     ) -> c_ulong {
         unsafe {
             (self.extern_FPDFAnnot_GetFormAdditionalActionJavaScript)(
-                hHandle, annot, event, buffer, buflen,
+                form, annot, event, buffer, buflen,
             )
         }
     }
@@ -5485,12 +5535,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAlternateName(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldAlternateName)(hHandle, annot, buffer, buflen) }
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldAlternateName)(form, annot, buffer, buflen) }
     }
 
     #[inline]
@@ -5594,76 +5644,80 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldFlags(
+    fn FPDFAnnot_GetFormFieldFlags(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldFlags)(form, annot) }
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFormFieldFlags(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
-    ) -> c_int {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldFlags)(handle, annot) }
+        flags: c_int,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFAnnot_SetFormFieldFlags)(form, annot, flags) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         point: *const FS_POINTF,
     ) -> FPDF_ANNOTATION {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldAtPoint)(hHandle, page, point) }
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldAtPoint)(form, page, point) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldName(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldName)(hHandle, annot, buffer, buflen) }
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldName)(form, annot, buffer, buflen) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldType(
-        &self,
-        hHandle: FPDF_FORMHANDLE,
-        annot: FPDF_ANNOTATION,
-    ) -> c_int {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldType)(hHandle, annot) }
+    fn FPDFAnnot_GetFormFieldType(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldType)(form, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldValue(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldValue)(hHandle, annot, buffer, buflen) }
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldValue)(form, annot, buffer, buflen) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionCount(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
-        unsafe { (self.extern_FPDFAnnot_GetOptionCount)(hHandle, annot) }
+    fn FPDFAnnot_GetOptionCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+        unsafe { (self.extern_FPDFAnnot_GetOptionCount)(form, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetOptionLabel(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         index: c_int,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FPDFAnnot_GetOptionLabel)(hHandle, annot, index, buffer, buflen) }
+        unsafe { (self.extern_FPDFAnnot_GetOptionLabel)(form, annot, index, buffer, buflen) }
     }
 
     #[inline]
@@ -5681,11 +5735,25 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontSize(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         value: *mut f32,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFAnnot_GetFontSize)(hHandle, annot, value) }
+        unsafe { (self.extern_FPDFAnnot_GetFontSize)(form, annot, value) }
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFontColor(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: c_uint,
+        G: c_uint,
+        B: c_uint,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFAnnot_SetFontColor)(handle, annot, R, G, B) }
     }
 
     #[cfg(any(
@@ -5702,47 +5770,47 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFontColor(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         R: *mut c_uint,
         G: *mut c_uint,
         B: *mut c_uint,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFAnnot_GetFontColor)(hHandle, annot, R, G, B) }
+        unsafe { (self.extern_FPDFAnnot_GetFontColor)(form, annot, R, G, B) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsChecked(&self, hHandle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFAnnot_IsChecked)(hHandle, annot) }
+    fn FPDFAnnot_IsChecked(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFAnnot_IsChecked)(form, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFocusableSubtypes(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFAnnot_SetFocusableSubtypes)(hHandle, subtypes, count) }
+        unsafe { (self.extern_FPDFAnnot_SetFocusableSubtypes)(form, subtypes, count) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypesCount(&self, hHandle: FPDF_FORMHANDLE) -> c_int {
-        unsafe { (self.extern_FPDFAnnot_GetFocusableSubtypesCount)(hHandle) }
+    fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int {
+        unsafe { (self.extern_FPDFAnnot_GetFocusableSubtypesCount)(form) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFocusableSubtypes(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FPDFAnnot_GetFocusableSubtypes)(hHandle, subtypes, count) }
+        unsafe { (self.extern_FPDFAnnot_GetFocusableSubtypes)(form, subtypes, count) }
     }
 
     #[inline]
@@ -5755,32 +5823,32 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlCount(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
     ) -> c_int {
-        unsafe { (self.extern_FPDFAnnot_GetFormControlCount)(hHandle, annot) }
+        unsafe { (self.extern_FPDFAnnot_GetFormControlCount)(form, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormControlIndex(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
     ) -> c_int {
-        unsafe { (self.extern_FPDFAnnot_GetFormControlIndex)(hHandle, annot) }
+        unsafe { (self.extern_FPDFAnnot_GetFormControlIndex)(form, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldExportValue(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FPDFAnnot_GetFormFieldExportValue)(hHandle, annot, buffer, buflen) }
+        unsafe { (self.extern_FPDFAnnot_GetFormFieldExportValue)(form, annot, buffer, buflen) }
     }
 
     #[inline]
@@ -5881,46 +5949,46 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentJSAction(&self, hHandle: FPDF_FORMHANDLE) {
-        unsafe { (self.extern_FORM_DoDocumentJSAction)(hHandle) }
+    fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE) {
+        unsafe { (self.extern_FORM_DoDocumentJSAction)(form) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentOpenAction(&self, hHandle: FPDF_FORMHANDLE) {
-        unsafe { (self.extern_FORM_DoDocumentOpenAction)(hHandle) }
+    fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE) {
+        unsafe { (self.extern_FORM_DoDocumentOpenAction)(form) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentAAction(&self, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
-        unsafe { (self.extern_FORM_DoDocumentAAction)(hHandle, aaType) }
+    fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int) {
+        unsafe { (self.extern_FORM_DoDocumentAAction)(form, aaType) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, hHandle: FPDF_FORMHANDLE, aaType: c_int) {
-        unsafe { (self.extern_FORM_DoPageAAction)(page, hHandle, aaType) }
+    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int) {
+        unsafe { (self.extern_FORM_DoPageAAction)(page, form, aaType) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnMouseMove(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnMouseMove)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnMouseMove)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnMouseWheel(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_coord: *const FS_POINTF,
@@ -5928,7 +5996,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         delta_y: c_int,
     ) -> FPDF_BOOL {
         unsafe {
-            (self.extern_FORM_OnMouseWheel)(hHandle, page, modifier, page_coord, delta_x, delta_y)
+            (self.extern_FORM_OnMouseWheel)(form, page, modifier, page_coord, delta_x, delta_y)
         }
     }
 
@@ -5936,271 +6004,271 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FORM_OnFocus(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnFocus)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnFocus)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnLButtonDown)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnLButtonDown)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnRButtonDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnRButtonDown)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnRButtonDown)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnLButtonUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnLButtonUp)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnLButtonUp)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnRButtonUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnRButtonUp)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnRButtonUp)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnLButtonDoubleClick(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         modifier: c_int,
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnLButtonDoubleClick)(hHandle, page, modifier, page_x, page_y) }
+        unsafe { (self.extern_FORM_OnLButtonDoubleClick)(form, page, modifier, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnKeyDown(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nKeyCode: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnKeyDown)(hHandle, page, nKeyCode, modifier) }
+        unsafe { (self.extern_FORM_OnKeyDown)(form, page, nKeyCode, modifier) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnKeyUp(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nKeyCode: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnKeyUp)(hHandle, page, nKeyCode, modifier) }
+        unsafe { (self.extern_FORM_OnKeyUp)(form, page, nKeyCode, modifier) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_OnChar(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         nChar: c_int,
         modifier: c_int,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_OnChar)(hHandle, page, nChar, modifier) }
+        unsafe { (self.extern_FORM_OnChar)(form, page, nChar, modifier) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_GetFocusedText(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FORM_GetFocusedText)(hHandle, page, buffer, buflen) }
+        unsafe { (self.extern_FORM_GetFocusedText)(form, page, buffer, buflen) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_GetSelectedText(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
-        unsafe { (self.extern_FORM_GetSelectedText)(hHandle, page, buffer, buflen) }
+        unsafe { (self.extern_FORM_GetSelectedText)(form, page, buffer, buflen) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_ReplaceAndKeepSelection(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
-        unsafe { (self.extern_FORM_ReplaceAndKeepSelection)(hHandle, page, wsText) }
+        unsafe { (self.extern_FORM_ReplaceAndKeepSelection)(form, page, wsText) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_ReplaceSelection(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
-        unsafe { (self.extern_FORM_ReplaceSelection)(hHandle, page, wsText) }
+        unsafe { (self.extern_FORM_ReplaceSelection)(form, page, wsText) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_SelectAllText(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_SelectAllText)(hHandle, page) }
+    fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_SelectAllText)(form, page) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_CanUndo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_CanUndo)(hHandle, page) }
+    fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_CanUndo)(form, page) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_CanRedo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_CanRedo)(hHandle, page) }
+    fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_CanRedo)(form, page) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_Undo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_Undo)(hHandle, page) }
+    fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_Undo)(form, page) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_Redo(&self, hHandle: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_Redo)(hHandle, page) }
+    fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_Redo)(form, page) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_ForceToKillFocus(&self, hHandle: FPDF_FORMHANDLE) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_ForceToKillFocus)(hHandle) }
+    fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_ForceToKillFocus)(form) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_GetFocusedAnnot(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page_index: *mut c_int,
         annot: *mut FPDF_ANNOTATION,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_GetFocusedAnnot)(handle, page_index, annot) }
+        unsafe { (self.extern_FORM_GetFocusedAnnot)(form, page_index, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FORM_SetFocusedAnnot(&self, handle: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_SetFocusedAnnot)(handle, annot) }
+    fn FORM_SetFocusedAnnot(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+        unsafe { (self.extern_FORM_SetFocusedAnnot)(form, annot) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPage_HasFormFieldAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         page_x: f64,
         page_y: f64,
     ) -> c_int {
-        unsafe { (self.extern_FPDFPage_HasFormFieldAtPoint)(hHandle, page, page_x, page_y) }
+        unsafe { (self.extern_FPDFPage_HasFormFieldAtPoint)(form, page, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPage_FormFieldZOrderAtPoint(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         page_x: f64,
         page_y: f64,
     ) -> c_int {
-        unsafe { (self.extern_FPDFPage_FormFieldZOrderAtPoint)(hHandle, page, page_x, page_y) }
+        unsafe { (self.extern_FPDFPage_FormFieldZOrderAtPoint)(form, page, page_x, page_y) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_SetFormFieldHighlightColor(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         field_type: c_int,
         color: FPDF_DWORD,
     ) {
         unsafe {
-            (self.extern_FPDF_SetFormFieldHighlightColor)(handle, field_type, color);
+            (self.extern_FPDF_SetFormFieldHighlightColor)(form, field_type, color);
         }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightAlpha(&self, handle: FPDF_FORMHANDLE, alpha: c_uchar) {
+    fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar) {
         unsafe {
-            (self.extern_FPDF_SetFormFieldHighlightAlpha)(handle, alpha);
+            (self.extern_FPDF_SetFormFieldHighlightAlpha)(form, alpha);
         }
     }
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_RemoveFormFieldHighlight(&self, hHandle: FPDF_FORMHANDLE) {
-        unsafe { (self.extern_FPDF_RemoveFormFieldHighlight)(hHandle) }
+    fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE) {
+        unsafe { (self.extern_FPDF_RemoveFormFieldHighlight)(form) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FPDF_FFLDraw(
         &self,
-        handle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -6212,7 +6280,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     ) {
         unsafe {
             (self.extern_FPDF_FFLDraw)(
-                handle, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
+                form, bitmap, page, start_x, start_y, size_x, size_y, rotate, flags,
             );
         }
     }
@@ -6221,7 +6289,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDF_FFLDrawSkia(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         canvas: FPDF_SKIA_CANVAS,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -6233,7 +6301,7 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     ) {
         unsafe {
             (self.extern_FPDF_FFLDrawSkia)(
-                hHandle, canvas, page, start_x, start_y, size_x, size_y, rotate, flags,
+                form, canvas, page, start_x, start_y, size_x, size_y, rotate, flags,
             );
         }
     }
@@ -6248,23 +6316,23 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FORM_SetIndexSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         index: c_int,
         selected: FPDF_BOOL,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_SetIndexSelected)(hHandle, page, index, selected) }
+        unsafe { (self.extern_FORM_SetIndexSelected)(form, page, index, selected) }
     }
 
     #[inline]
     #[allow(non_snake_case)]
     fn FORM_IsIndexSelected(
         &self,
-        hHandle: FPDF_FORMHANDLE,
+        form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
         index: c_int,
     ) -> FPDF_BOOL {
-        unsafe { (self.extern_FORM_IsIndexSelected)(hHandle, page, index) }
+        unsafe { (self.extern_FORM_IsIndexSelected)(form, page, index) }
     }
 
     #[inline]
@@ -7010,6 +7078,17 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFFormObj_GetObject)(form_object, index) }
     }
 
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFFormObj_RemoveObject(
+        &self,
+        form_object: FPDF_PAGEOBJECT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFFormObj_RemoveObject)(form_object, page_object) }
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObj_CreateTextObj(
@@ -7228,6 +7307,18 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) {
         unsafe { (self.extern_FPDFPage_InsertObject)(page, page_obj) }
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertObjectAtIndex(
+        &self,
+        page: FPDF_PAGE,
+        page_object: FPDF_PAGEOBJECT,
+        index: usize,
+    ) -> FPDF_BOOL {
+        unsafe { (self.extern_FPDFPage_InsertObjectAtIndex)(page, page_object, index) }
     }
 
     #[inline]
@@ -8549,6 +8640,18 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
         unsafe { (self.extern_FPDFAttachment_GetFile)(attachment, buffer, buflen, out_buflen) }
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetSubtype(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        unsafe { (self.extern_FPDFAttachment_GetSubtype)(attachment, buffer, buflen) }
     }
 
     #[inline]

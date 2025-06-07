@@ -7918,6 +7918,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFormFieldFlags(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        flags: c_int,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
     #[allow(non_snake_case)]
     fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
@@ -8250,6 +8261,19 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(value_ptr);
 
         result
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFAnnot_SetFontColor(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        R: c_uint,
+        G: c_uint,
+        B: c_uint,
+    ) -> FPDF_BOOL {
+        todo!()
     }
 
     #[cfg(any(
@@ -12475,6 +12499,16 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_PAGEOBJECT
     }
 
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFFormObj_RemoveObject(
+        &self,
+        form_object: FPDF_PAGEOBJECT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL {
+        todo!()
+    }
+
     #[allow(non_snake_case)]
     fn FPDFPageObj_CreateTextObj(
         &self,
@@ -13228,6 +13262,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
                 &Self::js_value_from_object(page_obj),
             ))),
         );
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFPage_InsertObjectAtIndex(
+        &self,
+        page: FPDF_PAGE,
+        page_object: FPDF_PAGEOBJECT,
+        index: usize,
+    ) -> FPDF_BOOL {
+        todo!()
     }
 
     #[allow(non_snake_case)]
@@ -17410,6 +17455,17 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(out_buflen_ptr);
 
         result
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[allow(non_snake_case)]
+    fn FPDFAttachment_GetSubtype(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        todo!()
     }
 
     #[allow(non_snake_case)]
