@@ -85,6 +85,8 @@ jobs:
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6996"
     - name: Check backward compatibility with pdfium_7123 and dynamic bindings
       run: cargo check --no-default-features --features="image, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7123"
+    - name: Check backward compatibility with pdfium_7215 and dynamic bindings
+      run: cargo check --no-default-features --features="image, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7215"
 
     # Compatibility checks for static bindings
 
@@ -128,6 +130,8 @@ jobs:
       run: cargo check --no-default-features --features="image, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_6996"
     - name: Check backward compatibility with pdfium_7123 and static bindings
       run: cargo check --no-default-features --features="image, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7123"
+    - name: Check backward compatibility with pdfium_7215 and static bindings
+      run: cargo check --no-default-features --features="image, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7215"
 
     # Compatibility checks for WASM bindings
 
@@ -171,3 +175,5 @@ jobs:
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_6996
     - name: Check backward compatibility with pdfium_7123 and WASM bindings
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7123
+    - name: Check backward compatibility with pdfium_7215 and WASM bindings
+      run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7215

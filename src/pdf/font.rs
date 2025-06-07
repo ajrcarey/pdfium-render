@@ -787,6 +787,7 @@ impl<'a> PdfFont<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
         feature = "pdfium_6721",
@@ -843,6 +844,7 @@ impl<'a> PdfFont<'a> {
 
         #[cfg(any(
             feature = "pdfium_future",
+            feature = "pdfium_7215",
             feature = "pdfium_7123",
             feature = "pdfium_6996",
             feature = "pdfium_6721",
@@ -883,6 +885,7 @@ impl<'a> PdfFont<'a> {
 
         #[cfg(any(
             feature = "pdfium_future",
+            feature = "pdfium_7215",
             feature = "pdfium_7123",
             feature = "pdfium_6996",
             feature = "pdfium_6721",
