@@ -23,7 +23,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     let source_page = document.pages().first()?;
 
-    let mut source_objects = source_page.objects().create_group(|object| {
+    let source_objects = source_page.objects().create_group(|object| {
         object
             .bounds()
             .map(|bounds| {
@@ -36,23 +36,11 @@ pub fn main() -> Result<(), PdfiumError> {
 
     println!("{} objects selected on page", source_objects.len());
 
-    source_objects.retain_if_copyable();
-
-    for o in source_objects.iter() {
-        if let Some(o) = o.as_text_object() {
-            println!("Selected line: {}", o.text());
-        }
-    }
-
-    println!("{} objects to copy", source_objects.len());
-
     let mut destination_page = document.pages().last()?;
 
-    let destination_objects = source_objects.try_copy_onto_existing_page(&mut destination_page)?;
+    source_objects.move_to_page(&mut destination_page)?;
 
-    println!("{} objects copied to page", destination_objects.len());
-
-    source_objects.remove_objects_from_page()?;
+    println!("{} objects moved to page", destination_page.objects().len());
 
     document.save_to_file("test/copy-test.pdf")
 }
