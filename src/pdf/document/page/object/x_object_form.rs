@@ -187,18 +187,18 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if index >= self.len() {
-            return Err(PdfiumError::PageObjectIndexOutOfBounds);
-        }
-
         let object_handle = self
             .bindings
             .FPDFFormObj_GetObject(self.object_handle, index as c_ulong);
 
         if object_handle.is_null() {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                PdfiumInternalError::Unknown,
-            ))
+            if index >= self.len() {
+                Err(PdfiumError::PageObjectIndexOutOfBounds)
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
         } else {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
