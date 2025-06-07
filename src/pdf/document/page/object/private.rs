@@ -27,6 +27,9 @@ pub(crate) mod internal {
     use crate::pdf::rect::PdfRect;
     use std::os::raw::c_double;
 
+    #[cfg(feature = "pdfium_future")]
+    use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObjectsCommon};
+
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
     pub(crate) trait PdfPageObjectPrivate<'a>: PdfPageObjectCommon<'a> {
         /// Returns the [PdfiumLibraryBindings] used by this [PdfPageObject].
@@ -43,7 +46,10 @@ pub(crate) mod internal {
 
         /// Adds this [PdfPageObject] to the given [PdfPageObjects] collection.
         #[inline]
-        fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
+        fn add_object_to_page(
+            &mut self,
+            page_objects: &mut PdfPageObjects,
+        ) -> Result<(), PdfiumError> {
             self.add_object_to_page_handle(
                 page_objects.document_handle(),
                 page_objects.page_handle(),
@@ -64,6 +70,60 @@ pub(crate) mod internal {
             ));
 
             self.regenerate_content_after_mutation()
+        }
+
+        #[cfg(feature = "pdfium_future")]
+        /// Adds this [PdfPageObject] to the given [PdfPageObjects] collection, inserting
+        /// it into the existing collection at the given positional index.
+        #[inline]
+        fn insert_object_on_page(
+            &mut self,
+            page_objects: &mut PdfPageObjects,
+            index: PdfPageObjectIndex,
+        ) -> Result<(), PdfiumError> {
+            if index > page_objects.len() {
+                // FPDFPage_InsertObjectAtIndex() will return false if the given index
+                // is out of bounds. Avoid this.
+
+                self.add_object_to_page_handle(
+                    page_objects.document_handle(),
+                    page_objects.page_handle(),
+                )
+            } else {
+                self.insert_object_on_page_handle(
+                    page_objects.document_handle(),
+                    page_objects.page_handle(),
+                    index,
+                )
+            }
+        }
+
+        #[cfg(feature = "pdfium_future")]
+        fn insert_object_on_page_handle(
+            &mut self,
+            document_handle: FPDF_DOCUMENT,
+            page_handle: FPDF_PAGE,
+            index: PdfPageObjectIndex,
+        ) -> Result<(), PdfiumError> {
+            if self
+                .bindings()
+                .is_true(self.bindings().FPDFPage_InsertObjectAtIndex(
+                    page_handle,
+                    self.object_handle(),
+                    index,
+                ))
+            {
+                self.set_ownership(PdfPageObjectOwnership::owned_by_page(
+                    document_handle,
+                    page_handle,
+                ));
+
+                self.regenerate_content_after_mutation()
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
         }
 
         /// Removes this [PdfPageObject] from the [PdfPageObjects] collection that contains it.

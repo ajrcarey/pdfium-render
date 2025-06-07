@@ -20,6 +20,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
+use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
 use crate::pdf::document::page::annotation::{PdfPageAnnotation, PdfPageAnnotationCommon};
 use crate::pdf::document::page::object::image::PdfPageImageObject;
 use crate::pdf::document::page::object::path::PdfPagePathObject;
@@ -39,7 +40,8 @@ use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
-use super::annotation::private::internal::PdfPageAnnotationPrivate;
+#[cfg(feature = "pdfium_future")]
+use crate::pdf::document::page::objects::common::PdfPageObjectIndex;
 
 /// The type of a single renderable [PdfPageObject].
 ///
@@ -1078,7 +1080,7 @@ where
             PdfPageObjectOwnership::Unowned => {}
         }
 
-        self.add_object_to_page(page.objects())
+        self.add_object_to_page(page.objects_mut())
     }
 
     fn move_to_annotation(
@@ -1139,8 +1141,19 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     }
 
     #[inline]
-    fn add_object_to_page(&mut self, page_objects: &PdfPageObjects) -> Result<(), PdfiumError> {
+    fn add_object_to_page(&mut self, page_objects: &mut PdfPageObjects) -> Result<(), PdfiumError> {
         self.unwrap_as_trait_mut().add_object_to_page(page_objects)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    fn insert_object_on_page(
+        &mut self,
+        page_objects: &mut PdfPageObjects,
+        index: PdfPageObjectIndex,
+    ) -> Result<(), PdfiumError> {
+        self.unwrap_as_trait_mut()
+            .insert_object_on_page(page_objects, index)
     }
 
     #[inline]
