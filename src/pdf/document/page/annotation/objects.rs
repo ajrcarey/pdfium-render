@@ -78,18 +78,18 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if index >= self.len() {
-            return Err(PdfiumError::PageObjectIndexOutOfBounds);
-        }
-
         let object_handle = self
             .bindings()
             .FPDFAnnot_GetObject(self.annotation_handle(), index as c_int);
 
         if object_handle.is_null() {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                PdfiumInternalError::Unknown,
-            ))
+            if index >= self.len() {
+                Err(PdfiumError::PageObjectIndexOutOfBounds)
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
         } else {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,

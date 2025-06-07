@@ -126,6 +126,24 @@ impl<'a> PdfPageObjects<'a> {
             None => Err(PdfiumError::SourcePageIndexNotInCache),
         }
     }
+
+    #[cfg(feature = "pdfium_future")]
+    /// Adds the given [PdfPageObject] to this page objects collection, inserting it into
+    /// the collection at the given index. The object's memory ownership will be transferred
+    /// to the [PdfPage] containing this page objects collection, and the updated page object
+    /// will be returned.
+    ///
+    /// If the containing [PdfPage] has a content regeneration strategy of
+    /// [PdfPageContentRegenerationStrategy::AutomaticOnEveryChange] then content regeneration
+    /// will be triggered on the page.
+    #[inline]
+    pub fn insert_object_at_index(
+        &mut self,
+        index: PdfPageObjectIndex,
+        mut object: PdfPageObject<'a>,
+    ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        object.insert_object_on_page(self, index).map(|_| object)
+    }
 }
 
 impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
@@ -145,18 +163,18 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if index >= self.len() {
-            return Err(PdfiumError::PageObjectIndexOutOfBounds);
-        }
-
         let object_handle = self
             .bindings
             .FPDFPage_GetObject(self.page_handle, index as c_int);
 
         if object_handle.is_null() {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                PdfiumInternalError::Unknown,
-            ))
+            if index >= self.len() {
+                Err(PdfiumError::PageObjectIndexOutOfBounds)
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                ))
+            }
         } else {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
