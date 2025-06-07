@@ -106,6 +106,7 @@ pdfium_future = [
     "pdfium_enable_xfa",
     "pdfium_enable_v8",
 ]
+pdfium_7215 = []
 pdfium_7123 = []
 pdfium_6996 = []
 pdfium_6721 = []
