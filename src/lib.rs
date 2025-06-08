@@ -122,6 +122,7 @@ pub mod prelude {
         pdf::document::page::annotation::text::*,
         pdf::document::page::annotation::underline::*,
         pdf::document::page::annotation::unsupported::*,
+        pdf::document::page::annotation::variable_text::*,
         pdf::document::page::annotation::widget::*,
         pdf::document::page::annotation::xfa_widget::*,
         pdf::document::page::annotation::{

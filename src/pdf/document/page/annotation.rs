@@ -17,6 +17,7 @@ pub mod strikeout;
 pub mod text;
 pub mod underline;
 pub mod unsupported;
+pub mod variable_text;
 pub mod widget;
 pub mod xfa_widget;
 
