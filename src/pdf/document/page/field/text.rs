@@ -1,7 +1,7 @@
 //! Defines the [PdfFormTextField] struct, exposing functionality related to a single
 //! form field of type [PdfFormFieldType::Text].
 
-use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
+use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE, FPDF_FORMFLAG_TEXT_MULTILINE, FPDF_FORMFLAG_TEXT_PASSWORD};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::field::private::internal::PdfFormFieldPrivate;
@@ -56,6 +56,28 @@ impl<'a> PdfFormTextField<'a> {
     #[inline]
     pub fn set_value(&mut self, value: &str) -> Result<(), PdfiumError> {
         self.set_value_impl(value)
+    }
+
+    /// Returns the raw form field flags for this [PdfFormTextField].
+    /// 
+    /// This returns the complete set of form field flags as a u32 value.
+    /// You can check specific flags by using bitwise operations with the
+    /// `FPDF_FORMFLAG_*` constants.
+    #[inline]
+    pub fn form_field_flags(&self) -> u32 {
+        self.bindings().FPDFAnnot_GetFormFieldFlags(self.form_handle, self.annotation_handle) as u32
+    }
+
+    /// Returns `true` if this [PdfFormTextField] is configured as a multiline text field.
+    #[inline]
+    pub fn is_multiline(&self) -> bool {
+        (self.form_field_flags() & FPDF_FORMFLAG_TEXT_MULTILINE) != 0
+    }
+
+    /// Returns `true` if this [PdfFormTextField] is configured as a password field.
+    #[inline]
+    pub fn is_password(&self) -> bool {
+        (self.form_field_flags() & FPDF_FORMFLAG_TEXT_PASSWORD) != 0
     }
 }
 
