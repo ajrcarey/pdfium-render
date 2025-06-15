@@ -32,19 +32,34 @@ pub fn main() -> Result<(), PdfiumError> {
             // of non-form-field-wrapping annotations for us.
 
             if let Some(field) = annotation.as_form_field() {
+                // Get the bounding box of the form field annotation
+                let bounds_info = match annotation.bounds() {
+                    Ok(rect) => format!("bounds: {:?}", rect),
+                    Err(_) => "bounds: unavailable".to_string(),
+                };
+
                 println!(
-                    "Page {}, annotation {}: {:?}, {:?} has form field value: {}",
+                    "Page {}, annotation {}: {:?}, {:?}, {}, has form field value: {}",
                     page_index,
                     annotation_index,
                     field.field_type(),
                     field.name(),
+                    bounds_info,
                     // The field value depends on the field type.
                     if let Some(checkbox) = field.as_checkbox_field() {
                         checkbox.is_checked()?.to_string()
                     } else if let Some(radio) = field.as_radio_button_field() {
                         radio.is_checked()?.to_string()
                     } else if let Some(text) = field.as_text_field() {
-                        format!("{:?}", text.value())
+                        let field_type = if text.is_multiline() {
+                            "multiline"
+                        } else if text.is_password() {
+                            "password"
+                        } else {
+                            "single-line"
+                        };
+
+                        format!("{:?}, {}", text.value(), field_type)
                     } else if let Some(combo) = field.as_combo_box_field() {
                         format!(
                             "{:?} [out of {} available options]",
