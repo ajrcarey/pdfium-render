@@ -52,11 +52,11 @@ pub fn main() -> Result<(), PdfiumError> {
                         radio.is_checked()?.to_string()
                     } else if let Some(text) = field.as_text_field() {
                         let field_type = if text.is_multiline() {
-                            "multiline"
+                            "multi-line"
                         } else if text.is_password() {
                             "password"
                         } else {
-                            "single-line"
+                            "single line"
                         };
 
                         format!("{:?}, {}", text.value(), field_type)
