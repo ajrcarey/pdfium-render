@@ -1,5 +1,5 @@
 //! Defines the [PdfFormFieldOption] struct, exposing functionality related to a single selectable
-//! option in a `PdfFormFieldOptions` collection.
+//! option in a [PdfFormFieldOptions] collection.
 
 use crate::pdf::document::page::field::options::PdfFormFieldOptionIndex;
 

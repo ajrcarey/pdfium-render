@@ -9,8 +9,11 @@ pub(crate) mod internal {
 
     use crate::bindgen::{
         FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
-        FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor, FPDF_ANNOTATION, FPDF_OBJECT_STRING,
-        FPDF_PAGEOBJECT, FPDF_WCHAR, FS_RECTF,
+        FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor, FPDF_ANNOTATION,
+        FPDF_ANNOT_FLAG_HIDDEN, FPDF_ANNOT_FLAG_INVISIBLE, FPDF_ANNOT_FLAG_LOCKED,
+        FPDF_ANNOT_FLAG_NONE, FPDF_ANNOT_FLAG_NOROTATE, FPDF_ANNOT_FLAG_NOVIEW,
+        FPDF_ANNOT_FLAG_NOZOOM, FPDF_ANNOT_FLAG_PRINT, FPDF_ANNOT_FLAG_READONLY,
+        FPDF_ANNOT_FLAG_TOGGLENOVIEW, FPDF_OBJECT_STRING, FPDF_PAGEOBJECT, FPDF_WCHAR, FS_RECTF,
     };
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
@@ -24,8 +27,101 @@ pub(crate) mod internal {
     use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+    use bitflags::bitflags;
     use chrono::{DateTime, Utc};
-    use std::os::raw::c_uint;
+    use std::os::raw::{c_int, c_uint};
+
+    bitflags! {
+        /// Flags specifying various characteristics of one annotation. For more details,
+        /// refer to Section 8.4.2 of The PDF Reference (Sixth Edition, PDF Format 1.7),
+        /// starting on page 608.
+        pub struct PdfAnnotationFlags: u32 {
+            /// No flags are set for this annotation.
+            const None = FPDF_ANNOT_FLAG_NONE;
+
+            /// If set, do not display the annotation if it does not belong to one of the
+            /// standard annotation types and no annotation handler is available. If clear,
+            /// display such an unknown annotation using an appearance stream specified by
+            /// its appearance dictionary, if any.
+            const Invisible = FPDF_ANNOT_FLAG_INVISIBLE;
+
+            /// If set, do not display or print the annotation or allow it to interact
+            /// with the user, regardless of its annotation type or whether an annotation
+            /// handler is available.
+            ///
+            /// In cases where screen space is limited, the ability to hide and show annotations
+            /// selectively can be used in combination with appearance streams to display
+            /// auxiliary pop-up information, similar in function to online help systems.
+            ///
+            /// This flag was added in PDF version 1.2.
+            const Hidden = FPDF_ANNOT_FLAG_HIDDEN;
+
+            /// If set, print the annotation when the page is printed. If clear, never
+            /// print the annotation, regardless of whether it is displayed on the screen.
+            ///
+            /// This can be useful, for example, for annotations representing interactive
+            /// push buttons, which would serve no meaningful purpose on the printed page.
+            ///
+            /// This flag was added in PDF version 1.2.
+            const Print = FPDF_ANNOT_FLAG_PRINT;
+
+            /// If set, do not scale the annotation's appearance to match the magnification
+            /// of the page. The location of the annotation on the page (defined by
+            /// the upper-left corner of its annotation rectangle) remains fixed,
+            /// regardless of the page magnification.
+            ///
+            /// This flag was added in PDF version 1.3.
+            const NoZoom = FPDF_ANNOT_FLAG_NOZOOM;
+
+            /// If set, do not rotate the annotation's appearance to match the rotation
+            /// of the page. The upper-left corner of the annotation rectangle remains in
+            /// a fixed location on the page, regardless of the page rotation.
+            ///
+            /// This flag was added in PDF version 1.3.
+            const NoRotate = FPDF_ANNOT_FLAG_NOROTATE;
+
+            /// If set, do not display the annotation on the screen or allow it to
+            /// interact with the user. The annotation may be printed (depending on the
+            /// setting of the Print flag) but should be considered hidden for purposes
+            /// of on-screen display and user interaction.
+            ///
+            /// This flag was added in PDF version 1.3.
+            const NoView = FPDF_ANNOT_FLAG_NOVIEW;
+
+            /// If set, do not allow the annotation to interact with the user. The
+            /// annotation may be displayed or printed (depending on the settings of the
+            /// `NoView` and `Print` flags) but should not respond to mouse clicks or
+            /// change its appearance in response to mouse motions.
+            ///
+            /// This flag is ignored for widget annotations; its function is subsumed by
+            /// the `ReadOnly` flag of the associated form field.
+            ///
+            /// THis flag was added in PDF version 1.3.
+            const ReadOnly = FPDF_ANNOT_FLAG_READONLY;
+
+            /// If set, do not allow the annotation to be deleted or its properties
+            /// (including position and size) to be modified by the user. However, this flag
+            /// does not restrict changes to the annotation's contents, such as the value
+            /// of a form field.
+            ///
+            /// THis flag was added in PDF version 1.4.
+            const Locked = FPDF_ANNOT_FLAG_LOCKED;
+
+            /// If set, invert the interpretation of the `NoView` flag for certain
+            /// events. A typical use is to have an annotation that appears only when a
+            /// mouse cursor is held over it.
+            ///
+            /// This flag was added in PDF version 1.5.
+            const ToggleNoView = FPDF_ANNOT_FLAG_TOGGLENOVIEW;
+
+            /// If set, do not allow the contents of the annotation to be modified by
+            /// the user. This flag does not restrict deletion of the annotation or
+            /// changes to other annotation properties, such as position and size.
+            ///
+            /// This flag was added in PDF version 1.7.
+            const LockedContents = 1 << 10; // Not directly exposed by Pdfium, but we can support it inline.
+        }
+    }
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
     pub(crate) trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
@@ -441,6 +537,42 @@ pub(crate) mod internal {
                         PdfiumInternalError::Unknown,
                     ))
                 }
+            }
+        }
+
+        /// Returns all the flags currently set on this annotation.
+        #[inline]
+        fn get_flags_impl(&self) -> PdfAnnotationFlags {
+            PdfAnnotationFlags::from_bits_truncate(
+                self.bindings().FPDFAnnot_GetFlags(self.handle()) as u32,
+            )
+        }
+
+        /// Sets all the flags on this annotation.
+        #[inline]
+        fn set_annot_flags_impl(&mut self, flags: PdfAnnotationFlags) -> bool {
+            self.bindings().is_true(
+                self.bindings()
+                    .FPDFAnnot_SetFlags(self.handle(), flags.bits() as c_int),
+            )
+        }
+
+        /// Sets or clears a single flag on this annotation.
+        fn update_one_flag_impl(
+            &mut self,
+            flag: PdfAnnotationFlags,
+            value: bool,
+        ) -> Result<(), PdfiumError> {
+            let mut flags = self.get_flags_impl();
+
+            flags.set(flag, value);
+
+            if self.set_annot_flags_impl(flags) {
+                Ok(())
+            } else {
+                Err(PdfiumError::PdfiumLibraryInternalError(
+                    crate::error::PdfiumInternalError::Unknown,
+                ))
             }
         }
 

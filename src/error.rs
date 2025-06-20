@@ -68,6 +68,7 @@ pub enum PdfiumError {
     UnknownFormFieldType,
     UnknownActionType,
     UnknownAppearanceMode,
+    UnknownPageAnnotationVariableTextJustificationType,
     PageObjectIndexOutOfBounds,
     PageAnnotationIndexOutOfBounds,
     OwnershipNotAttachedToDocument,

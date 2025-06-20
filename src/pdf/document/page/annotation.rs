@@ -42,7 +42,9 @@ use crate::pdf::document::page::annotation::ink::PdfPageInkAnnotation;
 use crate::pdf::document::page::annotation::link::PdfPageLinkAnnotation;
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
 use crate::pdf::document::page::annotation::popup::PdfPagePopupAnnotation;
-use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
+use crate::pdf::document::page::annotation::private::internal::{
+    PdfAnnotationFlags, PdfPageAnnotationPrivate,
+};
 use crate::pdf::document::page::annotation::redacted::PdfPageRedactedAnnotation;
 use crate::pdf::document::page::annotation::square::PdfPageSquareAnnotation;
 use crate::pdf::document::page::annotation::squiggly::PdfPageSquigglyAnnotation;
@@ -60,7 +62,7 @@ use crate::pdf::rect::PdfRect;
 use chrono::prelude::*;
 
 #[cfg(doc)]
-use crate::pdf::document::page::PdfPage;
+use {crate::pdf::document::page::field::PdfFormFieldCommon, crate::pdf::document::page::PdfPage};
 
 /// The type of a single [PdfPageAnnotation], as defined in table 8.20 of the PDF Reference,
 /// version 1.7, on page 615.
@@ -958,6 +960,138 @@ pub trait PdfPageAnnotationCommon {
     /// Sets the color of any stroked paths in this [PdfPageAnnotation].
     fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError>;
 
+    /// Returns `true` if this [PdfPageAnnotation] should not be displayed to the user
+    /// if it does not belong to one of the standard annotation types and no annotation
+    /// handler is available that supports it.
+    fn is_invisible_if_unsupported(&self) -> bool;
+
+    /// Controls whether or not this [PdfPageAnnotation] should be displayed to the user
+    /// if it does not belong to one of the standard annotation types and no annotation
+    /// handler is available that supports it.
+    fn set_is_invisible_if_unsupported(&mut self, is_invisible: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if this [PdfPageAnnotation] should not be displayed or printed,
+    /// nor allowed to interact with the user, regardless of its annotation type or whether
+    /// an annotation handler is available that supports it.
+    ///
+    /// This flag was added in PDF version 1.2.
+    fn is_hidden(&self) -> bool;
+
+    /// Controls whether or not this [PdfPageAnnotation] should be displayed, printed,
+    /// and allowed to interact with the user, regardless of its annotation type or whether
+    /// an annotation handler is available that supports it.
+    ///
+    /// This flag was added in PDF version 1.2.
+    fn set_is_hidden(&mut self, is_hidden: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if this [PdfPageAnnotation] should be printed when the
+    /// page is printed.
+    ///
+    /// This can be useful, for example, for annotations representing interactive
+    /// push buttons, which would serve no meaningful purpose on the printed page.
+    ///
+    /// This flag was added in PDF version 1.2.
+    fn is_printed(&self) -> bool;
+
+    /// Controls whether or not this [PdfPageAnnotation] should be printed when the
+    /// page is printed.
+    ///
+    /// This can be useful, for example, for annotations representing interactive
+    /// push buttons, which would serve no meaningful purpose on the printed page.
+    ///
+    /// This flag was added in PDF version 1.2.
+    fn set_is_printed(&mut self, is_printed: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if the appearance of this [PdfPageAnnotation] should scale to match
+    /// the magnification of the page. If `false`, the location of the annotation on the
+    /// page (defined by the upper-left corner of its annotation rectangle) will remain fixed,
+    /// regardless of the page magnification.
+    ///
+    /// This flag was added in PDF version 1.3.
+    fn is_zoomable(&self) -> bool;
+
+    /// Controls whether or not the appearance of this [PdfPageAnnotation] should scale to
+    /// match the magnification of the page.
+    ///
+    /// This flag was added in PDF version 1.3.
+    fn set_is_zoomable(&mut self, is_zoomable: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if the appearance of this [PdfPageAnnotation] should rotate to match
+    /// the rotation of the page. If `false`, the upper-left corner of the annotation rectangle
+    /// will remain in a fixed location on the page, regardless of the page rotation.
+    ///
+    /// This flag was added in PDF version 1.3.
+    fn is_rotatable(&self) -> bool;
+
+    /// Controls whether or not the appearance of this [PdfPageAnnotation] should rotate
+    /// to match the rotation of the page.
+    ///
+    /// This flag was added in PDF version 1.3.
+    fn set_is_rotatable(&mut self, is_rotatable: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if this [PdfPageAnnotation] should not be displayed to, or allowed to
+    /// interact with, the user. The annotation may be printed (depending on the setting of
+    /// the [PdfPageAnnotationCommon::is_printed()] flag) but should be considered
+    /// hidden for purposes of on-screen display and user interaction.
+    ///
+    /// This flag was added in PDF version 1.3.
+    fn is_printable_but_not_viewable(&self) -> bool;
+
+    /// Controls whether or not this [PdfPageAnnotation] should be displayed to, and allowed
+    /// to interact with, the user. Whether or not the annotation should be printed is
+    /// controlled separately by the [PdfPageAnnotationCommon::set_is_printed()] function.
+    ///
+    /// This flag was added in PDF version 1.3.
+    fn set_is_printable_but_not_viewable(
+        &mut self,
+        is_printable_but_not_viewable: bool,
+    ) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if this [PdfPageAnnotation] should not be allowed to interact
+    /// with the user. The annotation may be displayed or printed (depending on the settings
+    /// of the [PdfPageAnnotationCommon::is_printed()] and [PdfPageAnnotationCommon::is_printable_but_not_viewable()]
+    /// flags) but should not respond to mouse clicks or change its appearance
+    /// in response to mouse motions.
+    ///
+    /// This flag is ignored for widget annotations; its function is subsumed by
+    /// the [PdfFormFieldCommon::is_read_only()] flag of the associated form field.
+    ///
+    /// THis flag was added in PDF version 1.3.
+    fn is_read_only(&self) -> bool;
+
+    /// Controls whether or not this [PdfPageAnnotation] should be allowed to interact
+    /// with the user.
+    ///
+    /// This flag is ignored for widget annotations; its function is subsumed by
+    /// the [PdfFormFieldCommon::is_read_only()] flag of the associated form field.
+    ///
+    /// THis flag was added in PDF version 1.3.
+    fn set_is_read_only(&mut self, is_read_only: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if this [PdfPageAnnotation] is locked. Locked annotations cannot be
+    /// deleted, repositioned, or resized by the user. The content of a locked annotation
+    /// may still be editable, depending on the setting of the [PdfPageAnnotationCommon::is_editable()]
+    /// flag.
+    fn is_locked(&self) -> bool;
+
+    /// Controls whether or not this [PdfPageAnnotation] is locked. Locked annotations cannot be
+    /// deleted, repositioned, or resized by the user. The content of a locked annotation
+    /// may still be editable, depending on the setting of the [PdfPageAnnotationCommon::set_is_editable()]
+    /// function.
+    fn set_is_locked(&mut self, is_locked: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if the contents of this [PdfPageAnnotation] can be edited by the user.
+    /// This setting does not control whether or not the annotation can be deleted,
+    /// repositioned, or resized; those properties are controlled by the
+    /// [PdfPageAnnotationCommon::is_locked()] flag.
+    fn is_editable(&self) -> bool;
+
+    /// Controls whether or not the contents of this [PdfPageAnnotation] can be edited by the user.
+    /// This setting does not control whether or not the annotation can be deleted,
+    /// repositioned, or resized; those properties are controlled by the
+    /// [PdfPageAnnotationCommon::set_is_locked()] function.
+    fn set_is_editable(&mut self, is_editable: bool) -> Result<(), PdfiumError>;
+
     /// Returns an immutable collection of all the page objects in this [PdfPageAnnotation].
     ///
     /// Page objects can be retrieved from any type of [PdfPageAnnotation], but Pdfium currently
@@ -1103,6 +1237,102 @@ where
     #[inline]
     fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints {
         self.attachment_points_impl()
+    }
+
+    #[inline]
+    fn is_invisible_if_unsupported(&self) -> bool {
+        self.get_flags_impl()
+            .contains(PdfAnnotationFlags::Invisible)
+    }
+
+    #[inline]
+    fn set_is_invisible_if_unsupported(&mut self, is_invisible: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::Invisible, is_invisible)
+    }
+
+    #[inline]
+    fn is_hidden(&self) -> bool {
+        self.get_flags_impl().contains(PdfAnnotationFlags::Hidden)
+    }
+
+    #[inline]
+    fn set_is_hidden(&mut self, is_hidden: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::Hidden, is_hidden)
+    }
+
+    #[inline]
+    fn is_printed(&self) -> bool {
+        self.get_flags_impl().contains(PdfAnnotationFlags::Print)
+    }
+
+    #[inline]
+    fn set_is_printed(&mut self, is_printed: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::Print, is_printed)
+    }
+
+    #[inline]
+    fn is_zoomable(&self) -> bool {
+        !self.get_flags_impl().contains(PdfAnnotationFlags::NoZoom)
+    }
+
+    #[inline]
+    fn set_is_zoomable(&mut self, is_zoomable: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::NoZoom, !is_zoomable)
+    }
+
+    #[inline]
+    fn is_rotatable(&self) -> bool {
+        !self.get_flags_impl().contains(PdfAnnotationFlags::NoRotate)
+    }
+
+    #[inline]
+    fn set_is_rotatable(&mut self, is_rotatable: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::NoRotate, !is_rotatable)
+    }
+
+    #[inline]
+    fn is_printable_but_not_viewable(&self) -> bool {
+        self.get_flags_impl().contains(PdfAnnotationFlags::NoView)
+    }
+
+    #[inline]
+    fn set_is_printable_but_not_viewable(
+        &mut self,
+        is_printable_but_not_viewable: bool,
+    ) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::NoView, is_printable_but_not_viewable)
+    }
+
+    #[inline]
+    fn is_read_only(&self) -> bool {
+        self.get_flags_impl().contains(PdfAnnotationFlags::ReadOnly)
+    }
+
+    #[inline]
+    fn set_is_read_only(&mut self, is_read_only: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::ReadOnly, is_read_only)
+    }
+
+    #[inline]
+    fn is_locked(&self) -> bool {
+        self.get_flags_impl().contains(PdfAnnotationFlags::Locked)
+    }
+
+    #[inline]
+    fn set_is_locked(&mut self, is_locked: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::Locked, is_locked)
+    }
+
+    #[inline]
+    fn is_editable(&self) -> bool {
+        !self
+            .get_flags_impl()
+            .contains(PdfAnnotationFlags::LockedContents)
+    }
+
+    #[inline]
+    fn set_is_editable(&mut self, is_editable: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfAnnotationFlags::LockedContents, !is_editable)
     }
 }
 

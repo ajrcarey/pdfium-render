@@ -25,7 +25,9 @@ use crate::pdf::document::page::field::button::PdfFormPushButtonField;
 use crate::pdf::document::page::field::checkbox::PdfFormCheckboxField;
 use crate::pdf::document::page::field::combo::PdfFormComboBoxField;
 use crate::pdf::document::page::field::list::PdfFormListBoxField;
-use crate::pdf::document::page::field::private::internal::PdfFormFieldPrivate;
+use crate::pdf::document::page::field::private::internal::{
+    PdfFormFieldFlags, PdfFormFieldPrivate,
+};
 use crate::pdf::document::page::field::radio::PdfFormRadioButtonField;
 use crate::pdf::document::page::field::signature::PdfFormSignatureField;
 use crate::pdf::document::page::field::text::PdfFormTextField;
@@ -295,6 +297,47 @@ pub trait PdfFormFieldCommon {
     /// Returns the value currently set for the given appearance mode for this [PdfFormField],
     /// if any.
     fn appearance_mode_value(&self, appearance_mode: PdfAppearanceMode) -> Option<String>;
+
+    /// Returns `true` if the value of this [PdfFormField] is read only.
+    ///
+    /// Users may not change the value of read-only fields, and any associated widget
+    /// annotations will not interact with the user; that is, they will not respond
+    /// to mouse clicks or change their appearance in response to mouse motions.
+    fn is_read_only(&self) -> bool;
+
+    #[cfg(feature = "pdfium_future")]
+    /// Controls whether or not the value of this [PdfFormField] is read only.
+    fn set_is_read_only(&mut self, is_read_only: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if this [PdfFormField] must have a value at the time it is exported
+    /// by any "submit form" action.
+    ///
+    /// For more information on "submit form" actions, refer to Section 8.6.4 of
+    /// The PDF Reference (Sixth Edition, PDF Format 1.7), starting on page 702.
+    fn is_required(&self) -> bool;
+
+    #[cfg(feature = "pdfium_future")]
+    /// Controls whether or not this [PdfFormField] must have a value at the time it is
+    /// exported by any "submit form" action.
+    ///
+    /// For more information on "submit form" actions, refer to Section 8.6.4 of
+    /// The PDF Reference (Sixth Edition, PDF Format 1.7), starting on page 702.
+    fn set_is_required(&mut self, is_required: bool) -> Result<(), PdfiumError>;
+
+    /// Returns `true` if the value of this [PdfFormField] will be exported by any
+    /// "submit form" action.
+    ///
+    /// For more information on "submit form" actions, refer to Section 8.6.4 of
+    /// The PDF Reference (Sixth Edition, PDF Format 1.7), starting on page 702.
+    fn is_exported_on_submit(&self) -> bool;
+
+    #[cfg(feature = "pdfium_future")]
+    /// Controls whether or not the value of this [PdfFormField] will be exported by any
+    /// "submit form" action.
+    ///
+    /// For more information on "submit form" actions, refer to Section 8.6.4 of
+    /// The PDF Reference Manual, version 1.7, starting on page 702.
+    fn set_is_exported_on_submit(&mut self, is_exported: bool) -> Result<(), PdfiumError>;
 }
 
 // Blanket implementation for all PdfFormFieldCommon types.
@@ -317,16 +360,49 @@ where
     fn appearance_mode_value(&self, appearance_mode: PdfAppearanceMode) -> Option<String> {
         self.appearance_mode_value_impl(appearance_mode)
     }
+
+    #[inline]
+    fn is_read_only(&self) -> bool {
+        self.get_flags_impl().contains(PdfFormFieldFlags::ReadOnly)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    fn set_is_read_only(&mut self, is_read_only: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfFormFieldFlags::ReadOnly, is_read_only)
+    }
+
+    #[inline]
+    fn is_required(&self) -> bool {
+        self.get_flags_impl().contains(PdfFormFieldFlags::Required)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    fn set_is_required(&mut self, is_required: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfFormFieldFlags::Required, is_required)
+    }
+
+    #[inline]
+    fn is_exported_on_submit(&self) -> bool {
+        !self.get_flags_impl().contains(PdfFormFieldFlags::NoExport)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    #[inline]
+    fn set_is_exported_on_submit(&mut self, is_exported: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(PdfFormFieldFlags::NoExport, !is_exported)
+    }
 }
 
 impl<'a> PdfFormFieldPrivate<'a> for PdfFormField<'a> {
     #[inline]
-    fn form_handle(&self) -> &FPDF_FORMHANDLE {
+    fn form_handle(&self) -> FPDF_FORMHANDLE {
         self.unwrap_as_trait().form_handle()
     }
 
     #[inline]
-    fn annotation_handle(&self) -> &FPDF_ANNOTATION {
+    fn annotation_handle(&self) -> FPDF_ANNOTATION {
         self.unwrap_as_trait().annotation_handle()
     }
 

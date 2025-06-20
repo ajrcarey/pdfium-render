@@ -91,20 +91,19 @@ impl<'a> PdfFormCheckboxField<'a> {
     /// Checks or clears the checkbox of this [PdfFormCheckboxField] object.
     #[inline]
     pub fn set_checked(&mut self, is_checked: bool) -> Result<(), PdfiumError> {
-        // *** may need to set the appearance stream as well?
         self.set_value_impl(if is_checked { "Yes" } else { "Off" })
     }
 }
 
 impl<'a> PdfFormFieldPrivate<'a> for PdfFormCheckboxField<'a> {
     #[inline]
-    fn form_handle(&self) -> &FPDF_FORMHANDLE {
-        &self.form_handle
+    fn form_handle(&self) -> FPDF_FORMHANDLE {
+        self.form_handle
     }
 
     #[inline]
-    fn annotation_handle(&self) -> &FPDF_ANNOTATION {
-        &self.annotation_handle
+    fn annotation_handle(&self) -> FPDF_ANNOTATION {
+        self.annotation_handle
     }
 
     #[inline]

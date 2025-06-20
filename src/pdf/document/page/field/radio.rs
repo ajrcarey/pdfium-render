@@ -4,7 +4,9 @@
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
-use crate::pdf::document::page::field::private::internal::PdfFormFieldPrivate;
+use crate::pdf::document::page::field::private::internal::{
+    PdfFormFieldFlags, PdfFormFieldPrivate,
+};
 
 #[cfg(doc)]
 use {
@@ -94,17 +96,70 @@ impl<'a> PdfFormRadioButtonField<'a> {
             None => Err(PdfiumError::FormFieldAppearanceStreamUndefined),
         }
     }
+
+    /// Returns `true` if exactly one radio button in the control group containing this
+    /// [PdfFormRadioButtonField] must be selected at all times. If so, then toggling the
+    /// currently selected radio button is not possible. If `false`, then toggling the
+    /// currently selected radio button will deselect it, leaving no radio button in the
+    /// group selected.
+    #[inline]
+    pub fn is_group_selection_required(&self) -> bool {
+        !self
+            .get_flags_impl()
+            .contains(PdfFormFieldFlags::ButtonNoToggleToOff)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    /// Controls whether or not the control group containing this [PdfFormRadioButtonField]
+    /// requires exactly one radio button to be selected at all times.
+    #[inline]
+    pub fn set_is_group_selection_required(
+        &mut self,
+        is_group_selection_required: bool,
+    ) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(
+            PdfFormFieldFlags::ButtonNoToggleToOff,
+            !is_group_selection_required,
+        )
+    }
+
+    /// Returns `true` if all radio buttons in the same control group as this
+    /// [PdfFormRadioButtonField] use the same value for the checked state; if so, if one
+    /// is checked, then all will be checked, and so all radio buttons will turn on and
+    /// off in unison.
+    ///
+    /// This flag was added in PDF version 1.5.
+    #[inline]
+    pub fn is_group_in_unison(&self) -> bool {
+        self.get_flags_impl()
+            .contains(PdfFormFieldFlags::ButtonIsRadiosInUnison)
+    }
+
+    #[cfg(feature = "pdfium_future")]
+    /// Controls whether or not all radio buttons in the same control group as this
+    /// [PdfFormRadioButtonField] use the same value for the checked state; if so, if one
+    /// is checked, then all will be checked, and so all radio buttons will turn on and
+    /// off in unison.
+    ///
+    /// This flag was added in PDF version 1.5.
+    #[inline]
+    pub fn set_is_group_in_unison(&mut self, is_group_in_unison: bool) -> Result<(), PdfiumError> {
+        self.update_one_flag_impl(
+            PdfFormFieldFlags::ButtonIsRadiosInUnison,
+            is_group_in_unison,
+        )
+    }
 }
 
 impl<'a> PdfFormFieldPrivate<'a> for PdfFormRadioButtonField<'a> {
     #[inline]
-    fn form_handle(&self) -> &FPDF_FORMHANDLE {
-        &self.form_handle
+    fn form_handle(&self) -> FPDF_FORMHANDLE {
+        self.form_handle
     }
 
     #[inline]
-    fn annotation_handle(&self) -> &FPDF_ANNOTATION {
-        &self.annotation_handle
+    fn annotation_handle(&self) -> FPDF_ANNOTATION {
+        self.annotation_handle
     }
 
     #[inline]
