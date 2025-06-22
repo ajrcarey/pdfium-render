@@ -68,7 +68,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.34 substantially expands the support for annotation and form field flags, thanks to an excellent contribution from <https://github.com/zecuria>.
+Release 0.8.34 substantially expands the support for annotation and form field flags thanks to an excellent contribution from <https://github.com/zecuria>, and adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>.
 
 Release 0.8.33 increments the `pdfium_latest` feature to `pdfium_7215` to match new Pdfium release 7215 at <https://github.com/bblanchon/pdfium-binaries>, improves the performance of iterating over large collections of page objects thanks to an excellent contribution from <https://github.com/marcosc90>, and reduces the compile-time burden of the `image` crate feature thanks to an excellent contribution from <https://github.com/qarmin>.
 
