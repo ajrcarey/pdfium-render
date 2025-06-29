@@ -68,7 +68,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.34 substantially expands the support for annotation and form field flags thanks to an excellent contribution from <https://github.com/zecuria>, and adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>.
+Release 0.8.34 substantially expands the support for annotation and form field flags thanks to an excellent contribution from <https://github.com/zecuria>, adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>, and resolves a build error on macOS systems related to the optional `bindgen` dependency thanks to an excellent contribution from <https://github.com/songhuaixu>.
 
 Release 0.8.33 increments the `pdfium_latest` feature to `pdfium_7215` to match new Pdfium release 7215 at <https://github.com/bblanchon/pdfium-binaries>, improves the performance of iterating over large collections of page objects thanks to an excellent contribution from <https://github.com/marcosc90>, and reduces the compile-time burden of the `image` crate feature thanks to an excellent contribution from <https://github.com/qarmin>.
 
@@ -290,7 +290,7 @@ Image pixel data in Pdfium is encoded in either three-channel BGR or four-channe
 
 ## Development status
 
-As at Pdfium release `pdfium_7123` there are 429 `FPDF_*` functions in the Pdfium API. Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
+As at Pdfium release `pdfium_7215` there are 429 `FPDF_*` functions in the Pdfium API. Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
 
 The initial focus of this crate was on rendering pages in a PDF file; consequently, high-level implementations of `FPDF_*` functions related to page rendering were prioritised. By 1.0, the functionality of all `FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain functions specific to interactive scripting, user interaction, and printing.
 
@@ -304,7 +304,7 @@ Some functions and type definitions have been renamed or revised since their ini
 
 ## Version history
 
-* 0.8.34: adds new getter and setter functions for all annotation and form field flags to `PdfPageAnnotationCommon` and `PdfFormFieldCommon` traits, building on an excellent contribution from <https://github.com/zecuria>.
+* 0.8.34: adds new getter and setter functions for all annotation and form field flags to `PdfPageAnnotationCommon` and `PdfFormFieldCommon` traits, building on an excellent contribution from <https://github.com/zecuria>; adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions, thanks to an excellent contribution from <https://github.com/bikallem>; resolves a build error on macOS systems related to the optional `bindgen` dependency, thanks to an excellent contribution from <https://github.com/songhuaixu>.
 * 0.8.33: increments the `pdfium_latest` feature to `pdfium_7215` to match new Pdfium release 7215 at <https://github.com/bblanchon/pdfium-binaries>; improves the performance of iterating over large collections of page objects thanks to an excellent contribution from <https://github.com/marcosc90>; reduces the compile-time burden of the `image` crate feature thanks to an excellent contribution from <https://github.com/qarmin>.
 * 0.8.32: adds a new `PdfPageObjects::copy_into_x_object_form_object()` function, thanks to an excellent contribution from <https://github.com/vmiklos>; adds new `PdfPageGroupObject::copy_to_page()`, `PdfPageGroupObject::move_to_page()`, `PdfPageGroupObject::move_to_annotation()`, and `PdfPageGroupObject::copy_into_x_object_form_object()` functions; deprecates `PdfPageGroupObject::retain_if_copyable()`, `PdfPageGroupObject::is_copyable()`, `PdfPageGroupObject::try_copy_onto_existing_page()`, `PdfPageGroupObject::copy_onto_new_page_at_start()`, `PdfPageGroupObject::copy_onto_new_page_at_end()`, and `PdfPageGroupObject::copy_onto_new_page_at_index()` functions in favour of `PdfPageGroupObject::copy_to_page()`. Deprecated items will be removed in release 0.9.0.
 * 0.8.31: increments the `pdfium_latest` feature to `pdfium_7123` to match new Pdfium release 7123 at <https://github.com/bblanchon/pdfium-binaries>; provides a new implementation of `PdfPageText::chars_for_object()` that takes advantage of the `FPDFText_GetTextObject()` function introduced in Pdfium release 6611 to substantially simplify the implementation, resolving a character bounds problem discussed in <https://github.com/ajrcarey/pdfium-render/issues/198>.
