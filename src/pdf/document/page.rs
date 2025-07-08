@@ -29,6 +29,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::create_transform_setters;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::bitmap::{PdfBitmap, PdfBitmapFormat, Pixels};
+use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::annotations::PdfPageAnnotations;
 use crate::pdf::document::page::boundaries::PdfPageBoundaries;
 use crate::pdf::document::page::index_cache::PdfPageIndexCache;
@@ -620,6 +621,113 @@ impl<'a> PdfPage<'a> {
         config: &PdfRenderConfig,
     ) -> Result<(), PdfiumError> {
         self.render_into_bitmap_with_settings(bitmap, config.apply_to_page(self))
+    }
+
+    /// Renders this [PdfPage] into a new [PdfBitmap] using a transformation matrix.
+    ///
+    /// This function provides fine-grained control over the rendering process by allowing
+    /// you to directly specify a transformation matrix, background color, render flags,
+    /// and clipping rectangle. The transformation matrix can be used to apply scaling,
+    /// rotation or translation transformations during rendering.
+    ///
+    /// # Arguments
+    ///
+    /// * `width` - The width of the target bitmap in pixels
+    /// * `height` - The height of the target bitmap in pixels
+    /// * `format` - The pixel format for the target bitmap
+    /// * `background` - Optional background color to fill the bitmap before rendering
+    /// * `matrix` - The transformation matrix to apply during rendering
+    /// * `render_flags` - Flags controlling the rendering behavior (0 for most use cases)
+    /// * `clipping` - Optional clipping rectangle to restrict rendering to a specific area
+    ///
+    /// # Returns
+    ///
+    /// Returns a [PdfBitmap] containing the rendered page, or a [PdfiumError] if rendering fails.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Render with a scaling transformation
+    /// let scale_matrix = PdfMatrix::identity().scale(2.0, 2.0)?;
+    /// let bitmap = page.render_with_matrix(
+    ///     800,
+    ///     600,
+    ///     PdfBitmapFormat::BGRA,
+    ///     Some(PdfColor::WHITE),
+    ///     &scale_matrix,
+    ///     0,
+    ///     None
+    /// )?;
+    /// ```
+    pub fn render_with_matrix(
+        &self,
+        width: i32,
+        height: i32,
+        format: PdfBitmapFormat,
+        background: Option<PdfColor>,
+        matrix: &PdfMatrix,
+        render_flags: i32,
+        clipping: Option<PdfRect>,
+    ) -> Result<PdfBitmap, PdfiumError> {
+        let mut bitmap = PdfBitmap::empty(width, height, format, self.bindings)?;
+
+        if let Some(color) = background {
+            self.bindings.FPDFBitmap_FillRect(
+                *bitmap.handle(),
+                0,
+                0,
+                width,
+                height,
+                color.as_pdfium_color(),
+            );
+        }
+
+        self.render_into_bitmap_with_matrix(&mut bitmap, matrix, render_flags, clipping)?;
+
+        Ok(bitmap)
+    }
+
+    /// Renders this [PdfPage] into the given [PdfBitmap] using a transformation matrix.
+    ///
+    /// This function provides fine-grained control over the rendering process by allowing
+    /// you to directly specify a transformation matrix, render flags, and clipping rectangle.
+    /// The transformation matrix can be used to apply scaling, rotation or translation
+    /// transformations during rendering.
+    ///
+    /// # Arguments
+    ///
+    /// * `bitmap` - The target bitmap to render into
+    /// * `matrix` - The transformation matrix to apply during rendering
+    /// * `render_flags` - Flags controlling the rendering behavior (0 for most use cases)
+    /// * `clipping` - Optional clipping rectangle to restrict rendering to a specific area.
+    ///                If None, defaults to the full bitmap dimensions.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(())` if rendering succeeds, or a [PdfiumError] if rendering fails.
+    pub fn render_into_bitmap_with_matrix(
+        &self,
+        bitmap: &mut PdfBitmap,
+        matrix: &PdfMatrix,
+        render_flags: i32,
+        clipping: Option<PdfRect>,
+    ) -> Result<(), PdfiumError> {
+        let clipping = clipping.unwrap_or(PdfRect::new_from_values(
+            bitmap.height() as f32,
+            0.0,
+            0.0,
+            bitmap.width() as f32,
+        ));
+
+        self.bindings.FPDF_RenderPageBitmapWithMatrix(
+            *bitmap.handle(),
+            self.page_handle,
+            &matrix.as_pdfium(),
+            &clipping.as_pdfium(),
+            render_flags,
+        );
+
+        Ok(())
     }
 
     /// Renders this [PdfPage] into the given [PdfBitmap] using the given [PdfRenderSettings].
