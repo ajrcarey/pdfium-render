@@ -564,7 +564,7 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         bitmap: &PdfBitmap,
     ) -> Result<DynamicImage, PdfiumError> {
-        let handle = *bitmap.handle();
+        let handle = bitmap.handle();
 
         let width = self.bindings.FPDFBitmap_GetWidth(handle);
 
@@ -675,7 +675,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         if !self
             .bindings
-            .FPDFBitmap_SetBuffer(*bitmap.handle(), buffer.as_slice())
+            .FPDFBitmap_SetBuffer(bitmap.handle(), buffer.as_slice())
         {
             return Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
@@ -693,7 +693,7 @@ impl<'a> PdfPageImageObject<'a> {
                 std::ptr::null_mut::<FPDF_PAGE>(),
                 0,
                 self.object_handle(),
-                *bitmap.handle(),
+                bitmap.handle(),
             ))
         {
             Ok(())

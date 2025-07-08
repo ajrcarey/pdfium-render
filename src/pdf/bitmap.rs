@@ -187,8 +187,8 @@ impl<'a> PdfBitmap<'a> {
 
     /// Returns the internal `FPDF_BITMAP` handle for this [PdfBitmap].
     #[inline]
-    pub(crate) fn handle(&self) -> &FPDF_BITMAP {
-        &self.handle
+    pub(crate) fn handle(&self) -> FPDF_BITMAP {
+        self.handle
     }
 
     /// Lets this [PdfBitmap] know whether it was created from a rendering configuration
@@ -209,19 +209,19 @@ impl<'a> PdfBitmap<'a> {
     /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn width(&self) -> Pixels {
-        self.bindings.FPDFBitmap_GetWidth(self.handle) as Pixels
+        self.bindings().FPDFBitmap_GetWidth(self.handle()) as Pixels
     }
 
     /// Returns the height of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn height(&self) -> Pixels {
-        self.bindings.FPDFBitmap_GetHeight(self.handle) as Pixels
+        self.bindings().FPDFBitmap_GetHeight(self.handle()) as Pixels
     }
 
     /// Returns the pixel format of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn format(&self) -> Result<PdfBitmapFormat, PdfiumError> {
-        PdfBitmapFormat::from_pdfium(self.bindings.FPDFBitmap_GetFormat(self.handle) as u32)
+        PdfBitmapFormat::from_pdfium(self.bindings().FPDFBitmap_GetFormat(self.handle()) as u32)
     }
 
     // TODO: AJRC - 25/11/22 - remove deprecated PdfBitmap::as_bytes() function in 0.9.0
@@ -244,7 +244,7 @@ impl<'a> PdfBitmap<'a> {
     /// [PdfiumLibraryBindings::bgra_to_rgba], [PdfiumLibraryBindings::rgb_to_bgra],
     /// and [PdfiumLibraryBindings::rgba_to_bgra] functions.
     pub fn as_raw_bytes(&self) -> Vec<u8> {
-        self.bindings.FPDFBitmap_GetBuffer_as_vec(self.handle)
+        self.bindings().FPDFBitmap_GetBuffer_as_vec(self.handle)
     }
 
     /// Returns an owned copy of the bitmap buffer backing this [PdfBitmap], normalizing all
@@ -345,7 +345,7 @@ impl<'a> PdfBitmap<'a> {
     #[cfg(any(doc, target_arch = "wasm32"))]
     #[inline]
     pub fn as_array(&self) -> Uint8Array {
-        self.bindings.FPDFBitmap_GetBuffer_as_array(self.handle)
+        self.bindings().FPDFBitmap_GetBuffer_as_array(self.handle())
     }
 
     /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
@@ -385,7 +385,7 @@ impl<'a> Drop for PdfBitmap<'a> {
     /// Closes this [PdfBitmap], releasing the memory held by the bitmap buffer.
     #[inline]
     fn drop(&mut self) {
-        self.bindings.FPDFBitmap_Destroy(self.handle);
+        self.bindings().FPDFBitmap_Destroy(self.handle());
     }
 }
 

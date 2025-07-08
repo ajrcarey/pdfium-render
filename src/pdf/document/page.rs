@@ -630,7 +630,7 @@ impl<'a> PdfPage<'a> {
         bitmap: &mut PdfBitmap,
         settings: PdfPageRenderSettings,
     ) -> Result<(), PdfiumError> {
-        let bitmap_handle = *bitmap.handle();
+        let bitmap_handle = bitmap.handle();
 
         if settings.do_clear_bitmap_before_rendering {
             // Clear the bitmap buffer by setting every pixel to a known color.
