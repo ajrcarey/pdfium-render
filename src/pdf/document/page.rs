@@ -673,7 +673,7 @@ impl<'a> PdfPage<'a> {
 
         if let Some(color) = background {
             self.bindings.FPDFBitmap_FillRect(
-                *bitmap.handle(),
+                bitmap.handle(),
                 0,
                 0,
                 width,
@@ -720,7 +720,7 @@ impl<'a> PdfPage<'a> {
         ));
 
         self.bindings.FPDF_RenderPageBitmapWithMatrix(
-            *bitmap.handle(),
+            bitmap.handle(),
             self.page_handle,
             &matrix.as_pdfium(),
             &clipping.as_pdfium(),
