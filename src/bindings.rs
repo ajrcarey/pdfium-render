@@ -86,11 +86,15 @@ pub use crate::bindgen::{FPDF_BSTR, FPDF_RESULT};
 use crate::bindgen::size_t;
 use crate::bindings::version::PdfiumApiVersion;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::pdf::bitmap::PdfBitmap;
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::PdfPageObject;
 use crate::pdf::document::page::PdfPage;
 use crate::pdf::document::PdfDocument;
+use crate::pdf::matrix::PdfMatrix;
+use crate::pdf::rect::PdfRect;
+use crate::prelude::PdfQuadPoints;
 use crate::utils::pixels::{
     bgra_to_rgba, rgba_to_bgra, unaligned_bgr_to_rgba, unaligned_rgb_to_bgra,
 };
@@ -233,6 +237,30 @@ pub trait PdfiumLibraryBindings {
     #[inline]
     fn get_handle_from_object(&self, object: &PdfPageObject) -> FPDF_PAGEOBJECT {
         object.object_handle()
+    }
+
+    /// Returns Pdfium's internal `FPDF_BITMAP` handle for the given [PdfBitmap].
+    #[inline]
+    fn get_handle_from_bitmap(&self, bitmap: &PdfBitmap) -> FPDF_BITMAP {
+        bitmap.handle()
+    }
+
+    /// Returns Pdfium's internal `FS_MATRIX` struct representation for the given [PdfMatrix].
+    #[inline]
+    fn get_fs_matrix_from_matrix(&self, matrix: &PdfMatrix) -> FS_MATRIX {
+        matrix.as_pdfium()
+    }
+
+    /// Returns Pdfium's internal `FS_RECTF` struct representation for the given [PdfRect].
+    #[inline]
+    fn get_fs_rect_from_rect(&self, rect: &PdfRect) -> FS_RECTF {
+        rect.as_pdfium()
+    }
+
+    /// Returns Pdfium's internal `FS_QUADPOINTSF` struct representation for the given [PdfQuadPoints].
+    #[inline]
+    fn get_fs_quad_points_from_quad_points(&self, quad_points: &PdfQuadPoints) -> FS_QUADPOINTSF {
+        quad_points.as_pdfium()
     }
 
     /// Returns the API version of the Pdfium FPDF_* API currently in use.
