@@ -68,13 +68,13 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
+Release 0.8.35 fixes a bug in the WASM implementation of bezier curves, thanks to an excellent contribution from <https://github.com/marcosc90>.
+
 Release 0.8.34 substantially expands the support for annotation and form field flags thanks to an excellent contribution from <https://github.com/zecuria>, adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>, and resolves a build error on macOS systems related to the optional `bindgen` dependency thanks to an excellent contribution from <https://github.com/songhuaixu>.
 
 Release 0.8.33 increments the `pdfium_latest` feature to `pdfium_7215` to match new Pdfium release 7215 at <https://github.com/bblanchon/pdfium-binaries>, improves the performance of iterating over large collections of page objects thanks to an excellent contribution from <https://github.com/marcosc90>, and reduces the compile-time burden of the `image` crate feature thanks to an excellent contribution from <https://github.com/qarmin>.
 
 Release 0.8.32 adds new `PdfPageObjects::copy_into_x_object_form_object()` and `PdfPageGroupObject::copy_into_x_object_form_object()` functions, thanks to an excellent contribution from <https://github.com/vmiklos>, adds new `PdfPageObject::copy_to_page()`, `PdfPageObject::move_to_page()`, `PdfPageObject::move_to_annotation()`, `PdfPageGroupObject::copy_to_page()`, `PdfPageGroupObject::move_to_page()`, and `PdfPageGroupObject::move_to_annotation()` functions that provide memory-safe moving and copying of both individual page objects and groups of page objects, and deprecates old functions `PdfPageObject::is_copyable()`, `PdfPageObject::try_copy()`, `PdfPageGroupObject::retain_if_copyable()`, `PdfPageGroupObject::is_copyable()`, `PdfPageGroupObject::try_copy_onto_existing_page()`, `PdfPageGroupObject::copy_onto_new_page_at_start()`, `PdfPageGroupObject::copy_onto_new_page_at_end()`, and `PdfPageGroupObject::copy_onto_new_page_at_index()`, all of which offered only partial or incomplete solutions for moving and copying page objects. Deprecated items will be removed in release 0.9.0.
-
-Release 0.8.31 increments the `pdfium_latest` feature to `pdfium_7123` to match new Pdfium release 7123 at <https://github.com/bblanchon/pdfium-binaries>, and corrects a bug in the retrieval of bounding boxes for text object characters.
 
 ## Binding to Pdfium
 
@@ -287,6 +287,9 @@ The `PdfiumLibraryBindings::get_pdfium_utf16le_bytes_from_str()` and `PdfiumLibr
 Some Pdfium functions return classic C-style integer boolean values, aliased as `FPDF_BOOL`. The `PdfiumLibraryBindings::TRUE()`, `PdfiumLibraryBindings::FALSE()`, `PdfiumLibraryBindings::is_true()`, `PdfiumLibraryBindings::to_result()`, and `PdfiumLibraryBindings::bool_to_pdfium()` utility functions are provided for converting to and from `FPDF_BOOL` in your own code.
 
 Image pixel data in Pdfium is encoded in either three-channel BGR or four-channel BGRA. The `PdfiumLibraryBindings::bgr_to_rgba()`, `PdfiumLibraryBindings::bgra_to_rgba()`, `PdfiumLibraryBindings::rgb_to_bgra()`, and `PdfiumLibraryBindings::rgba_to_bgra()` utility functions are provided for converting between RGB and BGR image data in your own code. 
+
+Simultaneously using both the high-level interface provided by `pdfium-render` and the low-level Pdfium API is also supported. The `PdfiumLibraryBindings::get_handle_from_document()`, `PdfiumLibraryBindings::get_handle_from_page()`, `PdfiumLibraryBindings::get_handle_from_object()`, `PdfiumLibraryBindings::get_handle_from_bitmap()`, `PdfiumLibraryBindings::get_fs_matrix_from_matrix()`, `PdfiumLibraryBindings::get_fs_rect_from_rect()`, `PdfiumLibraryBindings::get_fs_quad_points_from_quad_points()`,
+`PdfiumLibraryBindings::get_dword_from_color()`, and `PdfiumLibraryBindings::get_dword_and_alpha_from_color()` utility functions are provided for retrieving Pdfium object handles and values from `pdfium-render` object instances, so you can reference the high-level constructs when calling the Pdfium API.
 
 ## Development status
 

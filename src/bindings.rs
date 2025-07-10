@@ -263,6 +263,21 @@ pub trait PdfiumLibraryBindings {
         quad_points.as_pdfium()
     }
 
+    /// Returns the given color encoded as a 32-bit hexadecimal 0xAARRGGBB value,
+    /// suitable for passing to Pdfium.
+    #[inline]
+    fn get_dword_from_color(&self, color: &PdfColor) -> FPDF_DWORD {
+        color.as_pdfium_color()
+    }
+
+    /// Returns a tuple comprising the given color encoded as a 32-bit hexadecimal 0xFFRRGGBB
+    /// value and the color's alpha channel encoded as an 8-bit value, suitable for passing
+    /// to Pdfium.
+    #[inline]
+    fn get_dword_and_alpha_from_color(&self, color: &PdfColor) -> (FPDF_DWORD, u8) {
+        color.as_pdfium_color_with_alpha()
+    }
+
     /// Returns the API version of the Pdfium FPDF_* API currently in use.
     ///
     /// By default, `pdfium-render` attempts to bind against the latest released version
