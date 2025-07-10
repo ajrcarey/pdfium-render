@@ -12925,11 +12925,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         x3: c_float,
         y3: c_float,
     ) -> FPDF_BOOL {
-        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPath_LineTo()");
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPath_BezierTo()");
 
         PdfiumRenderWasmState::lock()
             .call(
-                "FPDFPath_LineTo",
+                "FPDFPath_BezierTo",
                 JsFunctionArgumentType::Number,
                 Some(vec![
                     JsFunctionArgumentType::Pointer,
