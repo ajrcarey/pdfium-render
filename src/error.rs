@@ -88,6 +88,7 @@ pub enum PdfiumError {
     UnknownPdfSignatureModificationDetectionPermissionLevel,
     UnsupportedPdfPageObjectType,
     TextSegmentIndexOutOfBounds,
+    TextSearchTargetIsEmpty,
     CharIndexOutOfBounds,
     NoCharsInPageObject,
     NoCharsInAnnotation,

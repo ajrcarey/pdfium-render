@@ -360,7 +360,11 @@ impl<'a> PdfPageText<'a> {
     /// Starts a search for the given text string, returning a new [PdfPageTextSearch]
     /// object that can be used to step through the search results.
     #[inline]
-    pub fn search(&self, text: &str, options: &PdfSearchOptions) -> PdfPageTextSearch {
+    pub fn search(
+        &self,
+        text: &str,
+        options: &PdfSearchOptions,
+    ) -> Result<PdfPageTextSearch, PdfiumError> {
         self.search_from(text, options, 0)
     }
 
@@ -372,17 +376,21 @@ impl<'a> PdfPageText<'a> {
         text: &str,
         options: &PdfSearchOptions,
         index: PdfPageTextCharIndex,
-    ) -> PdfPageTextSearch {
-        PdfPageTextSearch::from_pdfium(
-            self.bindings().FPDFText_FindStart(
-                self.text_page_handle(),
-                get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
-                options.as_pdfium(),
-                index as c_int,
-            ),
-            self,
-            self.bindings(),
-        )
+    ) -> Result<PdfPageTextSearch, PdfiumError> {
+        if text.is_empty() {
+            Err(PdfiumError::TextSearchTargetIsEmpty)
+        } else {
+            Ok(PdfPageTextSearch::from_pdfium(
+                self.bindings().FPDFText_FindStart(
+                    self.text_page_handle(),
+                    get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
+                    options.as_pdfium(),
+                    index as c_int,
+                ),
+                self,
+                self.bindings(),
+            ))
+        }
     }
 }
 
