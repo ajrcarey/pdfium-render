@@ -24,7 +24,7 @@ pub fn main() -> Result<(), PdfiumError> {
 
     let mut search_results_bounds = page
         .text()?
-        .search(search_term, &search_options)
+        .search(search_term, &search_options)?
         .iter(PdfSearchDirection::SearchForward)
         .enumerate()
         .flat_map(|(index, segments)| {
