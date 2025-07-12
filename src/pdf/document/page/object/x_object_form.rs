@@ -202,7 +202,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         } else {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
-                PdfPageObjectPrivate::ownership(self).clone(),
+                *PdfPageObjectPrivate::ownership(self),
                 PdfPageObjectsPrivate::bindings(self),
             ))
         }

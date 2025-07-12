@@ -63,7 +63,7 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnsupportedAnnotation<'a> {
 
     #[inline]
     fn ownership(&self) -> &PdfPageObjectOwnership {
-        &self.objects_impl().ownership()
+        self.objects_impl().ownership()
     }
 
     #[inline]

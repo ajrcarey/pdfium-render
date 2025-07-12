@@ -228,7 +228,7 @@ pub enum PdfiumError {
 
 impl Display for PdfiumError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{:#?}", self)
+        write!(f, "{self:#?}")
     }
 }
 

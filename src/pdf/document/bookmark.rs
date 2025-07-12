@@ -181,7 +181,7 @@ impl<'a> PdfBookmark<'a> {
         // the child tree should be displayed closed by deafult.
         self.bindings
             .FPDFBookmark_GetCount(self.bookmark_handle)
-            .abs() as usize
+            .unsigned_abs() as usize
     }
 
     /// Returns the first child [PdfBookmark] of this [PdfBookmark], if any.

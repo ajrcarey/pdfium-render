@@ -105,7 +105,7 @@ impl<'a> PdfPageTextChars<'a> {
                 self.document_handle(),
                 self.page_handle(),
                 self.text_page_handle(),
-                *index as i32,
+                *index,
                 self.bindings(),
             )),
             None => Err(PdfiumError::CharIndexOutOfBounds),

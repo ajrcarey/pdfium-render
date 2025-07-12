@@ -133,10 +133,10 @@ impl<'a> PdfPageTextSearch<'a> {
                 .FPDFText_GetSchResultIndex(self.search_handle());
             let count = self.bindings().FPDFText_GetSchCount(self.search_handle());
 
-            return Some(self.text_page.segments_subset(
+            Some(self.text_page.segments_subset(
                 start_index as PdfPageTextCharIndex,
                 count as PdfPageTextCharIndex,
-            ));
+            ))
         } else {
             None
         }
