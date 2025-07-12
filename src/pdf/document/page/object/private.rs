@@ -471,7 +471,7 @@ pub(crate) mod internal {
         ) -> Result<PdfPageObject<'b>, PdfiumError> {
             let mut object = PdfPageObject::from_pdfium(
                 self.object_handle(),
-                self.ownership().clone(),
+                *self.ownership(),
                 page.bindings(),
             );
 

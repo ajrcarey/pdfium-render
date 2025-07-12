@@ -2329,9 +2329,7 @@ impl DynamicPdfiumBindings {
     fn bind<'a, T>(library: &'a Library, function: &str) -> Result<Symbol<'a, T>, PdfiumError> {
         let c_function = CString::new(function).map_err(|err| {
             PdfiumError::LoadLibraryFunctionNameError(format!(
-                "Error converting function name to CString: {}, message: {}",
-                function,
-                err.to_string()
+                "Error converting function name to CString: {function}, message: {err}"
             ))
         })?;
 

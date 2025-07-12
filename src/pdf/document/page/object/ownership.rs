@@ -133,9 +133,6 @@ impl PdfPageObjectOwnership {
     /// this [PdfObjectOwnership] instance is owned by an object container attached to
     /// either a [PdfPage] or a [PdfAnnotation].
     pub fn is_owned(&self) -> bool {
-        match self {
-            PdfPageObjectOwnership::Unowned => false,
-            _ => true,
-        }
+        !matches!(self, PdfPageObjectOwnership::Unowned)
     }
 }

@@ -129,7 +129,7 @@ impl<'a> PdfPageTextChar<'a> {
     /// [PdfPageTextChar::unscaled_font_size] function.
     #[inline]
     pub fn scaled_font_size(&self) -> PdfPoints {
-        PdfPoints::new(self.unscaled_font_size().value * (self.get_vertical_scale() as f32))
+        PdfPoints::new(self.unscaled_font_size().value * self.get_vertical_scale())
     }
 
     /// Returns the font size applied to this character.

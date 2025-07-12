@@ -171,7 +171,7 @@ pub(crate) mod dates {
             .replace("+00:00'", "Z00'00'")
             .replace(':', "'");
 
-        format!("D:{}{}", date_part, timezone_part)
+        format!("D:{date_part}{timezone_part}")
     }
 }
 

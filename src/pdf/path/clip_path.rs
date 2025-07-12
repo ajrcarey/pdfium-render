@@ -1,4 +1,5 @@
 //! Defines the [PdfClipPath] struct, exposing functionality related to a clip path.
+#![allow(dead_code)]
 #[doc(hidden)]
 use crate::bindgen::FPDF_CLIPPATH;
 use crate::bindings::PdfiumLibraryBindings;
@@ -13,7 +14,6 @@ use std::os::raw::c_int;
 // that implements the PdfPathSegments trait. Want to complete implementation of top-level PdfClipPath
 // collection, then add clip path support to pages and page objects.
 
-#[allow(dead_code)]
 // The PdfClipPath struct is not currently used, but we expect it to be in future
 pub struct PdfClipPath<'a> {
     // TODO: AJRC - 22/10/22 - this will contain a collection of paths

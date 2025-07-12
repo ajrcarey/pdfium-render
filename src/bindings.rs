@@ -18,6 +18,8 @@
 // the PdfiumLibraryBindings trait depending on whether we are compiling to a WASM module,
 // a native shared library, or a statically linked library.
 
+#![allow(clippy::too_many_arguments)]
+
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(not(feature = "static"))]
 pub(crate) mod dynamic;
@@ -9358,7 +9360,7 @@ pub trait PdfiumLibraryBindings {
     /// Call this function twice to get the name of the named destination:
     /// * First time pass in `buffer` as `NULL` and get `buflen`.
     /// * Second time pass in allocated `buffer` and `buflen` to retrieve `buffer`,
-    /// which should be used as `wchar_t*`.
+    ///   which should be used as `wchar_t*`.
     ///
     /// If `buflen` is not sufficiently large, it will be set to -1 upon return.
     #[allow(non_snake_case)]
