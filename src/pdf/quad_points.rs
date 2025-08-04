@@ -133,10 +133,10 @@ impl PdfQuadPoints {
             y3,
             x4,
             y4,
-            left: *vec![x1, x2, x3, x4].iter().min().unwrap(),
-            right: *vec![x1, x2, x3, x4].iter().max().unwrap(),
-            bottom: *vec![y1, y2, y3, y4].iter().min().unwrap(),
-            top: *vec![y1, y2, y3, y4].iter().max().unwrap(),
+            left: *[x1, x2, x3, x4].iter().min().unwrap(),
+            right: *[x1, x2, x3, x4].iter().max().unwrap(),
+            bottom: *[y1, y2, y3, y4].iter().min().unwrap(),
+            top: *[y1, y2, y3, y4].iter().max().unwrap(),
         }
     }
 
@@ -268,8 +268,8 @@ impl PdfQuadPoints {
     /// Returns the smallest [PdfRect] that can completely enclose the quadrilateral
     /// outlined by this [PdfQuadPoints].
     pub fn to_rect(&self) -> PdfRect {
-        let xs = vec![self.x1, self.x2, self.x3, self.x4];
-        let ys = vec![self.y1, self.y2, self.y3, self.y4];
+        let xs = [self.x1, self.x2, self.x3, self.x4];
+        let ys = [self.y1, self.y2, self.y3, self.y4];
 
         PdfRect::new(
             *ys.iter().min().unwrap(),

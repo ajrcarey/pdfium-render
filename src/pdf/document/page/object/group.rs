@@ -293,7 +293,7 @@ impl<'a> PdfPageGroupObject<'a> {
             let mut object = PdfPageObject::from_pdfium(
                 self.bindings()
                     .FPDFPage_GetObject(self.page_handle(), index),
-                self.ownership().clone(),
+                *self.ownership(),
                 self.bindings(),
             );
 
@@ -712,7 +712,7 @@ impl<'a> PdfPageGroupObject<'a> {
         for index in 0..self.bindings.FPDFPage_CountObjects(self.page_handle) {
             let object = PdfPageObject::from_pdfium(
                 self.bindings().FPDFPage_GetObject(self.page_handle, index),
-                self.ownership().clone(),
+                *self.ownership(),
                 self.bindings(),
             );
 
@@ -783,7 +783,7 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn has_transparency(&self) -> bool {
         self.object_handles.iter().any(|object_handle| {
-            PdfPageObject::from_pdfium(*object_handle, self.ownership().clone(), self.bindings())
+            PdfPageObject::from_pdfium(*object_handle, *self.ownership(), self.bindings())
                 .has_transparency()
         })
     }
@@ -798,12 +798,9 @@ impl<'a> PdfPageGroupObject<'a> {
         let mut empty = true;
 
         self.object_handles.iter().for_each(|object_handle| {
-            if let Ok(object_bounds) = PdfPageObject::from_pdfium(
-                *object_handle,
-                self.ownership().clone(),
-                self.bindings(),
-            )
-            .bounds()
+            if let Ok(object_bounds) =
+                PdfPageObject::from_pdfium(*object_handle, *self.ownership(), self.bindings())
+                    .bounds()
             {
                 empty = false;
 
@@ -939,7 +936,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Inflates an internal `FPDF_PAGEOBJECT` handle into a [PdfPageObject].
     #[inline]
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
-        PdfPageObject::from_pdfium(*handle, self.ownership().clone(), self.bindings())
+        PdfPageObject::from_pdfium(*handle, *self.ownership(), self.bindings())
     }
 
     create_transform_setters!(

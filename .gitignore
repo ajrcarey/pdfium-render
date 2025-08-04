@@ -14,6 +14,7 @@ examples/serve
 examples/Cargo.lock
 examples/test*.jpg
 examples/test*.png
+form-test-page-*.jpg
 
 # Do not check IntelliJ-specific files into source control
 

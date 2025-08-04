@@ -67,8 +67,7 @@ impl PdfiumThreadMarshall {
             Ok(lock) => lock,
             Err(err) => {
                 log::error!(
-                    "PdfiumThreadMarshall::lock(): unable to acquire thread lock: {:#?}",
-                    err
+                    "PdfiumThreadMarshall::lock(): unable to acquire thread lock: {err:#?}"
                 );
                 log::error!("This may indicate a programming error in pdfium-render. Please file an issue: https://github.com/ajrcarey/pdfium-render/issues");
 

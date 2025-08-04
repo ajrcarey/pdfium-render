@@ -1179,7 +1179,7 @@ impl<'a> PdfFont<'a> {
 
             let buffer_length = out_buflen;
 
-            let mut buffer = create_byte_buffer(buffer_length as usize);
+            let mut buffer = create_byte_buffer(buffer_length);
 
             let result = self.bindings().FPDFFont_GetFontData(
                 self.handle,

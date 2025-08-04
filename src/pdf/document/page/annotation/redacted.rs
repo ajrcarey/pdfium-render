@@ -52,7 +52,7 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageRedactedAnnotation<'a> {
 
     #[inline]
     fn ownership(&self) -> &PdfPageObjectOwnership {
-        &self.objects_impl().ownership()
+        self.objects_impl().ownership()
     }
 
     #[inline]
