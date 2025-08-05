@@ -1,5 +1,5 @@
 //! Defines the [PdfClipPath] struct, exposing functionality related to a clip path.
-#![allow(dead_code)]
+
 #[doc(hidden)]
 use crate::bindgen::FPDF_CLIPPATH;
 use crate::bindings::PdfiumLibraryBindings;
@@ -24,6 +24,7 @@ pub struct PdfClipPath<'a> {
 
 impl<'a> PdfClipPath<'a> {
     #[inline]
+    #[allow(dead_code)] // TODO: AJRC - 4/8/25 - remove once handle() function is in use.
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
     }
