@@ -28,28 +28,22 @@ use {
     std::path::Path,
 };
 
-#[cfg(any(feature = "image_latest", feature = "image_025"))]
+#[cfg(feature = "image_api")]
 use {
     crate::pdf::bitmap::PdfBitmapFormat,
     crate::utils::pixels::{
         aligned_bgr_to_rgba, aligned_grayscale_to_unaligned, bgra_to_rgba, rgba_to_bgra,
     },
-    image_025::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
 };
+
+#[cfg(feature = "image_025")]
+use image_025::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
 
 #[cfg(feature = "image_024")]
-use {
-    crate::pdf::bitmap::PdfBitmapFormat,
-    crate::utils::pixels::{aligned_bgr_to_rgba, aligned_grayscale, bgra_to_rgba, rgba_to_bgra},
-    image_024::{DynamicImage, EncodableLayout, GrayImage, RgbaImage},
-};
+use image_024::{DynamicImage, EncodableLayout, GrayImage, RgbaImage};
 
 #[cfg(feature = "image_023")]
-use {
-    crate::pdf::bitmap::PdfBitmapFormat,
-    crate::utils::pixels::{aligned_bgr_to_rgba, aligned_grayscale, bgra_to_rgba, rgba_to_bgra},
-    image_023::{DynamicImage, EncodableLayout, GenericImageView, GrayImage, RgbaImage},
-};
+use image_023::{DynamicImage, EncodableLayout, GenericImageView, GrayImage, RgbaImage};
 
 #[cfg(doc)]
 use {

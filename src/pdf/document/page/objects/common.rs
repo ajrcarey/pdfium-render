@@ -15,7 +15,7 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use std::ops::{Range, RangeInclusive};
 
-#[cfg(any(feature = "image_latest", feature = "image_025"))]
+#[cfg(feature = "image_025")]
 use image_025::DynamicImage;
 
 #[cfg(feature = "image_024")]
