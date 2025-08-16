@@ -23,7 +23,7 @@ pub(crate) mod internal {
     use bitflags::bitflags;
     use chrono::Utc;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     use std::os::raw::c_int;
 
     bitflags! {
@@ -521,7 +521,7 @@ pub(crate) mod internal {
             )
         }
 
-        #[cfg(feature = "pdfium_future")]
+        #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
         /// Sets all the flags on this form field.
         #[inline]
         fn set_flags_impl(&self, flags: PdfFormFieldFlags) -> bool {
@@ -533,7 +533,7 @@ pub(crate) mod internal {
                 ))
         }
 
-        #[cfg(feature = "pdfium_future")]
+        #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
         /// Sets or clears a single flag on this form field.
         fn update_one_flag_impl(
             &self,
@@ -599,7 +599,7 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[test]
     fn test_set_form_field_flags() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
@@ -641,7 +641,7 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[test]
     fn test_update_one_form_field_flag() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();

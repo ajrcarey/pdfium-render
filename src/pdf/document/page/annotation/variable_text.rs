@@ -6,6 +6,7 @@ use std::ffi::c_float;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7350",
     feature = "pdfium_7215",
     feature = "pdfium_7123",
     feature = "pdfium_6996",
@@ -55,6 +56,7 @@ pub trait PdfPageAnnotationVariableText<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -67,7 +69,7 @@ pub trait PdfPageAnnotationVariableText<'a> {
     /// Returns the color of the text in this annotation.
     fn font_color(&self, form: &PdfForm) -> Result<PdfColor, PdfiumError>;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Sets the color of the text in this annotation.
     fn set_font_color(&mut self, form: &PdfForm, color: PdfColor) -> Result<(), PdfiumError>;
 
@@ -114,6 +116,7 @@ where
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -146,7 +149,7 @@ where
         }
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     fn set_font_color(&mut self, form: &PdfForm, color: PdfColor) -> Result<(), PdfiumError> {
         if self
             .bindings()

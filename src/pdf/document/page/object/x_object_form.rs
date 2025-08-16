@@ -222,7 +222,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         Err(PdfiumError::PageObjectsCollectionIsImmutable)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     fn remove_object_impl(
         &mut self,
         mut object: PdfPageObject<'a>,
@@ -241,7 +241,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         }
     }
 
-    #[cfg(not(feature = "pdfium_future"))]
+    #[cfg(not(any(feature = "pdfium_future", feature = "pdfium_7350")))]
     fn remove_object_impl(
         &mut self,
         _object: PdfPageObject<'a>,

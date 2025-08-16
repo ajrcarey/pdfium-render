@@ -27,7 +27,7 @@ pub(crate) mod internal {
     use crate::pdf::rect::PdfRect;
     use std::os::raw::c_double;
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
@@ -72,7 +72,7 @@ pub(crate) mod internal {
             self.regenerate_content_after_mutation()
         }
 
-        #[cfg(feature = "pdfium_future")]
+        #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
         /// Adds this [PdfPageObject] to the given [PdfPageObjects] collection, inserting
         /// it into the existing collection at the given positional index.
         #[inline]
@@ -98,7 +98,7 @@ pub(crate) mod internal {
             }
         }
 
-        #[cfg(feature = "pdfium_future")]
+        #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
         fn insert_object_on_page_handle(
             &mut self,
             document_handle: FPDF_DOCUMENT,

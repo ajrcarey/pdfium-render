@@ -75,7 +75,7 @@ impl<'a> PdfFormTextField<'a> {
             .contains(PdfFormFieldFlags::TextMultiline)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not this [PdfFormTextField] is configured as a multi-line text field.
     #[inline]
     pub fn set_is_multiline(&self, is_multiline: bool) -> Result<(), PdfiumError> {
@@ -89,7 +89,7 @@ impl<'a> PdfFormTextField<'a> {
             .contains(PdfFormFieldFlags::TextPassword)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not this [PdfFormTextField] is configured as a password text field.
     #[inline]
     pub fn set_is_password(&self, is_password: bool) -> Result<(), PdfiumError> {
@@ -105,7 +105,7 @@ impl<'a> PdfFormTextField<'a> {
             .contains(PdfFormFieldFlags::TextFileSelect)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not this [PdfFormTextField] represents the path of a file
     /// whose contents are to be submitted as the value of the field.
     ///
@@ -121,7 +121,7 @@ impl<'a> PdfFormTextField<'a> {
             .contains(PdfFormFieldFlags::TextDoNotSpellCheck)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not text entered into this [PdfFormTextField] should be spell checked.
     pub fn set_is_spell_checked(&mut self, is_spell_checked: bool) -> Result<(), PdfiumError> {
         self.update_one_flag_impl(PdfFormFieldFlags::TextDoNotSpellCheck, !is_spell_checked)
@@ -139,7 +139,7 @@ impl<'a> PdfFormTextField<'a> {
             .contains(PdfFormFieldFlags::TextDoNotScroll)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not the internal area of this [PdfFormTextField] can scroll
     /// either horizontally or vertically to accommodate text entry longer than what can fit
     /// within the field's annotation bounds. If set to `false`, no further text entry
@@ -182,7 +182,7 @@ impl<'a> PdfFormTextField<'a> {
             .contains(PdfFormFieldFlags::TextRichText)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not the text in this [PdfFormTextField] is a rich text string.
     ///
     /// This flag was added in PDF version 1.5.

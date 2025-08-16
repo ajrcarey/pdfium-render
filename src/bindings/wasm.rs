@@ -14,6 +14,7 @@ use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7350",
     feature = "pdfium_7215",
     feature = "pdfium_7123",
     feature = "pdfium_6996",
@@ -1307,6 +1308,7 @@ impl WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -2515,6 +2517,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -4353,6 +4356,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -4548,6 +4552,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -4643,6 +4648,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -4743,6 +4749,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -4870,6 +4877,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -5016,6 +5024,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -5179,6 +5188,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -5255,6 +5265,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -5284,6 +5295,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -5421,6 +5433,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -6218,6 +6231,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -7932,7 +7946,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFormFieldFlags(
         &self,
@@ -8291,7 +8305,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
     fn FPDFAnnot_SetFontColor(
         &self,
@@ -8328,6 +8342,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -8699,6 +8714,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -8730,6 +8746,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -10069,6 +10086,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -10094,6 +10112,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -11101,6 +11120,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -12529,7 +12549,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as usize as FPDF_PAGEOBJECT
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215"
+    ))]
     #[allow(non_snake_case)]
     fn FPDFFormObj_RemoveObject(
         &self,
@@ -12753,6 +12777,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -13226,6 +13251,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -13312,7 +13338,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         );
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObjectAtIndex(
         &self,
@@ -13448,6 +13474,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -13499,6 +13526,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -13567,6 +13595,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -13694,6 +13723,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -13818,6 +13848,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -13984,6 +14015,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -14228,6 +14260,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -14397,6 +14430,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -14659,6 +14693,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -15281,6 +15316,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996"
@@ -16226,6 +16262,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -16286,6 +16323,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",
@@ -17535,7 +17573,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
     fn FPDFAttachment_GetSubtype(
         &self,
@@ -17610,6 +17648,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
         feature = "pdfium_6996",

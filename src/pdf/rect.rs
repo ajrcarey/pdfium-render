@@ -345,9 +345,7 @@ mod tests {
         // around the wrong way...
 
         let result = PdfRect::new_from_values(
-            149.0,
-            544.0,
-            73.0, // Note: top < bottom but should be bottom <= top
+            149.0, 544.0, 73.0, // Note: top < bottom but should be bottom <= top
             48.0, // Note: right < left but should be left <= right
         );
 

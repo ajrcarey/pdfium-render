@@ -109,7 +109,7 @@ impl<'a> PdfFormRadioButtonField<'a> {
             .contains(PdfFormFieldFlags::ButtonNoToggleToOff)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not the control group containing this [PdfFormRadioButtonField]
     /// requires exactly one radio button to be selected at all times.
     #[inline]
@@ -135,7 +135,7 @@ impl<'a> PdfFormRadioButtonField<'a> {
             .contains(PdfFormFieldFlags::ButtonIsRadiosInUnison)
     }
 
-    #[cfg(feature = "pdfium_future")]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Controls whether or not all radio buttons in the same control group as this
     /// [PdfFormRadioButtonField] use the same value for the checked state; if so, if one
     /// is checked, then all will be checked, and so all radio buttons will turn on and

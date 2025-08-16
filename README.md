@@ -68,7 +68,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.35 fixes a bug in the WASM implementation of bezier curves, thanks to an excellent contribution from <https://github.com/marcosc90>.
+Release 0.8.35 increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>, fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>, adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>, and fixes a bug in example `examples/image_extract.rs`.
 
 Release 0.8.34 substantially expands the support for annotation and form field flags thanks to an excellent contribution from <https://github.com/zecuria>, adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>, and resolves a build error on macOS systems related to the optional `bindgen` dependency thanks to an excellent contribution from <https://github.com/songhuaixu>.
 
@@ -232,8 +232,8 @@ Release 0.8.26 introduced new features to explicitly control the version of the 
 Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`:
 
 * `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes.
-* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_7215`.
-* `pdfium_7215`, `pdfium_7123`, `pdfium_6996` (but see note below), `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
+* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_7350`.
+* `pdfium_7350`, `pdfium_7215`, `pdfium_7123`, `pdfium_6996` (but see note below), `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
 
 Note that Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>.
 
@@ -293,7 +293,7 @@ Simultaneously using both the high-level interface provided by `pdfium-render` a
 
 ## Development status
 
-As at Pdfium release `pdfium_7215` there are 429 `FPDF_*` functions in the Pdfium API. Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
+As at Pdfium release `pdfium_7350` there are 434 `FPDF_*` functions in the Pdfium API. Bindings to these functions are available in the `PdfiumLibraryBindings` trait.
 
 The initial focus of this crate was on rendering pages in a PDF file; consequently, high-level implementations of `FPDF_*` functions related to page rendering were prioritised. By 1.0, the functionality of all `FPDF_*` functions exported by all Pdfium modules will be available, with the exception of certain functions specific to interactive scripting, user interaction, and printing.
 
@@ -307,8 +307,8 @@ Some functions and type definitions have been renamed or revised since their ini
 
 ## Version history
 
-* 0.8.35: fixes a bug in the WASM implementation of bezier curves, thanks to an excellent contribution from <https://github.com/marcosc90>; fixes a bug in example `examples/image_extract.rs`.
-* 0.8.34: adds new getter and setter functions for all annotation and form field flags to `PdfPageAnnotationCommon` and `PdfFormFieldCommon` traits, building on an excellent contribution from <https://github.com/zecuria>; adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions, thanks to an excellent contribution from <https://github.com/bikallem>; resolves a build error on macOS systems related to the optional `bindgen` dependency, thanks to an excellent contribution from <https://github.com/songhuaixu>.
+* 0.8.35: increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>; fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>; fixes a bug in example `examples/image_extract.rs`; adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>.
+* 0.8.34: adds new getter and setter functions for all annotation and form field flags to `PdfPageAnnotationCommon` and `PdfFormFieldCommon` traits, building on an excellent contribution from <https://github.com/zecuria>; adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>; resolves a build error on macOS systems related to the optional `bindgen` dependency thanks to an excellent contribution from <https://github.com/songhuaixu>.
 * 0.8.33: increments the `pdfium_latest` feature to `pdfium_7215` to match new Pdfium release 7215 at <https://github.com/bblanchon/pdfium-binaries>; improves the performance of iterating over large collections of page objects thanks to an excellent contribution from <https://github.com/marcosc90>; reduces the compile-time burden of the `image` crate feature thanks to an excellent contribution from <https://github.com/qarmin>.
 * 0.8.32: adds a new `PdfPageObjects::copy_into_x_object_form_object()` function, thanks to an excellent contribution from <https://github.com/vmiklos>; adds new `PdfPageGroupObject::copy_to_page()`, `PdfPageGroupObject::move_to_page()`, `PdfPageGroupObject::move_to_annotation()`, and `PdfPageGroupObject::copy_into_x_object_form_object()` functions; deprecates `PdfPageGroupObject::retain_if_copyable()`, `PdfPageGroupObject::is_copyable()`, `PdfPageGroupObject::try_copy_onto_existing_page()`, `PdfPageGroupObject::copy_onto_new_page_at_start()`, `PdfPageGroupObject::copy_onto_new_page_at_end()`, and `PdfPageGroupObject::copy_onto_new_page_at_index()` functions in favour of `PdfPageGroupObject::copy_to_page()`. Deprecated items will be removed in release 0.9.0.
 * 0.8.31: increments the `pdfium_latest` feature to `pdfium_7123` to match new Pdfium release 7123 at <https://github.com/bblanchon/pdfium-binaries>; provides a new implementation of `PdfPageText::chars_for_object()` that takes advantage of the `FPDFText_GetTextObject()` function introduced in Pdfium release 6611 to substantially simplify the implementation, resolving a character bounds problem discussed in <https://github.com/ajrcarey/pdfium-render/issues/198>.
