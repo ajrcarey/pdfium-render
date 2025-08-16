@@ -58,13 +58,7 @@ impl PdfRect {
 
     #[inline]
     pub(crate) fn from_pdfium(rect: FS_RECTF) -> Self {
-        #[allow(deprecated)]
-        Self {
-            bottom: PdfPoints::new(rect.bottom),
-            left: PdfPoints::new(rect.left),
-            top: PdfPoints::new(rect.top),
-            right: PdfPoints::new(rect.right),
-        }
+        Self::new_from_values(rect.bottom, rect.left, rect.top, rect.right)
     }
 
     #[inline]
@@ -89,12 +83,28 @@ impl PdfRect {
     /// y values increasing as coordinates move vertically up.
     #[inline]
     pub const fn new(bottom: PdfPoints, left: PdfPoints, top: PdfPoints, right: PdfPoints) -> Self {
+        // Check all given points to ensure they are ordered in accordance with the PDF
+        // coordinate system, i.e. bottom should always be <= top and left should always
+        // be <= right. See: https://github.com/ajrcarey/pdfium-render/issues/223
+
+        let (ordered_bottom, ordered_top) = if bottom.value > top.value {
+            (top, bottom)
+        } else {
+            (bottom, top)
+        };
+
+        let (ordered_left, ordered_right) = if left.value > right.value {
+            (right, left)
+        } else {
+            (left, right)
+        };
+
         #[allow(deprecated)]
         Self {
-            bottom,
-            left,
-            top,
-            right,
+            bottom: ordered_bottom,
+            left: ordered_left,
+            top: ordered_top,
+            right: ordered_right,
         }
     }
 
@@ -327,5 +337,26 @@ mod tests {
         assert_eq!(result.top(), top + delta_y);
         assert_eq!(result.left(), left + delta_x);
         assert_eq!(result.right(), right + delta_x);
+    }
+
+    #[test]
+    fn test_coordinate_space_order_guard() {
+        // We create a rectangle with the horizontal and vertical coordinates
+        // around the wrong way...
+
+        let result = PdfRect::new_from_values(
+            149.0,
+            544.0,
+            73.0, // Note: top < bottom but should be bottom <= top
+            48.0, // Note: right < left but should be left <= right
+        );
+
+        // ... and confirm that the rectangle returns the coordinates in
+        // the correct order.
+
+        assert_eq!(result.bottom().value, 73.0);
+        assert_eq!(result.top().value, 149.0);
+        assert_eq!(result.left().value, 48.0);
+        assert_eq!(result.right().value, 544.0);
     }
 }
