@@ -91,6 +91,9 @@ impl<'a> PdfFormRadioButtonField<'a> {
     /// Selects the radio button of this [PdfFormRadioButtonField] object.
     #[inline]
     pub fn set_checked(&mut self) -> Result<(), PdfiumError> {
+        println!("*** [radio] set_checked()");
+        println!("??? ap: {:#?}", self.appearance_stream_impl());
+
         match self.appearance_stream_impl() {
             Some(appearance_stream) => self.set_value_impl(appearance_stream.as_str()),
             None => Err(PdfiumError::FormFieldAppearanceStreamUndefined),

@@ -73,16 +73,16 @@ impl<'a> PdfFormCheckboxField<'a> {
         // The PDF Reference manual, version 1.7, states that an appearance stream of "Yes"
         // can be used to indicate a selected checkbox. Pdfium's FPDFAnnot_IsChecked()
         // function doesn't check for this; so if FPDFAnnot_IsChecked() comes back with
-        // anything other than Ok(true), we also check the appearance stream.
+        // anything other than Ok(true), we also check the currently set appearance stream.
 
         match self.is_checked_impl() {
             Ok(true) => Ok(true),
             Ok(false) => match self.group_value() {
-                Some(value) => Ok(value == "Yes"),
+                Some(value) => Ok(value == "Yes" || value == "/Yes"),
                 _ => Ok(false),
             },
             Err(err) => match self.group_value() {
-                Some(value) => Ok(value == "Yes"),
+                Some(value) => Ok(value == "Yes" || value == "/Yes"),
                 _ => Err(err),
             },
         }
@@ -91,7 +91,23 @@ impl<'a> PdfFormCheckboxField<'a> {
     /// Checks or clears the checkbox of this [PdfFormCheckboxField] object.
     #[inline]
     pub fn set_checked(&mut self, is_checked: bool) -> Result<(), PdfiumError> {
-        self.set_value_impl(if is_checked { "Yes" } else { "Off" })
+        // The manner in which we apply the value varies slightly depending on
+        // whether or not appearance streams are in use.
+
+        match self.appearance_stream_impl() {
+            Some(_) => {
+                // Appearance streams are in use. We must set both the value and
+                // the in-use appearance stream for the checkbox.
+
+                self.set_string_value("AS", if is_checked { "/Yes" } else { "/Off" })?;
+                self.set_value_impl( if is_checked { "/Yes" } else { "/Off" })
+            },
+            None => {
+                // Appearance streams are not in use.
+
+                self.set_value_impl(if is_checked { "Yes" } else { "Off" })
+            }
+        }
     }
 }
 

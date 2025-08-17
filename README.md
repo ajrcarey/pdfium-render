@@ -5,9 +5,8 @@
 ```rust
     use pdfium_render::prelude::*;
 
+    /// Renders each page in the PDF file at the given path to a separate JPEG file.
     fn export_pdf_to_jpegs(path: &impl AsRef<Path>, password: Option<&str>) -> Result<(), PdfiumError> {
-        // Renders each page in the PDF file at the given path to a separate JPEG file.
-
         // Bind to a Pdfium library in the same directory as our Rust executable.
         // See the "Dynamic linking" section below.
 
@@ -29,11 +28,11 @@
         for (index, page) in document.pages().iter().enumerate() {
             page.render_with_config(&render_config)?
                 .as_image() // Renders this page to an image::DynamicImage...
-                .into_rgb8() // ... then converts it to an image::Image...
+                .into_rgb8() // ... removes the alpha channel for compatibility with the Jpeg format...
                 .save_with_format(
-                    format!("test-page-{}.jpg", index), 
+                    format!("page-{}.jpg", index), 
                     image::ImageFormat::Jpeg
-                ) // ... and saves it to a file.
+                ) // ... and saves the image to a file.
                 .map_err(|_| PdfiumError::ImageError)?;
         }
 
