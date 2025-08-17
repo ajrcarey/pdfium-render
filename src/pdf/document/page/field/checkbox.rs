@@ -72,19 +72,32 @@ impl<'a> PdfFormCheckboxField<'a> {
     pub fn is_checked(&self) -> Result<bool, PdfiumError> {
         // The PDF Reference manual, version 1.7, states that an appearance stream of "Yes"
         // can be used to indicate a selected checkbox. Pdfium's FPDFAnnot_IsChecked()
-        // function doesn't check for this; so if FPDFAnnot_IsChecked() comes back with
-        // anything other than Ok(true), we also check the currently set appearance stream.
+        // function doesn't account for appearance streams, so we check the currently set
+        // appearance stream ourselves.
 
-        match self.is_checked_impl() {
-            Ok(true) => Ok(true),
-            Ok(false) => match self.group_value() {
-                Some(value) => Ok(value == "Yes" || value == "/Yes"),
-                _ => Ok(false),
-            },
-            Err(err) => match self.group_value() {
-                Some(value) => Ok(value == "Yes" || value == "/Yes"),
-                _ => Err(err),
-            },
+        match self.appearance_stream_impl().as_ref() {
+            Some(appearance_stream) => {
+                // Appearance streams are in use. An appearance stream of "Yes" indicates
+                // a selected checkbox.
+
+                Ok(appearance_stream == "Yes" || appearance_stream == "/Yes")
+            }
+            None => {
+                // Appearance streams are not in use. We can fall back to using Pdfium's
+                // FPDFAnnot_IsChecked() implementation.
+
+                match self.is_checked_impl() {
+                    Ok(true) => Ok(true),
+                    Ok(false) => match self.group_value() {
+                        Some(value) => Ok(value == "Yes"),
+                        _ => Ok(false),
+                    },
+                    Err(err) => match self.group_value() {
+                        Some(value) => Ok(value == "Yes"),
+                        _ => Err(err),
+                    },
+                }
+            }
         }
     }
 
@@ -100,8 +113,8 @@ impl<'a> PdfFormCheckboxField<'a> {
                 // the in-use appearance stream for the checkbox.
 
                 self.set_string_value("AS", if is_checked { "/Yes" } else { "/Off" })?;
-                self.set_value_impl( if is_checked { "/Yes" } else { "/Off" })
-            },
+                self.set_value_impl(if is_checked { "/Yes" } else { "/Off" })
+            }
             None => {
                 // Appearance streams are not in use.
 

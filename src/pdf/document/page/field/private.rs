@@ -11,7 +11,8 @@ pub(crate) mod internal {
         FPDF_ANNOTATION, FPDF_FORMFLAG_CHOICE_COMBO, FPDF_FORMFLAG_CHOICE_EDIT,
         FPDF_FORMFLAG_CHOICE_MULTI_SELECT, FPDF_FORMFLAG_NOEXPORT, FPDF_FORMFLAG_NONE,
         FPDF_FORMFLAG_READONLY, FPDF_FORMFLAG_REQUIRED, FPDF_FORMFLAG_TEXT_MULTILINE,
-        FPDF_FORMFLAG_TEXT_PASSWORD, FPDF_FORMHANDLE, FPDF_OBJECT_STRING, FPDF_WCHAR,
+        FPDF_FORMFLAG_TEXT_PASSWORD, FPDF_FORMHANDLE, FPDF_OBJECT_NAME, FPDF_OBJECT_STREAM,
+        FPDF_OBJECT_STRING, FPDF_WCHAR,
     };
     use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
@@ -264,13 +265,6 @@ pub(crate) mod internal {
                     &date_time_to_pdf_string(Utc::now()),
                 ))
                 .and_then(|_| {
-                    self.bindings().to_result(self.bindings().FPDFAnnot_SetAP(
-                        self.annotation_handle(),
-                        PdfAppearanceMode::Normal as i32,
-                        std::ptr::null(),
-                    ))
-                })
-                .and_then(|_| {
                     self.bindings()
                         .to_result(self.bindings().FPDFAnnot_SetStringValue_str(
                             self.annotation_handle(),
@@ -320,6 +314,10 @@ pub(crate) mod internal {
 
         /// Internal implementation of `is_checked()` function shared by checkable form field widgets
         /// such as radio buttons and checkboxes. Not exposed directly by [PdfFormFieldCommon].
+        ///
+        /// Note Pdfium does not consider appearance streams when determining if a checkable form
+        /// field is currently selected. As a result, this function may not return the expected
+        /// result for fields with custom appearance streams.
         fn is_checked_impl(&self) -> Result<bool, PdfiumError> {
             Ok(self.bindings().is_true(
                 self.bindings()
@@ -355,12 +353,13 @@ pub(crate) mod internal {
                 return None;
             }
 
-            if self
+            let t = self
                 .bindings()
-                .FPDFAnnot_GetValueType(self.annotation_handle(), key) as u32
-                != FPDF_OBJECT_STRING
-            {
-                // The key exists, but the value associated with the key is not a string.
+                .FPDFAnnot_GetValueType(self.annotation_handle(), key) as u32;
+
+            if t != FPDF_OBJECT_STRING && t != FPDF_OBJECT_NAME && t != FPDF_OBJECT_STREAM {
+                // The key exists, but the value associated with the key is not a string
+                // or a type with an underlying string representation.
 
                 return None;
             }
@@ -475,40 +474,7 @@ pub(crate) mod internal {
 
         /// Returns the currently set appearance stream for this form field, if any.
         fn appearance_stream_impl(&self) -> Option<String> {
-            // Retrieving the appearance stream value from Pdfium is a two-step operation.
-            // First, we call FPDFAnnot_GetStringValue() with a null buffer; this will retrieve
-            // the length of the appearance stream value text in bytes. If the length is zero,
-            // then the appearance stream value is not set.
-
-            // If the length is non-zero, then we reserve a byte buffer of the given
-            // length and call FPDFAnnot_GetStringValue() again with a pointer to the buffer;
-            // this will write the appearance stream value to the buffer in UTF16LE format.
-
-            let buffer_length = self.bindings().FPDFAnnot_GetStringValue(
-                self.annotation_handle(),
-                "AS",
-                std::ptr::null_mut(),
-                0,
-            );
-
-            if buffer_length == 0 {
-                // The appearance mode value is not present.
-
-                None
-            } else {
-                let mut buffer = create_byte_buffer(buffer_length as usize);
-
-                let result = self.bindings().FPDFAnnot_GetStringValue(
-                    self.annotation_handle(),
-                    "AS",
-                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
-                    buffer_length,
-                );
-
-                debug_assert_eq!(result, buffer_length);
-
-                get_string_from_pdfium_utf16le_bytes(buffer)
-            }
+            self.get_string_value("AS")
         }
 
         /// Returns all the flags currently set on this form field.
@@ -653,7 +619,7 @@ mod tests {
             .find(|annotation| annotation.as_form_field().is_some())
             .unwrap();
         let field = annotation.as_form_field_mut().unwrap();
-        let mut text = field.as_text_field_mut().unwrap();
+        let text = field.as_text_field_mut().unwrap();
 
         assert_eq!(text.is_read_only(), false);
         assert_eq!(text.is_required(), false);
