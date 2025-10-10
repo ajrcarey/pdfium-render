@@ -29,18 +29,6 @@ use std::fmt::{Display, Formatter};
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
 
-#[cfg(any(
-    feature = "pdfium_future",
-    feature = "pdfium_7350",
-    feature = "pdfium_7215",
-    feature = "pdfium_7123",
-    feature = "pdfium_6996",
-    feature = "pdfium_6721",
-    feature = "pdfium_6666",
-    feature = "pdfium_6611",
-))]
-use crate::pdf::document::page::object::PdfPageObjectCommon;
-
 /// The collection of Unicode characters visible on a single [PdfPage].
 ///
 /// Use the [PdfPageText::all()] function to easily return all characters in the containing
@@ -148,20 +136,11 @@ impl<'a> PdfPageText<'a> {
         &self,
         object: &PdfPageTextObject,
     ) -> Result<PdfPageTextChars, PdfiumError> {
-        let chars_inside_bounds = self
-            .chars_inside_rect(object.bounds()?.to_rect())
-            .map_err(|_| PdfiumError::NoCharsInPageObject)?;
-
-        // The collection contains _all_ characters inside the bounds of the
-        // given text object, including characters from any overlapping objects.
-        // Filter the collection so it contains only characters from the
-        // given text object.
-
         Ok(PdfPageTextChars::new(
             self.page.document_handle(),
             self.page.page_handle(),
             self.text_page_handle(),
-            chars_inside_bounds
+            self.chars()
                 .iter()
                 .filter(|char| {
                     self.bindings
@@ -195,18 +174,43 @@ impl<'a> PdfPageText<'a> {
         let tolerance_y = rect.height() / 2.0;
         let center_height = rect.bottom() + tolerance_y;
 
-        let chars = self.chars();
-
         match (
-            chars.get_char_near_point(rect.left(), tolerance_x, center_height, tolerance_y),
-            chars.get_char_near_point(rect.right(), tolerance_x, center_height, tolerance_y),
+            Self::get_char_index_near_point(
+                self.text_page_handle(),
+                rect.left(),
+                tolerance_x,
+                center_height,
+                tolerance_y,
+                self.bindings(),
+            ),
+            Self::get_char_index_near_point(
+                self.text_page_handle(),
+                rect.right(),
+                tolerance_x,
+                center_height,
+                tolerance_y,
+                self.bindings(),
+            ),
         ) {
             (Some(start), Some(end)) => Ok(PdfPageTextChars::new(
                 self.page.document_handle(),
                 self.page.page_handle(),
                 self.text_page_handle(),
-                (start.index() as i32..end.index().saturating_sub(start.index()) as i32 + 1)
-                    .collect(),
+                (start as i32..=end as i32 + 1).collect(),
+                self.bindings,
+            )),
+            (Some(start), None) => Ok(PdfPageTextChars::new(
+                self.page.document_handle(),
+                self.page.page_handle(),
+                self.text_page_handle(),
+                (start as i32..=start as i32 + 1).collect(),
+                self.bindings,
+            )),
+            (None, Some(end)) => Ok(PdfPageTextChars::new(
+                self.page.document_handle(),
+                self.page.page_handle(),
+                self.text_page_handle(),
+                (end as i32..=end as i32 + 1).collect(),
                 self.bindings,
             )),
             _ => Err(PdfiumError::NoCharsInRect),
