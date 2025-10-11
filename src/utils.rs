@@ -481,6 +481,7 @@ pub(crate) mod test {
 mod tests {
     use crate::utils::dates::*;
     use crate::utils::pixels::*;
+    use crate::utils::utf16le::*;
     use chrono::prelude::*;
 
     // Tests of color conversion functions.
@@ -624,5 +625,12 @@ mod tests {
             ),
             "D:19981223195200-08'00'"
         )
+    }
+
+    #[test]
+    fn test_valid_utf16le_from_emoji() {
+        let emoji = "💁👵🧕";
+
+        assert_eq!(get_string_from_pdfium_utf16le_bytes(get_pdfium_utf16le_bytes_from_str(emoji)).unwrap(), emoji);
     }
 }
