@@ -417,6 +417,10 @@ impl<'a> Drop for PdfPageText<'a> {
 
 #[cfg(test)]
 mod tests {
+    use itertools::Itertools;
+    use std::ffi::OsStr;
+    use std::fs;
+
     use crate::prelude::*;
     use crate::utils::test::test_bind_to_pdfium;
 
@@ -497,5 +501,48 @@ mod tests {
         } else {
             Ok(false)
         }
+    }
+
+    #[test]
+    fn test_text_chars_results_equality() -> Result<(), PdfiumError> {
+        // For all available test documents, check that the results of
+        // PdfPageObjectText::text() and PdfPageObjectText::chars() match.
+
+        let pdfium = test_bind_to_pdfium();
+
+        let samples = fs::read_dir("./test/")
+            .unwrap()
+            .filter_map(|entry| match entry {
+                Ok(e) => Some(e.path()),
+                Err(_) => None,
+            })
+            .filter(|path| path.extension() == Some(OsStr::new("pdf")))
+            .collect::<Vec<_>>();
+
+        assert!(samples.len() > 0);
+
+        for sample in samples {
+            println!("Testing all text objects in file {}", sample.display());
+
+            let document = pdfium.load_pdf_from_file(&sample, None)?;
+
+            for page in document.pages().iter() {
+                let text = page.text()?;
+
+                for object in page.objects().iter() {
+                    if let Some(obj) = object.as_text_object() {
+                        let chars = obj
+                            .chars(&text)?
+                            .iter()
+                            .filter_map(|char| char.unicode_string())
+                            .join("");
+
+                        assert_eq!(obj.text().trim(), chars.replace("\0", "").trim());
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }
