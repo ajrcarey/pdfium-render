@@ -631,6 +631,9 @@ mod tests {
     fn test_valid_utf16le_from_emoji() {
         let emoji = "💁👵🧕";
 
-        assert_eq!(get_string_from_pdfium_utf16le_bytes(get_pdfium_utf16le_bytes_from_str(emoji)).unwrap(), emoji);
+        assert_eq!(
+            get_string_from_pdfium_utf16le_bytes(get_pdfium_utf16le_bytes_from_str(emoji)).unwrap(),
+            emoji
+        );
     }
 }
