@@ -249,3 +249,10 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         Err(PdfiumError::PageObjectsCollectionIsImmutable)
     }
 }
+
+impl<'a> Drop for PdfPageXObjectFormObject<'a> {
+    /// Closes this [PdfPageXObjectFormObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
+    }
+}

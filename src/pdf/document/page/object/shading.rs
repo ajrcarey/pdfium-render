@@ -89,3 +89,10 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageShadingObject<'a> {
         Err(PdfiumError::UnsupportedPdfPageObjectType)
     }
 }
+
+impl<'a> Drop for PdfPageShadingObject<'a> {
+    /// Closes this [PdfPageShadingObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
+    }
+}

@@ -497,6 +497,20 @@ pub(crate) mod internal {
                 Err(PdfiumError::OwnershipNotAttachedToPage)
             }
         }
+
+        /// Drops the page object by calling `FPDFPageObj_Destroy()`, freeing held memory.
+        /// This will this object's `FPDF_OBJECT` handle. If the page object is attached
+        /// to a page or an annotation, no action will be taken; Pdfium will manage
+        /// deallocation of the object's memory automatically.
+        fn drop_impl(&self) {
+            if !self.ownership().is_owned() {
+                // Responsibility for de-allocation lies with us, not Pdfium, since
+                // the object is not attached to a page or an annotation. Instruct
+                // Pdfium to destroy the object now.
+
+                self.bindings().FPDFPageObj_Destroy(self.object_handle());
+            }
+        }
     }
 }
 

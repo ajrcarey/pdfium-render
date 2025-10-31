@@ -1128,3 +1128,10 @@ mod tests {
         Ok(())
     }
 }
+
+impl<'a> Drop for PdfPageImageObject<'a> {
+    /// Closes this [PdfPageImageObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
+    }
+}

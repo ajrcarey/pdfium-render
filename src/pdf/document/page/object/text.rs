@@ -541,3 +541,10 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
         Ok(PdfPageObject::Text(copy))
     }
 }
+
+impl<'a> Drop for PdfPageTextObject<'a> {
+    /// Closes this [PdfPageTextObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
+    }
+}

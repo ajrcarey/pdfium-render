@@ -1071,3 +1071,10 @@ impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
         PdfPathSegmentsIterator::new(self)
     }
 }
+
+impl<'a> Drop for PdfPagePathObject<'a> {
+    /// Closes this [PdfPagePathObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
+    }
+}

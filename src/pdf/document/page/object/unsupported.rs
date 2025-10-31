@@ -90,3 +90,10 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageUnsupportedObject<'a> {
         Err(PdfiumError::UnsupportedPdfPageObjectType)
     }
 }
+
+impl<'a> Drop for PdfPageUnsupportedObject<'a> {
+    /// Closes this [PdfPageUnsupportedObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
+    }
+}

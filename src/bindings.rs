@@ -7502,8 +7502,10 @@ pub trait PdfiumLibraryBindings {
     ///    `page`        - handle to a page
     ///
     ///    `page_object` - handle to a page object as previously obtained by
-    ///                    `FPDFPageObj_CreateNewPath()`, `FPDFPageObj_CreateNewRect()`,
-    ///                    `FPDFPageObj_NewText()`, or `FPDFPageObj_NewImageObj()`.
+    ///                    [PdfiumLibraryBindings::FPDFPageObj_CreateNewPath],
+    ///                    [PdfiumLibraryBindings::FPDFPageObj_CreateNewRect],
+    ///                    [PdfiumLibraryBindings::FPDFPageObj_NewTextObj], or
+    ///                    [PdfiumLibraryBindings::FPDFPageObj_NewImageObj].
     ///                    Ownership of the object is transferred back to PDFium.
     ///
     ///    `index`       - the index position to insert the object at. If index equals
