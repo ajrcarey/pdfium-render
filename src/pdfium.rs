@@ -458,7 +458,7 @@ impl Default for Pdfium {
             Ok(bindings) => Ok(bindings),
             Err(PdfiumError::LoadLibraryError(err)) => {
                 match err {
-                    libloading::Error::DlOpen { desc: _ } => {
+                    libloading::Error::DlOpen { .. } => {
                         // For DlOpen errors specifically, indicating the Pdfium library in the
                         // current working directory does not exist or is corrupted, we attempt
                         // to fall back to a system-provided library.
