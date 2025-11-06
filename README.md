@@ -67,7 +67,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
-Release 0.8.36 fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>.
+Release 0.8.36 fixes a bug in the `PdfPageText::chars_for_object()` function, thanks to an excellent investigation by <https://github.com/bikallem>, and resolves a memory leak that could occur when working with large numbers of `PdfPageObject` instances not attached to pages or annotations, thanks to an excellent investigation by <https://github.com/def-roth>.
 
 Release 0.8.35 increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>, fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>, adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>, and fixes a bug in example `examples/image_extract.rs`.
 
@@ -306,7 +306,7 @@ Some functions and type definitions have been renamed or revised since their ini
 
 ## Version history
 
-* 0.8.36: fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>.
+* 0.8.36: fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>; adds Drop trait implementations to all unowned `PdfPageObject` types thanks to an excellent investigation by <https://github.com/def-roth>.
 * 0.8.35: increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>; fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>; fixes a bug in example `examples/image_extract.rs`; adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>.
 * 0.8.34: adds new getter and setter functions for all annotation and form field flags to `PdfPageAnnotationCommon` and `PdfFormFieldCommon` traits, building on an excellent contribution from <https://github.com/zecuria>; adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>; resolves a build error on macOS systems related to the optional `bindgen` dependency thanks to an excellent contribution from <https://github.com/songhuaixu>.
 * 0.8.33: increments the `pdfium_latest` feature to `pdfium_7215` to match new Pdfium release 7215 at <https://github.com/bblanchon/pdfium-binaries>; improves the performance of iterating over large collections of page objects thanks to an excellent contribution from <https://github.com/marcosc90>; reduces the compile-time burden of the `image` crate feature thanks to an excellent contribution from <https://github.com/qarmin>.
