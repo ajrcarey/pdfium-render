@@ -275,6 +275,34 @@ impl<'a> PdfPageImageObject<'a> {
         ))
     }
 
+    /// Returns the raw image data backing this [PdfPageImageObject] exactly as it is stored
+    /// in the containing PDF without applying any of the image's filters.
+    ///
+    /// The returned byte buffer may be empty if the image object does not contain any data.
+    pub fn get_raw_image_data(&self) -> Result<Vec<u8>, PdfiumError> {
+        let buffer_length = self.bindings().FPDFImageObj_GetImageDataRaw(
+            self.object_handle(),
+            std::ptr::null_mut(),
+            0,
+        );
+
+        if buffer_length == 0 {
+            return Ok(Vec::new());
+        }
+
+        let mut buffer = create_byte_buffer(buffer_length as usize);
+
+        let result = self.bindings().FPDFImageObj_GetImageDataRaw(
+            self.object_handle(),
+            buffer.as_mut_ptr() as *mut c_void,
+            buffer_length,
+        );
+
+        assert_eq!(result, buffer_length);
+
+        Ok(buffer)
+    }
+
     /// Returns a new [DynamicImage] created from the bitmap buffer backing
     /// this [PdfPageImageObject], ignoring any image filters, image mask, or object
     /// transforms applied to this page object.
