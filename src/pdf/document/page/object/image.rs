@@ -268,11 +268,39 @@ impl<'a> PdfPageImageObject<'a> {
     /// Returns a new [PdfBitmap] created from the bitmap buffer backing
     /// this [PdfPageImageObject], ignoring any image filters, image mask, or object
     /// transforms applied to this page object.
-    pub fn get_raw_bitmap(&self) -> Result<PdfBitmap, PdfiumError> {
+    pub fn get_raw_bitmap(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
         Ok(PdfBitmap::from_pdfium(
             self.bindings().FPDFImageObj_GetBitmap(self.object_handle()),
             self.bindings(),
         ))
+    }
+
+    /// Returns the raw image data backing this [PdfPageImageObject] exactly as it is stored
+    /// in the containing PDF without applying any of the image's filters.
+    ///
+    /// The returned byte buffer may be empty if the image object does not contain any data.
+    pub fn get_raw_image_data(&self) -> Result<Vec<u8>, PdfiumError> {
+        let buffer_length = self.bindings().FPDFImageObj_GetImageDataRaw(
+            self.object_handle(),
+            std::ptr::null_mut(),
+            0,
+        );
+
+        if buffer_length == 0 {
+            return Ok(Vec::new());
+        }
+
+        let mut buffer = create_byte_buffer(buffer_length as usize);
+
+        let result = self.bindings().FPDFImageObj_GetImageDataRaw(
+            self.object_handle(),
+            buffer.as_mut_ptr() as *mut c_void,
+            buffer_length,
+        );
+
+        assert_eq!(result, buffer_length);
+
+        Ok(buffer)
     }
 
     /// Returns a new [DynamicImage] created from the bitmap buffer backing
@@ -290,7 +318,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
     #[inline]
-    pub fn get_processed_bitmap(&self, document: &PdfDocument) -> Result<PdfBitmap, PdfiumError> {
+    pub fn get_processed_bitmap(&self, document: &PdfDocument) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (width, height) = self.get_current_width_and_height_from_metadata()?;
 
         self.get_processed_bitmap_with_size(document, width, height)
@@ -319,7 +347,7 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         document: &PdfDocument,
         width: Pixels,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (current_width, current_height) = self.get_current_width_and_height_from_metadata()?;
 
         let aspect_ratio = current_width as f32 / current_height as f32;
@@ -370,7 +398,7 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         document: &PdfDocument,
         height: Pixels,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (current_width, current_height) = self.get_current_width_and_height_from_metadata()?;
 
         let aspect_ratio = current_width as f32 / current_height as f32;
@@ -422,7 +450,7 @@ impl<'a> PdfPageImageObject<'a> {
         document: &PdfDocument,
         width: Pixels,
         height: Pixels,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         // We attempt to work around two separate problems in Pdfium's
         // FPDFImageObj_GetRenderedBitmap() function.
 
@@ -772,7 +800,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Returns the collection of image filters currently applied to this [PdfPageImageObject].
     #[inline]
-    pub fn filters(&self) -> PdfPageImageObjectFilters {
+    pub fn filters(&self) -> PdfPageImageObjectFilters<'_> {
         PdfPageImageObjectFilters::new(self)
     }
 
@@ -944,7 +972,7 @@ impl<'a> PdfPageImageObjectFilters<'a> {
     /// Returns an iterator over all the [PdfPageImageObjectFilter] objects in this
     /// [PdfPageImageObjectFilters] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPageImageObjectFiltersIterator {
+    pub fn iter(&self) -> PdfPageImageObjectFiltersIterator<'_> {
         PdfPageImageObjectFiltersIterator::new(self)
     }
 }

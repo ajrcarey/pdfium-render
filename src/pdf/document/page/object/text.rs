@@ -275,7 +275,7 @@ impl<'a> PdfPageTextObject<'a> {
     }
 
     /// Returns the [PdfFont] used to render the text contained within this [PdfPageTextObject].
-    pub fn font(&self) -> PdfFont {
+    pub fn font(&self) -> PdfFont<'_> {
         PdfFont::from_pdfium(
             self.bindings().FPDFTextObj_GetFont(self.object_handle),
             self.bindings(),

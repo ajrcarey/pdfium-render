@@ -1209,7 +1209,7 @@ impl<'a> PdfFont<'a> {
     /// not the entire font glyphset. This is a PDF feature known as font subsetting. The collection
     /// of glyphs returned by this function may therefore not cover the entire font glyphset.
     #[inline]
-    pub fn glyphs(&self) -> &PdfFontGlyphs {
+    pub fn glyphs(&self) -> &PdfFontGlyphs<'_> {
         self.glyphs.initialize_len();
         &self.glyphs
     }

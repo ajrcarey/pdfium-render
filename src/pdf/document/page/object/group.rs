@@ -330,7 +330,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
     /// Returns a single [PdfPageObject] from this group.
     #[inline]
-    pub fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject, PdfiumError> {
+    pub fn get(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'_>, PdfiumError> {
         if let Some(handle) = self.object_handles.get(index) {
             Ok(self.get_object_from_handle(handle))
         } else {

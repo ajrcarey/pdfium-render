@@ -471,7 +471,7 @@ impl<'a> PdfPages<'a> {
         rows_per_page: u8,
         columns_per_row: u8,
         size: PdfPagePaperSize,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'_>, PdfiumError> {
         let handle = self.bindings.FPDF_ImportNPagesToOne(
             self.document_handle,
             size.width().value,
@@ -628,7 +628,7 @@ impl<'a> PdfPages<'a> {
 
     /// Returns an iterator over all the pages in this [PdfPages] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPagesIterator {
+    pub fn iter(&self) -> PdfPagesIterator<'_> {
         PdfPagesIterator::new(self)
     }
 }

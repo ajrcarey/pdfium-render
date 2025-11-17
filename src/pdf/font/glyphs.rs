@@ -144,7 +144,7 @@ impl<'a> PdfFontGlyphs<'a> {
 
     /// Returns an iterator over all the glyphs in this [PdfFontGlyphs] collection.
     #[inline]
-    pub fn iter(&self) -> PdfFontGlyphsIterator {
+    pub fn iter(&self) -> PdfFontGlyphsIterator<'_> {
         PdfFontGlyphsIterator::new(self)
     }
 }

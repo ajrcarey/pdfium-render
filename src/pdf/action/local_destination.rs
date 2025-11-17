@@ -28,7 +28,7 @@ impl<'a> PdfActionLocalDestination<'a> {
     }
 
     /// Returns the target [PdfDestination] for this [PdfActionLocalDestination].
-    pub fn destination(&self) -> Result<PdfDestination, PdfiumError> {
+    pub fn destination(&self) -> Result<PdfDestination<'_>, PdfiumError> {
         let handle = self.bindings.FPDFAction_GetDest(self.document, self.handle);
 
         if handle.is_null() {

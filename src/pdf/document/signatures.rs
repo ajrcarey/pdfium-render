@@ -84,7 +84,7 @@ impl<'a> PdfSignatures<'a> {
 
     /// Returns an iterator over all the signatures in this [PdfSignatures] collection.
     #[inline]
-    pub fn iter(&self) -> PdfSignaturesIterator {
+    pub fn iter(&self) -> PdfSignaturesIterator<'_> {
         PdfSignaturesIterator::new(self)
     }
 }

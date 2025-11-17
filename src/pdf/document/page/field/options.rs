@@ -131,7 +131,7 @@ impl<'a> PdfFormFieldOptions<'a> {
 
     /// Returns an iterator over all the options in this [PdfFormFieldOptions] collection.
     #[inline]
-    pub fn iter(&self) -> PdfFormFieldOptionsIterator {
+    pub fn iter(&self) -> PdfFormFieldOptionsIterator<'_> {
         PdfFormFieldOptionsIterator::new(self)
     }
 }

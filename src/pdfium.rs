@@ -186,7 +186,7 @@ impl Pdfium {
         &self,
         bytes: &'static [u8],
         password: Option<&str>,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'_>, PdfiumError> {
         self.load_pdf_from_byte_slice(bytes, password)
     }
 
@@ -214,7 +214,7 @@ impl Pdfium {
         &self,
         bytes: Vec<u8>,
         password: Option<&str>,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'_>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
             self.bindings
                 .FPDF_LoadMemDocument64(bytes.as_slice(), password),
@@ -373,7 +373,7 @@ impl Pdfium {
     }
 
     /// Creates a new, empty [PdfDocument] in memory.
-    pub fn create_new_pdf(&self) -> Result<PdfDocument, PdfiumError> {
+    pub fn create_new_pdf(&self) -> Result<PdfDocument<'_>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
             self.bindings.FPDF_CreateNewDocument(),
             self.bindings(),
@@ -389,7 +389,7 @@ impl Pdfium {
     pub(crate) fn pdfium_document_handle_to_result(
         handle: crate::bindgen::FPDF_DOCUMENT,
         bindings: &dyn PdfiumLibraryBindings,
-    ) -> Result<PdfDocument, PdfiumError> {
+    ) -> Result<PdfDocument<'_>, PdfiumError> {
         if handle.is_null() {
             // Retrieve the error code of the last error recorded by Pdfium.
 

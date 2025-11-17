@@ -140,7 +140,7 @@ impl<'a> PdfPageAnnotations<'a> {
 
     /// Returns an iterator over all the annotations in this [PdfPageAnnotations] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPageAnnotationsIterator {
+    pub fn iter(&self) -> PdfPageAnnotationsIterator<'_> {
         PdfPageAnnotationsIterator::new(self)
     }
 

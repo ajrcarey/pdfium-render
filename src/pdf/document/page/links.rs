@@ -157,7 +157,7 @@ impl<'a> PdfPageLinks<'a> {
     }
 
     /// Returns the [PdfLink] object at the given position on the containing page, if any.
-    pub fn link_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfLink> {
+    pub fn link_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfLink<'_>> {
         let handle =
             self.bindings
                 .FPDFLink_GetLinkAtPoint(self.page_handle, x.value as f64, y.value as f64);
@@ -175,7 +175,7 @@ impl<'a> PdfPageLinks<'a> {
 
     /// Returns an iterator over all the [PdfLink] objects in this [PdfPageLinks] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPageLinksIterator {
+    pub fn iter(&self) -> PdfPageLinksIterator<'_> {
         PdfPageLinksIterator::new(self)
     }
 }

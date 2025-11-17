@@ -87,7 +87,7 @@ impl<'a> PdfPageTextSegments<'a> {
 
     /// Returns a single [PdfPageTextSegment] from this [PdfPageTextSegments] collection.
     #[inline]
-    pub fn get(&self, index: PdfPageTextSegmentIndex) -> Result<PdfPageTextSegment, PdfiumError> {
+    pub fn get(&self, index: PdfPageTextSegmentIndex) -> Result<PdfPageTextSegment<'_>, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::TextSegmentIndexOutOfBounds);
         }
@@ -129,7 +129,7 @@ impl<'a> PdfPageTextSegments<'a> {
     /// individual [PdfPageTextObject] objects on the page may be much larger than the number of
     /// text segments.
     #[inline]
-    pub fn iter(&self) -> PdfPageTextSegmentsIterator {
+    pub fn iter(&self) -> PdfPageTextSegmentsIterator<'_> {
         PdfPageTextSegmentsIterator::new(self)
     }
 }

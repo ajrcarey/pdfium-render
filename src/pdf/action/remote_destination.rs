@@ -6,6 +6,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::action::private::internal::PdfActionPrivate;
 
 pub struct PdfActionRemoteDestination<'a> {
+    #[allow(dead_code)]
     handle: FPDF_ACTION,
     bindings: &'a dyn PdfiumLibraryBindings,
 }

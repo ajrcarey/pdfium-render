@@ -99,7 +99,7 @@ impl<'a> PdfPageTextChars<'a> {
 
     /// Returns a single [PdfPageTextChar] from this [PdfPageTextChars] collection.
     #[inline]
-    pub fn get(&self, index: PdfPageTextCharIndex) -> Result<PdfPageTextChar, PdfiumError> {
+    pub fn get(&self, index: PdfPageTextCharIndex) -> Result<PdfPageTextChar<'_>, PdfiumError> {
         match self.char_indices.get(index) {
             Some(index) => Ok(PdfPageTextChar::from_pdfium(
                 self.document_handle(),
@@ -114,7 +114,7 @@ impl<'a> PdfPageTextChars<'a> {
 
     /// Returns the character at the given x and y positions on the containing [PdfPage], if any.
     #[inline]
-    pub fn get_char_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfPageTextChar> {
+    pub fn get_char_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfPageTextChar<'_>> {
         self.get_char_near_point(x, PdfPoints::ZERO, y, PdfPoints::ZERO)
     }
 
@@ -128,7 +128,7 @@ impl<'a> PdfPageTextChars<'a> {
         tolerance_x: PdfPoints,
         y: PdfPoints,
         tolerance_y: PdfPoints,
-    ) -> Option<PdfPageTextChar> {
+    ) -> Option<PdfPageTextChar<'_>> {
         PdfPageText::get_char_index_near_point(
             self.text_page_handle(),
             x,
@@ -144,7 +144,7 @@ impl<'a> PdfPageTextChars<'a> {
 
     /// Returns an iterator over all the characters in this [PdfPageTextChars] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPageTextCharsIterator {
+    pub fn iter(&self) -> PdfPageTextCharsIterator<'_> {
         PdfPageTextCharsIterator::new(self)
     }
 }

@@ -572,7 +572,7 @@ impl<'a> PdfFonts<'a> {
 
     /// Returns a reference to the [PdfFont] associated with the given [PdfFontToken], if any.
     #[inline]
-    pub fn get(&self, token: PdfFontToken) -> Option<&PdfFont> {
+    pub fn get(&self, token: PdfFontToken) -> Option<&PdfFont<'_>> {
         self.fonts.get(&token)
     }
 }

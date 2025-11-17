@@ -107,20 +107,20 @@ impl<'a> PdfPageTextSearch<'a> {
     /// Returns the next search result yielded by this [PdfPageTextSearch] object
     /// in the direction [PdfSearchDirection::SearchForward].
     #[inline]
-    pub fn find_next(&self) -> Option<PdfPageTextSegments> {
+    pub fn find_next(&self) -> Option<PdfPageTextSegments<'_>> {
         self.get_next_result(PdfSearchDirection::SearchForward)
     }
 
     /// Returns the next search result yielded by this [PdfPageTextSearch] object
     /// in the direction [PdfSearchDirection::SearchBackward].
     #[inline]
-    pub fn find_previous(&self) -> Option<PdfPageTextSegments> {
+    pub fn find_previous(&self) -> Option<PdfPageTextSegments<'_>> {
         self.get_next_result(PdfSearchDirection::SearchBackward)
     }
 
     /// Returns the next search result yielded by this [PdfPageTextSearch] object
     /// in the given direction.
-    pub fn get_next_result(&self, direction: PdfSearchDirection) -> Option<PdfPageTextSegments> {
+    pub fn get_next_result(&self, direction: PdfSearchDirection) -> Option<PdfPageTextSegments<'_>> {
         let has_next = if direction == PdfSearchDirection::SearchForward {
             self.bindings().FPDFText_FindNext(self.search_handle()) != 0
         } else {
@@ -145,7 +145,7 @@ impl<'a> PdfPageTextSearch<'a> {
     /// Returns an iterator over all search results yielded by this [PdfPageTextSearch]
     /// object in the given direction.
     #[inline]
-    pub fn iter(&self, direction: PdfSearchDirection) -> PdfPageTextSearchIterator {
+    pub fn iter(&self, direction: PdfSearchDirection) -> PdfPageTextSearchIterator<'_> {
         PdfPageTextSearchIterator::new(self, direction)
     }
 }

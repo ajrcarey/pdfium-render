@@ -55,7 +55,7 @@ impl<'a> PdfFontGlyph<'a> {
     }
 
     /// Returns the path segments of this [PdfFontGlyph] when rendered at the given font size.
-    pub fn segments_at_font_size(&self, size: PdfPoints) -> Result<PdfFontGlyphPath, PdfiumError> {
+    pub fn segments_at_font_size(&self, size: PdfPoints) -> Result<PdfFontGlyphPath<'_>, PdfiumError> {
         let handle = self.bindings().FPDFFont_GetGlyphPath(
             self.handle,
             self.index as c_uint,

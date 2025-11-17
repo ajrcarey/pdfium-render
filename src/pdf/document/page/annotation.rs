@@ -521,7 +521,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Circle].
     #[inline]
-    pub fn as_circle_annotation(&self) -> Option<&PdfPageCircleAnnotation> {
+    pub fn as_circle_annotation(&self) -> Option<&PdfPageCircleAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Circle(annotation) => Some(annotation),
             _ => None,
@@ -543,7 +543,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::FreeText].
     #[inline]
-    pub fn as_free_text_annotation(&self) -> Option<&PdfPageFreeTextAnnotation> {
+    pub fn as_free_text_annotation(&self) -> Option<&PdfPageFreeTextAnnotation<'_>> {
         match self {
             PdfPageAnnotation::FreeText(annotation) => Some(annotation),
             _ => None,
@@ -565,7 +565,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Highlight].
     #[inline]
-    pub fn as_highlight_annotation(&self) -> Option<&PdfPageHighlightAnnotation> {
+    pub fn as_highlight_annotation(&self) -> Option<&PdfPageHighlightAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Highlight(annotation) => Some(annotation),
             _ => None,
@@ -587,7 +587,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Ink].
     #[inline]
-    pub fn as_ink_annotation(&self) -> Option<&PdfPageInkAnnotation> {
+    pub fn as_ink_annotation(&self) -> Option<&PdfPageInkAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Ink(annotation) => Some(annotation),
             _ => None,
@@ -609,7 +609,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Link].
     #[inline]
-    pub fn as_link_annotation(&self) -> Option<&PdfPageLinkAnnotation> {
+    pub fn as_link_annotation(&self) -> Option<&PdfPageLinkAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Link(annotation) => Some(annotation),
             _ => None,
@@ -631,7 +631,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Popup].
     #[inline]
-    pub fn as_popup_annotation(&self) -> Option<&PdfPagePopupAnnotation> {
+    pub fn as_popup_annotation(&self) -> Option<&PdfPagePopupAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Popup(annotation) => Some(annotation),
             _ => None,
@@ -653,7 +653,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Square].
     #[inline]
-    pub fn as_square_annotation(&self) -> Option<&PdfPageSquareAnnotation> {
+    pub fn as_square_annotation(&self) -> Option<&PdfPageSquareAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Square(annotation) => Some(annotation),
             _ => None,
@@ -675,7 +675,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Squiggly].
     #[inline]
-    pub fn as_squiggly_annotation(&self) -> Option<&PdfPageSquigglyAnnotation> {
+    pub fn as_squiggly_annotation(&self) -> Option<&PdfPageSquigglyAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Squiggly(annotation) => Some(annotation),
             _ => None,
@@ -697,7 +697,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Stamp].
     #[inline]
-    pub fn as_stamp_annotation(&self) -> Option<&PdfPageStampAnnotation> {
+    pub fn as_stamp_annotation(&self) -> Option<&PdfPageStampAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Stamp(annotation) => Some(annotation),
             _ => None,
@@ -719,7 +719,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Strikeout].
     #[inline]
-    pub fn as_strikeout_annotation(&self) -> Option<&PdfPageStrikeoutAnnotation> {
+    pub fn as_strikeout_annotation(&self) -> Option<&PdfPageStrikeoutAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Strikeout(annotation) => Some(annotation),
             _ => None,
@@ -741,7 +741,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Text].
     #[inline]
-    pub fn as_text_annotation(&self) -> Option<&PdfPageTextAnnotation> {
+    pub fn as_text_annotation(&self) -> Option<&PdfPageTextAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Text(annotation) => Some(annotation),
             _ => None,
@@ -763,7 +763,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Underline].
     #[inline]
-    pub fn as_underline_annotation(&self) -> Option<&PdfPageUnderlineAnnotation> {
+    pub fn as_underline_annotation(&self) -> Option<&PdfPageUnderlineAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Underline(annotation) => Some(annotation),
             _ => None,
@@ -785,7 +785,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Widget].
     #[inline]
-    pub fn as_widget_annotation(&self) -> Option<&PdfPageWidgetAnnotation> {
+    pub fn as_widget_annotation(&self) -> Option<&PdfPageWidgetAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Widget(annotation) => Some(annotation),
             _ => None,
@@ -807,7 +807,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::XfaWidget].
     #[inline]
-    pub fn as_xfa_widget_annotation(&self) -> Option<&PdfPageXfaWidgetAnnotation> {
+    pub fn as_xfa_widget_annotation(&self) -> Option<&PdfPageXfaWidgetAnnotation<'_>> {
         match self {
             PdfPageAnnotation::XfaWidget(annotation) => Some(annotation),
             _ => None,
@@ -829,7 +829,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// for this [PdfPageAnnotation], if this annotation has an annotation type of
     /// [PdfPageAnnotationType::Redacted].
     #[inline]
-    pub fn as_redacted_annotation(&self) -> Option<&PdfPageRedactedAnnotation> {
+    pub fn as_redacted_annotation(&self) -> Option<&PdfPageRedactedAnnotation<'_>> {
         match self {
             PdfPageAnnotation::Redacted(annotation) => Some(annotation),
             _ => None,
@@ -853,7 +853,7 @@ impl<'a> PdfPageAnnotation<'a> {
     /// Only annotations of type [PdfPageAnnotationType::Widget] and [PdfPageAnnotationType::XfaWidget]
     /// wrap form fields.
     #[inline]
-    pub fn as_form_field(&self) -> Option<&PdfFormField> {
+    pub fn as_form_field(&self) -> Option<&PdfFormField<'_>> {
         match self {
             PdfPageAnnotation::Widget(annotation) => annotation.form_field(),
             PdfPageAnnotation::XfaWidget(annotation) => annotation.form_field(),
@@ -1104,7 +1104,7 @@ pub trait PdfPageAnnotationCommon {
     /// ```
     /// annotation.as_stamp_annotation_mut().unwrap().objects_mut();
     /// ```
-    fn objects(&self) -> &PdfPageAnnotationObjects;
+    fn objects(&self) -> &PdfPageAnnotationObjects<'_>;
 
     /// Returns an immutable collection of the attachment points that visually associate
     /// this [PdfPageAnnotation] with one or more `PdfPageObject` objects on this `PdfPage`.
@@ -1120,7 +1120,7 @@ pub trait PdfPageAnnotationCommon {
     /// ```
     /// annotation.as_link_annotation_mut().unwrap().attachment_points_mut();
     /// ```
-    fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints;
+    fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints<'_>;
 }
 
 // Blanket implementation for all PdfPageAnnotation types.
@@ -1230,12 +1230,12 @@ where
     }
 
     #[inline]
-    fn objects(&self) -> &PdfPageAnnotationObjects {
+    fn objects(&self) -> &PdfPageAnnotationObjects<'_> {
         self.objects_impl()
     }
 
     #[inline]
-    fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints {
+    fn attachment_points(&self) -> &PdfPageAnnotationAttachmentPoints<'_> {
         self.attachment_points_impl()
     }
 
@@ -1353,12 +1353,12 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageAnnotation<'a> {
     }
 
     #[inline]
-    fn objects_impl(&self) -> &PdfPageAnnotationObjects {
+    fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_> {
         self.unwrap_as_trait().objects_impl()
     }
 
     #[inline]
-    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
+    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints<'_> {
         self.unwrap_as_trait().attachment_points_impl()
     }
 }
