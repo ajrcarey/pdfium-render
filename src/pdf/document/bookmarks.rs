@@ -49,7 +49,7 @@ impl<'a> PdfBookmarks<'a> {
     }
 
     /// Returns the root [PdfBookmark] in the containing `PdfDocument`, if any.
-    pub fn root(&self) -> Option<PdfBookmark> {
+    pub fn root(&self) -> Option<PdfBookmark<'_>> {
         let bookmark_handle = self
             .bindings
             .FPDFBookmark_GetFirstChild(self.document_handle, null_mut());
@@ -72,7 +72,7 @@ impl<'a> PdfBookmarks<'a> {
     /// Note that bookmarks are not required to have unique titles, so in theory any number of
     /// bookmarks could match a given title. This function only ever returns the first. To return
     /// all matches, use [PdfBookmarks::find_all_by_title()].
-    pub fn find_first_by_title(&self, title: &str) -> Result<PdfBookmark, PdfiumError> {
+    pub fn find_first_by_title(&self, title: &str) -> Result<PdfBookmark<'_>, PdfiumError> {
         let handle = self
             .bindings
             .FPDFBookmark_Find_str(self.document_handle, title);
@@ -98,7 +98,7 @@ impl<'a> PdfBookmarks<'a> {
     /// bookmarks could match a given title. This function returns all matches by performing
     /// a complete breadth-first traversal of the entire bookmark tree. To return just the first
     /// match, use [PdfBookmarks::find_first_by_title()].
-    pub fn find_all_by_title(&self, title: &str) -> Vec<PdfBookmark> {
+    pub fn find_all_by_title(&self, title: &str) -> Vec<PdfBookmark<'_>> {
         self.iter()
             .filter(|bookmark| match bookmark.title() {
                 Some(bookmark_title) => bookmark_title == title,
@@ -111,7 +111,7 @@ impl<'a> PdfBookmarks<'a> {
     /// objects in the containing `PdfDocument`, starting from the top-level
     /// root bookmark.
     #[inline]
-    pub fn iter(&self) -> PdfBookmarksIterator {
+    pub fn iter(&self) -> PdfBookmarksIterator<'_> {
         PdfBookmarksIterator::new(
             self.root(),
             true,

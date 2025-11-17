@@ -168,7 +168,7 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
 
     /// Returns an iterator over all the attachment points in this [PdfPageAnnotationAttachmentPoints] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPageAnnotationAttachmentPointsIterator {
+    pub fn iter(&self) -> PdfPageAnnotationAttachmentPointsIterator<'_> {
         PdfPageAnnotationAttachmentPointsIterator::new(self)
     }
 }

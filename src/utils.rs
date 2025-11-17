@@ -383,7 +383,7 @@ pub(crate) mod files {
     /// output source for Pdfium's file writing callback function.
     pub(crate) fn get_pdfium_file_writer_from_writer<W: Write + 'static>(
         writer: &mut W,
-    ) -> FpdfFileWriteExt {
+    ) -> FpdfFileWriteExt<'_> {
         FpdfFileWriteExt {
             version: 1,
             write_block: Some(write_block_from_callback),

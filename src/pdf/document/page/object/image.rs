@@ -268,7 +268,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// Returns a new [PdfBitmap] created from the bitmap buffer backing
     /// this [PdfPageImageObject], ignoring any image filters, image mask, or object
     /// transforms applied to this page object.
-    pub fn get_raw_bitmap(&self) -> Result<PdfBitmap, PdfiumError> {
+    pub fn get_raw_bitmap(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
         Ok(PdfBitmap::from_pdfium(
             self.bindings().FPDFImageObj_GetBitmap(self.object_handle()),
             self.bindings(),
@@ -318,7 +318,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
     #[inline]
-    pub fn get_processed_bitmap(&self, document: &PdfDocument) -> Result<PdfBitmap, PdfiumError> {
+    pub fn get_processed_bitmap(&self, document: &PdfDocument) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (width, height) = self.get_current_width_and_height_from_metadata()?;
 
         self.get_processed_bitmap_with_size(document, width, height)
@@ -347,7 +347,7 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         document: &PdfDocument,
         width: Pixels,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (current_width, current_height) = self.get_current_width_and_height_from_metadata()?;
 
         let aspect_ratio = current_width as f32 / current_height as f32;
@@ -398,7 +398,7 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         document: &PdfDocument,
         height: Pixels,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (current_width, current_height) = self.get_current_width_and_height_from_metadata()?;
 
         let aspect_ratio = current_width as f32 / current_height as f32;
@@ -450,7 +450,7 @@ impl<'a> PdfPageImageObject<'a> {
         document: &PdfDocument,
         width: Pixels,
         height: Pixels,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         // We attempt to work around two separate problems in Pdfium's
         // FPDFImageObj_GetRenderedBitmap() function.
 
@@ -800,7 +800,7 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Returns the collection of image filters currently applied to this [PdfPageImageObject].
     #[inline]
-    pub fn filters(&self) -> PdfPageImageObjectFilters {
+    pub fn filters(&self) -> PdfPageImageObjectFilters<'_> {
         PdfPageImageObjectFilters::new(self)
     }
 
@@ -972,7 +972,7 @@ impl<'a> PdfPageImageObjectFilters<'a> {
     /// Returns an iterator over all the [PdfPageImageObjectFilter] objects in this
     /// [PdfPageImageObjectFilters] collection.
     #[inline]
-    pub fn iter(&self) -> PdfPageImageObjectFiltersIterator {
+    pub fn iter(&self) -> PdfPageImageObjectFiltersIterator<'_> {
         PdfPageImageObjectFiltersIterator::new(self)
     }
 }

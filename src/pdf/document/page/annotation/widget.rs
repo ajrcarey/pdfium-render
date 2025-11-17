@@ -55,7 +55,7 @@ impl<'a> PdfPageWidgetAnnotation<'a> {
     /// Returns an immutable reference to the [PdfFormField] wrapped by this [PdfPageWidgetAnnotation],
     /// if any.
     #[inline]
-    pub fn form_field(&self) -> Option<&PdfFormField> {
+    pub fn form_field(&self) -> Option<&PdfFormField<'_>> {
         self.form_field.as_ref()
     }
 
@@ -84,12 +84,12 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageWidgetAnnotation<'a> {
     }
 
     #[inline]
-    fn objects_impl(&self) -> &PdfPageAnnotationObjects {
+    fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_> {
         &self.objects
     }
 
     #[inline]
-    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
+    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints<'_> {
         &self.attachment_points
     }
 }

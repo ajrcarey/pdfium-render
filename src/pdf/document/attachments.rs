@@ -112,7 +112,7 @@ impl<'a> PdfAttachments<'a> {
         &mut self,
         name: &str,
         bytes: &[u8],
-    ) -> Result<PdfAttachment, PdfiumError> {
+    ) -> Result<PdfAttachment<'_>, PdfiumError> {
         // Creating the attachment is a two step operation. First, we create the FPDF_ATTACHMENT
         // handle using the given name. Then, we add the given byte data to the FPDF_ATTACHMENT.
 
@@ -169,7 +169,7 @@ impl<'a> PdfAttachments<'a> {
         &mut self,
         name: &str,
         path: &(impl AsRef<Path> + ?Sized),
-    ) -> Result<PdfAttachment, PdfiumError> {
+    ) -> Result<PdfAttachment<'_>, PdfiumError> {
         self.create_attachment_from_reader(name, File::open(path).map_err(PdfiumError::IoError)?)
     }
 
@@ -181,7 +181,7 @@ impl<'a> PdfAttachments<'a> {
         &mut self,
         name: &str,
         mut reader: R,
-    ) -> Result<PdfAttachment, PdfiumError> {
+    ) -> Result<PdfAttachment<'_>, PdfiumError> {
         let mut bytes = Vec::new();
 
         reader
@@ -283,7 +283,7 @@ impl<'a> PdfAttachments<'a> {
 
     /// Returns an iterator over all the attachments in this [PdfAttachments] collection.
     #[inline]
-    pub fn iter(&self) -> PdfAttachmentsIterator {
+    pub fn iter(&self) -> PdfAttachmentsIterator<'_> {
         PdfAttachmentsIterator::new(self)
     }
 }

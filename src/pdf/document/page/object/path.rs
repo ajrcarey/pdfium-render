@@ -883,7 +883,7 @@ impl<'a> PdfPagePathObject<'a> {
 
     /// Returns the collection of path segments currently defined by this [PdfPagePathObject].
     #[inline]
-    pub fn segments(&self) -> PdfPagePathObjectSegments {
+    pub fn segments(&self) -> PdfPagePathObjectSegments<'_> {
         PdfPagePathObjectSegments::from_pdfium(self.object_handle(), self.bindings())
     }
 

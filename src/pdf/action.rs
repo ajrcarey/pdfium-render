@@ -154,7 +154,7 @@ impl<'a> PdfAction<'a> {
     /// Returns an immutable reference to the underlying [PdfActionLocalDestination] for this [PdfAction],
     /// if this action has an action type of [PdfActionType::GoToDestinationInSameDocument].
     #[inline]
-    pub fn as_local_destination_action(&self) -> Option<&PdfActionLocalDestination> {
+    pub fn as_local_destination_action(&self) -> Option<&PdfActionLocalDestination<'_>> {
         match self {
             PdfAction::LocalDestination(action) => Some(action),
             _ => None,
@@ -176,7 +176,7 @@ impl<'a> PdfAction<'a> {
     /// Returns an immutable reference to the underlying [PdfActionRemoteDestination] for this [PdfAction],
     /// if this action has an action type of [PdfActionType::GoToDestinationInRemoteDocument].
     #[inline]
-    pub fn as_remote_destination_action(&self) -> Option<&PdfActionRemoteDestination> {
+    pub fn as_remote_destination_action(&self) -> Option<&PdfActionRemoteDestination<'_>> {
         match self {
             PdfAction::RemoteDestination(action) => Some(action),
             _ => None,
@@ -198,7 +198,7 @@ impl<'a> PdfAction<'a> {
     /// Returns an immutable reference to the underlying [PdfActionEmbeddedDestination] for this [PdfAction],
     /// if this action has an action type of [PdfActionType::GoToDestinationInEmbeddedDocument].
     #[inline]
-    pub fn as_embedded_destination_action(&self) -> Option<&PdfActionEmbeddedDestination> {
+    pub fn as_embedded_destination_action(&self) -> Option<&PdfActionEmbeddedDestination<'_>> {
         match self {
             PdfAction::EmbeddedDestination(action) => Some(action),
             _ => None,
@@ -220,7 +220,7 @@ impl<'a> PdfAction<'a> {
     /// Returns an immutable reference to the underlying [PdfActionLaunch] for this [PdfAction],
     /// if this action has an action type of [PdfActionType::Launch].
     #[inline]
-    pub fn as_launch_action(&self) -> Option<&PdfActionLaunch> {
+    pub fn as_launch_action(&self) -> Option<&PdfActionLaunch<'_>> {
         match self {
             PdfAction::Launch(action) => Some(action),
             _ => None,
@@ -240,7 +240,7 @@ impl<'a> PdfAction<'a> {
     /// Returns an immutable reference to the underlying [PdfActionUri] for this [PdfAction],
     /// if this action has an action type of [PdfActionType::Uri].
     #[inline]
-    pub fn as_uri_action(&self) -> Option<&PdfActionUri> {
+    pub fn as_uri_action(&self) -> Option<&PdfActionUri<'_>> {
         match self {
             PdfAction::Uri(action) => Some(action),
             _ => None,

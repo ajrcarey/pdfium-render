@@ -72,12 +72,12 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnsupportedAnnotation<'a> {
     }
 
     #[inline]
-    fn objects_impl(&self) -> &PdfPageAnnotationObjects {
+    fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_> {
         &self.objects
     }
 
     #[inline]
-    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints {
+    fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints<'_> {
         &self.attachment_points
     }
 }
