@@ -44,6 +44,15 @@ use std::os::raw::{c_int, c_uint};
 #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
 use crate::pdf::document::page::objects::common::PdfPageObjectIndex;
 
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_7350",
+    feature = "pdfium_7215",
+    feature = "pdfium_7123",
+    feature = "pdfium_6996"
+))]
+use crate::error::PdfiumInternalError;
+
 /// The type of a single renderable [PdfPageObject].
 ///
 /// Note that Pdfium does not support or recognize all PDF page object types. For instance,
@@ -524,6 +533,86 @@ impl<'a> PdfPageObject<'a> {
             self.ownership().clone(),
             self.bindings(),
         ));
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996"
+    ))]
+    /// Marks this [PdfPageObject] as active on its containing page. All page objects
+    /// start in the active state by default.
+    pub fn set_active(&mut self) -> Result<(), PdfiumError> {
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPageObj_SetIsActive(self.object_handle(), self.bindings().TRUE()),
+        ) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996"
+    ))]
+    /// Returns `true` if this [PdfPageObject] is marked as active on its containing page.
+    pub fn is_active(&self) -> Result<bool, PdfiumError> {
+        let mut result = self.bindings().FALSE();
+
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPageObj_GetIsActive(self.object_handle(), &mut result),
+        ) {
+            Ok(self.bindings().is_true(result))
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996"
+    ))]
+    /// Marks this [PdfPageObject] as inactive on its containing page. The page object will
+    /// be treated as if it were not in the document, even though it exists internally.
+    pub fn set_inactive(&mut self) -> Result<(), PdfiumError> {
+        if self.bindings().is_true(
+            self.bindings()
+                .FPDFPageObj_SetIsActive(self.object_handle(), self.bindings().FALSE()),
+        ) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996"
+    ))]
+    /// Returns `true` if this [PdfPageObject] is marked as inactive on its containing page.
+    #[inline]
+    pub fn is_inactive(&self) -> Result<bool, PdfiumError> {
+        self.is_active().map(|result| !result)
     }
 
     create_transform_setters!(
