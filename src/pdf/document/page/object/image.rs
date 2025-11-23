@@ -275,34 +275,6 @@ impl<'a> PdfPageImageObject<'a> {
         ))
     }
 
-    /// Returns the raw image data backing this [PdfPageImageObject] exactly as it is stored
-    /// in the containing PDF without applying any of the image's filters.
-    ///
-    /// The returned byte buffer may be empty if the image object does not contain any data.
-    pub fn get_raw_image_data(&self) -> Result<Vec<u8>, PdfiumError> {
-        let buffer_length = self.bindings().FPDFImageObj_GetImageDataRaw(
-            self.object_handle(),
-            std::ptr::null_mut(),
-            0,
-        );
-
-        if buffer_length == 0 {
-            return Ok(Vec::new());
-        }
-
-        let mut buffer = create_byte_buffer(buffer_length as usize);
-
-        let result = self.bindings().FPDFImageObj_GetImageDataRaw(
-            self.object_handle(),
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
-
-        assert_eq!(result, buffer_length);
-
-        Ok(buffer)
-    }
-
     /// Returns a new [DynamicImage] created from the bitmap buffer backing
     /// this [PdfPageImageObject], ignoring any image filters, image mask, or object
     /// transforms applied to this page object.
@@ -460,8 +432,8 @@ impl<'a> PdfPageImageObject<'a> {
         // First, the call to FPDFImageObj_GetRenderedBitmap() can fail, returning
         // a null FPDF_BITMAP handle, if the image object's transformation matrix includes
         // negative values for either the matrix.a or matrix.d values. We flip those values
-        // in the transformation matrix if they are negative, and we make sure we return them
-        // to their original values before we return to the caller.
+        // in the transformation matrix if they are negative, and we make sure we restore
+        // the original values before we return to the caller.
 
         // Second, Pdfium seems to often return a rendered bitmap that is much smaller
         // than the image object's metadata suggests. We look at the dimensions of the bitmap
@@ -472,7 +444,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         let mut matrix = self.matrix()?;
 
-        let original_matrix = matrix; // We'll reset the matrix to this before we return.
+        let original_matrix = matrix; // We'll restore the matrix to this before we return.
 
         // Ensure the matrix.a and matrix.d values are not negative.
 
@@ -628,6 +600,34 @@ impl<'a> PdfPageImageObject<'a> {
             .map(DynamicImage::ImageLuma8),
         }
         .ok_or(PdfiumError::ImageError)
+    }
+
+    /// Returns the raw image data backing this [PdfPageImageObject] exactly as it is stored
+    /// in the containing PDF without applying any of the image's filters.
+    ///
+    /// The returned byte buffer may be empty if the image object does not contain any data.
+    pub fn get_raw_image_data(&self) -> Result<Vec<u8>, PdfiumError> {
+        let buffer_length = self.bindings().FPDFImageObj_GetImageDataRaw(
+            self.object_handle(),
+            std::ptr::null_mut(),
+            0,
+        );
+
+        if buffer_length == 0 {
+            return Ok(Vec::new());
+        }
+
+        let mut buffer = create_byte_buffer(buffer_length as usize);
+
+        let result = self.bindings().FPDFImageObj_GetImageDataRaw(
+            self.object_handle(),
+            buffer.as_mut_ptr() as *mut c_void,
+            buffer_length,
+        );
+
+        assert_eq!(result, buffer_length);
+
+        Ok(buffer)
     }
 
     /// Returns the expected pixel width and height of the processed image from Pdfium's metadata.

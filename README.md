@@ -67,6 +67,9 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 _Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
 
+Release 0.8.37 adds the new `PdfPageImageObject::get_raw_image_data()` function, thanks to an
+excellent contribution from <https://github.com/zamf>.
+
 Release 0.8.36 corrects a compatibility problem introduced in the latest version of the `libloading` crate, fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>, and resolves a memory leak that could occur when working with `PdfPageObject` instances not attached to pages or annotations thanks to an excellent investigation by <https://github.com/def-roth>.
 
 Release 0.8.35 increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>, fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>, adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>, and fixes a bug in example `examples/image_extract.rs`.
