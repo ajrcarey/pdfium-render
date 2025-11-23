@@ -70,6 +70,9 @@ impl PdfBitmapConfig {
 /// applying transformations, consider using the [PdfPage::flatten()] function to flatten the
 /// form elements and form data into the containing page.
 pub struct PdfRenderConfig {
+    use_auto_scaling: bool,
+    fixed_width: Option<Pixels>,
+    fixed_height: Option<Pixels>,
     target_width: Option<Pixels>,
     target_height: Option<Pixels>,
     scale_width_factor: Option<f32>,
@@ -108,6 +111,9 @@ impl PdfRenderConfig {
     /// Creates a new [PdfRenderConfig] object with all settings initialized with their default values.
     pub fn new() -> Self {
         PdfRenderConfig {
+            use_auto_scaling: true,
+            fixed_width: None,
+            fixed_height: None,
             target_width: None,
             target_height: None,
             scale_width_factor: None,
@@ -168,9 +174,31 @@ impl PdfRenderConfig {
             .render_form_data(false)
     }
 
+    #[inline]
+    pub fn set_fixed_size(self, width: Pixels, height: Pixels) -> Self {
+        self.set_fixed_width(width).set_fixed_height(height)
+    }
+
+    #[inline]
+    pub fn set_fixed_width(mut self, width: Pixels) -> Self {
+        self.use_auto_scaling = false;
+        self.fixed_width = Some(width);
+
+        self
+    }
+
+    #[inline]
+    pub fn set_fixed_height(mut self, height: Pixels) -> Self {
+        self.use_auto_scaling = false;
+        self.fixed_height = Some(height);
+
+        self
+    }
+
     /// Converts the width and height of a [PdfPage] from points to pixels, scaling each
     /// dimension to the given target pixel sizes. The aspect ratio of the source page
-    /// will not be maintained.
+    /// will not be maintained. Overrides any previous call to [PdfRenderConfig::set_fixed_width()]
+    /// or [PdfRenderConfig::set_fixed_height()].
     #[inline]
     pub fn set_target_size(self, width: Pixels, height: Pixels) -> Self {
         self.set_target_width(width).set_target_height(height)
@@ -179,9 +207,11 @@ impl PdfRenderConfig {
     /// Converts the width of a [PdfPage] from points to pixels, scaling the source page
     /// width to the given target pixel width. The aspect ratio of the source page
     /// will be maintained so long as there is no call to [PdfRenderConfig::set_target_size()]
-    /// or [PdfRenderConfig::set_target_height()] that overrides it.
+    /// or [PdfRenderConfig::set_target_height()] that overrides it. Overrides any previous
+    /// call to [PdfRenderConfig::set_fixed_width()] or [PdfRenderConfig::set_fixed_height()].
     #[inline]
     pub fn set_target_width(mut self, width: Pixels) -> Self {
+        self.use_auto_scaling = true;
         self.target_width = Some(width);
 
         self
@@ -190,9 +220,11 @@ impl PdfRenderConfig {
     /// Converts the height of a [PdfPage] from points to pixels, scaling the source page
     /// height to the given target pixel height. The aspect ratio of the source page
     /// will be maintained so long as there is no call to [PdfRenderConfig::set_target_size()]
-    /// or [PdfRenderConfig::set_target_width()] that overrides it.
+    /// or [PdfRenderConfig::set_target_width()] that overrides it. Overrides any previous
+    /// call to [PdfRenderConfig::set_fixed_width()] or [PdfRenderConfig::set_fixed_height()].
     #[inline]
     pub fn set_target_height(mut self, height: Pixels) -> Self {
+        self.use_auto_scaling = true;
         self.target_height = Some(height);
 
         self
@@ -683,82 +715,102 @@ impl PdfRenderConfig {
             (PdfPageRenderRotation::None, false)
         };
 
-        let width_scale = if let Some(scale) = self.scale_width_factor {
-            Some(scale)
-        } else {
-            self.target_width
-                .map(|target| (target as f32) / source_width.value)
-        };
+        let (output_width, output_height, width_scale, height_scale) = if self.use_auto_scaling {
+            // Compute output width and height based on target sizes and page dimensions.
 
-        let height_scale = if let Some(scale) = self.scale_height_factor {
-            Some(scale)
-        } else {
-            self.target_height
-                .map(|target| (target as f32) / source_height.value)
-        };
-
-        // Maintain source aspect ratio if only one dimension's scale is set.
-
-        let (do_maintain_aspect_ratio, mut width_scale, mut height_scale) =
-            match (width_scale, height_scale) {
-                (Some(width_scale), Some(height_scale)) => {
-                    (width_scale == height_scale, width_scale, height_scale)
-                }
-                (Some(width_scale), None) => (true, width_scale, width_scale),
-                (None, Some(height_scale)) => (true, height_scale, height_scale),
-                (None, None) => {
-                    // Set default scale to 1.0 if neither dimension is specified.
-
-                    (false, 1.0, 1.0)
-                }
-            };
-
-        // Apply constraints on maximum width and height, if any.
-
-        let (source_width, source_height, width_constraint, height_constraint) =
-            if do_rotate_constraints {
-                (
-                    source_height,
-                    source_width,
-                    self.maximum_height,
-                    self.maximum_width,
-                )
+            let width_scale = if let Some(scale) = self.scale_width_factor {
+                Some(scale)
             } else {
-                (
-                    source_width,
-                    source_height,
-                    self.maximum_width,
-                    self.maximum_height,
-                )
+                self.target_width
+                    .map(|target| (target as f32) / source_width.value)
             };
 
-        if let Some(maximum) = width_constraint {
-            let maximum = maximum as f32;
+            let height_scale = if let Some(scale) = self.scale_height_factor {
+                Some(scale)
+            } else {
+                self.target_height
+                    .map(|target| (target as f32) / source_height.value)
+            };
 
-            if source_width.value * width_scale > maximum {
-                // Constrain the width, so it does not exceed the maximum.
+            // Maintain source aspect ratio if only one dimension's scale is set.
 
-                width_scale = maximum / source_width.value;
+            let (do_maintain_aspect_ratio, mut width_scale, mut height_scale) =
+                match (width_scale, height_scale) {
+                    (Some(width_scale), Some(height_scale)) => {
+                        (width_scale == height_scale, width_scale, height_scale)
+                    }
+                    (Some(width_scale), None) => (true, width_scale, width_scale),
+                    (None, Some(height_scale)) => (true, height_scale, height_scale),
+                    (None, None) => {
+                        // Set default scale to 1.0 if neither dimension is specified.
 
-                if do_maintain_aspect_ratio {
-                    height_scale = width_scale;
+                        (false, 1.0, 1.0)
+                    }
+                };
+
+            // Apply constraints on maximum width and height, if any.
+
+            let (source_width, source_height, width_constraint, height_constraint) =
+                if do_rotate_constraints {
+                    (
+                        source_height,
+                        source_width,
+                        self.maximum_height,
+                        self.maximum_width,
+                    )
+                } else {
+                    (
+                        source_width,
+                        source_height,
+                        self.maximum_width,
+                        self.maximum_height,
+                    )
+                };
+
+            if let Some(maximum) = width_constraint {
+                let maximum = maximum as f32;
+
+                if source_width.value * width_scale > maximum {
+                    // Constrain the width, so it does not exceed the maximum.
+
+                    width_scale = maximum / source_width.value;
+
+                    if do_maintain_aspect_ratio {
+                        height_scale = width_scale;
+                    }
                 }
             }
-        }
 
-        if let Some(maximum) = height_constraint {
-            let maximum = maximum as f32;
+            if let Some(maximum) = height_constraint {
+                let maximum = maximum as f32;
 
-            if source_height.value * height_scale > maximum {
-                // Constrain the height, so it does not exceed the maximum.
+                if source_height.value * height_scale > maximum {
+                    // Constrain the height, so it does not exceed the maximum.
 
-                height_scale = maximum / source_height.value;
+                    height_scale = maximum / source_height.value;
 
-                if do_maintain_aspect_ratio {
-                    width_scale = height_scale;
+                    if do_maintain_aspect_ratio {
+                        width_scale = height_scale;
+                    }
                 }
             }
-        }
+
+            (
+                (source_width.value * width_scale).round() as c_int,
+                (source_height.value * height_scale).round() as c_int,
+                width_scale,
+                height_scale,
+            )
+        } else {
+            // Take output width and height directly from user's fixed settings.
+
+            (
+                self.fixed_width.unwrap_or(0) as c_int,
+                self.fixed_height.unwrap_or(0) as c_int,
+                self.scale_width_factor.unwrap_or(1.0),
+                self.scale_height_factor.unwrap_or(1.0),
+            )
+        };
 
         // Compose render flags.
 
@@ -812,10 +864,6 @@ impl PdfRenderConfig {
             render_flags |= FPDF_CONVERT_FILL_TO_STROKE;
         }
 
-        let output_width = (source_width.value * width_scale).round() as c_int;
-
-        let output_height = (source_height.value * height_scale).round() as c_int;
-
         // Pages can be rendered either _with_ transformation matrices and clipping
         // but _without_ form data, or _with_ form data but _without_ transformation matrices
         // and clipping. We need to be prepared for either option. If rendering of form data
@@ -844,7 +892,7 @@ impl PdfRenderConfig {
 
             result.and_then(|result| result.scale(width_scale, height_scale))
         } else {
-            Ok(self.transformation_matrix)
+            Ok(PdfMatrix::identity())
         };
 
         PdfPageRenderSettings {
