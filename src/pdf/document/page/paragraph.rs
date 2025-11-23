@@ -66,7 +66,7 @@ impl<'a> PdfStyledString<'a> {
 
     /// Returns the [PdfFont] used to style this [PdfStyledString].
     #[inline]
-    pub fn font(&self) -> &PdfFont {
+    pub fn font(&self) -> &PdfFont<'_> {
         self.font.as_ref()
     }
 
@@ -831,14 +831,14 @@ impl<'a> PdfParagraph<'a> {
 
     /// Assembles the fragments in this paragraph into lines, taking into account the paragraph's
     /// current sizing, overflow, indent, and alignment settings.
-    fn to_lines(&self) -> Vec<PdfLine> {
+    fn to_lines(&self) -> Vec<PdfLine<'_>> {
         todo!()
     }
 
     /// Assembles the fragments in this paragraph into lines, taking into account the paragraph's
     /// current sizing, overflow, indent, and alignment settings, and generates new page objects for
     /// each line, adding all generated page objects to a new [PdfPageGroupObject].
-    pub fn as_group(&self) -> PdfPageGroupObject {
+    pub fn as_group(&self) -> PdfPageGroupObject<'_> {
         todo!()
     }
 

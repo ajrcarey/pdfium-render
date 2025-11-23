@@ -318,7 +318,10 @@ impl<'a> PdfPageImageObject<'a> {
     /// this [PdfPageImageObject], taking into account any image filters, image mask, and
     /// object transforms applied to this page object.
     #[inline]
-    pub fn get_processed_bitmap(&self, document: &PdfDocument) -> Result<PdfBitmap<'_>, PdfiumError> {
+    pub fn get_processed_bitmap(
+        &self,
+        document: &PdfDocument,
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let (width, height) = self.get_current_width_and_height_from_metadata()?;
 
         self.get_processed_bitmap_with_size(document, width, height)

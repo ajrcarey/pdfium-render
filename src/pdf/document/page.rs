@@ -565,7 +565,10 @@ impl<'a> PdfPage<'a> {
     /// allocates memory for it. To avoid repeated allocations, create a single [PdfBitmap] object
     /// using [PdfBitmap::empty()] and reuse it across multiple calls to
     /// [PdfPage::render_into_bitmap_with_config()].
-    pub fn render_with_config(&self, config: &PdfRenderConfig) -> Result<PdfBitmap<'_>, PdfiumError> {
+    pub fn render_with_config(
+        &self,
+        config: &PdfRenderConfig,
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let settings = config.apply_to_page(self);
 
         let mut bitmap = PdfBitmap::empty(

@@ -21,7 +21,10 @@ use crate::pdf::document::PdfDocument;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
-use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+use {
+    crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage,
+    crate::pdf::document::page::PdfPageContentRegenerationStrategy,
+};
 
 /// The page objects contained within a single [PdfPage].
 ///

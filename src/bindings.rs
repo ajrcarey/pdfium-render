@@ -7512,7 +7512,7 @@ pub trait PdfiumLibraryBindings {
     ///                    the current object count, the object will be appended to the
     ///                    end. If index is greater than the object count, the function
     ///                    will fail and return false.
-    ///f
+    ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
     fn FPDFPage_InsertObjectAtIndex(

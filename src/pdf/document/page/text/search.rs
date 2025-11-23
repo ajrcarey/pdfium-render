@@ -120,7 +120,10 @@ impl<'a> PdfPageTextSearch<'a> {
 
     /// Returns the next search result yielded by this [PdfPageTextSearch] object
     /// in the given direction.
-    pub fn get_next_result(&self, direction: PdfSearchDirection) -> Option<PdfPageTextSegments<'_>> {
+    pub fn get_next_result(
+        &self,
+        direction: PdfSearchDirection,
+    ) -> Option<PdfPageTextSegments<'_>> {
         let has_next = if direction == PdfSearchDirection::SearchForward {
             self.bindings().FPDFText_FindNext(self.search_handle()) != 0
         } else {

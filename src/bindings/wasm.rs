@@ -789,7 +789,7 @@ impl PdfiumRenderWasmState {
                         unsafe extern "C" fn(
                             param: *mut c_void,
                             position: c_ulong,
-                            pBuf: *mut c_uchar,
+                            buf: *mut c_uchar,
                             size: c_ulong,
                         ) -> c_int,
                     >(self.file_access_callback_function_table_entry),

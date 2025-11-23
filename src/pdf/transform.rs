@@ -37,27 +37,24 @@ macro_rules! create_transform_setters {
         /// To move, scale, rotate, or skew
         #[doc = $doc_ref_comma_ ]
         /// consider using one or more of
-        /// the following functions. Internally they all use [Self::transform()], but are
+        /// the following functions. Internally they all use [Self::transform], but are
         /// probably easier to use (and certainly clearer in their intent) in most situations.
         ///
-        /// * [Self::translate()]: changes the position of
+        /// * [Self::translate]: changes the position of
         #[doc = $doc_ref_period_ ]
-        /// * [Self::scale()]: changes the size of
+        /// * [Self::scale]: changes the size of
         #[doc = $doc_ref_period_ ]
-        /// * [Self::flip_horizontally()]:
-        /// flips
+        /// * [Self::flip_horizontally]: flips
         #[doc = $doc_ref_ ]
         /// horizontally around its origin.
-        /// * [Self::flip_vertically()]:
-        /// flips
+        /// * [Self::flip_vertically]: flips
         #[doc = $doc_ref_ ]
         /// vertically around its origin.
-        /// * [Self::rotate_clockwise_degrees()], [Self::rotate_counter_clockwise_degrees()],
-        /// [Self::rotate_clockwise_radians()], [Self::rotate_counter_clockwise_radians()]:
-        /// rotates
+        /// * [Self::rotate_clockwise_degrees], [Self::rotate_counter_clockwise_degrees],
+        /// [Self::rotate_clockwise_radians], [Self::rotate_counter_clockwise_radians]: rotates
         #[doc = $doc_ref_ ]
         /// around its origin.
-        /// * [Self::skew_degrees()], [Self::skew_radians()]: skews
+        /// * [Self::skew_degrees], [Self::skew_radians]: skews
         #[doc = $doc_ref_ ]
         /// relative to its axes.
         ///

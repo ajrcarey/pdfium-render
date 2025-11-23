@@ -87,7 +87,10 @@ impl<'a> PdfPageTextSegments<'a> {
 
     /// Returns a single [PdfPageTextSegment] from this [PdfPageTextSegments] collection.
     #[inline]
-    pub fn get(&self, index: PdfPageTextSegmentIndex) -> Result<PdfPageTextSegment<'_>, PdfiumError> {
+    pub fn get(
+        &self,
+        index: PdfPageTextSegmentIndex,
+    ) -> Result<PdfPageTextSegment<'_>, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::TextSegmentIndexOutOfBounds);
         }
