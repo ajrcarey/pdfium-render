@@ -366,7 +366,7 @@ impl<'a> PdfPage<'a> {
     ///         &PdfRenderConfig::thumbnail(thumbnail_desired_pixel_size)
     ///     )?; // Renders a 128 x 128 thumbnail of the page
     /// ```
-    pub fn embedded_thumbnail(&self) -> Result<PdfBitmap, PdfiumError> {
+    pub fn embedded_thumbnail(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
         let thumbnail_handle = self
             .bindings()
             .FPDFPage_GetThumbnailAsBitmap(self.page_handle);
@@ -381,7 +381,7 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Returns the collection of text boxes contained within this [PdfPage].
-    pub fn text(&self) -> Result<PdfPageText, PdfiumError> {
+    pub fn text(&self) -> Result<PdfPageText<'_>, PdfiumError> {
         let text_handle = self.bindings().FPDFText_LoadPage(self.page_handle);
 
         if text_handle.is_null() {
@@ -439,7 +439,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns a list of all the distinct [PdfFont] instances used by the page text objects
     /// on this [PdfPage], if any.
-    pub fn fonts(&self) -> Vec<PdfFont> {
+    pub fn fonts(&self) -> Vec<PdfFont<'_>> {
         let mut distinct_font_handles = HashMap::new();
 
         let mut result = Vec::new();
@@ -541,7 +541,7 @@ impl<'a> PdfPage<'a> {
         width: Pixels,
         height: Pixels,
         rotation: Option<PdfPageRenderRotation>,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         let mut bitmap =
             PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings)?;
 
@@ -565,7 +565,7 @@ impl<'a> PdfPage<'a> {
     /// allocates memory for it. To avoid repeated allocations, create a single [PdfBitmap] object
     /// using [PdfBitmap::empty()] and reuse it across multiple calls to
     /// [PdfPage::render_into_bitmap_with_config()].
-    pub fn render_with_config(&self, config: &PdfRenderConfig) -> Result<PdfBitmap, PdfiumError> {
+    pub fn render_with_config(&self, config: &PdfRenderConfig) -> Result<PdfBitmap<'_>, PdfiumError> {
         let settings = config.apply_to_page(self);
 
         let mut bitmap = PdfBitmap::empty(
@@ -718,7 +718,7 @@ impl<'a> PdfPage<'a> {
     pub fn get_bitmap_with_config(
         &self,
         config: &PdfRenderConfig,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         self.render_with_config(config)
     }
 
@@ -740,7 +740,7 @@ impl<'a> PdfPage<'a> {
         width: Pixels,
         height: Pixels,
         rotation: Option<PdfPageRenderRotation>,
-    ) -> Result<PdfBitmap, PdfiumError> {
+    ) -> Result<PdfBitmap<'_>, PdfiumError> {
         self.render(width, height, rotation)
     }
 

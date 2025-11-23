@@ -411,7 +411,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns an immutable reference to the underlying [PdfPageTextObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::Text].
     #[inline]
-    pub fn as_text_object(&self) -> Option<&PdfPageTextObject> {
+    pub fn as_text_object(&self) -> Option<&PdfPageTextObject<'_>> {
         match self {
             PdfPageObject::Text(object) => Some(object),
             _ => None,
@@ -431,7 +431,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns an immutable reference to the underlying [PdfPagePathObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::Path].
     #[inline]
-    pub fn as_path_object(&self) -> Option<&PdfPagePathObject> {
+    pub fn as_path_object(&self) -> Option<&PdfPagePathObject<'_>> {
         match self {
             PdfPageObject::Path(object) => Some(object),
             _ => None,
@@ -451,7 +451,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns an immutable reference to the underlying [PdfPageImageObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::Image].
     #[inline]
-    pub fn as_image_object(&self) -> Option<&PdfPageImageObject> {
+    pub fn as_image_object(&self) -> Option<&PdfPageImageObject<'_>> {
         match self {
             PdfPageObject::Image(object) => Some(object),
             _ => None,
@@ -471,7 +471,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns an immutable reference to the underlying [PdfPageShadingObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::Shading].
     #[inline]
-    pub fn as_shading_object(&self) -> Option<&PdfPageShadingObject> {
+    pub fn as_shading_object(&self) -> Option<&PdfPageShadingObject<'_>> {
         match self {
             PdfPageObject::Shading(object) => Some(object),
             _ => None,
@@ -491,7 +491,7 @@ impl<'a> PdfPageObject<'a> {
     /// Returns an immutable reference to the underlying [PdfPageXObjectFormObject] for this [PdfPageObject],
     /// if this page object has an object type of [PdfPageObjectType::XObjectForm].
     #[inline]
-    pub fn as_x_object_form_object(&self) -> Option<&PdfPageXObjectFormObject> {
+    pub fn as_x_object_form_object(&self) -> Option<&PdfPageXObjectFormObject<'_>> {
         match self {
             PdfPageObject::XObjectForm(object) => Some(object),
             _ => None,

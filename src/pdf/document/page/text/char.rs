@@ -350,7 +350,7 @@ impl<'a> PdfPageTextChar<'a> {
         feature = "pdfium_6611"
     ))]
     /// Returns the page text object that contains this character.
-    pub fn text_object(&self) -> Result<PdfPageTextObject, PdfiumError> {
+    pub fn text_object(&self) -> Result<PdfPageTextObject<'_>, PdfiumError> {
         let object_handle = self
             .bindings()
             .FPDFText_GetTextObject(self.text_page_handle(), self.index);

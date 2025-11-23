@@ -577,10 +577,10 @@ pub(crate) mod internal {
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::objects()].
-        fn objects_impl(&self) -> &PdfPageAnnotationObjects;
+        fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_>;
 
         /// Internal implementation of [PdfPageAnnotationCommon::attachment_points()].
-        fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints;
+        fn attachment_points_impl(&self) -> &PdfPageAnnotationAttachmentPoints<'_>;
     }
 }
 

@@ -179,7 +179,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormPushButtonField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::PushButton].
     #[inline]
-    pub fn as_push_button_field(&self) -> Option<&PdfFormPushButtonField> {
+    pub fn as_push_button_field(&self) -> Option<&PdfFormPushButtonField<'_>> {
         match self {
             PdfFormField::PushButton(field) => Some(field),
             _ => None,
@@ -189,7 +189,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormCheckboxField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::Checkbox].
     #[inline]
-    pub fn as_checkbox_field(&self) -> Option<&PdfFormCheckboxField> {
+    pub fn as_checkbox_field(&self) -> Option<&PdfFormCheckboxField<'_>> {
         match self {
             PdfFormField::Checkbox(field) => Some(field),
             _ => None,
@@ -209,7 +209,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormRadioButtonField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::RadioButton].
     #[inline]
-    pub fn as_radio_button_field(&self) -> Option<&PdfFormRadioButtonField> {
+    pub fn as_radio_button_field(&self) -> Option<&PdfFormRadioButtonField<'_>> {
         match self {
             PdfFormField::RadioButton(field) => Some(field),
             _ => None,
@@ -229,7 +229,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormComboBoxField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::ComboBox].
     #[inline]
-    pub fn as_combo_box_field(&self) -> Option<&PdfFormComboBoxField> {
+    pub fn as_combo_box_field(&self) -> Option<&PdfFormComboBoxField<'_>> {
         match self {
             PdfFormField::ComboBox(field) => Some(field),
             _ => None,
@@ -239,7 +239,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormListBoxField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::ListBox].
     #[inline]
-    pub fn as_list_box_field(&self) -> Option<&PdfFormListBoxField> {
+    pub fn as_list_box_field(&self) -> Option<&PdfFormListBoxField<'_>> {
         match self {
             PdfFormField::ListBox(field) => Some(field),
             _ => None,
@@ -249,7 +249,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormSignatureField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::Signature].
     #[inline]
-    pub fn as_signature_field(&self) -> Option<&PdfFormSignatureField> {
+    pub fn as_signature_field(&self) -> Option<&PdfFormSignatureField<'_>> {
         match self {
             PdfFormField::Signature(field) => Some(field),
             _ => None,
@@ -259,7 +259,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormTextField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::Text].
     #[inline]
-    pub fn as_text_field(&self) -> Option<&PdfFormTextField> {
+    pub fn as_text_field(&self) -> Option<&PdfFormTextField<'_>> {
         match self {
             PdfFormField::Text(field) => Some(field),
             _ => None,
@@ -278,7 +278,7 @@ impl<'a> PdfFormField<'a> {
     /// Returns a reference to the underlying [PdfFormUnknownField] for this [PdfFormField],
     /// if this form field has a field type of [PdfFormField::Unknown].
     #[inline]
-    pub fn as_unknown_field(&self) -> Option<&PdfFormUnknownField> {
+    pub fn as_unknown_field(&self) -> Option<&PdfFormUnknownField<'_>> {
         match self {
             PdfFormField::Unknown(field) => Some(field),
             _ => None,

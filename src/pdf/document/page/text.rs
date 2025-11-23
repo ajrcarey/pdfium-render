@@ -90,7 +90,7 @@ impl<'a> PdfPageText<'a> {
 
     /// Returns a collection of all the `PdfPageTextSegment` text segments in the containing [PdfPage].
     #[inline]
-    pub fn segments(&self) -> PdfPageTextSegments {
+    pub fn segments(&self) -> PdfPageTextSegments<'_> {
         PdfPageTextSegments::new(self, 0, self.len(), self.bindings())
     }
 
@@ -101,13 +101,13 @@ impl<'a> PdfPageText<'a> {
         &self,
         start: PdfPageTextCharIndex,
         count: PdfPageTextCharIndex,
-    ) -> PdfPageTextSegments {
+    ) -> PdfPageTextSegments<'_> {
         PdfPageTextSegments::new(self, start as i32, count as i32, self.bindings())
     }
 
     /// Returns a collection of all the `PdfPageTextChar` characters in the containing [PdfPage].
     #[inline]
-    pub fn chars(&self) -> PdfPageTextChars {
+    pub fn chars(&self) -> PdfPageTextChars<'_> {
         PdfPageTextChars::new(
             self.page.document_handle(),
             self.page.page_handle(),
@@ -135,7 +135,7 @@ impl<'a> PdfPageText<'a> {
     pub fn chars_for_object(
         &self,
         object: &PdfPageTextObject,
-    ) -> Result<PdfPageTextChars, PdfiumError> {
+    ) -> Result<PdfPageTextChars<'_>, PdfiumError> {
         Ok(PdfPageTextChars::new(
             self.page.document_handle(),
             self.page.page_handle(),
@@ -161,7 +161,7 @@ impl<'a> PdfPageText<'a> {
     pub fn chars_for_annotation(
         &self,
         annotation: &PdfPageAnnotation,
-    ) -> Result<PdfPageTextChars, PdfiumError> {
+    ) -> Result<PdfPageTextChars<'_>, PdfiumError> {
         self.chars_inside_rect(annotation.bounds()?)
             .map_err(|_| PdfiumError::NoCharsInAnnotation)
     }
@@ -169,7 +169,7 @@ impl<'a> PdfPageText<'a> {
     /// Returns a collection of all the `PdfPageTextChar` characters that lie within the bounds of
     /// the given [PdfRect] in the containing [PdfPage].
     #[inline]
-    pub fn chars_inside_rect(&self, rect: PdfRect) -> Result<PdfPageTextChars, PdfiumError> {
+    pub fn chars_inside_rect(&self, rect: PdfRect) -> Result<PdfPageTextChars<'_>, PdfiumError> {
         let tolerance_x = rect.width() / 2.0;
         let tolerance_y = rect.height() / 2.0;
         let center_height = rect.bottom() + tolerance_y;
@@ -370,7 +370,7 @@ impl<'a> PdfPageText<'a> {
         &self,
         text: &str,
         options: &PdfSearchOptions,
-    ) -> Result<PdfPageTextSearch, PdfiumError> {
+    ) -> Result<PdfPageTextSearch<'_>, PdfiumError> {
         self.search_from(text, options, 0)
     }
 
@@ -382,7 +382,7 @@ impl<'a> PdfPageText<'a> {
         text: &str,
         options: &PdfSearchOptions,
         index: PdfPageTextCharIndex,
-    ) -> Result<PdfPageTextSearch, PdfiumError> {
+    ) -> Result<PdfPageTextSearch<'_>, PdfiumError> {
         if text.is_empty() {
             Err(PdfiumError::TextSearchTargetIsEmpty)
         } else {

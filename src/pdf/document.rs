@@ -245,7 +245,7 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns an immutable collection of all the [PdfAttachments] embedded in this [PdfDocument].
     #[inline]
-    pub fn attachments(&self) -> &PdfAttachments {
+    pub fn attachments(&self) -> &PdfAttachments<'_> {
         &self.attachments
     }
 
@@ -257,19 +257,19 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns an immutable collection of all the [PdfBookmarks] in this [PdfDocument].
     #[inline]
-    pub fn bookmarks(&self) -> &PdfBookmarks {
+    pub fn bookmarks(&self) -> &PdfBookmarks<'_> {
         &self.bookmarks
     }
 
     /// Returns an immutable reference to the [PdfForm] embedded in this [PdfDocument], if any.
     #[inline]
-    pub fn form(&self) -> Option<&PdfForm> {
+    pub fn form(&self) -> Option<&PdfForm<'_>> {
         self.form.as_ref()
     }
 
     /// Returns an immutable collection of all the [PdfFonts] in this [PdfDocument].
     #[inline]
-    pub fn fonts(&self) -> &PdfFonts {
+    pub fn fonts(&self) -> &PdfFonts<'_> {
         &self.fonts
     }
 
@@ -281,7 +281,7 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns an immutable collection of all the [PdfMetadata] tags in this [PdfDocument].
     #[inline]
-    pub fn metadata(&self) -> &PdfMetadata {
+    pub fn metadata(&self) -> &PdfMetadata<'_> {
         &self.metadata
     }
 
@@ -299,13 +299,13 @@ impl<'a> PdfDocument<'a> {
 
     /// Returns an immutable collection of all the [PdfPermissions] applied to this [PdfDocument].
     #[inline]
-    pub fn permissions(&self) -> &PdfPermissions {
+    pub fn permissions(&self) -> &PdfPermissions<'_> {
         &self.permissions
     }
 
     /// Returns an immutable collection of all the [PdfSignatures] attached to this [PdfDocument].
     #[inline]
-    pub fn signatures(&self) -> &PdfSignatures {
+    pub fn signatures(&self) -> &PdfSignatures<'_> {
         &self.signatures
     }
 

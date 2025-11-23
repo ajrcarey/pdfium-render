@@ -55,7 +55,7 @@ impl<'a> PdfFormComboBoxField<'a> {
     }
 
     /// Returns the collection of selectable options in this [PdfFormComboBoxField].
-    pub fn options(&self) -> &PdfFormFieldOptions {
+    pub fn options(&self) -> &PdfFormFieldOptions<'_> {
         &self.options
     }
 
