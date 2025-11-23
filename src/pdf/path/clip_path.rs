@@ -1,32 +1,54 @@
 //! Defines the [PdfClipPath] struct, exposing functionality related to a clip path.
 
-#[doc(hidden)]
 use crate::bindgen::FPDF_CLIPPATH;
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::path::segment::PdfPathSegment;
 use crate::pdf::path::segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use std::convert::TryInto;
 use std::os::raw::c_int;
 
-// TODO: AJRC - 22/10/22 - "clip path" is a slight misnomer, since a single clip path can actually
-// contain zero or more path objects. Each path object can then return a PdfClipPathSegments object
-// that implements the PdfPathSegments trait. Want to complete implementation of top-level PdfClipPath
-// collection, then add clip path support to pages and page objects.
-
-// The PdfClipPath struct is not currently used, but we expect it to be in future
+/// A single clip path, containing zero or more path objects.
 pub struct PdfClipPath<'a> {
-    // TODO: AJRC - 22/10/22 - this will contain a collection of paths
-    // each of which can return a PdfClipPathSegments object
     handle: FPDF_CLIPPATH,
+    ownership: PdfPageObjectOwnership,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfClipPath<'a> {
     #[inline]
-    #[allow(dead_code)] // TODO: AJRC - 4/8/25 - remove once handle() function is in use.
+    pub(crate) fn from_pdfium(
+        handle: FPDF_CLIPPATH,
+        ownership: PdfPageObjectOwnership,
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Self {
+        Self {
+            handle,
+            ownership,
+            bindings,
+        }
+    }
+
+    /// Returns the internal `FPDF_CLIPPATH` handle for this [PdfPathSegment].
+    #[inline]
+    pub(crate) fn handle(&self) -> FPDF_CLIPPATH {
+        self.handle
+    }
+
+    #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
+    }
+
+    /// Returns the number of path objects inside this [PdfClipPath] instance.
+    pub fn len(&self) -> i32 {
+        self.bindings().FPDFClipPath_CountPaths(self.handle()) as i32
+    }
+
+    /// Returns the path objects inside this [PdfClipPath] instance.
+    pub fn get_segments(&self, path_index: i32) -> PdfClipPathSegments<'a> {
+        PdfClipPathSegments::from_pdfium(self.handle(), path_index, self.bindings())
     }
 }
 
@@ -34,7 +56,12 @@ impl<'a> Drop for PdfClipPath<'a> {
     /// Closes this [PdfClipPath], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings.FPDF_DestroyClipPath(self.handle)
+        if !self.ownership.is_owned() {
+            // Responsibility for de-allocation lies with us, not Pdfium, since
+            // the clip path is not attached to a page, a page object, or an annotation.
+
+            self.bindings.FPDF_DestroyClipPath(self.handle)
+        }
     }
 }
 

@@ -33,6 +33,7 @@ use crate::pdf::document::page::objects::PdfPageObjects;
 use crate::pdf::document::page::{PdfPage, PdfPageObjectOwnership};
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
+use crate::pdf::path::clip_path::PdfClipPath;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
@@ -506,6 +507,23 @@ impl<'a> PdfPageObject<'a> {
             PdfPageObject::XObjectForm(object) => Some(object),
             _ => None,
         }
+    }
+
+    /// Returns the clip path for this object, if any.
+    pub fn get_clip_path(&self) -> Option<PdfClipPath<'_>> {
+        let path_handle = self
+            .bindings()
+            .FPDFPageObj_GetClipPath(self.object_handle());
+
+        if path_handle.is_null() {
+            return None;
+        }
+
+        return Some(PdfClipPath::from_pdfium(
+            path_handle,
+            self.ownership().clone(),
+            self.bindings(),
+        ));
     }
 
     create_transform_setters!(

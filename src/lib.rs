@@ -180,6 +180,7 @@ pub mod prelude {
         pdf::font::*,
         pdf::link::*,
         pdf::matrix::*,
+        pdf::path::clip_path::*,
         pdf::path::segment::*,
         pdf::path::segments::*,
         pdf::points::*,

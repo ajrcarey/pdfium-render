@@ -57,6 +57,12 @@ impl<'a> PdfPathSegment<'a> {
         }
     }
 
+    /// Returns the internal `FPDF_PATHSEGMENT` handle for this [PdfPathSegment].
+    #[inline]
+    pub(crate) fn handle(&self) -> FPDF_PATHSEGMENT {
+        self.handle
+    }
+
     /// Returns the [PdfiumLibraryBindings] used by this [PdfPathSegment].
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
@@ -74,7 +80,7 @@ impl<'a> PdfPathSegment<'a> {
     #[inline]
     pub fn is_close(&self) -> bool {
         self.bindings()
-            .is_true(self.bindings().FPDFPathSegment_GetClose(self.handle))
+            .is_true(self.bindings().FPDFPathSegment_GetClose(self.handle()))
     }
 
     /// Returns the horizontal and vertical destination positions of this [PdfPathSegment].
@@ -87,7 +93,7 @@ impl<'a> PdfPathSegment<'a> {
             .bindings()
             .is_true(
                 self.bindings()
-                    .FPDFPathSegment_GetPoint(self.handle, &mut x, &mut y),
+                    .FPDFPathSegment_GetPoint(self.handle(), &mut x, &mut y),
             )
         {
             let x = PdfPoints::new(x as f32);
