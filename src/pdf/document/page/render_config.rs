@@ -9,7 +9,7 @@ use crate::bindgen::{
 };
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
-use crate::pdf::bitmap::{PdfBitmapFormat, Pixels};
+use crate::pdf::bitmap::{PdfBitmap, PdfBitmapFormat, Pixels};
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::field::PdfFormFieldType;
 use crate::pdf::document::page::PdfPageOrientation::{Landscape, Portrait};
@@ -17,9 +17,6 @@ use crate::pdf::document::page::{PdfPage, PdfPageOrientation, PdfPageRenderRotat
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use std::os::raw::c_int;
-
-#[cfg(doc)]
-use crate::pdf::bitmap::PdfBitmap;
 
 // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
 // https://github.com/ajrcarey/pdfium-render/issues/36
@@ -174,11 +171,27 @@ impl PdfRenderConfig {
             .render_form_data(false)
     }
 
+    /// Sets the desired pixel width and height of a rendered [PdfPage] to the
+    /// width and height of the given [PdfBitmap]. No attempt will be made to scale or adjust
+    /// the aspect ratio to match the source page. Overrides any previous call to
+    /// [PdfRenderConfig::set_target_size], [PdfRenderConfig::set_target_width], or
+    /// [PdfRenderConfig::set_target_height].
+    #[inline]
+    pub fn set_fixed_size_to_bitmap(self, bitmap: &PdfBitmap) -> Self {
+        self.set_fixed_size(bitmap.width(), bitmap.height())
+    }
+
+    /// Sets the desired pixel width and height of a rendered [PdfPage] to the given
+    /// pixel values. No attempt will be made to scale or adjust the aspect ratio to
+    /// match the source page. Overrides any previous call to [PdfRenderConfig::set_target_size],
+    /// [PdfRenderConfig::set_target_width], or [PdfRenderConfig::set_target_height].
     #[inline]
     pub fn set_fixed_size(self, width: Pixels, height: Pixels) -> Self {
         self.set_fixed_width(width).set_fixed_height(height)
     }
 
+    /// Sets the desired pixel width of a rendered [PdfPage] to the given value. Overrides
+    /// any previous call to [PdfRenderConfig::set_target_size] or [PdfRenderConfig::set_target_width].
     #[inline]
     pub fn set_fixed_width(mut self, width: Pixels) -> Self {
         self.use_auto_scaling = false;
@@ -187,6 +200,8 @@ impl PdfRenderConfig {
         self
     }
 
+    /// Sets the desired pixel height of a rendered [PdfPage] to the given value. Overrides
+    /// any previous call to [PdfRenderConfig::set_target_size] or [PdfRenderConfig::set_target_height].
     #[inline]
     pub fn set_fixed_height(mut self, height: Pixels) -> Self {
         self.use_auto_scaling = false;
@@ -228,6 +243,17 @@ impl PdfRenderConfig {
         self.target_height = Some(height);
 
         self
+    }
+
+    /// Applies settings to this [PdfRenderConfig] suitable for filling the given [PdfBitmap].
+    ///
+    /// The source page's dimensions will be scaled so that both width and height attempt
+    /// to fill, but do not exceed, the pixel dimensions of the bitmap. The aspect ratio
+    /// of the source page will be maintained. Landscape pages will be automatically rotated
+    /// by 90 degrees and will be scaled down if necessary to fit the bitmap width.
+    #[inline]
+    pub fn scale_page_to_bitmap(self, bitmap: &PdfBitmap) -> Self {
+        self.scale_page_to_display_size(bitmap.width(), bitmap.height())
     }
 
     /// Applies settings to this [PdfRenderConfig] suitable for filling the given
