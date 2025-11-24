@@ -60,6 +60,7 @@ pub enum PdfiumError {
     LoadLibraryFunctionNameError(String),
 
     UnrecognizedPath,
+    PdfClipPathSegmentIndexOutOfBounds,
     PageIndexOutOfBounds,
     LinkIndexOutOfBounds,
     UnknownBitmapFormat,

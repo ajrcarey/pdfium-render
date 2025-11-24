@@ -7,7 +7,12 @@ use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::path::segment::PdfPathSegment;
 use crate::pdf::path::segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use std::convert::TryInto;
+use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
+
+/// The zero-based index of a single [PdfClipPathSegments] path object inside its
+/// containing [PdfClipPath] instance.
+pub type PdfClipPathSegmentIndex = u16;
 
 /// A single clip path, containing zero or more path objects.
 pub struct PdfClipPath<'a> {
@@ -36,19 +41,60 @@ impl<'a> PdfClipPath<'a> {
         self.handle
     }
 
+    /// Returns the [PdfiumLibraryBindings] used by this [PdfClipPath] instance.
     #[inline]
     pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
     }
 
     /// Returns the number of path objects inside this [PdfClipPath] instance.
-    pub fn len(&self) -> i32 {
-        self.bindings().FPDFClipPath_CountPaths(self.handle()) as i32
+    #[inline]
+    pub fn len(&self) -> PdfClipPathSegmentIndex {
+        self.bindings().FPDFClipPath_CountPaths(self.handle()) as PdfClipPathSegmentIndex
     }
 
-    /// Returns the path objects inside this [PdfClipPath] instance.
-    pub fn get_segments(&self, path_index: i32) -> PdfClipPathSegments<'a> {
-        PdfClipPathSegments::from_pdfium(self.handle(), path_index, self.bindings())
+    /// Returns `true` if this [PdfClipPath] instance is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns a Range from `0..(number of path objects)` for this [PdfClipPath] instance.
+    #[inline]
+    pub fn as_range(&self) -> Range<PdfClipPathSegmentIndex> {
+        0..self.len()
+    }
+
+    /// Returns an inclusive Range from `0..=(number of path objects - 1)` for this [PdfClipPath] instance.
+    #[inline]
+    pub fn as_range_inclusive(&self) -> RangeInclusive<PdfClipPathSegmentIndex> {
+        if self.is_empty() {
+            0..=0
+        } else {
+            0..=(self.len() - 1)
+        }
+    }
+
+    /// Returns a single [PdfClipPathSegments] path object from this [PdfClipPath] instance.
+    pub fn get(
+        &self,
+        index: PdfClipPathSegmentIndex,
+    ) -> Result<PdfClipPathSegments<'a>, PdfiumError> {
+        if index >= self.len() {
+            return Err(PdfiumError::PdfClipPathSegmentIndexOutOfBounds);
+        }
+
+        Ok(PdfClipPathSegments::from_pdfium(
+            self.handle(),
+            index,
+            self.bindings(),
+        ))
+    }
+
+    /// Returns an iterator over all the path objects in this [PdfClipPath] instance.
+    #[inline]
+    pub fn iter(&self) -> PdfClipPathIterator<'_> {
+        PdfClipPathIterator::new(self)
     }
 }
 
@@ -65,25 +111,51 @@ impl<'a> Drop for PdfClipPath<'a> {
     }
 }
 
+/// An iterator over all the [PdfPathSegments] path objects in a [PdfClipPath] instance.
+pub struct PdfClipPathIterator<'a> {
+    clip_path: &'a PdfClipPath<'a>,
+    next_index: PdfClipPathSegmentIndex,
+}
+
+impl<'a> PdfClipPathIterator<'a> {
+    #[inline]
+    pub(crate) fn new(clip_path: &'a PdfClipPath<'a>) -> Self {
+        PdfClipPathIterator {
+            clip_path,
+            next_index: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for PdfClipPathIterator<'a> {
+    type Item = PdfClipPathSegments<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.clip_path.get(self.next_index);
+
+        self.next_index += 1;
+
+        next.ok()
+    }
+}
+
 /// The collection of [PdfPathSegment] objects inside a single path within a clip path.
 pub struct PdfClipPathSegments<'a> {
     handle: FPDF_CLIPPATH,
-    path_index: c_int,
+    index: PdfClipPathSegmentIndex,
     bindings: &'a dyn PdfiumLibraryBindings,
 }
 
 impl<'a> PdfClipPathSegments<'a> {
     #[inline]
-    #[allow(dead_code)]
-    // The from_pdfium() function is not currently used, but we expect it to be in future
     pub(crate) fn from_pdfium(
         handle: FPDF_CLIPPATH,
-        path_index: c_int,
+        path_index: PdfClipPathSegmentIndex,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         Self {
             handle,
-            path_index,
+            index: path_index,
             bindings,
         }
     }
@@ -98,7 +170,7 @@ impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
         self.bindings()
-            .FPDFClipPath_CountPathSegments(self.handle, self.path_index)
+            .FPDFClipPath_CountPathSegments(self.handle, self.index as i32)
             .try_into()
             .unwrap_or(0)
     }
@@ -106,7 +178,7 @@ impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
         let handle = self.bindings().FPDFClipPath_GetPathSegment(
             self.handle,
-            self.path_index,
+            self.index as i32,
             index as c_int,
         );
 
