@@ -21,6 +21,7 @@ use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7543",
     feature = "pdfium_7350",
     feature = "pdfium_7215",
     feature = "pdfium_7123",
@@ -346,6 +347,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -811,6 +813,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -896,6 +899,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -942,6 +946,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -987,6 +992,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1034,6 +1040,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1088,6 +1095,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1146,6 +1154,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1172,6 +1181,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1191,6 +1201,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1255,6 +1266,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -1659,6 +1671,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -2272,6 +2285,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -2378,6 +2392,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -2399,6 +2414,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -2915,6 +2931,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -2932,6 +2949,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -3310,6 +3328,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -3332,6 +3351,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -3730,6 +3750,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215"
     ))]
@@ -3925,6 +3946,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4017,6 +4039,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4034,6 +4057,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4067,6 +4091,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4109,6 +4134,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4157,6 +4183,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4215,6 +4242,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4289,8 +4317,22 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
             .FPDFPageObjMark_GetParamIntValue(mark, key, out_value)
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_GetParamFloatValue(
+        &self,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: &str,
+        out_value: *mut c_float,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFPageObjMark_GetParamFloatValue(mark, key, out_value)
+    }
+
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4345,6 +4387,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4411,6 +4454,21 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
             .FPDFPageObjMark_SetIntParam(document, page_object, mark, key, value)
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    fn FPDFPageObjMark_SetFloatParam(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+        key: &str,
+        value: f32,
+    ) -> FPDF_BOOL {
+        self.bindings
+            .FPDFPageObjMark_SetFloatParam(document, page_object, mark, key, value)
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetStringParam(
@@ -4427,6 +4485,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4648,6 +4707,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4907,6 +4967,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -4927,6 +4988,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
@@ -5287,6 +5349,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
         feature = "pdfium_7123",
