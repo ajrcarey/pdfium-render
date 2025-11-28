@@ -56,8 +56,8 @@ impl PdfBitmapConfig {
 /// Configures the scaling, rotation, and rendering settings that should be applied to
 /// a [PdfPage] to create a [PdfBitmap] for that page. [PdfRenderConfig] can accommodate pages of
 /// different sizes while correctly maintaining each page's aspect ratio, automatically
-/// rotate portrait or landscape pages, generate page thumbnails, apply maximum and
-/// minimum pixel sizes to the scaled width and height of the final bitmap, highlight form fields
+/// rotate portrait or landscape pages, generate page thumbnails, apply maximum pixel size
+/// constraints to the scaled width and height of the final rendering, highlight form fields
 /// with different colors, apply custom transforms to the page during rendering, and set
 /// internal Pdfium rendering flags.
 ///
@@ -995,4 +995,68 @@ pub(crate) struct PdfPageRenderSettings {
     pub(crate) clipping: FS_RECTF,
     pub(crate) render_flags: c_int,
     pub(crate) is_reversed_byte_order_flag_set: bool,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+    use crate::utils::test::test_bind_to_pdfium; // Temporary until PdfParagraph is included in the prelude.
+
+    #[test]
+    fn test_fixed_size_render_config() -> Result<(), PdfiumError> {
+        let render_settings =
+            get_render_settings_from_config(PdfRenderConfig::new().set_fixed_size(2000, 2000))?;
+
+        assert_eq!(render_settings.width, 2000);
+        assert_eq!(render_settings.height, 2000);
+
+        // Applying scaling does not affect the rendered bitmap size.
+
+        let render_settings = get_render_settings_from_config(
+            PdfRenderConfig::new()
+                .set_fixed_size(2000, 2000)
+                .scale_page_by_factor(5.0),
+        )?;
+
+        assert_eq!(render_settings.width, 2000);
+        assert_eq!(render_settings.height, 2000);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_target_size_render_config() -> Result<(), PdfiumError> {
+        let render_settings = get_render_settings_from_config(
+            PdfRenderConfig::new().scale_page_to_display_size(2000, 2000),
+        )?;
+
+        assert_eq!(render_settings.width, 1414);
+        assert_eq!(render_settings.height, 2000);
+
+        // Applying scaling does affected the rendered bitmap size.
+
+        let render_settings = get_render_settings_from_config(
+            PdfRenderConfig::new()
+                .set_target_size(2000, 2000)
+                .scale_page_by_factor(5.0),
+        )?;
+
+        assert_eq!(render_settings.width, 2976);
+        assert_eq!(render_settings.height, 4209);
+
+        Ok(())
+    }
+
+    fn get_render_settings_from_config(
+        config: PdfRenderConfig,
+    ) -> Result<PdfPageRenderSettings, PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let mut document = pdfium.create_new_pdf()?;
+        let page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
+
+        Ok(config.apply_to_page(&page))
+    }
 }
