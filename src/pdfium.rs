@@ -3,12 +3,13 @@
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
+use once_cell::sync::OnceCell;
 use std::fmt::{Debug, Formatter};
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use {
-    crate::bindings::dynamic::DynamicPdfiumBindings, libloading::Library, std::ffi::OsString,
-    std::path::PathBuf,
+    crate::bindings::dynamic_bindings::DynamicPdfiumBindings, libloading::Library,
+    std::ffi::OsString, std::path::PathBuf,
 };
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "static"))]
@@ -24,15 +25,12 @@ use {
 
 #[cfg(target_arch = "wasm32")]
 use {
-    crate::bindings::wasm::{PdfiumRenderWasmState, WasmPdfiumBindings},
+    crate::bindings::wasm_bindings::{PdfiumRenderWasmState, WasmPdfiumBindings},
     js_sys::{ArrayBuffer, Uint8Array},
     wasm_bindgen::JsCast,
     wasm_bindgen_futures::JsFuture,
     web_sys::{window, Blob, Response},
 };
-
-#[cfg(feature = "thread_safe")]
-use crate::bindings::thread_safe::ThreadSafePdfiumBindings;
 
 // The following dummy declaration is used only when running cargo doc.
 // It allows documentation of WASM-specific functionality to be included
@@ -41,11 +39,31 @@ use crate::bindings::thread_safe::ThreadSafePdfiumBindings;
 #[cfg(doc)]
 struct Blob;
 
+// The first instantiation of a Pdfium object will promote a concrete PdfiumLibraryBindings
+// trait implementation into a global static OnceCell. This allows for thread-safe,
+// lifetime-free access to that PdfiumLibraryBindings instance from any object that
+// implements the PdfiumLibraryBindingsAccessor trait.
+
+static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
+
+#[cfg(feature = "thread_safe")]
+pub(crate) trait PdfiumLibraryBindingsAccessor: Send + Sync {
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        BINDINGS.wait().as_ref()
+    }
+}
+
+#[cfg(not(feature = "thread_safe"))]
+pub(crate) trait PdfiumLibraryBindingsAccessor {
+    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+        BINDINGS.get().unwrap().as_ref()
+    }
+}
+
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
-pub struct Pdfium {
-    bindings: Box<dyn PdfiumLibraryBindings>,
-}
+#[derive(Clone)]
+pub struct Pdfium;
 
 impl Pdfium {
     /// Binds to a Pdfium library that was statically linked into the currently running
@@ -59,12 +77,13 @@ impl Pdfium {
     #[inline]
     pub fn bind_to_statically_linked_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError>
     {
-        let bindings = StaticPdfiumBindings::new();
+        if BINDINGS.get().is_none() {
+            let bindings = StaticPdfiumBindings::new();
 
-        #[cfg(feature = "thread_safe")]
-        let bindings = ThreadSafePdfiumBindings::new(bindings);
-
-        Ok(Box::new(bindings))
+            Ok(Box::new(bindings))
+        } else {
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
+        }
     }
 
     /// Initializes the external Pdfium library, loading it from the system libraries.
@@ -74,15 +93,16 @@ impl Pdfium {
     #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
-        let bindings = DynamicPdfiumBindings::new(
-            unsafe { Library::new(Self::pdfium_platform_library_name()) }
-                .map_err(PdfiumError::LoadLibraryError)?,
-        )?;
+        if BINDINGS.get().is_none() {
+            let bindings = DynamicPdfiumBindings::new(
+                unsafe { Library::new(Self::pdfium_platform_library_name()) }
+                    .map_err(PdfiumError::LoadLibraryError)?,
+            )?;
 
-        #[cfg(feature = "thread_safe")]
-        let bindings = ThreadSafePdfiumBindings::new(bindings);
-
-        Ok(Box::new(bindings))
+            Ok(Box::new(bindings))
+        } else {
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
+        }
     }
 
     /// Initializes the external Pdfium library, binding to an external WASM module.
@@ -98,12 +118,9 @@ impl Pdfium {
         if PdfiumRenderWasmState::lock().is_ready() {
             let bindings = WasmPdfiumBindings::new();
 
-            #[cfg(feature = "thread_safe")]
-            let bindings = ThreadSafePdfiumBindings::new(bindings);
-
             Ok(Box::new(bindings))
         } else {
-            Err(PdfiumError::PdfiumWASMModuleNotConfigured)
+            Err(PdfiumError::PdfiumWasmModuleNotInitialized)
         }
     }
 
@@ -116,15 +133,16 @@ impl Pdfium {
     pub fn bind_to_library(
         path: impl AsRef<Path>,
     ) -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
-        let bindings = DynamicPdfiumBindings::new(
-            unsafe { Library::new(path.as_ref().as_os_str()) }
-                .map_err(PdfiumError::LoadLibraryError)?,
-        )?;
+        if BINDINGS.get().is_none() {
+            let bindings = DynamicPdfiumBindings::new(
+                unsafe { Library::new(path.as_ref().as_os_str()) }
+                    .map_err(PdfiumError::LoadLibraryError)?,
+            )?;
 
-        #[cfg(feature = "thread_safe")]
-        let bindings = ThreadSafePdfiumBindings::new(bindings);
-
-        Ok(Box::new(bindings))
+            Ok(Box::new(bindings))
+        } else {
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
+        }
     }
 
     /// Returns the name of the external Pdfium library on the currently running platform.
@@ -149,45 +167,11 @@ impl Pdfium {
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
     #[inline]
     pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
+        assert!(BINDINGS.get().is_none());
         bindings.FPDF_InitLibrary();
+        assert!(BINDINGS.set(bindings).is_ok());
 
-        Self { bindings }
-    }
-
-    // TODO: AJRC - 17/9/22 - remove deprecated Pdfium::get_bindings() function in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
-    #[deprecated(
-        since = "0.7.18",
-        note = "This function has been renamed. Use the Pdfium::bindings() function instead."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn get_bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings.as_ref()
-    }
-
-    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
-    #[inline]
-    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings.as_ref()
-    }
-
-    // TODO: AJRC - 18/12/22 - remove deprecated Pdfium::load_pdf_from_bytes() function in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    /// Returns the [PdfiumLibraryBindings] wrapped by this instance of [Pdfium].
-    #[deprecated(
-        since = "0.7.26",
-        note = "This function has been renamed. Use the Pdfium::load_pdf_from_byte_slice() function instead."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn load_pdf_from_bytes(
-        &self,
-        bytes: &'static [u8],
-        password: Option<&str>,
-    ) -> Result<PdfDocument<'_>, PdfiumError> {
-        self.load_pdf_from_byte_slice(bytes, password)
+        Self {}
     }
 
     /// Attempts to open a [PdfDocument] from the given static byte buffer.
@@ -199,7 +183,7 @@ impl Pdfium {
         password: Option<&str>,
     ) -> Result<PdfDocument<'a>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
-            self.bindings.FPDF_LoadMemDocument64(bytes, password),
+            self.bindings().FPDF_LoadMemDocument64(bytes, password),
             self.bindings(),
         )
     }
@@ -216,7 +200,7 @@ impl Pdfium {
         password: Option<&str>,
     ) -> Result<PdfDocument<'_>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
-            self.bindings
+            self.bindings()
                 .FPDF_LoadMemDocument64(bytes.as_slice(), password),
             self.bindings(),
         )
@@ -293,7 +277,7 @@ impl Pdfium {
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
         Pdfium::pdfium_document_handle_to_result(
-            self.bindings
+            self.bindings()
                 .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password),
             self.bindings(),
         )
@@ -375,7 +359,7 @@ impl Pdfium {
     /// Creates a new, empty [PdfDocument] in memory.
     pub fn create_new_pdf(&self) -> Result<PdfDocument<'_>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
-            self.bindings.FPDF_CreateNewDocument(),
+            self.bindings().FPDF_CreateNewDocument(),
             self.bindings(),
         )
         .map(|mut document| {
@@ -424,13 +408,7 @@ impl Pdfium {
     }
 }
 
-impl Drop for Pdfium {
-    /// Closes the external Pdfium library, releasing held memory.
-    #[inline]
-    fn drop(&mut self) {
-        self.bindings.FPDF_DestroyLibrary();
-    }
-}
+impl PdfiumLibraryBindingsAccessor for Pdfium {}
 
 impl Default for Pdfium {
     /// Binds to a Pdfium library that was statically linked into the currently running
@@ -451,11 +429,11 @@ impl Default for Pdfium {
     #[cfg(not(target_arch = "wasm32"))]
     #[inline]
     fn default() -> Self {
-        let bindings = match Pdfium::bind_to_library(
-            // Attempt to bind to a Pdfium library in the current working directory...
-            Pdfium::pdfium_platform_library_name_at_path("./"),
-        ) {
-            Ok(bindings) => Ok(bindings),
+        // Attempt to bind to a Pdfium library in the current working directory.
+
+        match Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")) {
+            Ok(bindings) => Pdfium::new(bindings), // Create new bindings
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {}, // Re-use the existing bindings
             Err(PdfiumError::LoadLibraryError(err)) => {
                 match err {
                     libloading::Error::DlOpen { .. } => {
@@ -463,15 +441,13 @@ impl Default for Pdfium {
                         // current working directory does not exist or is corrupted, we attempt
                         // to fall back to a system-provided library.
 
-                        Pdfium::bind_to_system_library()
+                        Pdfium::new(Pdfium::bind_to_system_library().unwrap())
                     }
-                    _ => Err(PdfiumError::LoadLibraryError(err)),
+                    _ => Err(PdfiumError::LoadLibraryError(err)).unwrap(), // Explicitly re-throw the error
                 }
             }
-            Err(err) => Err(err),
-        };
-
-        Pdfium::new(bindings.unwrap())
+            Err(err) => Err(err).unwrap(), // Explicitly re-throw the error
+        }
     }
 
     /// Binds to an external Pdfium library by attempting to a system-provided library.
@@ -490,8 +466,8 @@ impl Debug for Pdfium {
     }
 }
 
-#[cfg(feature = "sync")]
+#[cfg(feature = "thread_safe")]
 unsafe impl Sync for Pdfium {}
 
-#[cfg(feature = "sync")]
+#[cfg(feature = "thread_safe")]
 unsafe impl Send for Pdfium {}

@@ -5412,3 +5412,9 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         unsafe { crate::bindgen::FPDFCatalog_SetLanguage(document, c_language.as_ptr()) }
     }
 }
+
+impl Drop for StaticPdfiumBindings {
+    fn drop(&mut self) {
+        self.FPDF_DestroyLibrary();
+    }
+}

@@ -12,6 +12,9 @@ use std::num::ParseIntError;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsValue;
 
+#[cfg(doc)]
+use crate::pdfium::Pdfium;
+
 /// A wrapped internal library error from Pdfium's `FPDF_ERR_*` constant values.
 ///
 /// Pdfium only provides detailed internal error information for document loading functions.
@@ -43,12 +46,13 @@ pub enum PdfiumInternalError {
 /// A wrapper enum for handling Pdfium errors as standard Rust `Err` values.
 #[derive(Debug)]
 pub enum PdfiumError {
-    /// The Pdfium WASM module has not been configured.
+    /// The Pdfium WASM module has not been initialized.
+    ///
     /// It is essential that the exported `initialize_pdfium_render()` function be called
     /// from Javascript _before_ calling any `pdfium-render` function from within your Rust code.
     /// See: <https://github.com/ajrcarey/pdfium-render/blob/master/examples/index.html>
     #[cfg(target_arch = "wasm32")]
-    PdfiumWASMModuleNotConfigured,
+    PdfiumWasmModuleNotInitialized,
 
     /// An error occurred during dynamic binding to an external Pdfium library.
     #[cfg(not(target_arch = "wasm32"))]
@@ -58,6 +62,11 @@ pub enum PdfiumError {
     /// to a C string. The wrapped string value contains more information.
     #[cfg(not(target_arch = "wasm32"))]
     LoadLibraryFunctionNameError(String),
+
+    /// The global library bindings have already been initialized based on the
+    /// first call to [Pdfium::new]. Bindings initialization can only occur once
+    /// during the lifetime of the program.
+    PdfiumLibraryBindingsAlreadyInitialized,
 
     UnrecognizedPath,
     PdfClipPathSegmentIndexOutOfBounds,

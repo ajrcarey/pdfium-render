@@ -1178,7 +1178,7 @@ pub fn write_block_from_callback_wasm(
     }
 }
 
-pub(crate) struct WasmPdfiumBindings {}
+pub(crate) struct WasmPdfiumBindings;
 
 impl WasmPdfiumBindings {
     // Pdfium cannot access a pointer location in our own WASM heap. When calling FPDF_* functions
@@ -14725,7 +14725,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-       #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     #[inline]
     #[allow(non_snake_case)]
     fn FPDFPageObjMark_SetFloatParam(
@@ -17818,5 +17818,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         state.free(language_ptr);
 
         result
+    }
+}
+
+impl Drop for WasmPdfiumBindings {
+    fn drop(&mut self) {
+        self.FPDF_DestroyLibrary();
     }
 }

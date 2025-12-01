@@ -65,15 +65,13 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 ## What's new
 
-_Note: upcoming release 0.9.0 will remove all deprecated items. For a complete list of deprecated items, see <https://github.com/ajrcarey/pdfium-render/issues/36>._
+Release 0.9.0 removes all deprecated items, simplifies lifetime handling across all object instances, and implements the `Send` and `Sync` traits for all object instances, allowing documents, pages, and page objects to be more easily used in multi-threaded applications. Note that Pdfium itself is _not_ thread-safe; for more discussion on the limitations of multi-threading in Pdfium, see the "Multi-threading" section below. For a complete list of deprecated items that have been removed, see <https://github.com/ajrcarey/pdfium-render/issues/36>.
 
 Release 0.8.37 increments the `pdfium_latest` feature to `pdfium_7543` to match new Pdfium release 7543 at <https://github.com/bblanchon/pdfium-binaries>, adds new `PdfRenderConfig::set_fixed_size()`, `PdfRenderConfig::set_fixed_width()`, and `PdfRenderConfig::set_fixed_height()` functions for more finely-grained rendering control thanks to an excellent suggestion by <https://github.com/newinnovations>, adds new `PdfRenderConfig::set_fixed_size_to_bitmap()` and `PdfRenderConfig::scale_page_to_bitmap()` functions for conveniently setting target render sizes directly from a bitmap, adds a new `PdfPageObject::get_clip_path()` function thanks to an excellent contribution from <https://github.com/abdelkarim>, adds a new `PdfPageImageObject::get_raw_image_data()` function thanks to an excellent contribution from <https://github.com/zamf>, and adds new `PdfPageObject::is_active()`, `PdfPageObject::set_active()`, `PdfPageObject::is_inactive()`, and `PdfPageObject::set_inactive()` functions for setting and retrieving the object status on its containing page. Page objects marked as inactive are retained in the document but are not included in page rendering.
 
 Release 0.8.36 corrects a compatibility problem introduced in the latest version of the `libloading` crate, fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>, and resolves a memory leak that could occur when working with `PdfPageObject` instances not attached to pages or annotations thanks to an excellent investigation by <https://github.com/def-roth>.
 
 Release 0.8.35 increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>, fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>, adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>, and fixes a bug in example `examples/image_extract.rs`.
-
-Release 0.8.34 substantially expands the support for annotation and form field flags thanks to an excellent contribution from <https://github.com/zecuria>, adds new `PdfPageTextChar::is_generated()` and `PdfPageTextChar::is_hyphen()` functions thanks to an excellent contribution from <https://github.com/bikallem>, and resolves a build error on macOS systems related to the optional `bindgen` dependency thanks to an excellent contribution from <https://github.com/songhuaixu>.
 
 ## Binding to Pdfium
 
@@ -209,22 +207,22 @@ An example of safely using `pdfium-render` as part of a multi-threaded parallel 
 This crate provides the following optional features:
 
 * `bindings`: uses `cbindgen` to generate Rust bindings to the Pdfium functions defined in the `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies are not available then the build will fail.
-* `image`: controls whether the `image` crate should be used by `pdfium-render` to provide page and page object rendering functionality. Projects that do not require page or page object rendering can disable this feature to avoid compiling the `image` crate into their binaries. It is possible to control the specific version of `image` that will be used by `pdfium-render`; see the "Crate features for selecting `image` versions" section below.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `core_graphics`: links against the CoreGraphics library on macOS systems when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `static`: enables binding to a statically-linked build of Pdfium. See the "Static linking" section above.
-* `sync`: provides implementations of the `Send` and `Sync` traits for the `Pdfium` and `PdfDocument` structs. This is useful for creating static instances that can be used with `lazy_static` or `once_cell`, although those instances are not guaranteed to be thread-safe. Use entirely at your own risk. Requires the `thread_safe` feature.
 * `thread_safe`: wraps access to Pdfium behind a mutex to ensure thread-safe access to Pdfium. See the "Multithreading" section above.
 
 #### Crate features for selecting `image` versions
 
-Release 0.8.26 introduced new features to explicitly control the version of the `image` crate used by `pdfium-render`:
+Release 0.8.26 introduced new features to explicitly control the version of the `image` crate used by `pdfium-render` to provide page and page object rendering functionality:
 
 * `image_latest`: uses the latest version of the `image` crate. This is currently `image_025`.
 * `image_025`: uses `image` crate version `0.25`.
 * `image_024`: uses `image` crate version `0.24`.
 * `image_023`: uses `image` crate version `0.23`.
+
+Projects that do not require page or page object rendering can disable these features to avoid compiling the `image` crate into their binaries.
 
 #### Crate features for selecting Pdfium API versions
 
@@ -299,7 +297,7 @@ The initial focus of this crate was on rendering pages in a PDF file; consequent
 * Releases numbered 0.4.x added support for basic page rendering Pdfium functions to `pdfium-render`.
 * Releases numbered 0.5.x-0.6.x added support for most read-only Pdfium functions to `pdfium-render`.
 * Releases numbered 0.7.x added support for most Pdfium page object creation and editing functions to `pdfium-render`. 
-* Releases numbered 0.8.x aim to progressively add support for all remaining Pdfium editing functions to `pdfium-render`.
+* Releases numbered 0.8.x added support for all remaining Pdfium editing functions to `pdfium-render`.
 * Releases numbered 0.9.x aim to fill any remaining gaps in the high-level interface prior to 1.0.
 
 Some functions and type definitions have been renamed or revised since their initial implementations. The initial implementations are still available but are marked as deprecated. These deprecated items will be removed in release 0.9.0.

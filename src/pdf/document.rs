@@ -415,9 +415,3 @@ impl<'a> Debug for PdfDocument<'a> {
             .finish()
     }
 }
-
-#[cfg(feature = "sync")]
-unsafe impl<'a> Sync for PdfDocument<'a> {}
-
-#[cfg(feature = "sync")]
-unsafe impl<'a> Send for PdfDocument<'a> {}

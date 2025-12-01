@@ -12,31 +12,22 @@
 //! <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/>
 
 // Include the appropriate implementation of the PdfiumLibraryBindings trait for the
-// target architecture and threading model.
-
-// Conditional compilation is used to compile different implementations of
-// the PdfiumLibraryBindings trait depending on whether we are compiling to a WASM module,
+// target architecture. Conditional compilation is used to compile different implementations
+// of the PdfiumLibraryBindings trait depending on whether we are compiling to a WASM module,
 // a native shared library, or a statically linked library.
 
 #![allow(clippy::too_many_arguments)]
 
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(not(feature = "static"))]
-pub(crate) mod dynamic;
+pub(crate) mod dynamic_bindings;
 
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(feature = "static")]
 pub(crate) mod static_bindings;
 
 #[cfg(target_arch = "wasm32")]
-pub(crate) mod wasm;
-
-// These implementations are all single-threaded (because Pdfium itself is single-threaded).
-// Any of them can be wrapped by thread_safe::ThreadSafePdfiumBindings to
-// create a thread-safe architecture-specific implementation of the PdfiumLibraryBindings trait.
-
-#[cfg(feature = "thread_safe")]
-pub(crate) mod thread_safe;
+pub(crate) mod wasm_bindings;
 
 // The following dummy declarations are used only when running cargo doc.
 // They allow documentation of any target-specific functionality to be included
@@ -134,7 +125,8 @@ use std::os::raw::{
 /// * [PdfiumLibraryBindings::FPDFBitmap_GetBuffer]: this function is not available when compiling
 ///   to WASM. Use the globally-available [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_vec]
 ///   or the WASM-specific [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_array] functions instead.
-pub trait PdfiumLibraryBindings {
+#[allow(drop_bounds)] // We want every bindings implementation to also provide a Drop implementation.
+pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
     #[inline]
     #[allow(non_snake_case)]

@@ -1,6 +1,6 @@
 [package]
 name = "pdfium-render"
-version = "0.8.37"
+version = "0.9.0"
 edition = "2021"
 rust-version = "1.61"
 publish = true
@@ -65,18 +65,16 @@ rayon = "1"                                    # Used by examples/thread_safe.rs
 axum = "0"                                     # Used by examples/axum_once_cell.rs
 tokio = { version = "1", features = ["full"] } # Used by examples/axum_once_cell.rs
 tower = "0"                                    # Used by examples/axum_once_cell.rs
-pdfium-render = { path = "./", default-features = false, features = ["sync"] } # sync feature required by examples/axum_once_cell.rs
+pdfium-render = { path = "./", default-features = false, features = ["thread_safe"] } # thread_safe feature required by examples/axum_once_cell.rs
 
 [features]
-default = ["pdfium_latest", "thread_safe", "image"]
-image = ["image_latest"] # A synonym for backwards compatibility
+default = ["pdfium_latest", "image_latest", "thread_safe"]
 bindings = ["dep:bindgen"]
 static = []
 thread_safe = []
 "libstdc++" = ["static"]
 "libc++" = ["static"]
 core_graphics = ["static"]
-sync = ["thread_safe"]
 paragraph = []
 flatten = []
 
@@ -89,7 +87,7 @@ image_025 = ["dep:image_025", "image_api"]
 image_024 = ["dep:image_024", "image_api"]
 image_023 = ["dep:image_023", "image_api"]
 image_api = [] # A feature shared by all image versions, indicating that image-based APIs
-# should be available to callers
+# should be made available to callers
 
 # PdfiumLibraryBindings supports pinning its API definitions to a specific Pdfium release.
 # This allows pdfium-render consumers to safely upgrade their pdfium-render dependency without

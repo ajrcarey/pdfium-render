@@ -9014,3 +9014,9 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         unsafe { (self.extern_FPDFCatalog_SetLanguage)(document, c_language.as_ptr()) }
     }
 }
+
+impl Drop for DynamicPdfiumBindings {
+    fn drop(&mut self) {
+        self.FPDF_DestroyLibrary();
+    }
+}

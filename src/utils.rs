@@ -458,6 +458,7 @@ pub(crate) mod test {
     // Provides a function that binds to the correct Pdfium configuration during unit tests,
     // depending on selected crate features.
 
+    use crate::error::PdfiumError;
     use crate::pdfium::Pdfium;
 
     #[inline]
@@ -469,11 +470,13 @@ pub(crate) mod test {
     #[inline]
     #[cfg(not(feature = "static"))]
     pub(crate) fn test_bind_to_pdfium() -> Pdfium {
-        Pdfium::new(
-            Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
-                .or_else(|_| Pdfium::bind_to_system_library())
-                .unwrap(),
-        )
+        match Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+            .or_else(|_| Pdfium::bind_to_system_library())
+        {
+            Ok(bindings) => Pdfium::new(bindings), // Create new bindings
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {}, // Re-use existing bindings
+            Err(e) => Err(e).unwrap(), // Explicitly re-throw the error
+        }
     }
 }
 
