@@ -523,7 +523,7 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPageIndexCache::cache_props_for_page(
             src_doc_handle,
             tmp_page,
-            tmp_page_index as u16,
+            tmp_page_index as PdfPageIndex,
             PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
         );
 

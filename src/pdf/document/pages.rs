@@ -21,7 +21,7 @@ use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_double, c_int, c_void};
 
 /// The zero-based index of a single [PdfPage] inside its containing [PdfPages] collection.
-pub type PdfPageIndex = u16;
+pub type PdfPageIndex = c_int;
 
 /// A hint to a PDF document reader (such as Adobe Acrobat) as to how the creator intended
 /// the [PdfPage] objects in a [PdfDocument] to be displayed to the viewer when the document is opened.
@@ -414,7 +414,7 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
-        let no_of_pages_to_import = source_page_range.len() as PdfPageIndex;
+        let no_of_pages_to_import = (source_page_range.end() - source_page_range.start() + 1) as PdfPageIndex;
 
         if bindings.is_true(
             bindings.FPDF_ImportPagesByIndex_vec(
