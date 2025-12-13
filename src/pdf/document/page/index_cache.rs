@@ -844,12 +844,8 @@ mod tests {
                 if index == 0 || index == 50 {
                     // This page no longer exists.
 
-                    println!("{} is_none()? {}", index, page.is_none());
-
                     assert!(page.is_none());
                 } else if index < 50 {
-                    println!("{} < 50 is_some()? {}", index, page.is_some());
-
                     assert!(page.is_some());
 
                     let document = document.handle();
@@ -861,8 +857,6 @@ mod tests {
                         index as PdfPageIndex - 1
                     );
                 } else if index > 50 {
-                    println!("{} > 50 is_some()? {}", index, page.is_some());
-
                     assert!(page.is_some());
 
                     let document = document.handle();
