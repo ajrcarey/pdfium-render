@@ -283,6 +283,31 @@ impl PdfPageIndexCache {
     ) {
         Self::lock().delete(document, index, count);
     }
+
+    /// Clears all cached entries for the given document handle.
+    ///
+    /// This should be called when a document is closed to prevent stale cache entries
+    /// from persisting if Pdfium reuses the document handle for a different document.
+    #[inline]
+    pub(crate) fn clear_document(document: FPDF_DOCUMENT) {
+        let mut cache = Self::lock();
+
+        // Collect all page handles for this document
+        let page_handles: Vec<FPDF_PAGE> = cache
+            .pages_by_index
+            .keys()
+            .filter(|(doc, _)| *doc == document)
+            .map(|(_, page)| *page)
+            .collect();
+
+        // Remove all entries for this document
+        for page_handle in page_handles {
+            cache.remove(document, page_handle);
+        }
+
+        // Remove document from maximum index tracking
+        cache.documents_by_maximum_index.remove(&document);
+    }
 }
 
 unsafe impl Send for PdfPageIndexCache {}
