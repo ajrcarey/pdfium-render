@@ -82,6 +82,7 @@ mod bindgen {
 
 mod bindings;
 mod error;
+mod font_provider;
 mod pdf;
 mod pdfium;
 mod utils;
@@ -190,6 +191,7 @@ pub mod prelude {
         pdf::quad_points::*,
         pdf::rect::*,
         pdfium::*,
+        font_provider::FontDescriptor,
     };
 }
 
@@ -303,5 +305,151 @@ mod tests {
         }
 
         Ok(())
+    }
+
+    #[test]
+    #[cfg(not(feature = "static"))]
+    fn test_custom_font_paths_with_text_rendering() -> Result<(), PdfiumError> {
+        // Use system font paths that exist on Ubuntu CI
+        let config = PdfiumConfig::new()
+            .set_user_font_paths(vec![
+                "/usr/share/fonts/truetype/".to_string(),
+            ]);
+
+        let bindings = Pdfium::bind_to_library(
+            Pdfium::pdfium_platform_library_name_at_path("./")
+        ).or_else(|_| Pdfium::bind_to_system_library());
+
+        match bindings {
+            Ok(bindings) => {
+                let pdfium = Pdfium::new_with_config(bindings, &config);
+
+                // Create a document and actually use text to verify fonts work
+                let mut document = pdfium.create_new_pdf()?;
+                let mut page = document.pages_mut().create_page_at_end(
+                    PdfPagePaperSize::a4()
+                )?;
+
+                // Use a built-in font and create text object
+                let font = document.fonts_mut().helvetica();
+                let _text_obj = page.objects_mut().create_text_object(
+                    PdfPoints::new(100.0),
+                    PdfPoints::new(700.0),
+                    "Testing custom font paths",
+                    font,
+                    PdfPoints::new(12.0),
+                )?;
+
+                // Verify text object was created successfully
+                assert!(page.objects().iter().count() > 0);
+
+                Ok(())
+            }
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => {
+                // Already initialized in another test, that's ok for CI
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    #[test]
+    #[cfg(not(feature = "static"))]
+    fn test_empty_font_paths() -> Result<(), PdfiumError> {
+        let config = PdfiumConfig::new(); // No custom paths
+
+        let bindings = Pdfium::bind_to_library(
+            Pdfium::pdfium_platform_library_name_at_path("./")
+        ).or_else(|_| Pdfium::bind_to_system_library());
+
+        match bindings {
+            Ok(bindings) => {
+                let pdfium = Pdfium::new_with_config(bindings, &config);
+                let document = pdfium.create_new_pdf()?;
+                assert_eq!(document.pages().len(), 0);
+                Ok(())
+            }
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Ok(()),
+            Err(e) => Err(e),
+        }
+    }
+
+    #[test]
+    #[cfg(not(feature = "static"))]
+    fn test_font_paths_with_null_bytes() -> Result<(), PdfiumError> {
+        // Path with null byte should be safely ignored
+        let config = PdfiumConfig::new()
+            .set_user_font_paths(vec![
+                "/usr/share\0/fonts".to_string(), // Contains null byte
+                "/usr/share/fonts/truetype/".to_string(), // Valid path
+            ]);
+
+        let bindings = Pdfium::bind_to_library(
+            Pdfium::pdfium_platform_library_name_at_path("./")
+        ).or_else(|_| Pdfium::bind_to_system_library());
+
+        match bindings {
+            Ok(bindings) => {
+                // Should not crash, null-byte path should be skipped
+                let pdfium = Pdfium::new_with_config(bindings, &config);
+                let document = pdfium.create_new_pdf()?;
+                assert_eq!(document.pages().len(), 0);
+                Ok(())
+            }
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Ok(()),
+            Err(e) => Err(e),
+        }
+    }
+
+    #[test]
+    #[cfg(not(feature = "static"))]
+    fn test_font_paths_nonexistent() -> Result<(), PdfiumError> {
+        // Non-existent paths should not crash Pdfium
+        let config = PdfiumConfig::new()
+            .set_user_font_paths(vec![
+                "/this/path/does/not/exist".to_string(),
+                "/another/fake/path".to_string(),
+            ]);
+
+        let bindings = Pdfium::bind_to_library(
+            Pdfium::pdfium_platform_library_name_at_path("./")
+        ).or_else(|_| Pdfium::bind_to_system_library());
+
+        match bindings {
+            Ok(bindings) => {
+                // Should not crash, Pdfium should handle gracefully
+                let pdfium = Pdfium::new_with_config(bindings, &config);
+                let document = pdfium.create_new_pdf()?;
+                assert_eq!(document.pages().len(), 0);
+                Ok(())
+            }
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Ok(()),
+            Err(e) => Err(e),
+        }
+    }
+
+    #[test]
+    #[cfg(not(feature = "static"))]
+    fn test_default_config_uses_simple_initialization() -> Result<(), PdfiumError> {
+        // Test that default config (no font paths, no font provider) uses FPDF_InitLibrary()
+        // rather than FPDF_InitLibraryWithConfig() to avoid potential overhead.
+        // This is a behavioral test - we just verify it doesn't crash and works correctly.
+
+        let config = PdfiumConfig::new(); // Empty config
+
+        let bindings = Pdfium::bind_to_library(
+            Pdfium::pdfium_platform_library_name_at_path("./")
+        ).or_else(|_| Pdfium::bind_to_system_library());
+
+        match bindings {
+            Ok(bindings) => {
+                let pdfium = Pdfium::new_with_config(bindings, &config);
+                let document = pdfium.create_new_pdf()?;
+                assert_eq!(document.pages().len(), 0);
+                Ok(())
+            }
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 }

@@ -23,6 +23,7 @@ use crate::pdf::document::bookmarks::PdfBookmarks;
 use crate::pdf::document::fonts::PdfFonts;
 use crate::pdf::document::form::PdfForm;
 use crate::pdf::document::metadata::PdfMetadata;
+use crate::pdf::document::page::index_cache::PdfPageIndexCache;
 use crate::pdf::document::pages::PdfPages;
 use crate::pdf::document::permissions::PdfPermissions;
 use crate::pdf::document::signatures::PdfSignatures;
@@ -403,6 +404,11 @@ impl<'a> Drop for PdfDocument<'a> {
         // avoiding a segmentation fault when using Pdfium builds compiled with V8/XFA support.
 
         self.form = None;
+
+        // Clear all cached page indices for this document before closing.
+        // This prevents stale cache entries if Pdfium reuses the document handle.
+        PdfPageIndexCache::clear_document(self.handle);
+
         self.bindings.FPDF_CloseDocument(self.handle);
     }
 }
