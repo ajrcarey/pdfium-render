@@ -77,7 +77,7 @@ thread_safe = []
 core_graphics = ["static"]
 paragraph = []
 flatten = []
-console_log = [dep:console_log] # initializes the console_log Logger during initialization
+console_log = ["dep:console_log"] # initializes the console_log Logger during initialization
 
 # By default, pdfium-render uses the latest version of the image crate. To explicitly use
 # an older version, select one of the feature flags below when taking pdfium-render as
