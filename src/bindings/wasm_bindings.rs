@@ -1031,6 +1031,7 @@ pub fn initialize_pdfium_render(
     local_wasm_module: JsValue,
     debug: bool,
 ) -> bool {
+    #[cfg(feature = "console_log")]
     if console_log::init_with_level(if debug {
         log::Level::Trace
     } else {
