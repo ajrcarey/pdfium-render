@@ -21,7 +21,7 @@ use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_double, c_int, c_void};
 
 /// The zero-based index of a single [PdfPage] inside its containing [PdfPages] collection.
-pub type PdfPageIndex = u16;
+pub type PdfPageIndex = c_int;
 
 /// A hint to a PDF document reader (such as Adobe Acrobat) as to how the creator intended
 /// the [PdfPage] objects in a [PdfDocument] to be displayed to the viewer when the document is opened.
@@ -414,18 +414,15 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
-        let no_of_pages_to_import = source_page_range.len() as PdfPageIndex;
+        let no_of_pages_to_import =
+            (source_page_range.end() - source_page_range.start() + 1) as PdfPageIndex;
 
-        if bindings.is_true(
-            bindings.FPDF_ImportPagesByIndex_vec(
-                destination,
-                source,
-                source_page_range
-                    .map(|index| index as c_int)
-                    .collect::<Vec<_>>(),
-                destination_page_index as c_int,
-            ),
-        ) {
+        if bindings.is_true(bindings.FPDF_ImportPagesByIndex_vec(
+            destination,
+            source,
+            source_page_range.map(|index| index).collect::<Vec<_>>(),
+            destination_page_index,
+        )) {
             PdfPageIndexCache::insert_pages_at_index(
                 destination,
                 destination_page_index,
@@ -724,5 +721,49 @@ mod tests {
 
     const fn expected_page_4_size() -> PdfRect {
         expected_page_0_size()
+    }
+
+    #[test]
+    fn copy_page_range_from_document() -> Result<(), PdfiumError> {
+        // Tests that copy_page_range_from_document() copies the expected
+        // number of pages.
+
+        let pdfium = test_bind_to_pdfium();
+
+        let max_page_count = 200;
+
+        for i in 0..(max_page_count / 2) {
+            let mut source = pdfium.create_new_pdf()?;
+
+            for _ in 0..max_page_count {
+                source
+                    .pages_mut()
+                    .create_page_at_end(PdfPagePaperSize::a4())?;
+            }
+
+            let mut destination = pdfium.create_new_pdf()?;
+
+            for _ in 0..i {
+                destination
+                    .pages_mut()
+                    .create_page_at_end(PdfPagePaperSize::a4())?;
+            }
+
+            let destination_page_index = destination.pages().len() / 2;
+
+            let source_from_page_index = source.pages().len() / 2 - i;
+            let source_to_page_index = source.pages().len() / 2 + i;
+            let source_page_range_len = source_to_page_index - source_from_page_index + 1; // Page ranges are inclusive
+
+            destination.pages_mut().copy_page_range_from_document(
+                &source,
+                source_from_page_index..=source_to_page_index,
+                destination_page_index,
+            )?;
+
+            assert_eq!(destination.pages().len(), i + source_page_range_len);
+        }
+
+        Ok(())
     }
 }
