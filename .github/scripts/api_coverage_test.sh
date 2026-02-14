@@ -45,7 +45,7 @@ missing_count=0
 fpdf_candidates=$(get_api_listing "FPDF")
 check_api_coverage "$fpdf_candidates" "FPDF"
 
-form_candidates=$(get_api_listing "FORM_Get")
+form_candidates=$(get_api_listing "FORM_")
 check_api_coverage "$form_candidates" "FORM_"
 
 echo "$api_count total functions in Pdfium API, $missing_count missing from bindings"

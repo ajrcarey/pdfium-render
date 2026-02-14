@@ -18,6 +18,7 @@ use crate::pdf::path::segment::{PdfPathSegment, PdfPathSegmentType};
 use crate::pdf::path::segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
@@ -798,7 +799,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// from the current point to the starting point of the sub-path.
     pub fn close_path(&mut self) -> Result<(), PdfiumError> {
         if self
-            .bindings
+            .bindings()
             .is_true(self.bindings().FPDFPath_Close(self.object_handle))
         {
             Ok(())
@@ -816,11 +817,14 @@ impl<'a> PdfPagePathObject<'a> {
 
         let mut _raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
-        if self.bindings().is_true(self.bindings.FPDFPath_GetDrawMode(
-            self.object_handle(),
-            &mut raw_fill_mode,
-            &mut _raw_stroke,
-        )) {
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFPath_GetDrawMode(
+                self.object_handle(),
+                &mut raw_fill_mode,
+                &mut _raw_stroke,
+            ))
+        {
             PdfPathFillMode::from_pdfium(raw_fill_mode)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -870,7 +874,7 @@ impl<'a> PdfPagePathObject<'a> {
             .is_true(self.bindings().FPDFPath_SetDrawMode(
                 self.object_handle(),
                 fill_mode.as_pdfium() as c_int,
-                self.bindings.bool_to_pdfium(do_stroke),
+                self.bindings().bool_to_pdfium(do_stroke),
             ))
         {
             Ok(())
@@ -925,7 +929,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     }
 
     #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         self.bindings
     }
 

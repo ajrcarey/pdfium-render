@@ -138,7 +138,7 @@ impl<'a> PdfStyledString<'a> {
     #[inline]
     pub fn as_text_object(
         &self,
-        document: &PdfDocument<'a>,
+        document: &'a PdfDocument<'a>,
     ) -> Result<PdfPageTextObject<'a>, PdfiumError> {
         PdfPageTextObject::new(document, self.text(), self.font(), self.font_size())
     }

@@ -37,6 +37,7 @@ use crate::pdf::path::clip_path::PdfClipPath;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};

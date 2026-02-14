@@ -24,6 +24,7 @@ use crate::pdf::document::PdfDocument;
 use crate::pdf::font::PdfFont;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use crate::{create_transform_getters, create_transform_setters};

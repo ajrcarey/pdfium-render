@@ -14,6 +14,7 @@ use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectOwnership};
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
@@ -234,7 +235,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image_api")]
     pub fn new_with_height(
-        document: &PdfDocument<'a>,
+        document: &'a PdfDocument<'a>,
         image: &DynamicImage,
         height: PdfPoints,
     ) -> Result<Self, PdfiumError> {

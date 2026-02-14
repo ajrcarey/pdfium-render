@@ -26,6 +26,7 @@ use crate::pdf::document::metadata::PdfMetadata;
 use crate::pdf::document::pages::PdfPages;
 use crate::pdf::document::permissions::PdfPermissions;
 use crate::pdf::document::signatures::PdfSignatures;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::files::get_pdfium_file_writer_from_writer;
 use crate::utils::files::FpdfFileAccessExt;
 use std::fmt::{Debug, Formatter};
@@ -163,7 +164,6 @@ pub struct PdfDocument<'a> {
     pages: PdfPages<'a>,
     permissions: PdfPermissions<'a>,
     signatures: PdfSignatures<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
     source_byte_buffer: Option<Vec<u8>>,
 
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
@@ -193,7 +193,6 @@ impl<'a> PdfDocument<'a> {
             pages,
             permissions: PdfPermissions::from_pdfium(handle, bindings),
             signatures: PdfSignatures::from_pdfium(handle, bindings),
-            bindings,
             source_byte_buffer: None,
             file_access_reader: None,
         }
@@ -203,12 +202,6 @@ impl<'a> PdfDocument<'a> {
     #[inline]
     pub(crate) fn handle(&self) -> FPDF_DOCUMENT {
         self.handle
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfDocument].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Transfers ownership of the byte buffer containing the binary data of this [PdfDocument],
@@ -231,7 +224,11 @@ impl<'a> PdfDocument<'a> {
     pub fn version(&self) -> PdfDocumentVersion {
         let mut version = 0;
 
-        if self.bindings.FPDF_GetFileVersion(self.handle, &mut version) != 0 {
+        if self
+            .bindings()
+            .FPDF_GetFileVersion(self.handle, &mut version)
+            != 0
+        {
             PdfDocumentVersion::from_pdfium(version)
         } else {
             PdfDocumentVersion::Unset
@@ -321,7 +318,7 @@ impl<'a> PdfDocument<'a> {
         let mut pdfium_file_writer = get_pdfium_file_writer_from_writer(writer);
 
         let result = match self.output_version {
-            Some(version) => self.bindings.FPDF_SaveWithVersion(
+            Some(version) => self.bindings().FPDF_SaveWithVersion(
                 self.handle,
                 pdfium_file_writer.as_fpdf_file_write_mut_ptr(),
                 flags,
@@ -329,14 +326,14 @@ impl<'a> PdfDocument<'a> {
                     .as_pdfium()
                     .unwrap_or_else(|| PdfDocumentVersion::DEFAULT_VERSION.as_pdfium().unwrap()),
             ),
-            None => self.bindings.FPDF_SaveAsCopy(
+            None => self.bindings().FPDF_SaveAsCopy(
                 self.handle,
                 pdfium_file_writer.as_fpdf_file_write_mut_ptr(),
                 flags,
             ),
         };
 
-        match self.bindings.is_true(result) {
+        match self.bindings().is_true(result) {
             true => {
                 // Pdfium's return value indicated success. Flush the buffer.
 
@@ -403,7 +400,7 @@ impl<'a> Drop for PdfDocument<'a> {
         // avoiding a segmentation fault when using Pdfium builds compiled with V8/XFA support.
 
         self.form = None;
-        self.bindings.FPDF_CloseDocument(self.handle);
+        self.bindings().FPDF_CloseDocument(self.handle);
     }
 }
 
@@ -415,3 +412,11 @@ impl<'a> Debug for PdfDocument<'a> {
             .finish()
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfDocument<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfDocument<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfDocument<'a> {}

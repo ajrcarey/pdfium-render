@@ -11,9 +11,11 @@ use crate::pdf::document::fonts::PdfFontBuiltin;
 use crate::pdf::document::PdfDocument;
 use crate::pdf::font::glyphs::PdfFontGlyphs;
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use bitflags::bitflags;
 use std::io::Read;
+use std::marker::PhantomData;
 use std::os::raw::{c_char, c_int, c_uint};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -98,9 +100,9 @@ impl PdfFontWeight {
 pub struct PdfFont<'a> {
     built_in: Option<PdfFontBuiltin>,
     handle: FPDF_FONT,
-    bindings: &'a dyn PdfiumLibraryBindings,
     glyphs: PdfFontGlyphs<'a>,
     is_font_memory_loaded: bool,
+    lifetime: PhantomData<&'a FPDF_FONT>,
 }
 
 impl<'a> PdfFont<'a> {
@@ -114,9 +116,9 @@ impl<'a> PdfFont<'a> {
         PdfFont {
             built_in,
             handle,
-            bindings,
             glyphs: PdfFontGlyphs::from_pdfium(handle, bindings),
             is_font_memory_loaded,
+            lifetime: PhantomData,
         }
     }
 
@@ -752,12 +754,6 @@ impl<'a> PdfFont<'a> {
         self.handle
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFont].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     #[cfg(any(
         feature = "pdfium_6611",
         feature = "pdfium_6569",
@@ -807,7 +803,7 @@ impl<'a> PdfFont<'a> {
         // Pdfium, font names are returned in UTF-8 format.
 
         let buffer_length =
-            self.bindings
+            self.bindings()
                 .FPDFFont_GetBaseFontName(self.handle, std::ptr::null_mut(), 0);
 
         if buffer_length == 0 {
@@ -818,7 +814,7 @@ impl<'a> PdfFont<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings.FPDFFont_GetBaseFontName(
+        let result = self.bindings().FPDFFont_GetBaseFontName(
             self.handle,
             buffer.as_mut_ptr() as *mut c_char,
             buffer_length,
@@ -856,7 +852,7 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6611"
         ))]
         let buffer_length =
-            self.bindings
+            self.bindings()
                 .FPDFFont_GetFamilyName(self.handle, std::ptr::null_mut(), 0);
 
         #[cfg(any(
@@ -876,7 +872,7 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_5961"
         ))]
         let buffer_length =
-            self.bindings
+            self.bindings()
                 .FPDFFont_GetFontName(self.handle, std::ptr::null_mut(), 0);
 
         if buffer_length == 0 {
@@ -898,7 +894,7 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6666",
             feature = "pdfium_6611"
         ))]
-        let result = self.bindings.FPDFFont_GetFamilyName(
+        let result = self.bindings().FPDFFont_GetFamilyName(
             self.handle,
             buffer.as_mut_ptr() as *mut c_char,
             buffer_length,
@@ -920,7 +916,7 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6015",
             feature = "pdfium_5961"
         ))]
-        let result = self.bindings.FPDFFont_GetFontName(
+        let result = self.bindings().FPDFFont_GetFontName(
             self.handle,
             buffer.as_mut_ptr() as *mut c_char,
             buffer_length,
@@ -939,7 +935,7 @@ impl<'a> PdfFont<'a> {
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn weight(&self) -> Result<PdfFontWeight, PdfiumError> {
-        PdfFontWeight::from_pdfium(self.bindings.FPDFFont_GetWeight(self.handle)).ok_or(
+        PdfFontWeight::from_pdfium(self.bindings().FPDFFont_GetWeight(self.handle)).ok_or(
             PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown),
         )
     }
@@ -953,8 +949,8 @@ impl<'a> PdfFont<'a> {
     pub fn italic_angle(&self) -> Result<i32, PdfiumError> {
         let mut angle = 0;
 
-        if self.bindings.is_true(
-            self.bindings
+        if self.bindings().is_true(
+            self.bindings()
                 .FPDFFont_GetItalicAngle(self.handle, &mut angle),
         ) {
             Ok(angle)
@@ -971,7 +967,7 @@ impl<'a> PdfFont<'a> {
     pub fn ascent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
         let mut ascent = 0.0;
 
-        if self.bindings.is_true(self.bindings.FPDFFont_GetAscent(
+        if self.bindings().is_true(self.bindings().FPDFFont_GetAscent(
             self.handle,
             font_size.value,
             &mut ascent,
@@ -990,7 +986,7 @@ impl<'a> PdfFont<'a> {
     pub fn descent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
         let mut descent = 0.0;
 
-        if self.bindings.is_true(self.bindings.FPDFFont_GetDescent(
+        if self.bindings().is_true(self.bindings().FPDFFont_GetDescent(
             self.handle,
             font_size.value,
             &mut descent,
@@ -1007,7 +1003,7 @@ impl<'a> PdfFont<'a> {
     #[inline]
     fn get_flags_bits(&self) -> FpdfFontDescriptorFlags {
         FpdfFontDescriptorFlags::from_bits_truncate(
-            self.bindings.FPDFFont_GetFlags(self.handle) as u32
+            self.bindings().FPDFFont_GetFlags(self.handle) as u32
         )
     }
 
@@ -1145,7 +1141,7 @@ impl<'a> PdfFont<'a> {
 
     /// Returns `true` if the data for this [PdfFont] is embedded in the containing [PdfDocument].
     pub fn is_embedded(&self) -> Result<bool, PdfiumError> {
-        let result = self.bindings.FPDFFont_GetIsEmbedded(self.handle);
+        let result = self.bindings().FPDFFont_GetIsEmbedded(self.handle);
 
         match result {
             1 => Ok(true),
@@ -1194,7 +1190,7 @@ impl<'a> PdfFont<'a> {
                 &mut out_buflen,
             );
 
-            assert!(self.bindings.is_true(result));
+            assert!(self.bindings().is_true(result));
             assert_eq!(buffer_length, out_buflen);
 
             Ok(buffer)
@@ -1234,7 +1230,15 @@ impl<'a> Drop for PdfFont<'a> {
         // (Indeed, if we try to, Pdfium segfaults.)
 
         if self.is_font_memory_loaded {
-            self.bindings.FPDFFont_Close(self.handle);
+            self.bindings().FPDFFont_Close(self.handle);
         }
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFont<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFont<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFont<'a> {}

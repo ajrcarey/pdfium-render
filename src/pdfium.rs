@@ -1,5 +1,9 @@
 //! Defines the [Pdfium] struct, a high-level idiomatic Rust wrapper around Pdfium.
 
+use crate::bindgen::{
+    FPDF_DOCUMENT, FPDF_ERR_FILE, FPDF_ERR_FORMAT, FPDF_ERR_PAGE, FPDF_ERR_PASSWORD,
+    FPDF_ERR_SECURITY, FPDF_ERR_SUCCESS, FPDF_ERR_UNKNOWN,
+};
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
@@ -35,7 +39,6 @@ use {
 // The following dummy declaration is used only when running cargo doc.
 // It allows documentation of WASM-specific functionality to be included
 // in documentation generated on non-WASM targets.
-
 #[cfg(doc)]
 struct Blob;
 
@@ -43,19 +46,18 @@ struct Blob;
 // trait implementation into a global static OnceCell. This allows for thread-safe,
 // lifetime-free access to that PdfiumLibraryBindings instance from any object that
 // implements the PdfiumLibraryBindingsAccessor trait.
-
 static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 
 #[cfg(feature = "thread_safe")]
-pub(crate) trait PdfiumLibraryBindingsAccessor: Send + Sync {
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+pub(crate) trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
+    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.wait().as_ref()
     }
 }
 
 #[cfg(not(feature = "thread_safe"))]
-pub(crate) trait PdfiumLibraryBindingsAccessor {
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
+pub(crate) trait PdfiumLibraryBindingsAccessor<'a> {
+    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.get().unwrap().as_ref()
     }
 }
@@ -115,12 +117,16 @@ impl Pdfium {
     #[cfg(target_arch = "wasm32")]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
-        if PdfiumRenderWasmState::lock().is_ready() {
-            let bindings = WasmPdfiumBindings::new();
+        if BINDINGS.get().is_none() {
+            if PdfiumRenderWasmState::lock().is_ready() {
+                let bindings = WasmPdfiumBindings::new();
 
-            Ok(Box::new(bindings))
+                Ok(Box::new(bindings))
+            } else {
+                Err(PdfiumError::PdfiumWasmModuleNotInitialized)
+            }
         } else {
-            Err(PdfiumError::PdfiumWasmModuleNotInitialized)
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
         }
     }
 
@@ -236,7 +242,7 @@ impl Pdfium {
     pub fn load_pdf_from_file<'a>(
         &'a self,
         path: &(impl AsRef<Path> + ?Sized),
-        password: Option<&'a str>,
+        password: Option<&str>,
     ) -> Result<PdfDocument<'a>, PdfiumError> {
         self.load_pdf_from_reader(File::open(path).map_err(PdfiumError::IoError)?, password)
     }
@@ -272,7 +278,7 @@ impl Pdfium {
     pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
         &'a self,
         reader: R,
-        password: Option<&'a str>,
+        password: Option<&str>,
     ) -> Result<PdfDocument<'a>, PdfiumError> {
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
@@ -357,7 +363,7 @@ impl Pdfium {
     }
 
     /// Creates a new, empty [PdfDocument] in memory.
-    pub fn create_new_pdf(&self) -> Result<PdfDocument<'_>, PdfiumError> {
+    pub fn create_new_pdf<'a>(&'a self) -> Result<PdfDocument<'a>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
             self.bindings().FPDF_CreateNewDocument(),
             self.bindings(),
@@ -371,20 +377,20 @@ impl Pdfium {
 
     /// Returns a [PdfDocument] from the given `FPDF_DOCUMENT` handle, if possible.
     pub(crate) fn pdfium_document_handle_to_result(
-        handle: crate::bindgen::FPDF_DOCUMENT,
+        handle: FPDF_DOCUMENT,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<PdfDocument<'_>, PdfiumError> {
         if handle.is_null() {
             // Retrieve the error code of the last error recorded by Pdfium.
 
             if let Some(error) = match bindings.FPDF_GetLastError() as u32 {
-                crate::bindgen::FPDF_ERR_SUCCESS => None,
-                crate::bindgen::FPDF_ERR_UNKNOWN => Some(PdfiumInternalError::Unknown),
-                crate::bindgen::FPDF_ERR_FILE => Some(PdfiumInternalError::FileError),
-                crate::bindgen::FPDF_ERR_FORMAT => Some(PdfiumInternalError::FormatError),
-                crate::bindgen::FPDF_ERR_PASSWORD => Some(PdfiumInternalError::PasswordError),
-                crate::bindgen::FPDF_ERR_SECURITY => Some(PdfiumInternalError::SecurityError),
-                crate::bindgen::FPDF_ERR_PAGE => Some(PdfiumInternalError::PageError),
+                FPDF_ERR_SUCCESS => None,
+                FPDF_ERR_UNKNOWN => Some(PdfiumInternalError::Unknown),
+                FPDF_ERR_FILE => Some(PdfiumInternalError::FileError),
+                FPDF_ERR_FORMAT => Some(PdfiumInternalError::FormatError),
+                FPDF_ERR_PASSWORD => Some(PdfiumInternalError::PasswordError),
+                FPDF_ERR_SECURITY => Some(PdfiumInternalError::SecurityError),
+                FPDF_ERR_PAGE => Some(PdfiumInternalError::PageError),
                 // The Pdfium documentation says "... if the previous SDK call succeeded, [then] the
                 // return value of this function is not defined". On Linux, at least, a return value
                 // of FPDF_ERR_SUCCESS seems to be consistently returned; on Windows, however, the
@@ -407,8 +413,6 @@ impl Pdfium {
         }
     }
 }
-
-impl PdfiumLibraryBindingsAccessor for Pdfium {}
 
 impl Default for Pdfium {
     /// Binds to a Pdfium library that was statically linked into the currently running
@@ -465,6 +469,8 @@ impl Debug for Pdfium {
         f.debug_struct("Pdfium").finish()
     }
 }
+
+impl PdfiumLibraryBindingsAccessor<'_> for Pdfium {}
 
 #[cfg(feature = "thread_safe")]
 unsafe impl Sync for Pdfium {}
