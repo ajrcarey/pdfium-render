@@ -21,48 +21,6 @@ pub struct PdfColor {
 impl PdfColor {
     pub const WHITE: PdfColor = PdfColor::new(255, 255, 255, 255);
     pub const BLACK: PdfColor = PdfColor::new(0, 0, 0, 255);
-
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::WHITE instead."
-    )]
-    pub const SOLID_WHITE: PdfColor = PdfColor::new(255, 255, 255, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::RED instead."
-    )]
-    pub const SOLID_RED: PdfColor = PdfColor::new(255, 0, 0, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::GREEN instead."
-    )]
-    pub const SOLID_GREEN: PdfColor = PdfColor::new(0, 255, 0, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::BLUE instead."
-    )]
-    pub const SOLID_BLUE: PdfColor = PdfColor::new(0, 0, 255, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::MAGENTA instead."
-    )]
-    pub const SOLID_MAGENTA: PdfColor = PdfColor::new(255, 0, 255, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::CYAN instead."
-    )]
-    pub const SOLID_CYAN: PdfColor = PdfColor::new(0, 255, 255, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::YELLOW instead."
-    )]
-    pub const SOLID_YELLOW: PdfColor = PdfColor::new(255, 255, 0, 255);
-    #[deprecated(
-        since = "0.8.6",
-        note = "The SOLID_ prefix is superfluous. Use PdfColor::BLACK instead."
-    )]
-    pub const SOLID_BLACK: PdfColor = PdfColor::new(0, 0, 0, 255);
-
     pub const GREY_90: PdfColor = PdfColor::new(230, 230, 230, 255);
     pub const GREY_80: PdfColor = PdfColor::new(204, 204, 204, 255);
     pub const GREY_70: PdfColor = PdfColor::new(179, 179, 179, 255);
