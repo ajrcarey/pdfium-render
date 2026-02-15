@@ -38,7 +38,7 @@ pub fn main() -> Result<(), PdfiumError> {
         .pages()
         .first()?
         .render(300, 450, None)?
-        .as_image();
+        .as_image()?;
 
     let _image_object = page.objects_mut().create_image_object(
         PdfPoints::new(400.0),

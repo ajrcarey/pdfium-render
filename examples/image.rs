@@ -47,7 +47,7 @@ fn main() -> Result<(), PdfiumError> {
             .render_with_config(
                 &PdfRenderConfig::new().set_target_width(target_pixel_width_of_bitmap.into()),
             )?
-            .as_image();
+            .as_image()?;
 
         let mut object = PdfPageImageObject::new_with_width(
             &document,

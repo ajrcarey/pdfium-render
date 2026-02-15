@@ -302,29 +302,6 @@ impl PdfRenderConfig {
             .rotate_if_landscape(rotation, do_rotate_constraints)
     }
 
-    // TODO: AJRC - 30/7/22 - remove deprecated rotate_if_portait() function in 0.9.0 as part
-    // of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    /// Applies the given clockwise rotation settings to the [PdfPage] during rendering, if the page
-    /// is in portrait orientation. If the given flag is set to `true` and the given
-    /// rotation setting is [PdfBitmapRotation::Degrees90] or [PdfBitmapRotation::Degrees270]
-    /// then any maximum constraint on the final pixel width set by a call to [PdfRenderConfig::set_maximum_width()]
-    /// will be rotated so it becomes a constraint on the final pixel height and any
-    /// maximum constraint on the final pixel height set by a call to [PdfRenderConfig::set_maximum_height()]
-    /// will be rotated so it becomes a constraint on the final pixel width.
-    #[deprecated(
-        since = "0.7.12",
-        note = "This function has been renamed to correct a typo. Use the PdfRenderConfig::rotate_if_portrait() function instead."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn rotate_if_portait(
-        self,
-        rotation: PdfPageRenderRotation,
-        do_rotate_constraints: bool,
-    ) -> Self {
-        self.rotate_if_portrait(rotation, do_rotate_constraints)
-    }
-
     /// Applies the given clockwise rotation settings to the [PdfPage] during rendering, if the page
     /// is in portrait orientation. If the given flag is set to `true` and the given
     /// rotation setting is [PdfPageRenderRotation::Degrees90] or [PdfPageRenderRotation::Degrees270]

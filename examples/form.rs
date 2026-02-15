@@ -64,7 +64,7 @@ pub fn main() -> Result<(), PdfiumError> {
         }
 
         page.render_with_config(&render_config)?
-            .as_image()
+            .as_image()?
             .as_rgba8()
             .ok_or(PdfiumError::ImageError)?
             .save_with_format(format!("form-page-{}.jpg", index), ImageFormat::Jpeg)

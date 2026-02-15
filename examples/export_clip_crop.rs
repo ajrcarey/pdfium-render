@@ -51,7 +51,7 @@ fn main() -> Result<(), PdfiumError> {
                 // the clipping rectangle.
 
                 bitmap
-                    .as_image()
+                    .as_image()?
                     .crop(
                         // Crop the output image to the clipping rectangle.
                         clip_left as u32,

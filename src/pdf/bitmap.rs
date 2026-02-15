@@ -249,9 +249,7 @@ impl<'a> PdfBitmap<'a> {
             }
         } else {
             match format {
-                PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx => {
-                    bgra_to_rgba(bytes.as_slice())
-                }
+                PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx => bgra_to_rgba(bytes.as_slice()),
                 PdfBitmapFormat::BGR => aligned_bgr_to_rgba(bytes.as_slice(), width, stride),
                 PdfBitmapFormat::Gray => bytes,
             }
@@ -270,9 +268,7 @@ impl<'a> PdfBitmap<'a> {
         let height = self.height() as u32;
 
         let image = match self.format().unwrap_or_default() {
-            PdfBitmapFormat::BGRA
-            | PdfBitmapFormat::BGRx
-            | PdfBitmapFormat::BGR => {
+            PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx | PdfBitmapFormat::BGR => {
                 RgbaImage::from_raw(width, height, bytes).map(DynamicImage::ImageRgba8)
             }
             PdfBitmapFormat::Gray => {
@@ -282,7 +278,7 @@ impl<'a> PdfBitmap<'a> {
 
         match image {
             Some(image) => Ok(image),
-            None => Err(PdfiumError::ImageError)
+            None => Err(PdfiumError::ImageError),
         }
     }
 

@@ -29,12 +29,12 @@ use std::fmt::{Display, Formatter};
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
 
-/// The collection of Unicode characters visible on a single [PdfPage].
+/// A collection of all Unicode characters on a single [PdfPage].
 ///
 /// Use the [PdfPageText::all()] function to easily return all characters in the containing
 /// [PdfPage] in the order in which they are defined in the PDF file.
 ///
-/// Use the [PdfPageText::search()] function to initialise a new [PdfPageTextSearch] object,
+/// Use the [PdfPageText::search()] function to initialize a new [PdfPageTextSearch] object,
 /// yielding the results of searching for a target string within the character collection.
 ///
 /// In complex custom layouts, the order in which characters are defined in the document

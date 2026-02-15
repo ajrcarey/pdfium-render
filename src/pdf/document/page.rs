@@ -1024,7 +1024,7 @@ mod tests {
             page.render_into_bitmap_with_config(&mut bitmap, &render_config)?; // Re-uses the same bitmap for rendering each page.
 
             bitmap
-                .as_image()
+                .as_image()?
                 .into_rgb8()
                 .save_with_format(format!("test-page-{}.jpg", index), ImageFormat::Jpeg)
                 .map_err(|_| PdfiumError::ImageError)?;
@@ -1047,7 +1047,7 @@ mod tests {
             .set_maximum_height(500);
 
         for (_index, page) in document.pages().iter().enumerate() {
-            let rendered_page = page.render_with_config(&render_config)?.as_image();
+            let rendered_page = page.render_with_config(&render_config)?.as_image()?;
 
             let (width, _height) = rendered_page.dimensions();
 
