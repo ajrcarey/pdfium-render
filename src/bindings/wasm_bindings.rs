@@ -357,10 +357,10 @@ impl PdfiumRenderWasmState {
                 .call1(&JsValue::null(), &JsValue::from_f64(ptr as f64));
 
             if let Some(err) = result.err() {
-                log_error(
-                    format!(   "pdfium-render::PdfiumRenderWasmState::free(): call to Module._free() failed: {:#?}",
-                    err),
-                );
+                log_error(format!(
+                    "pdfium-render::PdfiumRenderWasmState::free(): call to Module._free() failed: {:#?}",
+                    err
+                ));
 
                 panic!()
             }
@@ -1044,7 +1044,10 @@ pub fn initialize_pdfium_render(pdfium_wasm_module: JsValue, local_wasm_module: 
         ) {
             Ok(()) => true,
             Err(msg) => {
-                log_error(format!("pdfium-render::initialize_pdfium_render(): {}", msg));
+                log_error(format!(
+                    "pdfium-render::initialize_pdfium_render(): {}",
+                    msg
+                ));
 
                 false
             }
@@ -3209,6 +3212,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_GetXFAPacketContent(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -4472,6 +4477,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -4941,6 +4948,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetStringValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -5022,6 +5031,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetStringValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -5104,6 +5115,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBlobValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -5185,6 +5198,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBlobValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -7130,9 +7145,15 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let len = length as usize * size_of::<FS_POINTF>();
+        let buffer_length = length as usize * size_of::<FS_POINTF>();
 
-        let ptr_buffer = if len > 0 { state.malloc(len) } else { 0 };
+        let ptr_buffer = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetVertices(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
 
         let result = state
             .call(
@@ -7151,7 +7172,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_ulong;
 
         if result > 0 && result <= length {
-            state.copy_struct_from_pdfium(ptr_buffer, len, buffer);
+            state.copy_struct_from_pdfium(ptr_buffer, buffer_length, buffer);
         }
 
         state.free(ptr_buffer);
@@ -7188,9 +7209,15 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let len = length as usize * size_of::<FS_POINTF>();
+        let buffer_length = length as usize * size_of::<FS_POINTF>();
 
-        let ptr_buffer = if len > 0 { state.malloc(len) } else { 0 };
+        let ptr_buffer = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetInkListPath(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
 
         let result = state
             .call(
@@ -7211,7 +7238,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_ulong;
 
         if result > 0 && result <= length {
-            state.copy_struct_from_pdfium(ptr_buffer, len, buffer);
+            state.copy_struct_from_pdfium(ptr_buffer, buffer_length, buffer);
         }
 
         state.free(ptr_buffer);
@@ -13820,6 +13847,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -13902,6 +13931,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -13989,6 +14020,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetParamKey(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -14075,6 +14108,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetParamKey(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -14291,6 +14326,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetParamStringValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -14382,6 +14419,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetParamStringValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -14462,6 +14501,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetParamBlobValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -14553,6 +14594,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_GetParamBlobValue(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -16449,7 +16492,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let state = PdfiumRenderWasmState::lock();
 
         let buffer_ptr = if length > 0 {
-            log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName(): allocating buffer of {} bytes in Pdfium's WASM heap", length);
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName(): allocating buffer of {} bytes in Pdfium's WASM heap", length));
 
             state.malloc(length)
         } else {
@@ -16523,7 +16566,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let state = PdfiumRenderWasmState::lock();
 
         let buffer_ptr = if length > 0 {
-            log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontName(): allocating buffer of {} bytes in Pdfium's WASM heap", length);
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontName(): allocating buffer of {} bytes in Pdfium's WASM heap", length));
 
             state.malloc(length)
         } else {
@@ -16575,7 +16618,13 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let buffer_ptr = if buflen > 0 { state.malloc(buflen) } else { 0 };
+        let buffer_ptr = if buflen > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFontData(): allocating buffer of {} bytes in Pdfium's WASM heap", buflen));
+
+            state.malloc(buflen)
+        } else {
+            0
+        };
 
         let out_buflen_length = size_of::<usize>();
 
@@ -17051,6 +17100,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = length as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_VIEWERREF_GetName(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -17153,6 +17204,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDF_GetNamedDest(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
@@ -17573,6 +17626,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetFile(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
+
             state.malloc(buffer_length)
         } else {
             0
