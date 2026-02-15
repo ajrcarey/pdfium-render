@@ -35,7 +35,6 @@ utf16string = "0"
 vecmath = "1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-console_log = "1"
 console_error_panic_hook = "0"
 js-sys = "0"
 wasm-bindgen = { version = "0", features = ["enable-interning"] }
@@ -77,6 +76,7 @@ thread_safe = []
 core_graphics = ["static"]
 paragraph = []
 flatten = []
+wasm_debug = [] # A WASM-specific feature that outputs optional debugging information to the browser console.
 
 # By default, pdfium-render uses the latest version of the image crate. To explicitly use
 # an older version, select one of the feature flags below when taking pdfium-render as

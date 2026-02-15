@@ -1,5 +1,4 @@
-# This Cargo.toml file is used exclusively when building the example for WASM.
-# It is not used for anything else.
+# This Cargo.toml file is used only when building the example for WASM.
 
 [package]
 name = "pdfium-render-wasm-example"
@@ -13,10 +12,15 @@ crate-type = ["cdylib", "rlib"]
 path = "wasm.rs"
 
 [dependencies]
-pdfium-render = { path = "../" }
+# The wasm_debug feature is used here to output internal debugging information
+# to the browser console. There is a performance impact to this, so it is recommended
+# not to use this feature in production.
+pdfium-render = { path = "../", features = ["image_latest", "wasm_debug"] }
 image = "^0"
 js-sys = "^0"
 log = "^0"
+console_log = "^1"
+once_cell = "^1"
 wasm-bindgen = "^0"
 wasm-bindgen-futures = "^0"
-web-sys = { version = "^0", features = ["ImageData"] }
+web-sys = { version = "^0", features = ["ImageData", "console"] }
