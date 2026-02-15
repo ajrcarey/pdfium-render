@@ -51,7 +51,7 @@ impl<'a> PdfClipPath<'a> {
     #[inline]
     pub fn len(&self) -> PdfClipPathSegmentIndex {
         let path_count = self.bindings().FPDFClipPath_CountPaths(self.handle());
-        
+
         if path_count < 0 {
             // FPDFClipPath_CountPaths() returns -1 on failure.
 

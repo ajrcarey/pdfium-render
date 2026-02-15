@@ -493,7 +493,7 @@ impl<'a> PdfPageTextChar<'a> {
             .bindings
             .FPDFText_GetCharAngle(self.text_page_handle, self.index);
 
-        if result == -1.0 {
+        if result.is_sign_negative() {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
         } else {
             Ok(result)
