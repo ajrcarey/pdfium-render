@@ -3052,15 +3052,6 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void;
 
-    // TODO: AJRC - 27/11/24 - remove deprecated item as part of #36
-    #[deprecated(
-        since = "0.8.27",
-        note = "The WASM implementation of FPDFBitmap_GetBuffer() cannot be made memory-safe. Prefer FPDFBitmap_GetBuffer_as_vec() or FPDFBitmap_GetBuffer_as_array() instead."
-    )]
-    #[cfg(target_arch = "wasm32")]
-    #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *const c_void;
-
     #[cfg(not(target_arch = "wasm32"))]
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
     /// alternative to directly mutating the data returned by
@@ -3171,19 +3162,6 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     #[allow(non_snake_case)]
     fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
         self.FPDFBitmap_GetBuffer_as_array(bitmap).to_vec()
-    }
-
-    // TODO: AJRC - 27/11/24 - remove deprecated item as part of #36
-    #[deprecated(
-        since = "0.8.27",
-        note = "This function has been renamed to better reflect its purpose. Prefer FPDFBitmap_GetBuffer_as_array() instead."
-    )]
-    #[cfg(target_arch = "wasm32")]
-    #[doc(hidden)]
-    #[inline]
-    #[allow(non_snake_case)]
-    fn FPDFBitmap_GetArray(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array {
-        self.FPDFBitmap_GetBuffer_as_array(bitmap)
     }
 
     #[allow(non_snake_case)]

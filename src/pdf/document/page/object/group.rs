@@ -18,15 +18,12 @@ use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObj
 use crate::pdf::document::page::{
     PdfPage, PdfPageContentRegenerationStrategy, PdfPageObjectOwnership,
 };
-use crate::pdf::document::pages::{PdfPageIndex, PdfPages};
+use crate::pdf::document::pages::PdfPageIndex;
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
-use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdf::rect::PdfRect;
-use crate::pdfium::Pdfium;
 use crate::prelude::PdfPageXObjectFormObject;
-use std::collections::HashMap;
 use std::ffi::c_double;
 
 #[cfg(doc)]
@@ -375,69 +372,6 @@ impl<'a> PdfPageGroupObject<'a> {
         });
     }
 
-    #[inline]
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function is no longer relevant, as the PdfPageGroupObject::copy_to_page() function can copy all object types."
-    )]
-    /// Retains only the [PdfPageObject] objects in this group that can be copied.
-    ///
-    /// Objects that cannot be copied are only removed from this group. They remain on the source
-    /// [PdfPage] that currently contains them.
-    pub fn retain_if_copyable(&mut self) {
-        #[allow(deprecated)]
-        self.retain(|object| object.is_copyable());
-    }
-
-    #[inline]
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function is no longer relevant, as the PdfPageGroupObject::copy_to_page() function can copy all object types."
-    )]
-    /// Returns `true` if all the [PdfPageObject] objects in this group can be copied.
-    pub fn is_copyable(&self) -> bool {
-        #[allow(deprecated)]
-        self.iter().all(|object| object.is_copyable())
-    }
-
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function is no longer relevant, as the PdfPageGroupObject::copy_to_page() function can copy all object types."
-    )]
-    /// Attempts to copy all the [PdfPageObject] objects in this group, placing the copied objects
-    /// onto the given existing destination [PdfPage].
-    ///
-    /// This function can only copy page objects supported by the [PdfPageObjectCommon::try_copy()]
-    /// function. For a different approach that supports more page object types but is more limited
-    /// in where the copied objects can be placed, see the [PdfPageGroupObject::copy_onto_new_page_at_start()],
-    /// [PdfPageGroupObject::copy_onto_new_page_at_end()], and
-    /// [PdfPageGroupObject::copy_onto_new_page_at_index()] functions.
-    ///
-    /// If all objects were copied successfully, then a new [PdfPageGroupObject] containing the clones
-    /// is returned, allowing the new objects to be manipulated as a group.
-    pub fn try_copy_onto_existing_page<'b>(
-        &self,
-        destination: &mut PdfPage<'b>,
-    ) -> Result<PdfPageGroupObject<'b>, PdfiumError> {
-        #[allow(deprecated)]
-        if !self.is_copyable() {
-            return Err(PdfiumError::GroupContainsNonCopyablePageObjects);
-        }
-
-        let mut group = destination.objects_mut().create_empty_group();
-
-        for handle in self.object_handles.iter() {
-            let source = self.get_object_from_handle(handle);
-
-            let clone =
-                source.try_copy_impl(destination.document_handle(), destination.bindings())?;
-
-            group.push(&mut destination.objects_mut().add_object(clone)?)?;
-        }
-
-        Ok(group)
-    }
-
     /// Moves the ownership of all the [PdfPageObject] objects in this group to the given
     /// [PdfPage], consuming the group. Page content will be regenerated as necessary.
     ///
@@ -596,161 +530,6 @@ impl<'a> PdfPageGroupObject<'a> {
             .FPDFPage_Delete(src_doc_handle, tmp_page_index);
 
         Ok(PdfPageObject::XObjectForm(object))
-    }
-
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function has been retired in favour of the PdfPageGroupObject::copy_to_page() function."
-    )]
-    #[inline]
-    /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
-    /// objects in this group into a new page at the start of the given destination [PdfDocument]
-    /// then removing all objects from the new page _not_ in this group.
-    ///
-    /// This function differs internally from [PdfPageGroupObject::try_copy_onto_existing_page()]
-    /// in that it uses `Pdfium` to copy page objects instead of the [PdfPageObjectCommon::try_copy()]
-    /// method provided by `pdfium-render`. As a result, this function can copy some objects that
-    /// [PdfPageGroupObject::try_copy_onto_existing_page()] cannot; for example, it can copy
-    /// path objects containing Bézier curves. However, it can only copy objects onto a new page,
-    /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
-    /// newly created objects.
-    ///
-    /// The new page will have the same size and bounding box configuration as the page containing
-    /// the objects in this group.
-    pub fn copy_onto_new_page_at_start(
-        &self,
-        destination: &PdfDocument,
-    ) -> Result<(), PdfiumError> {
-        #[allow(deprecated)]
-        self.copy_onto_new_page_at_index(0, destination)
-    }
-
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function has been retired in favour of the PdfPageGroupObject::copy_to_page() function."
-    )]
-    #[inline]
-    /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
-    /// objects in this group into a new page at the end of the given destination [PdfDocument]
-    /// then removing all objects from the new page _not_ in this group.
-    ///
-    /// This function differs internally from [PdfPageGroupObject::try_copy_onto_existing_page()]
-    /// in that it uses `Pdfium` to copy page objects instead of the [PdfPageObjectCommon::try_copy()]
-    /// method provided by `pdfium-render`. As a result, this function can copy some objects that
-    /// [PdfPageGroupObject::try_copy_onto_existing_page()] cannot; for example, it can copy
-    /// path objects containing Bézier curves. However, it can only copy objects onto a new page,
-    /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
-    /// newly created objects.
-    ///
-    /// The new page will have the same size and bounding box configuration as the page containing
-    /// the objects in this group.
-    pub fn copy_onto_new_page_at_end(&self, destination: &PdfDocument) -> Result<(), PdfiumError> {
-        #[allow(deprecated)]
-        self.copy_onto_new_page_at_index(destination.pages().len(), destination)
-    }
-
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function has been retired in favour of the PdfPageGroupObject::copy_to_page() function."
-    )]
-    /// Copies all the [PdfPageObject] objects in this group by copying the page containing the
-    /// objects in this group into a new page in the given destination [PdfDocument] at the given
-    /// page index, then removing all objects from the new page _not_ in this group.
-    ///
-    /// This function differs internally from [PdfPageGroupObject::try_copy_onto_existing_page()]
-    /// in that it uses `Pdfium` to copy page objects instead of the [PdfPageObjectCommon::try_copy()]
-    /// method provided by `pdfium-render`. As a result, this function can copy some objects that
-    /// [PdfPageGroupObject::try_copy_onto_existing_page()] cannot; for example, it can copy
-    /// path objects containing Bézier curves. However, it can only copy objects onto a new page,
-    /// not an existing page, and it cannot return a new [PdfPageGroupObject] containing the
-    /// newly created objects.
-    ///
-    /// The new page will have the same size and bounding box configuration as the page containing
-    /// the objects in this group.
-    pub fn copy_onto_new_page_at_index(
-        &self,
-        index: PdfPageIndex,
-        destination: &PdfDocument,
-    ) -> Result<(), PdfiumError> {
-        // Pdfium provides the FPDF_ImportPages() function for copying one or more pages
-        // from one document into another. Using this function as a substitute for true
-        // page object cloning allows us to copy some objects (such as path objects containing
-        // Bézier curves) that PdfPageObject::try_copy() cannot.
-
-        // To use FPDF_ImportPages() as a cloning substitute, we take the following approach:
-
-        // First, we create a new in-memory document and import the source page for this
-        // page object group into that new document.
-
-        let temp = Pdfium::pdfium_document_handle_to_result(
-            self.bindings.FPDF_CreateNewDocument(),
-            self.bindings,
-        )?;
-
-        if let Some(source_page_index) =
-            PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
-        {
-            PdfPages::copy_page_range_between_documents(
-                self.document_handle,
-                source_page_index..=source_page_index,
-                temp.handle(),
-                0,
-                self.bindings,
-            )?;
-        } else {
-            return Err(PdfiumError::SourcePageIndexNotInCache);
-        }
-
-        // Next, we remove all page objects from the in-memory document _except_ the ones in this group.
-
-        // We cannot compare object references across documents. Instead, we build a map of
-        // the types of objects, their positions, their bounds, and their transformation matrices,
-        // and use this map to determine which objects should be removed from the in-memory page.
-
-        let mut objects_to_discard = HashMap::new();
-
-        for index in 0..self.bindings.FPDFPage_CountObjects(self.page_handle) {
-            let object = PdfPageObject::from_pdfium(
-                self.bindings().FPDFPage_GetObject(self.page_handle, index),
-                *self.ownership(),
-                self.bindings(),
-            );
-
-            if !self.contains(&object) {
-                objects_to_discard.insert(
-                    (object.bounds()?, object.matrix()?, object.object_type()),
-                    true,
-                );
-            }
-        }
-
-        // We now have a map of objects that should be removed from the in-memory page; after
-        // we remove them, only the copies of the objects in this group will remain on the page.
-
-        temp.pages()
-            .get(0)?
-            .objects()
-            .create_group(|object| {
-                objects_to_discard.contains_key(&(
-                    object.bounds().unwrap_or(PdfQuadPoints::ZERO),
-                    object.matrix().unwrap_or(PdfMatrix::IDENTITY),
-                    object.object_type(),
-                ))
-            })?
-            .remove_objects_from_page()?;
-
-        // Finally, with only the copies of the objects in this group left on the in-memory page,
-        // we now copy the page back into the given destination.
-
-        PdfPages::copy_page_range_between_documents(
-            temp.handle(),
-            0..=0,
-            destination.handle(),
-            index,
-            self.bindings,
-        )?;
-
-        Ok(())
     }
 
     /// Returns an iterator over all the [PdfPageObject] objects in this group.
