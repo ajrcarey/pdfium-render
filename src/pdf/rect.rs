@@ -10,44 +10,27 @@ use itertools::{max, min};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
 /// A rectangle measured in [PdfPoints].
 ///
-/// The coordinate space of a `PdfPage` has its origin (0,0) at the bottom left of the page,
+/// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
 /// with x values increasing as coordinates move horizontally to the right and
 /// y values increasing as coordinates move vertically up.
 #[derive(Debug, Copy, Clone)]
 pub struct PdfRect {
-    // TODO: AJRC - 28/12/24 - direct field access to be removed as part of release 0.9.0.
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfRect::bottom() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub bottom: PdfPoints,
-
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfRect::left() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub left: PdfPoints,
-
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfRect::top() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub top: PdfPoints,
-
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfRect::left() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub right: PdfPoints,
+    bottom: PdfPoints,
+    left: PdfPoints,
+    top: PdfPoints,
+    right: PdfPoints,
 }
 
 impl PdfRect {
     /// A [PdfRect] object with the identity value (0.0, 0.0, 0.0, 0.0).
     pub const ZERO: PdfRect = PdfRect::zero();
 
-    /// A [PdfRect] object that encloses the entire addressable `PdfPage` coordinate space of
+    /// A [PdfRect] object that encloses the entire addressable [PdfPage] coordinate space of
     /// ([-PdfPoints::MAX], [-PdfPoints::MAX], [PdfPoints::MAX], [PdfPoints::MAX]).
     pub const MAX: PdfRect = PdfRect::new(
         PdfPoints::MIN,
@@ -76,9 +59,9 @@ impl PdfRect {
         }
     }
 
-    /// Creates a new [PdfRect] from the given [PdfPoints] measurements.
+    /// Creates a new [PdfRect] object from the given [PdfPoints] measurements.
     ///
-    /// The coordinate space of a `PdfPage` has its origin (0,0) at the bottom left of the page,
+    /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
     #[inline]
@@ -99,7 +82,6 @@ impl PdfRect {
             (left, right)
         };
 
-        #[allow(deprecated)]
         Self {
             bottom: ordered_bottom,
             left: ordered_left,
@@ -108,9 +90,9 @@ impl PdfRect {
         }
     }
 
-    /// Creates a new [PdfRect] from the given raw points values.
+    /// Creates a new [PdfRect] object from the given raw points values.
     ///
-    /// The coordinate space of a `PdfPage` has its origin (0,0) at the bottom left of the page,
+    /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
     #[inline]
@@ -135,28 +117,24 @@ impl PdfRect {
     /// Returns the left-most extent of this [PdfRect].
     #[inline]
     pub const fn left(&self) -> PdfPoints {
-        #[allow(deprecated)]
         self.left
     }
 
     /// Returns the right-most extent of this [PdfRect].
     #[inline]
     pub const fn right(&self) -> PdfPoints {
-        #[allow(deprecated)]
         self.right
     }
 
     /// Returns the bottom-most extent of this [PdfRect].
     #[inline]
     pub const fn bottom(&self) -> PdfPoints {
-        #[allow(deprecated)]
         self.bottom
     }
 
     /// Returns the top-most extent of this [PdfRect].
     #[inline]
     pub const fn top(&self) -> PdfPoints {
-        #[allow(deprecated)]
         self.top
     }
 

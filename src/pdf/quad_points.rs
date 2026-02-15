@@ -10,6 +10,9 @@ use crate::pdf::rect::PdfRect;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
+#[cfg(doc)]
+use crate::pdf::document::page::PdfPage;
+
 /// A set of four coordinates expressed in [PdfPoints] that outline the bounds of a
 /// four-sided quadrilateral. The coordinates specify the quadrilateral's four vertices
 /// in counter-clockwise order:
@@ -25,62 +28,19 @@ use std::hash::{Hash, Hasher};
 /// version 1.7, on page 634.
 #[derive(Debug, Copy, Clone)]
 pub struct PdfQuadPoints {
-    pub x1: PdfPoints,
-    pub y1: PdfPoints,
-    pub x2: PdfPoints,
-    pub y2: PdfPoints,
-    pub x3: PdfPoints,
-    pub y3: PdfPoints,
-    pub x4: PdfPoints,
-    pub y4: PdfPoints,
-    // TODO: AJRC - 28/12/24 - directly available fields are in place purely to achieve
-    // API-compatibility with PdfRect as part of changes to bounds() function implementation
-    // in page objects. Direct field access should be removed in favour of accessor functions
-    // as part of release 0.9.0.
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfQuadPoints::bottom() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub bottom: PdfPoints,
-
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfQuadPoints::left() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub left: PdfPoints,
-
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfQuadPoints::top() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub top: PdfPoints,
-
-    #[deprecated(
-        since = "0.8.28",
-        note = "Use the PdfQuadPoints::right() function instead of direct field access. Direct field access will be removed in release 0.9.0."
-    )]
-    pub right: PdfPoints,
+    x1: PdfPoints,
+    y1: PdfPoints,
+    x2: PdfPoints,
+    y2: PdfPoints,
+    x3: PdfPoints,
+    y3: PdfPoints,
+    x4: PdfPoints,
+    y4: PdfPoints,
 }
 
 impl PdfQuadPoints {
     /// A [PdfQuadPoints] object with the identity value (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).
-    #[allow(deprecated)]
-    pub const ZERO: PdfQuadPoints = PdfQuadPoints {
-        // TODO: AJRC - 28/12/24 - this in-place initialiser can be reduced to
-        // PdfQuadPoints::zero() once deprecated features are removed as part of release 0.9.0.
-        x1: PdfPoints::zero(),
-        y1: PdfPoints::zero(),
-        x2: PdfPoints::zero(),
-        y2: PdfPoints::zero(),
-        x3: PdfPoints::zero(),
-        y3: PdfPoints::zero(),
-        x4: PdfPoints::zero(),
-        y4: PdfPoints::zero(),
-        bottom: PdfPoints::zero(),
-        left: PdfPoints::zero(),
-        top: PdfPoints::zero(),
-        right: PdfPoints::zero(),
-    };
+    pub const ZERO: PdfQuadPoints = PdfQuadPoints::zero();
 
     #[inline]
     pub(crate) fn from_pdfium(points: FS_QUADPOINTSF) -> Self {
@@ -104,16 +64,14 @@ impl PdfQuadPoints {
         }
     }
 
-    /// Creates a new [PdfQuadPoints] from the given [PdfPoints] coordinate pairs.
+    /// Creates a new [PdfQuadPoints] object from the given [PdfPoints] coordinate pairs.
     ///
-    /// The coordinate space of a `PdfPage` has its origin (0,0) at the bottom left of the page,
+    /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    // TODO: AJRC - 28/12/24 - return to const function once left, right, bottom, top fields
-    // removed as part of release 0.9.0.
-    pub fn new(
+    pub const fn new(
         x1: PdfPoints,
         y1: PdfPoints,
         x2: PdfPoints,
@@ -123,7 +81,6 @@ impl PdfQuadPoints {
         x4: PdfPoints,
         y4: PdfPoints,
     ) -> Self {
-        #[allow(deprecated)]
         Self {
             x1,
             y1,
@@ -133,23 +90,17 @@ impl PdfQuadPoints {
             y3,
             x4,
             y4,
-            left: *[x1, x2, x3, x4].iter().min().unwrap(),
-            right: *[x1, x2, x3, x4].iter().max().unwrap(),
-            bottom: *[y1, y2, y3, y4].iter().min().unwrap(),
-            top: *[y1, y2, y3, y4].iter().max().unwrap(),
         }
     }
 
-    /// Creates a new [PdfQuadPoints] from the given raw points values.
+    /// Creates a new [PdfQuadPoints] object from the given raw points values.
     ///
-    /// The coordinate space of a `PdfPage` has its origin (0,0) at the bottom left of the page,
+    /// The coordinate space of a [PdfPage] has its origin (0,0) at the bottom left of the page,
     /// with x values increasing as coordinates move horizontally to the right and
     /// y values increasing as coordinates move vertically up.
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    // TODO: AJRC - 28/12/24 - return to const function once left, right, bottom, top fields
-    // removed as part of release 0.9.0.
-    pub fn new_from_values(
+    pub const fn new_from_values(
         x1: f32,
         y1: f32,
         x2: f32,
@@ -176,9 +127,7 @@ impl PdfQuadPoints {
     /// Consider using the compile-time constant value [PdfQuadPoints::ZERO]
     /// rather than calling this function directly.
     #[inline]
-    // TODO: AJRC - 28/12/24 - return to const function once left, right, bottom, top fields
-    // removed as part of release 0.9.0.
-    pub fn zero() -> Self {
+    pub const fn zero() -> Self {
         Self::new_from_values(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 
@@ -197,48 +146,84 @@ impl PdfQuadPoints {
         )
     }
 
+    /// Returns the `x1` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn x1(&self) -> PdfPoints {
+        self.x1
+    }
+
+    /// Returns the `y1` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn y1(&self) -> PdfPoints {
+        self.y1
+    }
+
+    /// Returns the `x2` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn x2(&self) -> PdfPoints {
+        self.x2
+    }
+
+    /// Returns the `y2` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn y2(&self) -> PdfPoints {
+        self.y2
+    }
+
+    /// Returns the `x3` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn x3(&self) -> PdfPoints {
+        self.x3
+    }
+
+    /// Returns the `y3` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn y3(&self) -> PdfPoints {
+        self.y3
+    }
+
+    /// Returns the `x4` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn x4(&self) -> PdfPoints {
+        self.x4
+    }
+
+    /// Returns the `y4` point of this [PdfQuadPoints].
+    #[inline]
+    pub fn y4(&self) -> PdfPoints {
+        self.y4
+    }
+
     /// Returns the left-most extent of this [PdfQuadPoints].
     pub fn left(&self) -> PdfPoints {
-        #[allow(deprecated)]
-        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
-        self.left
-        // *vec![self.x1, self.x2, self.x3, self.x4]
-        //     .iter()
-        //     .min()
-        //     .unwrap()
+        *vec![self.x1, self.x2, self.x3, self.x4]
+            .iter()
+            .min()
+            .unwrap()
     }
 
     /// Returns the right-most extent of this [PdfQuadPoints].
     pub fn right(&self) -> PdfPoints {
-        #[allow(deprecated)]
-        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
-        self.right
-        // *vec![self.x1, self.x2, self.x3, self.x4]
-        //     .iter()
-        //     .max()
-        //     .unwrap()
+        *vec![self.x1, self.x2, self.x3, self.x4]
+            .iter()
+            .max()
+            .unwrap()
     }
 
     /// Returns the bottom-most extent of this [PdfQuadPoints].
     pub fn bottom(&self) -> PdfPoints {
-        #[allow(deprecated)]
-        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
-        self.bottom
-        // *vec![self.y1, self.y2, self.y3, self.y4]
-        //     .iter()
-        //     .min()
-        //     .unwrap()
+        *vec![self.y1, self.y2, self.y3, self.y4]
+            .iter()
+            .min()
+            .unwrap()
     }
 
     /// Returns the top-most extent of this [PdfQuadPoints].
     pub fn top(&self) -> PdfPoints {
-        #[allow(deprecated)]
-        // TODO: AJRC - 28/12/24 - replace with inline calculation for release 0.9.0.
-        self.top
-        // *vec![self.y1, self.y2, self.y3, self.y4]
-        //     .iter()
-        //     .max()
-        //     .unwrap()
+        *vec![self.y1, self.y2, self.y3, self.y4]
+            .iter()
+            .max()
+            .unwrap()
     }
 
     /// Returns the width of this [PdfQuadPoints].
