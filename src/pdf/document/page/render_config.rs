@@ -18,41 +18,6 @@ use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use std::os::raw::c_int;
 
-// TODO: AJRC - 29/7/22 - remove deprecated PdfBitmapConfig struct in 0.9.0 as part of tracking issue
-// https://github.com/ajrcarey/pdfium-render/issues/36
-#[deprecated(
-    since = "0.7.12",
-    note = "This struct has been renamed to better reflect its purpose. Use the PdfRenderConfig struct instead."
-)]
-#[doc(hidden)]
-pub struct PdfBitmapConfig {}
-
-#[allow(deprecated)]
-impl PdfBitmapConfig {
-    /// Creates a new [PdfRenderConfig] object with all settings initialized with their default values.
-    #[deprecated(
-        since = "0.7.12",
-        note = "This struct has been renamed to better reflect its purpose. Use the PdfRenderConfig::new() function instead."
-    )]
-    #[inline]
-    #[doc(hidden)]
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> PdfRenderConfig {
-        PdfRenderConfig::new()
-    }
-
-    #[deprecated(
-        since = "0.7.12",
-        note = "This struct has been renamed to better reflect its purpose. Use the PdfRenderConfig::default() function instead."
-    )]
-    #[inline]
-    #[doc(hidden)]
-    #[allow(clippy::should_implement_trait)]
-    pub fn default() -> PdfRenderConfig {
-        PdfRenderConfig::default()
-    }
-}
-
 /// Configures the scaling, rotation, and rendering settings that should be applied to
 /// a [PdfPage] to create a [PdfBitmap] for that page. [PdfRenderConfig] can accommodate pages of
 /// different sizes while correctly maintaining each page's aspect ratio, automatically

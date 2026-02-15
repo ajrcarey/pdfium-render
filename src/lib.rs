@@ -170,7 +170,7 @@ pub mod prelude {
         pdf::document::page::text::segments::*,
         pdf::document::page::text::*,
         pdf::document::page::{
-            PdfBitmapRotation, PdfPage, PdfPageContentRegenerationStrategy, PdfPageOrientation,
+            PdfPage, PdfPageContentRegenerationStrategy, PdfPageOrientation,
             PdfPageRenderRotation,
         },
         pdf::document::pages::*,

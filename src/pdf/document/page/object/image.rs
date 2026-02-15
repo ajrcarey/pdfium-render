@@ -583,7 +583,7 @@ impl<'a> PdfPageImageObject<'a> {
 
         match format {
             #[allow(deprecated)]
-            PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
+            PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx => {
                 RgbaImage::from_raw(width as u32, height as u32, bgra_to_rgba(buffer))
                     .map(DynamicImage::ImageRgba8)
             }
@@ -1045,7 +1045,7 @@ mod tests {
             .pages()
             .get(0)?
             .render_with_config(&PdfRenderConfig::new().set_target_width(1000))?
-            .as_image();
+            .as_image()?;
 
         let mut document = pdfium.create_new_pdf()?;
 

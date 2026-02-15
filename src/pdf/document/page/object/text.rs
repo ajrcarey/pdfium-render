@@ -246,6 +246,17 @@ impl<'a> PdfPageTextObject<'a> {
         .unwrap_or(PdfPageTextRenderMode::Unknown)
     }
 
+    /// Returns `true` if the text rendering mode for the text contained within this
+    /// [PdfPageTextObject] is set to any value other than [PdfPageTextRenderMode::Invisible]
+    /// or [PdfPageTextRenderMode::InvisibleClipping].
+    #[inline]
+    pub fn is_visible(&self) -> bool {
+        match self.render_mode() {
+            PdfPageTextRenderMode::Invisible | PdfPageTextRenderMode::InvisibleClipping => false,
+            _ => true,
+        }
+    }
+
     /// Returns the effective size of the text when rendered, taking into account both the
     /// font size specified in this text object as well as any vertical scale factor applied
     /// to the text object's transformation matrix.

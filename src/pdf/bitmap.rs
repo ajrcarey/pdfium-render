@@ -52,21 +52,11 @@ pub type Pixels = i32;
 
 /// The pixel format of the rendered image data in the backing buffer of a [PdfBitmap].
 #[derive(Copy, Clone, Debug, PartialEq)]
-#[allow(clippy::manual_non_exhaustive)] // triggered by deprecation below, can be removed in 0.9.0
 pub enum PdfBitmapFormat {
     Gray = FPDFBitmap_Gray as isize,
     BGR = FPDFBitmap_BGR as isize,
     BGRx = FPDFBitmap_BGRx as isize,
     BGRA = FPDFBitmap_BGRA as isize,
-
-    // TODO: AJRC - 22/7/23 - remove deprecated variant in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    #[deprecated(
-        since = "0.8.7",
-        note = "This variant has been renamed to correct a misspelling. Use the BGRx variant instead."
-    )]
-    #[doc(hidden)]
-    BRGx = 999,
 }
 
 impl PdfBitmapFormat {
@@ -88,8 +78,7 @@ impl PdfBitmapFormat {
         match self {
             PdfBitmapFormat::Gray => FPDFBitmap_Gray,
             PdfBitmapFormat::BGR => FPDFBitmap_BGR,
-            #[allow(deprecated)]
-            PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => FPDFBitmap_BGRx,
+            PdfBitmapFormat::BGRx => FPDFBitmap_BGRx,
             PdfBitmapFormat::BGRA => FPDFBitmap_BGRA,
         }
     }
@@ -224,19 +213,6 @@ impl<'a> PdfBitmap<'a> {
         PdfBitmapFormat::from_pdfium(self.bindings().FPDFBitmap_GetFormat(self.handle()) as u32)
     }
 
-    // TODO: AJRC - 25/11/22 - remove deprecated PdfBitmap::as_bytes() function in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap].
-    #[deprecated(
-        since = "0.8.16",
-        note = "This function has been renamed to better reflect its purpose. Use the PdfBitmap::as_raw_bytes() function instead."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn as_bytes(&self) -> Vec<u8> {
-        self.as_raw_bytes()
-    }
-
     /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap].
     ///
     /// Unlike [PdfBitmap::as_rgba_bytes], this function does not attempt any color channel normalization.
@@ -263,8 +239,7 @@ impl<'a> PdfBitmap<'a> {
             // a call to PdfRenderConfig::set_reverse_byte_order(true).
 
             match format {
-                #[allow(deprecated)]
-                PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx | PdfBitmapFormat::BRGx => {
+                PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx => {
                     // No color conversion necessary; data was already swapped from BGRx
                     // to four-channel RGB during rendering.
                     bytes
@@ -274,8 +249,7 @@ impl<'a> PdfBitmap<'a> {
             }
         } else {
             match format {
-                #[allow(deprecated)]
-                PdfBitmapFormat::BGRA | PdfBitmapFormat::BRGx | PdfBitmapFormat::BGRx => {
+                PdfBitmapFormat::BGRA | PdfBitmapFormat::BGRx => {
                     bgra_to_rgba(bytes.as_slice())
                 }
                 PdfBitmapFormat::BGR => aligned_bgr_to_rgba(bytes.as_slice(), width, stride),
@@ -288,17 +262,15 @@ impl<'a> PdfBitmap<'a> {
     ///
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image_api")]
-    pub fn as_image(&self) -> DynamicImage {
+    pub fn as_image(&self) -> Result<DynamicImage, PdfiumError> {
         let bytes = self.as_rgba_bytes();
 
         let width = self.width() as u32;
 
         let height = self.height() as u32;
 
-        match self.format().unwrap_or_default() {
-            #[allow(deprecated)]
+        let image = match self.format().unwrap_or_default() {
             PdfBitmapFormat::BGRA
-            | PdfBitmapFormat::BRGx
             | PdfBitmapFormat::BGRx
             | PdfBitmapFormat::BGR => {
                 RgbaImage::from_raw(width, height, bytes).map(DynamicImage::ImageRgba8)
@@ -306,28 +278,13 @@ impl<'a> PdfBitmap<'a> {
             PdfBitmapFormat::Gray => {
                 GrayImage::from_raw(width, height, bytes).map(DynamicImage::ImageLuma8)
             }
-        }
-        // TODO: AJRC - 3/11/23 - change function signature to return Result<DynamicImage, PdfiumError>
-        // in 0.9.0 so we can account for any image conversion failure here. Tracked
-        // as part of https://github.com/ajrcarey/pdfium-render/issues/36
-        .unwrap()
-    }
+        };
 
-    // TODO: AJRC - 29/7/22 - remove deprecated PdfBitmap::render() function in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    /// Prior to 0.7.12, this function rendered the referenced page into a bitmap buffer.
-    ///
-    /// This is no longer necessary since all page rendering operations are now processed eagerly
-    /// rather than lazily.
-    ///
-    /// This function is now deprecated and will be removed in release 0.9.0.
-    #[deprecated(
-        since = "0.7.12",
-        note = "This function is no longer necessary since all page rendering operations are now processed eagerly rather than lazily. Calls to this function can be removed."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn render(&self) {}
+        match image {
+            Some(image) => Ok(image),
+            None => Err(PdfiumError::ImageError)
+        }
+    }
 
     /// Returns a Javascript `Uint8Array` object representing the bitmap buffer backing
     /// this [PdfBitmap].

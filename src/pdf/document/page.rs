@@ -128,15 +128,6 @@ impl PdfPageRenderRotation {
     }
 }
 
-// TODO: AJRC - 19/6/23 - remove deprecated PdfBitmapRotation type in 0.9.0
-// as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-#[deprecated(
-    since = "0.8.6",
-    note = "This enum has been renamed to better reflect its purpose. Use the PdfPageRenderRotation enum instead."
-)]
-#[doc(hidden)]
-pub type PdfBitmapRotation = PdfPageRenderRotation;
-
 /// Content regeneration strategies that instruct `pdfium-render` when, if ever, it should
 /// automatically regenerate the content of a [PdfPage].
 ///
@@ -708,45 +699,6 @@ impl<'a> PdfPage<'a> {
         Ok(())
     }
 
-    // TODO: AJRC - 29/7/22 - remove deprecated PdfPage::get_bitmap_*() functions in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    /// Renders this [PdfPage] into a new [PdfBitmap] using pixel dimensions, rotation settings,
-    /// and rendering options configured in the given [PdfRenderConfig].
-    #[deprecated(
-        since = "0.7.12",
-        note = "This function has been renamed to better reflect its purpose. Use the PdfPage::render_with_config() function instead."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn get_bitmap_with_config(
-        &self,
-        config: &PdfRenderConfig,
-    ) -> Result<PdfBitmap<'_>, PdfiumError> {
-        self.render_with_config(config)
-    }
-
-    /// Renders this [PdfPage] into a new [PdfBitmap] with the given pixel dimensions and
-    /// rotation setting.
-    ///
-    /// It is the responsibility of the caller to ensure the given pixel width and height
-    /// correctly maintain the page's aspect ratio.
-    ///
-    /// See also [PdfPage::render_with_config()], which calculates the correct pixel dimensions,
-    /// rotation settings, and rendering options to apply from a [PdfRenderConfig] object.
-    #[deprecated(
-        since = "0.7.12",
-        note = "This function has been renamed to better reflect its purpose. Use the PdfPage::render() function instead."
-    )]
-    #[doc(hidden)]
-    pub fn get_bitmap(
-        &self,
-        width: Pixels,
-        height: Pixels,
-        rotation: Option<PdfPageRenderRotation>,
-    ) -> Result<PdfBitmap<'_>, PdfiumError> {
-        self.render(width, height, rotation)
-    }
-
     /// Applies the given transformation, expressed as six values representing the six configurable
     /// elements of a nine-element 3x3 PDF transformation matrix, to the objects on this [PdfPage],
     /// restricting the effects of the transformation to the given clipping rectangle.
@@ -786,22 +738,6 @@ impl<'a> PdfPage<'a> {
         clip: PdfRect,
     ) -> Result<(), PdfiumError> {
         self.apply_matrix_with_clip(PdfMatrix::new(a, b, c, d, e, f), clip)
-    }
-
-    // TODO: AJRC - 3/11/23 - remove deprecated PdfPage::set_matrix_with_clip() function in 0.9.0
-    // as part of tracking issue https://github.com/ajrcarey/pdfium-render/issues/36
-    #[deprecated(
-        since = "0.8.15",
-        note = "This function has been renamed to better reflect its behaviour. Use the apply_matrix_with_clip() function instead."
-    )]
-    #[doc(hidden)]
-    #[inline]
-    pub fn set_matrix_with_clip(
-        &mut self,
-        matrix: PdfMatrix,
-        clip: PdfRect,
-    ) -> Result<(), PdfiumError> {
-        self.apply_matrix_with_clip(matrix, clip)
     }
 
     /// Applies the given transformation, expressed as a [PdfMatrix], to this [PdfPage],
