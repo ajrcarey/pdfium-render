@@ -231,7 +231,7 @@ mod tests {
 
             for (index, page) in document.pages().iter().enumerate() {
                 page.render_with_config(&render_config)?
-                    .as_image() // Renders this page to an Image::DynamicImage...
+                    .as_image()? // Renders this page to an Image::DynamicImage...
                     .into_rgb8() // ... then converts it to an Image::Image ...
                     .save_with_format(format!("test-page-{}.jpg", index), ImageFormat::Jpeg) // ... and saves it to a file.
                     .map_err(|_| PdfiumError::ImageError)?;
@@ -260,7 +260,7 @@ mod tests {
         for (index, page) in document.pages().iter().enumerate() {
             let result = page
                 .render_with_config(&render_config)?
-                .as_image()
+                .as_image()?
                 .into_rgb8()
                 .save_with_format(format!("form-test-page-{}.jpg", index), ImageFormat::Jpeg);
 

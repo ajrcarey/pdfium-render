@@ -90,7 +90,7 @@ fn render(render_config: &PdfRenderConfig, path: &str) -> Result<(), PdfiumError
         );
 
         page.render_with_config(render_config)?
-            .as_image()
+            .as_image()?
             .as_rgba8()
             .ok_or(PdfiumError::ImageError)?
             .save_with_format(format!("./{}-{}.jpg", path, index), ImageFormat::Jpeg)
