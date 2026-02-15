@@ -17637,7 +17637,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         let buffer_length = buflen as usize;
 
         let buffer_ptr = if buffer_length > 0 {
-            log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetSubtype(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length);
+            log_debug(format!("pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetSubtype(): allocating buffer of {} bytes in Pdfium's WASM heap", buffer_length));
 
             state.malloc(buffer_length)
         } else {
