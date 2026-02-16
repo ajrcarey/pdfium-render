@@ -1,7 +1,6 @@
 //! Defines the [PdfPathSegments] trait, a collection of all the `PdfPathSegment` objects in a
 //! path page object, a font glyph path, or a clip path.
 
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::path::segment::PdfPathSegment;
 use std::ops::{Range, RangeInclusive};
@@ -12,9 +11,6 @@ pub type PdfPathSegmentIndex = u32;
 /// The collection of [PdfPathSegment] objects inside a path page object, a font glyph path,
 /// or a clip path.
 pub trait PdfPathSegments<'a> {
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPathSegments] collection.
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings;
-
     /// Returns the number of path segments in this [PdfPathSegments] collection.
     fn len(&self) -> PdfPathSegmentIndex;
 

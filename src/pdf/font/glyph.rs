@@ -2,52 +2,46 @@
 //! font glyph in a `PdfFontGlyphs` collection.
 
 use crate::bindgen::{FPDF_FONT, FPDF_GLYPHPATH};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::font::glyphs::PdfFontGlyphIndex;
 use crate::pdf::path::segment::PdfPathSegment;
 use crate::pdf::path::segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::convert::TryInto;
+use std::marker::PhantomData;
 use std::os::raw::{c_float, c_int, c_uint};
 
 /// A single font glyph in a `PdfFontGlyphs` collection.
 pub struct PdfFontGlyph<'a> {
     handle: FPDF_FONT,
     index: PdfFontGlyphIndex,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_FONT>,
 }
 
 impl<'a> PdfFontGlyph<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_FONT,
-        index: PdfFontGlyphIndex,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_FONT, index: PdfFontGlyphIndex) -> Self {
         Self {
             handle,
             index,
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFontGlyph].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the width of this [PdfFontGlyph] when rendered at the given font size.
     pub fn width_at_font_size(&self, size: PdfPoints) -> PdfPoints {
         let mut width = 0.0;
 
-        if self.bindings.is_true(self.bindings.FPDFFont_GetGlyphWidth(
-            self.handle,
-            self.index as c_uint,
-            size.value as c_float,
-            &mut width,
-        )) {
+        if self
+            .bindings()
+            .is_true(self.bindings().FPDFFont_GetGlyphWidth(
+                self.handle,
+                self.index as c_uint,
+                size.value as c_float,
+                &mut width,
+            ))
+        {
             PdfPoints::new(width)
         } else {
             PdfPoints::ZERO
@@ -70,33 +64,35 @@ impl<'a> PdfFontGlyph<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfFontGlyphPath::from_pdfium(handle, self.bindings()))
+            Ok(PdfFontGlyphPath::from_pdfium(handle))
         }
     }
 }
 
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFontGlyph<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFontGlyph<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFontGlyph<'a> {}
 /// The collection of [PdfPathSegment] objects inside a font glyph path.
 pub struct PdfFontGlyphPath<'a> {
     handle: FPDF_GLYPHPATH,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_GLYPHPATH>,
 }
 
 impl<'a> PdfFontGlyphPath<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_GLYPHPATH,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
-        Self { handle, bindings }
+    pub(crate) fn from_pdfium(handle: FPDF_GLYPHPATH) -> Self {
+        Self {
+            handle,
+            lifetime: PhantomData,
+        }
     }
 }
 
 impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
-    #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
         self.bindings()
@@ -124,3 +120,11 @@ impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
         PdfPathSegmentsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFontGlyphPath<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFontGlyphPath<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFontGlyphPath<'a> {}

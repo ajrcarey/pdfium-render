@@ -448,7 +448,7 @@ impl<'a> PdfPage<'a> {
 
         result
             .into_iter()
-            .map(|handle| PdfFont::from_pdfium(handle, self.bindings, None, false))
+            .map(|handle| PdfFont::from_pdfium(handle, None, false))
             .collect()
     }
 

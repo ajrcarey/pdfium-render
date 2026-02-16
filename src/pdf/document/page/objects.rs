@@ -18,6 +18,7 @@ use crate::pdf::document::page::objects::common::{
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
 use crate::pdf::document::page::PdfPageIndexCache;
 use crate::pdf::document::PdfDocument;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
@@ -89,7 +90,7 @@ impl<'a> PdfPageObjects<'a> {
     /// you will need to manually add to it the objects you want to manipulate.
     #[inline]
     pub fn create_empty_group(&self) -> PdfPageGroupObject<'a> {
-        PdfPageGroupObject::from_pdfium(self.document_handle(), self.page_handle(), self.bindings())
+        PdfPageGroupObject::from_pdfium(self.document_handle(), self.page_handle())
     }
 
     /// Creates a new [PdfPageXObjectFormObject] object from the page objects on this [PdfPage],
@@ -119,7 +120,6 @@ impl<'a> PdfPageObjects<'a> {
                 let object = PdfPageXObjectFormObject::from_pdfium(
                     object_handle,
                     PdfPageObjectOwnership::owned_by_document(destination.handle()),
-                    self.bindings(),
                 );
 
                 self.bindings().FPDF_CloseXObject(x_object);
@@ -153,11 +153,6 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
     #[inline]
     fn ownership(&self) -> &PdfPageObjectOwnership {
         &self.ownership
-    }
-
-    #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     #[inline]
@@ -208,3 +203,11 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
         object.remove_object_from_page().map(|_| object)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageObjects<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageObjects<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageObjects<'a> {}

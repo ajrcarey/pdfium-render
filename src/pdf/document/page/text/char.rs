@@ -365,7 +365,6 @@ impl<'a> PdfPageTextChar<'a> {
             Ok(PdfPageTextObject::from_pdfium(
                 object_handle,
                 PdfPageObjectOwnership::owned_by_page(self.document_handle(), self.page_handle()),
-                self.bindings(),
             ))
         }
     }

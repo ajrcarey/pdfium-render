@@ -153,12 +153,7 @@ impl<'a> PdfPageAnnotations<'a> {
     pub(crate) fn create_annotation<T: PdfPageAnnotationCommon>(
         &mut self,
         annotation_type: PdfPageAnnotationType,
-        constructor: fn(
-            FPDF_DOCUMENT,
-            FPDF_PAGE,
-            FPDF_ANNOTATION,
-            &'a dyn PdfiumLibraryBindings,
-        ) -> T,
+        constructor: fn(FPDF_DOCUMENT, FPDF_PAGE, FPDF_ANNOTATION) -> T,
     ) -> Result<T, PdfiumError> {
         let handle = self
             .bindings()
@@ -169,12 +164,7 @@ impl<'a> PdfPageAnnotations<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            let mut annotation = constructor(
-                self.document_handle(),
-                self.page_handle(),
-                handle,
-                self.bindings(),
-            );
+            let mut annotation = constructor(self.document_handle(), self.page_handle(), handle);
 
             annotation
                 .set_creation_date(Utc::now())

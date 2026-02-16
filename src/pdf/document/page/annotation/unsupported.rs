@@ -2,13 +2,14 @@
 //! single annotation object of a type not supported by Pdfium.
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
 use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
 use crate::pdf::document::page::annotation::PdfPageAnnotationType;
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
 use crate::pdf::document::page::annotation::PdfPageAnnotation;
@@ -19,7 +20,7 @@ pub struct PdfPageUnsupportedAnnotation<'a> {
     handle: FPDF_ANNOTATION,
     objects: PdfPageAnnotationObjects<'a>,
     attachment_points: PdfPageAnnotationAttachmentPoints<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfPageUnsupportedAnnotation<'a> {
@@ -28,7 +29,6 @@ impl<'a> PdfPageUnsupportedAnnotation<'a> {
         page_handle: FPDF_PAGE,
         annotation_handle: FPDF_ANNOTATION,
         annotation_type: PdfPageAnnotationType,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageUnsupportedAnnotation {
             annotation_type,
@@ -37,13 +37,9 @@ impl<'a> PdfPageUnsupportedAnnotation<'a> {
                 document_handle,
                 page_handle,
                 annotation_handle,
-                bindings,
             ),
-            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(
-                annotation_handle,
-                bindings,
-            ),
-            bindings,
+            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(annotation_handle),
+            lifetime: PhantomData,
         }
     }
 
@@ -67,11 +63,6 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnsupportedAnnotation<'a> {
     }
 
     #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
     fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_> {
         &self.objects
     }
@@ -81,3 +72,11 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageUnsupportedAnnotation<'a> {
         &self.attachment_points
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageUnsupportedAnnotation<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageUnsupportedAnnotation<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageUnsupportedAnnotation<'a> {}

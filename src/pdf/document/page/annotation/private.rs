@@ -15,7 +15,6 @@ pub(crate) mod internal {
         FPDF_ANNOT_FLAG_NOZOOM, FPDF_ANNOT_FLAG_PRINT, FPDF_ANNOT_FLAG_READONLY,
         FPDF_ANNOT_FLAG_TOGGLENOVIEW, FPDF_OBJECT_STRING, FPDF_PAGEOBJECT, FPDF_WCHAR, FS_RECTF,
     };
-    use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::pdf::color::PdfColor;
     use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
@@ -24,6 +23,7 @@ pub(crate) mod internal {
     use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
     use crate::pdf::points::PdfPoints;
     use crate::pdf::rect::PdfRect;
+    use crate::pdfium::PdfiumLibraryBindingsAccessor;
     use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
@@ -124,12 +124,11 @@ pub(crate) mod internal {
     }
 
     /// Internal crate-specific functionality common to all [PdfPageAnnotation] objects.
-    pub(crate) trait PdfPageAnnotationPrivate<'a>: PdfPageAnnotationCommon {
+    pub(crate) trait PdfPageAnnotationPrivate<'a>:
+        PdfPageAnnotationCommon + PdfiumLibraryBindingsAccessor<'a>
+    {
         /// Returns the internal `FPDF_ANNOTATION` handle for this [PdfPageAnnotation].
         fn handle(&self) -> FPDF_ANNOTATION;
-
-        /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotation].
-        fn bindings(&self) -> &dyn PdfiumLibraryBindings;
 
         /// Returns the ownership hierarchy for this [PdfPageAnnotation].
         fn ownership(&self) -> &PdfPageObjectOwnership;

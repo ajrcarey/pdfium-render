@@ -2,25 +2,23 @@
 //! page object defining a path.
 
 use crate::bindgen::{
-    FPDF_BOOL, FPDF_DOCUMENT, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING,
-    FPDF_PAGEOBJECT,
+    FPDF_BOOL, FPDF_FILLMODE_ALTERNATE, FPDF_FILLMODE_NONE, FPDF_FILLMODE_WINDING, FPDF_PAGEOBJECT,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
-use crate::pdf::document::page::object::{
-    PdfPageObject, PdfPageObjectCommon, PdfPageObjectOwnership,
-};
+use crate::pdf::document::page::object::{PdfPageObjectCommon, PdfPageObjectOwnership};
 use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
-use crate::pdf::path::segment::{PdfPathSegment, PdfPathSegmentType};
+use crate::pdf::path::segment::PdfPathSegment;
 use crate::pdf::path::segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
+use std::marker::PhantomData;
 use std::os::raw::{c_int, c_uint};
 
 #[cfg(doc)]
@@ -154,9 +152,9 @@ impl Default for PdfPathFillMode {
 pub struct PdfPagePathObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,
-    bindings: &'a dyn PdfiumLibraryBindings,
     current_point_x: PdfPoints,
     current_point_y: PdfPoints,
+    lifetime: PhantomData<&'a FPDF_PAGEOBJECT>,
 }
 
 impl<'a> PdfPagePathObject<'a> {
@@ -164,14 +162,13 @@ impl<'a> PdfPagePathObject<'a> {
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
         ownership: PdfPageObjectOwnership,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPagePathObject {
             object_handle,
             ownership,
-            bindings,
             current_point_x: PdfPoints::ZERO,
             current_point_y: PdfPoints::ZERO,
+            lifetime: PhantomData,
         }
     }
 
@@ -228,9 +225,9 @@ impl<'a> PdfPagePathObject<'a> {
             let mut result = PdfPagePathObject {
                 object_handle: handle,
                 ownership: PdfPageObjectOwnership::unowned(),
-                bindings,
                 current_point_x: x,
                 current_point_y: y,
+                lifetime: PhantomData,
             };
 
             result.move_to(x, y)?;
@@ -888,7 +885,7 @@ impl<'a> PdfPagePathObject<'a> {
     /// Returns the collection of path segments currently defined by this [PdfPagePathObject].
     #[inline]
     pub fn segments(&self) -> PdfPagePathObjectSegments<'_> {
-        PdfPagePathObjectSegments::from_pdfium(self.object_handle(), self.bindings())
+        PdfPagePathObjectSegments::from_pdfium(self.object_handle())
     }
 
     create_transform_setters!(
@@ -927,68 +924,22 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
     fn set_ownership(&mut self, ownership: PdfPageObjectOwnership) {
         self.ownership = ownership;
     }
+}
 
-    #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
-    fn is_copyable_impl(&self) -> bool {
-        // The path object can only be copied if it contains no Bézier path segments.
-        // Pdfium does not currently provide any way to retrieve the Bézier control points
-        // of an existing Bézier path segment.
-
-        !self
-            .segments()
-            .iter()
-            .any(|segment| segment.segment_type() == PdfPathSegmentType::BezierTo)
-    }
-
-    fn try_copy_impl<'b>(
-        &self,
-        _: FPDF_DOCUMENT,
-        bindings: &'b dyn PdfiumLibraryBindings,
-    ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        let mut copy = PdfPagePathObject::new_from_bindings(
-            bindings,
-            PdfPoints::ZERO,
-            PdfPoints::ZERO,
-            None,
-            None,
-            None,
-        )?;
-
-        copy.set_fill_and_stroke_mode(self.fill_mode()?, self.is_stroked()?)?;
-        copy.set_fill_color(self.fill_color()?)?;
-        copy.set_stroke_color(self.stroke_color()?)?;
-        copy.set_stroke_width(self.stroke_width()?)?;
-        copy.set_line_join(self.line_join()?)?;
-        copy.set_line_cap(self.line_cap()?)?;
-
-        for segment in self.segments().iter() {
-            if segment.segment_type() == PdfPathSegmentType::Unknown {
-                return Err(PdfiumError::PathObjectUnknownSegmentTypeNotCopyable);
-            } else if segment.segment_type() == PdfPathSegmentType::BezierTo {
-                return Err(PdfiumError::PathObjectBezierControlPointsNotCopyable);
-            } else {
-                match segment.segment_type() {
-                    PdfPathSegmentType::Unknown | PdfPathSegmentType::BezierTo => {}
-                    PdfPathSegmentType::LineTo => copy.line_to(segment.x(), segment.y())?,
-                    PdfPathSegmentType::MoveTo => copy.move_to(segment.x(), segment.y())?,
-                }
-
-                if segment.is_close() {
-                    copy.close_path()?;
-                }
-            }
-        }
-
-        copy.reset_matrix(self.matrix()?)?;
-
-        Ok(PdfPageObject::Path(copy))
+impl<'a> Drop for PdfPagePathObject<'a> {
+    /// Closes this [PdfPagePathObject], releasing held memory.
+    fn drop(&mut self) {
+        self.drop_impl();
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPagePathObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPagePathObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPagePathObject<'a> {}
 
 /// The collection of [PdfPathSegment] objects inside a path page object.
 ///
@@ -999,19 +950,16 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPagePathObject<'a> {
 pub struct PdfPagePathObjectSegments<'a> {
     handle: FPDF_PAGEOBJECT,
     matrix: Option<PdfMatrix>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_PAGEOBJECT>,
 }
 
 impl<'a> PdfPagePathObjectSegments<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_PAGEOBJECT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_PAGEOBJECT) -> Self {
         Self {
             handle,
             matrix: None,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -1022,7 +970,7 @@ impl<'a> PdfPagePathObjectSegments<'a> {
         Self {
             handle: self.handle,
             matrix: Some(matrix),
-            bindings: self.bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -1033,17 +981,12 @@ impl<'a> PdfPagePathObjectSegments<'a> {
         Self {
             handle: self.handle,
             matrix: None,
-            bindings: self.bindings,
+            lifetime: PhantomData,
         }
     }
 }
 
 impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
-    #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
         self.bindings()
@@ -1076,9 +1019,10 @@ impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
     }
 }
 
-impl<'a> Drop for PdfPagePathObject<'a> {
-    /// Closes this [PdfPagePathObject], releasing held memory.
-    fn drop(&mut self) {
-        self.drop_impl();
-    }
-}
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPagePathObjectSegments<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPagePathObjectSegments<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPagePathObjectSegments<'a> {}

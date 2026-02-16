@@ -2,10 +2,11 @@
 //! [PdfFont].
 
 use crate::bindgen::FPDF_FONT;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::font::glyph::PdfFontGlyph;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::cell::Cell;
+use std::marker::PhantomData;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_uint;
 
@@ -19,16 +20,16 @@ pub type PdfFontGlyphIndex = u16;
 pub struct PdfFontGlyphs<'a> {
     handle: FPDF_FONT,
     len: Cell<Option<PdfFontGlyphIndex>>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_FONT>,
 }
 
 impl<'a> PdfFontGlyphs<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(handle: FPDF_FONT, bindings: &'a dyn PdfiumLibraryBindings) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_FONT) -> Self {
         Self {
             handle,
             len: Cell::new(None),
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -57,7 +58,7 @@ impl<'a> PdfFontGlyphs<'a> {
         // Exit immediately if the maximum valid glyph index lies outside the given index boundaries.
 
         if !self
-            .bindings
+            .bindings()
             .FPDFFont_GetGlyphPath(self.handle, max as c_uint, 1.0)
             .is_null()
         {
@@ -65,7 +66,7 @@ impl<'a> PdfFontGlyphs<'a> {
         }
 
         if self
-            .bindings
+            .bindings()
             .FPDFFont_GetGlyphPath(self.handle, min as c_uint, 1.0)
             .is_null()
         {
@@ -77,7 +78,7 @@ impl<'a> PdfFontGlyphs<'a> {
         let mid = min + (max - min) / 2;
 
         if self
-            .bindings
+            .bindings()
             .FPDFFont_GetGlyphPath(self.handle, mid as c_uint, 1.0)
             .is_null()
         {
@@ -97,12 +98,6 @@ impl<'a> PdfFontGlyphs<'a> {
                 Some(max)
             }
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFontGlyphs] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the number of glyphs in this [PdfFontGlyphs] collection.
@@ -139,7 +134,7 @@ impl<'a> PdfFontGlyphs<'a> {
             return Err(PdfiumError::FontGlyphIndexOutOfBounds);
         }
 
-        Ok(PdfFontGlyph::from_pdfium(self.handle, index, self.bindings))
+        Ok(PdfFontGlyph::from_pdfium(self.handle, index))
     }
 
     /// Returns an iterator over all the glyphs in this [PdfFontGlyphs] collection.
@@ -148,6 +143,14 @@ impl<'a> PdfFontGlyphs<'a> {
         PdfFontGlyphsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFontGlyphs<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFontGlyphs<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFontGlyphs<'a> {}
 
 /// An iterator over all the [PdfFontGlyph] objects in a [PdfFontGlyphs] collection.
 pub struct PdfFontGlyphsIterator<'a> {

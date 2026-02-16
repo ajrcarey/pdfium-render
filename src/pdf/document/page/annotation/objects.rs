@@ -2,7 +2,6 @@
 //! page objects contained within a single `PdfPageAnnotation`.
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
@@ -11,6 +10,8 @@ use crate::pdf::document::page::objects::common::{
     PdfPageObjectIndex, PdfPageObjectsCommon, PdfPageObjectsIterator,
 };
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 use std::os::raw::c_int;
 
 /// The page objects contained within a single `PdfPageAnnotation`.
@@ -30,7 +31,7 @@ use std::os::raw::c_int;
 pub struct PdfPageAnnotationObjects<'a> {
     annotation_handle: FPDF_ANNOTATION,
     ownership: PdfPageObjectOwnership,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfPageAnnotationObjects<'a> {
@@ -39,7 +40,6 @@ impl<'a> PdfPageAnnotationObjects<'a> {
         document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         Self {
             annotation_handle,
@@ -48,7 +48,7 @@ impl<'a> PdfPageAnnotationObjects<'a> {
                 page_handle,
                 annotation_handle,
             ),
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -64,11 +64,6 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
     #[inline]
     fn ownership(&self) -> &PdfPageObjectOwnership {
         &self.ownership
-    }
-
-    #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     #[inline]
@@ -94,7 +89,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
                 *self.ownership(),
-                self.bindings,
+                self.bindings(),
             ))
         }
     }
@@ -120,3 +115,11 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
         object.remove_object_from_annotation().map(|_| object)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageAnnotationObjects<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageAnnotationObjects<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageAnnotationObjects<'a> {}

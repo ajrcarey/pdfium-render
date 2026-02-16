@@ -2,11 +2,12 @@
 //! `PdfDocument`.
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_FONT, FPDF_FONT_TRUETYPE, FPDF_FONT_TYPE1};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::font::PdfFont;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::collections::HashMap;
 use std::io::Read;
+use std::marker::PhantomData;
 use std::os::raw::{c_int, c_uint};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -129,35 +130,25 @@ impl<'a> ToPdfFontToken for &'a PdfFont<'a> {
 pub struct PdfFonts<'a> {
     document_handle: FPDF_DOCUMENT,
     fonts: HashMap<PdfFontToken, PdfFont<'a>>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_DOCUMENT>,
 }
 
 impl<'a> PdfFonts<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT) -> Self {
         PdfFonts {
             document_handle,
             fonts: HashMap::new(),
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFonts] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns a reusable [PdfFontToken] for the given built-in font.
     #[inline]
     pub fn new_built_in(&mut self, font: PdfFontBuiltin) -> PdfFontToken {
         let font = PdfFont::from_pdfium(
-            self.bindings
+            self.bindings()
                 .FPDFText_LoadStandardFont(self.document_handle, font.to_pdf_font_name()),
-            self.bindings,
             Some(font),
             true,
         );
@@ -547,12 +538,12 @@ impl<'a> PdfFonts<'a> {
         font_type: c_uint,
         is_cid_font: bool,
     ) -> Result<PdfFontToken, PdfiumError> {
-        let handle = self.bindings.FPDFText_LoadFont(
+        let handle = self.bindings().FPDFText_LoadFont(
             self.document_handle,
             font_data.as_ptr(),
             font_data.len() as c_uint,
             font_type as c_int,
-            self.bindings.bool_to_pdfium(is_cid_font),
+            self.bindings().bool_to_pdfium(is_cid_font),
         );
 
         if handle.is_null() {
@@ -560,7 +551,7 @@ impl<'a> PdfFonts<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            let font = PdfFont::from_pdfium(handle, self.bindings, None, true);
+            let font = PdfFont::from_pdfium(handle, None, true);
 
             let token = PdfFontToken::from_font(&font);
 
@@ -576,3 +567,11 @@ impl<'a> PdfFonts<'a> {
         self.fonts.get(&token)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFonts<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFonts<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFonts<'a> {}

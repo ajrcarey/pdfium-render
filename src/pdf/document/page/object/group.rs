@@ -2,7 +2,6 @@
 //! page objects contained in the same `PdfPageObjects` collection.
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::create_transform_setters;
 use crate::error::PdfiumError;
 use crate::pdf::color::PdfColor;
@@ -23,18 +22,23 @@ use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::prelude::PdfPageXObjectFormObject;
 use std::ffi::c_double;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
-use crate::pdf::document::page::object::text::PdfPageTextObject;
+use {
+    crate::pdf::document::page::object::text::PdfPageTextObject,
+    crate::pdf::document::page::objects,
+};
 
-/// A group of [PdfPageObject] objects contained in the same `PdfPageObjects` collection.
+/// A group of [PdfPageObject] objects contained in the same [PdfPageObjects] collection.
 /// The page objects contained in the group can be manipulated and transformed together
 /// as if they were a single object.
 ///
 /// Groups are bound to specific pages in the document. To create an empty group, use either the
-/// `PdfPageObjects::create_new_group()` function or the [PdfPageGroupObject::empty()] function.
+/// [PdfPageObjects::create_new_group()] function or the [PdfPageGroupObject::empty()] function.
 /// To create a populated group, use one of the [PdfPageGroupObject::new()],
 /// [PdfPageGroupObject::from_vec()], or [PdfPageGroupObject::from_slice()] functions.
 pub struct PdfPageGroupObject<'a> {
@@ -42,29 +46,25 @@ pub struct PdfPageGroupObject<'a> {
     page_handle: FPDF_PAGE,
     ownership: PdfPageObjectOwnership,
     object_handles: Vec<FPDF_PAGEOBJECT>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_DOCUMENT>,
 }
 
 impl<'a> PdfPageGroupObject<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
-        page_handle: FPDF_PAGE,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT, page_handle: FPDF_PAGE) -> Self {
         PdfPageGroupObject {
             page_handle,
             document_handle,
             ownership: PdfPageObjectOwnership::owned_by_page(document_handle, page_handle),
             object_handles: Vec::new(),
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
     /// Creates a new, empty [PdfPageGroupObject] that can be used to hold any page objects
     /// on the given [PdfPage].
     pub fn empty(page: &'a PdfPage) -> Self {
-        Self::from_pdfium(page.document_handle(), page.page_handle(), page.bindings())
+        Self::from_pdfium(page.document_handle(), page.page_handle())
     }
 
     /// Creates a new [PdfPageGroupObject] that includes any page objects on the given [PdfPage]
@@ -73,8 +73,7 @@ impl<'a> PdfPageGroupObject<'a> {
     where
         F: FnMut(&PdfPageObject) -> bool,
     {
-        let mut result =
-            Self::from_pdfium(page.document_handle(), page.page_handle(), page.bindings());
+        let mut result = Self::from_pdfium(page.document_handle(), page.page_handle());
 
         for mut object in page.objects().iter().filter(predicate) {
             result.push(&mut object)?;
@@ -99,8 +98,7 @@ impl<'a> PdfPageGroupObject<'a> {
         page: &PdfPage<'a>,
         objects: &mut [PdfPageObject<'a>],
     ) -> Result<Self, PdfiumError> {
-        let mut result =
-            Self::from_pdfium(page.document_handle(), page.page_handle(), page.bindings());
+        let mut result = Self::from_pdfium(page.document_handle(), page.page_handle());
 
         for object in objects.iter_mut() {
             result.push(object)?;
@@ -125,12 +123,6 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub(crate) fn ownership(&self) -> &PdfPageObjectOwnership {
         &self.ownership
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this group.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the number of page objects in this group.
@@ -498,7 +490,6 @@ impl<'a> PdfPageGroupObject<'a> {
         let object = PdfPageXObjectFormObject::from_pdfium(
             object_handle,
             PdfPageObjectOwnership::owned_by_document(destination_document_handle),
-            self.bindings(),
         );
 
         self.bindings().FPDF_CloseXObject(x_object);
@@ -744,6 +735,14 @@ impl<'a> PdfPageGroupObject<'a> {
         self.apply_to_each(|object| object.reset_matrix_impl(matrix))
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageGroupObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageGroupObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageGroupObject<'a> {}
 
 /// An iterator over all the [PdfPageObject] objects in a [PdfPageGroupObject] group.
 pub struct PdfPageGroupObjectIterator<'a> {

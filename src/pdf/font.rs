@@ -5,7 +5,6 @@ pub mod glyph;
 pub mod glyphs;
 
 use crate::bindgen::FPDF_FONT;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::fonts::PdfFontBuiltin;
 use crate::pdf::font::glyphs::PdfFontGlyphs;
@@ -89,14 +88,13 @@ impl<'a> PdfFont<'a> {
     #[inline]
     pub(crate) fn from_pdfium(
         handle: FPDF_FONT,
-        bindings: &'a dyn PdfiumLibraryBindings,
         built_in: Option<PdfFontBuiltin>,
         is_font_memory_loaded: bool,
     ) -> Self {
         PdfFont {
             built_in,
             handle,
-            glyphs: PdfFontGlyphs::from_pdfium(handle, bindings),
+            glyphs: PdfFontGlyphs::from_pdfium(handle),
             is_font_memory_loaded,
             lifetime: PhantomData,
         }

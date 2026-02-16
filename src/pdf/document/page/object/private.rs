@@ -10,7 +10,6 @@ pub(crate) mod internal {
     use crate::bindgen::{
         FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE, FPDF_PAGEOBJECT, FS_MATRIX, FS_RECTF,
     };
-    use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
     use crate::pdf::document::page::object::group::PdfPageGroupObject;
@@ -25,16 +24,16 @@ pub(crate) mod internal {
     use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
     use crate::pdf::quad_points::PdfQuadPoints;
     use crate::pdf::rect::PdfRect;
+    use crate::pdfium::PdfiumLibraryBindingsAccessor;
     use std::os::raw::c_double;
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObjectsCommon};
 
     /// Internal crate-specific functionality common to all [PdfPageObject] objects.
-    pub(crate) trait PdfPageObjectPrivate<'a>: PdfPageObjectCommon<'a> {
-        /// Returns the [PdfiumLibraryBindings] used by this [PdfPageObject].
-        fn bindings(&self) -> &dyn PdfiumLibraryBindings;
-
+    pub(crate) trait PdfPageObjectPrivate<'a>:
+        PdfPageObjectCommon<'a> + PdfiumLibraryBindingsAccessor<'a>
+    {
         /// Returns the internal `FPDF_PAGEOBJECT` handle for this [PdfPageObject].
         fn object_handle(&self) -> FPDF_PAGEOBJECT;
 
@@ -450,18 +449,6 @@ pub(crate) mod internal {
             }
         }
 
-        /// Returns `true` if this [PdfPageObject] can be successfully cloned by calling its
-        /// `try_clone()` function.
-        fn is_copyable_impl(&self) -> bool;
-
-        /// Attempts to clone this [PdfPageObject] by creating a new page object and copying across
-        /// all the properties of this [PdfPageObject] to the new page object.
-        fn try_copy_impl<'b>(
-            &self,
-            document_handle: FPDF_DOCUMENT,
-            bindings: &'b dyn PdfiumLibraryBindings,
-        ) -> Result<PdfPageObject<'b>, PdfiumError>;
-
         /// Copies this [PdfPageObject] object into a new [PdfPageXObjectFormObject], then adds
         /// the new form object to the page objects collection of the given [PdfPage],
         /// returning the new form object.
@@ -489,7 +476,7 @@ pub(crate) mod internal {
 
             if let (Some(document_handle), Some(page_handle)) = (document_handle, page_handle) {
                 let mut group =
-                    PdfPageGroupObject::from_pdfium(document_handle, page_handle, page.bindings());
+                    PdfPageGroupObject::from_pdfium(document_handle, page_handle);
 
                 group.push(&mut object)?;
                 group.copy_to_page(page)

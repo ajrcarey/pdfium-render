@@ -561,7 +561,6 @@ impl<'a> PdfPages<'a> {
             let mut group = PdfPageGroupObject::from_pdfium(
                 self.document_handle,
                 page.page_handle(),
-                self.bindings,
             );
 
             watermarker(

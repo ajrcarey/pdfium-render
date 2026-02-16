@@ -2,7 +2,6 @@
 //! user annotation of type [PdfPageAnnotationType::Link].
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_PAGE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
@@ -10,16 +9,21 @@ use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotation
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
 use crate::pdf::link::PdfLink;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
-use crate::pdf::document::page::annotation::{PdfPageAnnotation, PdfPageAnnotationType};
+use {
+    crate::pdf::document::page::annotation::PdfPageAnnotation,
+    crate::pdf::document::page::annotation::PdfPageAnnotationType,
+};
 
 /// A single [PdfPageAnnotation] of type [PdfPageAnnotationType::Link].
 pub struct PdfPageLinkAnnotation<'a> {
     handle: FPDF_ANNOTATION,
     objects: PdfPageAnnotationObjects<'a>,
     attachment_points: PdfPageAnnotationAttachmentPoints<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfPageLinkAnnotation<'a> {
@@ -27,7 +31,6 @@ impl<'a> PdfPageLinkAnnotation<'a> {
         document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageLinkAnnotation {
             handle: annotation_handle,
@@ -35,19 +38,15 @@ impl<'a> PdfPageLinkAnnotation<'a> {
                 document_handle,
                 page_handle,
                 annotation_handle,
-                bindings,
             ),
-            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(
-                annotation_handle,
-                bindings,
-            ),
-            bindings,
+            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(annotation_handle),
+            lifetime: PhantomData,
         }
     }
 
     /// Returns the [PdfLink] associated with this [PdfPageLinkAnnotation], if any.
     pub fn link(&self) -> Result<PdfLink<'_>, PdfiumError> {
-        let handle = self.bindings.FPDFAnnot_GetLink(self.handle);
+        let handle = self.bindings().FPDFAnnot_GetLink(self.handle);
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -110,11 +109,6 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageLinkAnnotation<'a> {
     }
 
     #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
     fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_> {
         &self.objects
     }
@@ -124,3 +118,11 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageLinkAnnotation<'a> {
         &self.attachment_points
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageLinkAnnotation<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageLinkAnnotation<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageLinkAnnotation<'a> {}

@@ -16,10 +16,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::fonts::ToPdfFontToken;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
-use crate::pdf::document::page::object::{
-    PdfPageObject, PdfPageObjectCommon, PdfPageObjectOwnership,
-};
-
+use crate::pdf::document::page::object::PdfPageObjectOwnership;
 use crate::pdf::document::PdfDocument;
 use crate::pdf::font::PdfFont;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
@@ -28,6 +25,7 @@ use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use crate::{create_transform_getters, create_transform_setters};
+use std::marker::PhantomData;
 
 #[cfg(any(
     feature = "pdfium_future",
@@ -166,7 +164,7 @@ impl PdfPageTextRenderMode {
 pub struct PdfPageTextObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_PAGEOBJECT>,
 }
 
 impl<'a> PdfPageTextObject<'a> {
@@ -174,12 +172,11 @@ impl<'a> PdfPageTextObject<'a> {
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
         ownership: PdfPageObjectOwnership,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextObject {
             object_handle,
             ownership,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -228,7 +225,7 @@ impl<'a> PdfPageTextObject<'a> {
             let mut result = PdfPageTextObject {
                 object_handle: handle,
                 ownership: PdfPageObjectOwnership::unowned(),
-                bindings,
+                lifetime: PhantomData,
             };
 
             result.set_text(text)?;
@@ -291,7 +288,6 @@ impl<'a> PdfPageTextObject<'a> {
     pub fn font(&self) -> PdfFont<'_> {
         PdfFont::from_pdfium(
             self.bindings().FPDFTextObj_GetFont(self.object_handle),
-            self.bindings(),
             None,
             false,
         )
@@ -361,7 +357,7 @@ impl<'a> PdfPageTextObject<'a> {
 
                 assert_eq!(result, buffer_length);
 
-                self.bindings.FPDFText_ClosePage(text_handle);
+                self.bindings().FPDFText_ClosePage(text_handle);
 
                 get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
             } else {
@@ -522,40 +518,6 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageTextObject<'a> {
     fn set_ownership(&mut self, ownership: PdfPageObjectOwnership) {
         self.ownership = ownership;
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
-    fn is_copyable_impl(&self) -> bool {
-        true
-    }
-
-    #[inline]
-    fn try_copy_impl<'b>(
-        &self,
-        document: FPDF_DOCUMENT,
-        bindings: &'b dyn PdfiumLibraryBindings,
-    ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        let mut copy = PdfPageTextObject::new_from_handles(
-            document,
-            self.text(),
-            self.font().handle(),
-            self.unscaled_font_size(),
-            bindings,
-        )?;
-
-        copy.set_fill_color(self.fill_color()?)?;
-        copy.set_stroke_color(self.stroke_color()?)?;
-        copy.set_stroke_width(self.stroke_width()?)?;
-        copy.set_line_join(self.line_join()?)?;
-        copy.set_line_cap(self.line_cap()?)?;
-        copy.reset_matrix(self.matrix()?)?;
-
-        Ok(PdfPageObject::Text(copy))
-    }
 }
 
 impl<'a> Drop for PdfPageTextObject<'a> {
@@ -564,3 +526,11 @@ impl<'a> Drop for PdfPageTextObject<'a> {
         self.drop_impl();
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageTextObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageTextObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageTextObject<'a> {}

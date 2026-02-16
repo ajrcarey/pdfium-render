@@ -1,12 +1,13 @@
 //! Defines the [PdfClipPath] struct, exposing functionality related to a clip path.
 
 use crate::bindgen::FPDF_CLIPPATH;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::path::segment::PdfPathSegment;
 use crate::pdf::path::segments::{PdfPathSegmentIndex, PdfPathSegments, PdfPathSegmentsIterator};
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::convert::TryInto;
+use std::marker::PhantomData;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
@@ -18,20 +19,16 @@ pub type PdfClipPathSegmentIndex = u16;
 pub struct PdfClipPath<'a> {
     handle: FPDF_CLIPPATH,
     ownership: PdfPageObjectOwnership,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_CLIPPATH>,
 }
 
 impl<'a> PdfClipPath<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_CLIPPATH,
-        ownership: PdfPageObjectOwnership,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_CLIPPATH, ownership: PdfPageObjectOwnership) -> Self {
         Self {
             handle,
             ownership,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -39,12 +36,6 @@ impl<'a> PdfClipPath<'a> {
     #[inline]
     pub(crate) fn handle(&self) -> FPDF_CLIPPATH {
         self.handle
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfClipPath] instance.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the number of path objects inside this [PdfClipPath] instance.
@@ -92,11 +83,7 @@ impl<'a> PdfClipPath<'a> {
             return Err(PdfiumError::PdfClipPathSegmentIndexOutOfBounds);
         }
 
-        Ok(PdfClipPathSegments::from_pdfium(
-            self.handle(),
-            index,
-            self.bindings(),
-        ))
+        Ok(PdfClipPathSegments::from_pdfium(self.handle(), index))
     }
 
     /// Returns an iterator over all the path objects in this [PdfClipPath] instance.
@@ -114,10 +101,18 @@ impl<'a> Drop for PdfClipPath<'a> {
             // Responsibility for de-allocation lies with us, not Pdfium, since
             // the clip path is not attached to a page, a page object, or an annotation.
 
-            self.bindings.FPDF_DestroyClipPath(self.handle)
+            self.bindings().FPDF_DestroyClipPath(self.handle)
         }
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfClipPath<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfClipPath<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfClipPath<'a> {}
 
 /// An iterator over all the [PdfPathSegments] path objects in a [PdfClipPath] instance.
 pub struct PdfClipPathIterator<'a> {
@@ -151,30 +146,21 @@ impl<'a> Iterator for PdfClipPathIterator<'a> {
 pub struct PdfClipPathSegments<'a> {
     handle: FPDF_CLIPPATH,
     index: PdfClipPathSegmentIndex,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_CLIPPATH>,
 }
 
 impl<'a> PdfClipPathSegments<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_CLIPPATH,
-        path_index: PdfClipPathSegmentIndex,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_CLIPPATH, path_index: PdfClipPathSegmentIndex) -> Self {
         Self {
             handle,
             index: path_index,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 }
 
 impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
-    #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
         self.bindings()
@@ -204,3 +190,11 @@ impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
         PdfPathSegmentsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfClipPathSegments<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfClipPathSegments<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfClipPathSegments<'a> {}

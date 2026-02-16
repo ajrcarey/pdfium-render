@@ -1,8 +1,7 @@
 //! Defines the [PdfPageXObjectFormObject] struct, exposing functionality related to a single
 //! page object of type `PdfPageObjectType::XObjectForm`.
 
-use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGEOBJECT};
-use crate::bindings::PdfiumLibraryBindings;
+use crate::bindgen::FPDF_PAGEOBJECT;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectOwnership};
@@ -10,7 +9,9 @@ use crate::pdf::document::page::objects::common::{PdfPageObjectIndex, PdfPageObj
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::{create_transform_getters, create_transform_setters};
+use std::marker::PhantomData;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_ulong;
 
@@ -35,19 +36,18 @@ use {
 pub struct PdfPageXObjectFormObject<'a> {
     object_handle: FPDF_PAGEOBJECT,
     ownership: PdfPageObjectOwnership,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_PAGEOBJECT>,
 }
 
 impl<'a> PdfPageXObjectFormObject<'a> {
     pub(crate) fn from_pdfium(
         object_handle: FPDF_PAGEOBJECT,
         ownership: PdfPageObjectOwnership,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageXObjectFormObject {
             object_handle,
             ownership,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -149,25 +149,6 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageXObjectFormObject<'a> {
     fn set_ownership(&mut self, ownership: PdfPageObjectOwnership) {
         self.ownership = ownership;
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
-    fn is_copyable_impl(&self) -> bool {
-        false
-    }
-
-    #[inline]
-    fn try_copy_impl<'b>(
-        &self,
-        _: FPDF_DOCUMENT,
-        _: &'b dyn PdfiumLibraryBindings,
-    ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        Err(PdfiumError::PageObjectNotCopyable)
-    }
 }
 
 impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
@@ -177,18 +158,13 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
     }
 
     #[inline]
-    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        self.bindings.FPDFFormObj_CountObjects(self.object_handle) as PdfPageObjectIndex
+        self.bindings().FPDFFormObj_CountObjects(self.object_handle) as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object_handle = self
-            .bindings
+            .bindings()
             .FPDFFormObj_GetObject(self.object_handle, index as c_ulong);
 
         if object_handle.is_null() {
@@ -203,7 +179,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
                 *PdfPageObjectPrivate::ownership(self),
-                PdfPageObjectsPrivate::bindings(self),
+                PdfiumLibraryBindingsAccessor::bindings(self),
             ))
         }
     }
@@ -256,3 +232,11 @@ impl<'a> Drop for PdfPageXObjectFormObject<'a> {
         self.drop_impl();
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageXObjectFormObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageXObjectFormObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageXObjectFormObject<'a> {}

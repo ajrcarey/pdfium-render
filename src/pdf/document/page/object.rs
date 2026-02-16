@@ -11,10 +11,10 @@ pub(crate) mod unsupported;
 pub(crate) mod x_object_form;
 
 use crate::bindgen::{
-    FPDF_DOCUMENT, FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND,
-    FPDF_LINEJOIN_BEVEL, FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGEOBJECT,
-    FPDF_PAGEOBJ_FORM, FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING,
-    FPDF_PAGEOBJ_TEXT, FPDF_PAGEOBJ_UNKNOWN,
+    FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND, FPDF_LINEJOIN_BEVEL,
+    FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND, FPDF_PAGEOBJECT, FPDF_PAGEOBJ_FORM,
+    FPDF_PAGEOBJ_IMAGE, FPDF_PAGEOBJ_PATH, FPDF_PAGEOBJ_SHADING, FPDF_PAGEOBJ_TEXT,
+    FPDF_PAGEOBJ_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
@@ -31,7 +31,6 @@ use crate::pdf::document::page::object::unsupported::PdfPageUnsupportedObject;
 use crate::pdf::document::page::object::x_object_form::PdfPageXObjectFormObject;
 use crate::pdf::document::page::objects::PdfPageObjects;
 use crate::pdf::document::page::{PdfPage, PdfPageObjectOwnership};
-use crate::pdf::document::PdfDocument;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::path::clip_path::PdfClipPath;
 use crate::pdf::points::PdfPoints;
@@ -332,28 +331,22 @@ impl<'a> PdfPageObject<'a> {
             .unwrap_or(PdfPageObjectType::Unsupported)
         {
             PdfPageObjectType::Unsupported => PdfPageObject::Unsupported(
-                PdfPageUnsupportedObject::from_pdfium(object_handle, ownership, bindings),
+                PdfPageUnsupportedObject::from_pdfium(object_handle, ownership),
             ),
-            PdfPageObjectType::Text => PdfPageObject::Text(PdfPageTextObject::from_pdfium(
-                object_handle,
-                ownership,
-                bindings,
-            )),
-            PdfPageObjectType::Path => PdfPageObject::Path(PdfPagePathObject::from_pdfium(
-                object_handle,
-                ownership,
-                bindings,
-            )),
-            PdfPageObjectType::Image => PdfPageObject::Image(PdfPageImageObject::from_pdfium(
-                object_handle,
-                ownership,
-                bindings,
-            )),
-            PdfPageObjectType::Shading => PdfPageObject::Shading(
-                PdfPageShadingObject::from_pdfium(object_handle, ownership, bindings),
-            ),
+            PdfPageObjectType::Text => {
+                PdfPageObject::Text(PdfPageTextObject::from_pdfium(object_handle, ownership))
+            }
+            PdfPageObjectType::Path => {
+                PdfPageObject::Path(PdfPagePathObject::from_pdfium(object_handle, ownership))
+            }
+            PdfPageObjectType::Image => {
+                PdfPageObject::Image(PdfPageImageObject::from_pdfium(object_handle, ownership))
+            }
+            PdfPageObjectType::Shading => {
+                PdfPageObject::Shading(PdfPageShadingObject::from_pdfium(object_handle, ownership))
+            }
             PdfPageObjectType::XObjectForm => PdfPageObject::XObjectForm(
-                PdfPageXObjectFormObject::from_pdfium(object_handle, ownership, bindings),
+                PdfPageXObjectFormObject::from_pdfium(object_handle, ownership),
             ),
         }
     }
@@ -533,7 +526,6 @@ impl<'a> PdfPageObject<'a> {
         return Some(PdfClipPath::from_pdfium(
             path_handle,
             self.ownership().clone(),
-            self.bindings(),
         ));
     }
 
@@ -641,6 +633,14 @@ impl<'a> PdfPageObject<'a> {
     // The get_matrix_impl() function required by the create_transform_getters!() macro
     // is provided by the PdfPageObjectPrivate trait.
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageObject<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageObject<'a> {}
 
 /// Functionality common to all [PdfPageObject] objects, regardless of their [PdfPageObjectType].
 pub trait PdfPageObjectCommon<'a> {
@@ -807,58 +807,6 @@ pub trait PdfPageObjectCommon<'a> {
     /// `chromium/5772` (May 2023). Versions of Pdfium older than this can load and render
     /// dash patterns, but will not save dash patterns to PDF files.
     fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError>;
-
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function has been retired in favour of the PdfPageObject::copy_to_page() function."
-    )]
-    /// Returns `true` if this [PdfPageObject] can be successfully copied by calling its
-    /// `try_copy()` function.
-    ///
-    /// Not all page objects can be successfully copied. The following restrictions apply:
-    ///
-    /// * For path objects, it is not possible to copy a path object that contains a Bézier path
-    ///   segment, because Pdfium does not currently provide any way to retrieve the control points of a
-    ///   Bézier curve of an existing path object.
-    /// * For text objects, the font used by the object must be present in the destination document,
-    ///   or text rendering behaviour will be unpredictable. While text objects refer to fonts,
-    ///   font data is embedded into documents separately from text objects.
-    /// * For image objects, Pdfium allows iterating over the list of image filters applied
-    ///   to an image object, but currently provides no way to set a new object's image filters.
-    ///   As a result, it is not possible to copy an image object that has any image filters applied.
-    ///
-    /// Pdfium currently allows setting the blend mode for a page object, but provides no way
-    /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
-    /// original object will not be transferred to the copy.
-    fn is_copyable(&self) -> bool;
-
-    #[deprecated(
-        since = "0.8.32",
-        note = "This function has been retired in favour of the PdfPageObject::copy_to_page() function."
-    )]
-    /// Attempts to copy this [PdfPageObject] by creating a new page object and copying across
-    /// all the properties of this [PdfPageObject] to the new page object.
-    ///
-    /// Not all page objects can be successfully copied. The following restrictions apply:
-    ///
-    /// * For path objects, it is not possible to copy a path object that contains a Bézier path
-    ///   segment, because Pdfium does not currently provide any way to retrieve the control points of a
-    ///   Bézier curve of an existing path object.
-    /// * For text objects, the font used by the object must be present in the destination document,
-    ///   or text rendering behaviour will be unpredictable. While text objects refer to fonts,
-    ///   font data is embedded into documents separately from text objects.
-    /// * For image objects, Pdfium allows iterating over the list of image filters applied
-    ///   to an image object, but currently provides no way to set a new object's image filters.
-    ///   As a result, it is not possible to copy an image object that has any image filters applied.
-    ///
-    /// Pdfium currently allows setting the blend mode for a page object, but provides no way
-    /// to retrieve an object's current blend mode. As a result, the blend mode setting of the
-    /// original object will not be transferred to the copy.
-    ///
-    /// The returned page object will be detached from any existing [PdfPage]. Its lifetime
-    /// will be bound to the lifetime of the given destination [PdfDocument].
-    fn try_copy<'b>(&self, document: &'b PdfDocument<'b>)
-        -> Result<PdfPageObject<'b>, PdfiumError>;
 
     /// Copies this [PdfPageObject] object into a new [PdfPageXObjectFormObject], then adds
     /// the new form object to the page objects collection of the given [PdfPage],
@@ -1158,19 +1106,6 @@ where
     }
 
     #[inline]
-    fn is_copyable(&self) -> bool {
-        self.is_copyable_impl()
-    }
-
-    #[inline]
-    fn try_copy<'b>(
-        &self,
-        document: &'b PdfDocument<'b>,
-    ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        self.try_copy_impl(document.handle(), document.bindings())
-    }
-
-    #[inline]
     fn copy_to_page<'b>(
         &mut self,
         page: &mut PdfPage<'b>,
@@ -1234,11 +1169,6 @@ where
 
 impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.unwrap_as_trait().bindings()
-    }
-
-    #[inline]
     fn object_handle(&self) -> FPDF_PAGEOBJECT {
         self.unwrap_as_trait().object_handle()
     }
@@ -1286,20 +1216,6 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
     #[inline]
     fn remove_object_from_annotation(&mut self) -> Result<(), PdfiumError> {
         self.unwrap_as_trait_mut().remove_object_from_annotation()
-    }
-
-    #[inline]
-    fn is_copyable_impl(&self) -> bool {
-        self.unwrap_as_trait().is_copyable_impl()
-    }
-
-    #[inline]
-    fn try_copy_impl<'b>(
-        &self,
-        document: FPDF_DOCUMENT,
-        bindings: &'b dyn PdfiumLibraryBindings,
-    ) -> Result<PdfPageObject<'b>, PdfiumError> {
-        self.unwrap_as_trait().try_copy_impl(document, bindings)
     }
 
     #[inline]

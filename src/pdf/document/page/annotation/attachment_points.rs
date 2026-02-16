@@ -3,9 +3,10 @@
 //! `PdfPageObject` objects on a `PdfPage`.
 
 use crate::bindgen::FPDF_ANNOTATION;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::quad_points::PdfQuadPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 use std::ops::{Range, RangeInclusive};
 
 /// The zero-based index of a single attachment point inside its containing
@@ -16,28 +17,25 @@ pub type PdfPageAnnotationAttachmentPointIndex = usize;
 /// to one or more `PdfPageObject` objects on a `PdfPage`.
 pub struct PdfPageAnnotationAttachmentPoints<'a> {
     annotation_handle: FPDF_ANNOTATION,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(annotation_handle: FPDF_ANNOTATION) -> Self {
         PdfPageAnnotationAttachmentPoints {
             annotation_handle,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
     /// Returns the number of attachment points in this [PdfPageAnnotationAttachmentPoints] collection.
     pub fn len(&self) -> PdfPageAnnotationAttachmentPointIndex {
-        if self.bindings.is_true(
-            self.bindings
+        if self.bindings().is_true(
+            self.bindings()
                 .FPDFAnnot_HasAttachmentPoints(self.annotation_handle),
         ) {
-            self.bindings
+            self.bindings()
                 .FPDFAnnot_CountAttachmentPoints(self.annotation_handle)
                 as PdfPageAnnotationAttachmentPointIndex
         } else {
@@ -84,8 +82,8 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         let mut result = PdfQuadPoints::ZERO.as_pdfium();
 
         if self
-            .bindings
-            .is_true(self.bindings.FPDFAnnot_GetAttachmentPoints(
+            .bindings()
+            .is_true(self.bindings().FPDFAnnot_GetAttachmentPoints(
                 self.annotation_handle,
                 index,
                 &mut result,
@@ -129,8 +127,8 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         attachment_point: PdfQuadPoints,
     ) -> Result<(), PdfiumError> {
         if self
-            .bindings
-            .is_true(self.bindings.FPDFAnnot_AppendAttachmentPoints(
+            .bindings()
+            .is_true(self.bindings().FPDFAnnot_AppendAttachmentPoints(
                 self.annotation_handle,
                 &attachment_point.as_pdfium(),
             ))
@@ -151,8 +149,8 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         attachment_point: PdfQuadPoints,
     ) -> Result<(), PdfiumError> {
         if self
-            .bindings
-            .is_true(self.bindings.FPDFAnnot_SetAttachmentPoints(
+            .bindings()
+            .is_true(self.bindings().FPDFAnnot_SetAttachmentPoints(
                 self.annotation_handle,
                 index,
                 &attachment_point.as_pdfium(),
@@ -172,6 +170,14 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         PdfPageAnnotationAttachmentPointsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageAnnotationAttachmentPoints<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageAnnotationAttachmentPoints<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageAnnotationAttachmentPoints<'a> {}
 
 /// An iterator over all the attachment points in a [PdfPageAnnotationAttachmentPoints] collection.
 pub struct PdfPageAnnotationAttachmentPointsIterator<'a> {

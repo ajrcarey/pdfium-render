@@ -9,9 +9,14 @@ use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotation
 use crate::pdf::document::page::field::PdfFormField;
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivate;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
-use crate::pdf::document::page::annotation::{PdfPageAnnotation, PdfPageAnnotationType};
+use {
+    crate::pdf::document::page::annotation::PdfPageAnnotation,
+    crate::pdf::document::page::annotation::PdfPageAnnotationType,
+};
 
 /// A single [PdfPageAnnotation] of type [PdfPageAnnotationType::XfaWidget].
 ///
@@ -22,7 +27,7 @@ pub struct PdfPageXfaWidgetAnnotation<'a> {
     objects: PdfPageAnnotationObjects<'a>,
     attachment_points: PdfPageAnnotationAttachmentPoints<'a>,
     form_field: Option<PdfFormField<'a>>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfPageXfaWidgetAnnotation<'a> {
@@ -39,16 +44,12 @@ impl<'a> PdfPageXfaWidgetAnnotation<'a> {
                 document_handle,
                 page_handle,
                 annotation_handle,
-                bindings,
             ),
-            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(
-                annotation_handle,
-                bindings,
-            ),
+            attachment_points: PdfPageAnnotationAttachmentPoints::from_pdfium(annotation_handle),
             form_field: form_handle.and_then(|form_handle| {
                 PdfFormField::from_pdfium(form_handle, annotation_handle, bindings)
             }),
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -79,11 +80,6 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageXfaWidgetAnnotation<'a> {
     }
 
     #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
-    #[inline]
     fn objects_impl(&self) -> &PdfPageAnnotationObjects<'_> {
         &self.objects
     }
@@ -93,3 +89,11 @@ impl<'a> PdfPageAnnotationPrivate<'a> for PdfPageXfaWidgetAnnotation<'a> {
         &self.attachment_points
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageXfaWidgetAnnotation<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageXfaWidgetAnnotation<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageXfaWidgetAnnotation<'a> {}

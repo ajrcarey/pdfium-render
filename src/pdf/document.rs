@@ -36,6 +36,7 @@ use std::io::Write;
 #[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
 
+use std::marker::PhantomData;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
 
@@ -169,6 +170,8 @@ pub struct PdfDocument<'a> {
     #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     // This field is never used when compiling to WASM.
     file_access_reader: Option<Box<FpdfFileAccessExt<'a>>>,
+
+    lifetime: PhantomData<&'a FPDF_DOCUMENT>,
 }
 
 impl<'a> PdfDocument<'a> {
@@ -188,13 +191,14 @@ impl<'a> PdfDocument<'a> {
             attachments: PdfAttachments::from_pdfium(handle, bindings),
             bookmarks: PdfBookmarks::from_pdfium(handle, bindings),
             form,
-            fonts: PdfFonts::from_pdfium(handle, bindings),
+            fonts: PdfFonts::from_pdfium(handle),
             metadata: PdfMetadata::from_pdfium(handle, bindings),
             pages,
             permissions: PdfPermissions::from_pdfium(handle, bindings),
             signatures: PdfSignatures::from_pdfium(handle, bindings),
             source_byte_buffer: None,
             file_access_reader: None,
+            lifetime: PhantomData,
         }
     }
 
