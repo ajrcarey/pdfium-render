@@ -15,6 +15,9 @@ use bitflags::bitflags;
 use std::marker::PhantomData;
 use std::os::raw::{c_char, c_int};
 
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
 // The following dummy declaration is used only when running cargo doc.
 // It allows documentation of WASM-specific functionality to be included
 // in documentation generated on non-WASM targets.

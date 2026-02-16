@@ -54,6 +54,9 @@ use crate::pdf::document::page::objects::common::PdfPageObjectIndex;
 ))]
 use crate::error::PdfiumInternalError;
 
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
 /// The type of a single renderable [PdfPageObject].
 ///
 /// Note that Pdfium does not support or recognize all PDF page object types. For instance,

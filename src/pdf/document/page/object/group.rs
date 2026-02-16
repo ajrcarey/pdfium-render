@@ -30,7 +30,7 @@ use std::marker::PhantomData;
 #[cfg(doc)]
 use {
     crate::pdf::document::page::object::text::PdfPageTextObject,
-    crate::pdf::document::page::objects,
+    crate::pdf::document::page::objects::PdfPageObjects,
 };
 
 /// A group of [PdfPageObject] objects contained in the same [PdfPageObjects] collection.
@@ -38,8 +38,8 @@ use {
 /// as if they were a single object.
 ///
 /// Groups are bound to specific pages in the document. To create an empty group, use either the
-/// [PdfPageObjects::create_new_group()] function or the [PdfPageGroupObject::empty()] function.
-/// To create a populated group, use one of the [PdfPageGroupObject::new()],
+/// [PdfPageObjects::create_empty_group()] function or the [PdfPageGroupObject::empty()] function.
+/// To create a populated group, use one of the [PdfPageObjects::create_group()], [PdfPageGroupObject::new()],
 /// [PdfPageGroupObject::from_vec()], or [PdfPageGroupObject::from_slice()] functions.
 pub struct PdfPageGroupObject<'a> {
     document_handle: FPDF_DOCUMENT,

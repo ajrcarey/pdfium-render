@@ -475,8 +475,7 @@ pub(crate) mod internal {
             };
 
             if let (Some(document_handle), Some(page_handle)) = (document_handle, page_handle) {
-                let mut group =
-                    PdfPageGroupObject::from_pdfium(document_handle, page_handle);
+                let mut group = PdfPageGroupObject::from_pdfium(document_handle, page_handle);
 
                 group.push(&mut object)?;
                 group.copy_to_page(page)

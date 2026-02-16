@@ -49,6 +49,7 @@ use image_023::{DynamicImage, EncodableLayout, GenericImageView, GrayImage, Rgba
 
 #[cfg(doc)]
 use {
+    crate::pdf::document::page::object::PdfPageObject,
     crate::pdf::document::page::object::PdfPageObjectType,
     crate::pdf::document::page::objects::common::PdfPageObjectsCommon,
     crate::pdf::document::page::PdfPage,
@@ -577,7 +578,7 @@ impl<'a> PdfPageImageObject<'a> {
         let buffer = self.bindings().FPDFBitmap_GetBuffer_as_slice(handle);
 
         #[cfg(target_arch = "wasm32")]
-        let buffer_vec = self.bindings.FPDFBitmap_GetBuffer_as_vec(handle);
+        let buffer_vec = self.bindings().FPDFBitmap_GetBuffer_as_vec(handle);
         #[cfg(target_arch = "wasm32")]
         let buffer = buffer_vec.as_slice();
 

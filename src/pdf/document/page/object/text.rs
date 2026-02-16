@@ -45,6 +45,7 @@ use {
 
 #[cfg(doc)]
 use {
+    crate::pdf::document::page::object::PdfPageObject,
     crate::pdf::document::page::object::PdfPageObjectType,
     crate::pdf::document::page::objects::common::PdfPageObjectsCommon,
     crate::pdf::document::page::PdfPage,

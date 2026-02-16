@@ -558,10 +558,8 @@ impl<'a> PdfPages<'a> {
         ) -> Result<(), PdfiumError>,
     {
         for (index, page) in self.iter().enumerate() {
-            let mut group = PdfPageGroupObject::from_pdfium(
-                self.document_handle,
-                page.page_handle(),
-            );
+            let mut group =
+                PdfPageGroupObject::from_pdfium(self.document_handle, page.page_handle());
 
             watermarker(
                 &mut group,

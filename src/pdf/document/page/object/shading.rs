@@ -13,7 +13,10 @@ use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::{create_transform_getters, create_transform_setters};
 
 #[cfg(doc)]
-use {crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage};
+use {
+    crate::pdf::document::page::object::PdfPageObject,
+    crate::pdf::document::page::object::PdfPageObjectType, crate::pdf::document::page::PdfPage,
+};
 
 /// A single [PdfPageObject] of type [PdfPageObjectType::Shading].
 pub struct PdfPageShadingObject<'a> {
