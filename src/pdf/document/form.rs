@@ -5,15 +5,15 @@ use crate::bindgen::{
     FORMTYPE_ACRO_FORM, FORMTYPE_NONE, FORMTYPE_XFA_FOREGROUND, FORMTYPE_XFA_FULL, FPDF_DOCUMENT,
     FPDF_FORMFILLINFO, FPDF_FORMHANDLE,
 };
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::field::PdfFormFieldCommon;
 use crate::pdf::document::page::field::PdfFormFieldType;
 use crate::pdf::document::pages::PdfPages;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::collections::HashMap;
+use std::marker::PhantomData;
 use std::ops::DerefMut;
 use std::pin::Pin;
-use std::ptr::null_mut;
 
 #[cfg(doc)]
 use crate::pdf::document::PdfDocument;
@@ -81,24 +81,22 @@ pub struct PdfForm<'a> {
     #[allow(dead_code)]
     // The form_fill_info field is not currently used, but we expect it to be in future
     form_fill_info: Pin<Box<FPDF_FORMFILLINFO>>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+
+    lifetime: PhantomData<&'a FPDF_FORMHANDLE>,
 }
 
 impl<'a> PdfForm<'a> {
     /// Attempts to bind to an embedded form, if any, inside the document with the given
     /// document handle.
     #[inline]
-    pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Option<Self> {
+    pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT) -> Option<Self> {
         // Pdfium does not load form field data or widgets (and therefore will not
-        // render them) until a call has been made to the
-        // FPDFDOC_InitFormFillEnvironment() function. This function takes a large
-        // struct, FPDF_FORMFILLINFO, which Pdfium uses to store a variety of form
-        // configuration information - mostly callback functions that should be called
-        // when the user interacts with a form field widget. Since pdfium-render has
-        // no concept of interactivity, we can leave all these set to None.
+        // render them) until a call has been made to the FPDFDOC_InitFormFillEnvironment()
+        // function. This function takes a large struct, FPDF_FORMFILLINFO, which Pdfium
+        // uses to store a variety of form configuration information, mostly callback functions
+        // that should be invoked when the user interacts with a form field widget.
+        // Since pdfium-render has no concept of interactivity, we can leave all these
+        // set to None.
 
         // We allocate the FPDF_FORMFILLINFO struct on the heap and pin its pointer location
         // so Rust will not move it around. Pdfium retains the pointer location
@@ -107,7 +105,7 @@ impl<'a> PdfForm<'a> {
         // during drop(); if we don't pin the struct's location it may move, and the
         // call to FPDFDOC_ExitFormFillEnvironment() will segfault.
 
-        let mut form_fill_info = Box::pin(FPDF_FORMFILLINFO {
+        let form_fill_info = Box::pin(FPDF_FORMFILLINFO {
             version: 2,
             Release: None,
             FFI_Invalidate: None,
@@ -124,7 +122,7 @@ impl<'a> PdfForm<'a> {
             FFI_SetTextFieldFocus: None,
             FFI_DoURIAction: None,
             FFI_DoGoToAction: None,
-            m_pJsPlatform: null_mut(),
+            m_pJsPlatform: std::ptr::null_mut(),
             xfa_disabled: 0,
             FFI_DisplayCaret: None,
             FFI_GetCurrentPageIndex: None,
@@ -145,18 +143,21 @@ impl<'a> PdfForm<'a> {
             FFI_DoURIActionWithKeyboardModifier: None,
         });
 
-        let form_handle =
-            bindings.FPDFDOC_InitFormFillEnvironment(document_handle, form_fill_info.deref_mut());
+        let mut form = PdfForm {
+            form_handle: std::ptr::null_mut(),
+            document_handle,
+            form_fill_info,
+            lifetime: PhantomData,
+        };
+
+        let form_handle = form
+            .bindings()
+            .FPDFDOC_InitFormFillEnvironment(document_handle, form.form_fill_info.deref_mut());
 
         if !form_handle.is_null() {
             // There is a form embedded in this document, and we retrieved a valid handle to it.
 
-            let form = PdfForm {
-                form_handle,
-                document_handle,
-                form_fill_info,
-                bindings,
-            };
+            form.form_handle = form_handle;
 
             if form.form_type() != PdfFormType::None {
                 // The form is valid.
@@ -180,16 +181,10 @@ impl<'a> PdfForm<'a> {
         self.form_handle
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfForm].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     /// Returns the [PdfFormType] of this [PdfForm].
     #[inline]
     pub fn form_type(&self) -> PdfFormType {
-        PdfFormType::from_pdfium(self.bindings.FPDF_GetFormType(self.document_handle) as u32)
+        PdfFormType::from_pdfium(self.bindings().FPDF_GetFormType(self.document_handle) as u32)
             .unwrap()
     }
 
@@ -275,7 +270,15 @@ impl<'a> Drop for PdfForm<'a> {
     /// Closes this [PdfForm], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings
+        self.bindings()
             .FPDFDOC_ExitFormFillEnvironment(self.form_handle);
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfForm<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfForm<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfForm<'a> {}

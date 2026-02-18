@@ -260,7 +260,6 @@ pub(crate) mod files {
     use std::io::{Read, Seek, SeekFrom, Write};
     use std::ops::Deref;
     use std::os::raw::{c_int, c_uchar, c_ulong, c_void};
-    use std::ptr::null_mut;
     use std::slice;
 
     // These functions return wrapped versions of Pdfium's file access structs. They are used
@@ -303,7 +302,7 @@ pub(crate) mod files {
         let mut result = Box::new(FpdfFileAccessExt {
             content_length,
             get_block: Some(read_block_from_callback),
-            file_access_ptr: null_mut(), // We'll set this value in just a moment.
+            file_access_ptr: std::ptr::null_mut(), // We'll set this value in just a moment.
             reader: Box::new(reader),
         });
 

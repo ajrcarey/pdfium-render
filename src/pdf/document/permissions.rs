@@ -2,9 +2,10 @@
 //! and security handlers set for a single `PdfDocument`.
 
 use crate::bindgen::FPDF_DOCUMENT;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use bitflags::bitflags;
+use std::marker::PhantomData;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
@@ -55,25 +56,16 @@ impl PdfSecurityHandlerRevision {
 /// a document.
 pub struct PdfPermissions<'a> {
     document_handle: FPDF_DOCUMENT,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_DOCUMENT>,
 }
 
 impl<'a> PdfPermissions<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT) -> Self {
         Self {
             document_handle,
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPermissions] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the raw permissions bitflags for the containing [PdfDocument].
@@ -232,3 +224,11 @@ impl<'a> PdfPermissions<'a> {
         Ok(result)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPermissions<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPermissions<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPermissions<'a> {}

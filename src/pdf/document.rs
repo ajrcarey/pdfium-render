@@ -180,7 +180,7 @@ impl<'a> PdfDocument<'a> {
         handle: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        let form = PdfForm::from_pdfium(handle, bindings);
+        let form = PdfForm::from_pdfium(handle);
 
         let pages =
             PdfPages::from_pdfium(handle, form.as_ref().map(|form| form.handle()), bindings);
@@ -189,13 +189,13 @@ impl<'a> PdfDocument<'a> {
             handle,
             output_version: None,
             attachments: PdfAttachments::from_pdfium(handle, bindings),
-            bookmarks: PdfBookmarks::from_pdfium(handle, bindings),
+            bookmarks: PdfBookmarks::from_pdfium(handle),
             form,
             fonts: PdfFonts::from_pdfium(handle),
-            metadata: PdfMetadata::from_pdfium(handle, bindings),
+            metadata: PdfMetadata::from_pdfium(handle),
             pages,
-            permissions: PdfPermissions::from_pdfium(handle, bindings),
-            signatures: PdfSignatures::from_pdfium(handle, bindings),
+            permissions: PdfPermissions::from_pdfium(handle),
+            signatures: PdfSignatures::from_pdfium(handle),
             source_byte_buffer: None,
             file_access_reader: None,
             lifetime: PhantomData,
