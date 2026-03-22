@@ -174,8 +174,23 @@ fn build_bindings_for_one_pdfium_release(release: &str) -> Result<(), BuildError
 }
 
 #[cfg(feature = "static")]
+fn get_env_for_target(base_name: &str) -> Option<String> {
+    // Try target-specific env var first (e.g., PDFIUM_STATIC_LIB_PATH_aarch64_apple_darwin),
+    // then fall back to the generic one (e.g., PDFIUM_STATIC_LIB_PATH).
+    let target = std::env::var("TARGET").unwrap_or_default();
+    let target_env_name = format!("{}_{}", base_name, target.replace('-', "_"));
+
+    println!("cargo:rerun-if-env-changed={}", target_env_name);
+    println!("cargo:rerun-if-env-changed={}", base_name);
+
+    std::env::var(&target_env_name)
+        .ok()
+        .or_else(|| std::env::var(base_name).ok())
+}
+
+#[cfg(feature = "static")]
 fn statically_link_pdfium() {
-    if let Ok(path) = std::env::var("PDFIUM_STATIC_LIB_PATH") {
+    if let Some(path) = get_env_for_target("PDFIUM_STATIC_LIB_PATH") {
         // Instruct cargo to statically link the given library during the build.
 
         println!("cargo:rustc-link-lib=static=pdfium");

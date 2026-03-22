@@ -160,6 +160,18 @@ To link to a statically-built library, set the path to the directory containing 
 
 These two environment variables save you writing a custom `build.rs` yourself. If you have your own build pipeline that links Pdfium statically into your executable, simply leave these environment variables unset.
 
+`PDFIUM_STATIC_LIB_PATH` also supports per-target configuration by appending the target triple with underscores. For example, when cross-compiling for multiple targets:
+
+```rust
+    PDFIUM_STATIC_LIB_PATH_aarch64_apple_darwin="/path/to/arm64/pdfium" \
+    PDFIUM_STATIC_LIB_PATH_x86_64_apple_darwin="/path/to/x64/pdfium" \
+    cargo build --target aarch64-apple-darwin
+```
+
+The target-specific variable takes precedence over the generic one, allowing you to set a default path with `PDFIUM_STATIC_LIB_PATH` and override it for specific targets.
+
+Note that per-target configuration is not supported for `PDFIUM_DYNAMIC_LIB_PATH` since dynamic libraries are resolved at runtime on the target system, not at compile time.
+
 Note that the path you set in either `PDFIUM_DYNAMIC_LIB_PATH` or `PDFIUM_STATIC_LIB_PATH` should not include the filename of the library itself; it should just be the path of the containing directory. You must make sure your library is named in the appropriate way for your target platform (`libpdfium.so` or `libpdfium.a` on Linux and macOS, for example) in order for the Rust compiler to locate it.
 
 Depending on how your Pdfium library was built, you may need to also link against a C++ standard library. To link against the GNU C++ standard library (`libstdc++`), use the optional `libstdc++` feature. `pdfium-render` will pass the following additional flag to `cargo`:
