@@ -100,7 +100,7 @@ impl<'a> PdfPages<'a> {
 
     /// Returns the number of pages in this [PdfPages] collection.
     pub fn len(&self) -> PdfPageIndex {
-        self.bindings.FPDF_GetPageCount(self.document_handle) as PdfPageIndex
+        (unsafe { self.bindings.FPDF_GetPageCount(self.document_handle) }) as PdfPageIndex
     }
 
     /// Returns `true` if this [PdfPages] collection is empty.
@@ -131,9 +131,10 @@ impl<'a> PdfPages<'a> {
             return Err(PdfiumError::PageIndexOutOfBounds);
         }
 
-        let page_handle = self
-            .bindings
-            .FPDF_LoadPage(self.document_handle, index as c_int);
+        let page_handle = unsafe {
+            self.bindings
+                .FPDF_LoadPage(self.document_handle, index as c_int)
+        };
 
         let result = self.pdfium_page_handle_to_result(index, page_handle);
 
@@ -162,14 +163,10 @@ impl<'a> PdfPages<'a> {
             height: 0.0,
         };
 
-        if self
-            .bindings
-            .is_true(self.bindings.FPDF_GetPageSizeByIndexF(
-                self.document_handle,
-                index.into(),
-                &mut size,
-            ))
-        {
+        if self.bindings.is_true(unsafe {
+            self.bindings
+                .FPDF_GetPageSizeByIndexF(self.document_handle, index.into(), &mut size)
+        }) {
             Ok(PdfRect::new(
                 PdfPoints::ZERO,
                 PdfPoints::ZERO,
@@ -242,15 +239,14 @@ impl<'a> PdfPages<'a> {
         size: PdfPagePaperSize,
         index: PdfPageIndex,
     ) -> Result<PdfPage<'a>, PdfiumError> {
-        let result = self.pdfium_page_handle_to_result(
-            index,
+        let result = self.pdfium_page_handle_to_result(index, unsafe {
             self.bindings.FPDFPage_New(
                 self.document_handle,
                 index as c_int,
                 size.width().value as c_double,
                 size.height().value as c_double,
-            ),
-        );
+            )
+        });
 
         if let Ok(page) = result.as_ref() {
             PdfPageIndexCache::insert_pages_at_index(self.document_handle, index, 1);
@@ -313,15 +309,14 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
-        let destination_page_count_before_import = bindings.FPDF_GetPageCount(destination);
+        let destination_page_count_before_import =
+            unsafe { bindings.FPDF_GetPageCount(destination) };
 
-        if bindings.is_true(bindings.FPDF_ImportPages(
-            destination,
-            source,
-            pages,
-            destination_page_index as c_int,
-        )) {
-            let destination_page_count_after_import = bindings.FPDF_GetPageCount(destination);
+        if bindings.is_true(unsafe {
+            bindings.FPDF_ImportPages(destination, source, pages, destination_page_index as c_int)
+        }) {
+            let destination_page_count_after_import =
+                unsafe { bindings.FPDF_GetPageCount(destination) };
 
             PdfPageIndexCache::insert_pages_at_index(
                 destination,
@@ -369,12 +364,14 @@ impl<'a> PdfPages<'a> {
         let no_of_pages_to_import =
             (source_page_range.end() - source_page_range.start() + 1) as PdfPageIndex;
 
-        if bindings.is_true(bindings.FPDF_ImportPagesByIndex_vec(
-            destination,
-            source,
-            source_page_range.map(|index| index).collect::<Vec<_>>(),
-            destination_page_index,
-        )) {
+        if bindings.is_true(unsafe {
+            bindings.FPDF_ImportPagesByIndex_vec(
+                destination,
+                source,
+                source_page_range.map(|index| index).collect::<Vec<_>>(),
+                destination_page_index,
+            )
+        }) {
             PdfPageIndexCache::insert_pages_at_index(
                 destination,
                 destination_page_index,
@@ -421,13 +418,15 @@ impl<'a> PdfPages<'a> {
         columns_per_row: u8,
         size: PdfPagePaperSize,
     ) -> Result<PdfDocument<'_>, PdfiumError> {
-        let handle = self.bindings.FPDF_ImportNPagesToOne(
-            self.document_handle,
-            size.width().value,
-            size.height().value,
-            columns_per_row as size_t,
-            rows_per_page as size_t,
-        );
+        let handle = unsafe {
+            self.bindings.FPDF_ImportNPagesToOne(
+                self.document_handle,
+                size.width().value,
+                size.height().value,
+                columns_per_row as size_t,
+                rows_per_page as size_t,
+            )
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -466,12 +465,14 @@ impl<'a> PdfPages<'a> {
                 // length and call FPDF_GetPageLabel() again with a pointer to the buffer;
                 // this will write the label text to the buffer in UTF16LE format.
 
-                let buffer_length = self.bindings.FPDF_GetPageLabel(
-                    self.document_handle,
-                    index as c_int,
-                    std::ptr::null_mut(),
-                    0,
-                );
+                let buffer_length = unsafe {
+                    self.bindings.FPDF_GetPageLabel(
+                        self.document_handle,
+                        index as c_int,
+                        std::ptr::null_mut(),
+                        0,
+                    )
+                };
 
                 if buffer_length == 0 {
                     // The label is not present.
@@ -480,12 +481,14 @@ impl<'a> PdfPages<'a> {
                 } else {
                     let mut buffer = create_byte_buffer(buffer_length as usize);
 
-                    let result = self.bindings.FPDF_GetPageLabel(
-                        self.document_handle,
-                        index as c_int,
-                        buffer.as_mut_ptr() as *mut c_void,
-                        buffer_length,
-                    );
+                    let result = unsafe {
+                        self.bindings.FPDF_GetPageLabel(
+                            self.document_handle,
+                            index as c_int,
+                            buffer.as_mut_ptr() as *mut c_void,
+                            buffer_length,
+                        )
+                    };
 
                     debug_assert_eq!(result, buffer_length);
 
@@ -505,7 +508,7 @@ impl<'a> PdfPages<'a> {
 
     /// Returns the [PdfPageMode] setting embedded in the containing [PdfDocument].
     pub fn page_mode(&self) -> PdfPageMode {
-        PdfPageMode::from_pdfium(self.bindings.FPDFDoc_GetPageMode(self.document_handle))
+        PdfPageMode::from_pdfium(unsafe { self.bindings.FPDFDoc_GetPageMode(self.document_handle) })
             .unwrap_or(PdfPageMode::UnsetOrUnknown)
     }
 
@@ -535,7 +538,7 @@ impl<'a> PdfPages<'a> {
     ///             let mut page_number = PdfPageTextObject::new(
     ///                 &document,
     ///                 format!("Page {}", index + 1),
-    ///                 &PdfFont::helvetica(&document),
+    ///                 document.fonts().helvetica(),
     ///                 PdfPoints::new(14.0),
     ///             )?;
     ///

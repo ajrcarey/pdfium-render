@@ -276,12 +276,15 @@ impl<'a> PdfPageGroupObject<'a> {
         // may be vertically reflected and translated. Attempt to mitigate this.
         // For more details, see: https://github.com/ajrcarey/pdfium-render/issues/60
 
-        let page_height = PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.page_handle()));
+        let page_height =
+            PdfPoints::new(unsafe { self.bindings().FPDF_GetPageHeightF(self.page_handle()) });
 
-        for index in 0..self.bindings().FPDFPage_CountObjects(self.page_handle()) {
+        for index in 0..(unsafe { self.bindings().FPDFPage_CountObjects(self.page_handle()) }) {
             let mut object = PdfPageObject::from_pdfium(
-                self.bindings()
-                    .FPDFPage_GetObject(self.page_handle(), index),
+                unsafe {
+                    self.bindings()
+                        .FPDFPage_GetObject(self.page_handle(), index)
+                },
                 *self.ownership(),
                 self.bindings(),
             );
@@ -417,8 +420,8 @@ impl<'a> PdfPageGroupObject<'a> {
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         self.copy_into_x_object_form_object_from_handles(
             destination.handle(),
-            PdfPoints::new(self.bindings().FPDF_GetPageWidthF(self.page_handle())),
-            PdfPoints::new(self.bindings().FPDF_GetPageHeightF(self.page_handle())),
+            PdfPoints::new(unsafe { self.bindings().FPDF_GetPageWidthF(self.page_handle()) }),
+            PdfPoints::new(unsafe { self.bindings().FPDF_GetPageHeightF(self.page_handle()) }),
         )
     }
 
@@ -437,14 +440,16 @@ impl<'a> PdfPageGroupObject<'a> {
 
         // First, create a new temporary page in the source document...
 
-        let tmp_page_index = self.bindings().FPDF_GetPageCount(src_doc_handle);
+        let tmp_page_index = unsafe { self.bindings().FPDF_GetPageCount(src_doc_handle) };
 
-        let tmp_page = self.bindings().FPDFPage_New(
-            src_doc_handle,
-            tmp_page_index,
-            destination_page_width.value as c_double,
-            destination_page_height.value as c_double,
-        );
+        let tmp_page = unsafe {
+            self.bindings().FPDFPage_New(
+                src_doc_handle,
+                tmp_page_index,
+                destination_page_width.value as c_double,
+                destination_page_height.value as c_double,
+            )
+        };
 
         PdfPageIndexCache::cache_props_for_page(
             src_doc_handle,
@@ -474,13 +479,15 @@ impl<'a> PdfPageGroupObject<'a> {
 
         // ... create the form object from the temporary page...
 
-        let x_object = self.bindings().FPDF_NewXObjectFromPage(
-            destination_document_handle,
-            src_doc_handle,
-            tmp_page_index,
-        );
+        let x_object = unsafe {
+            self.bindings().FPDF_NewXObjectFromPage(
+                destination_document_handle,
+                src_doc_handle,
+                tmp_page_index,
+            )
+        };
 
-        let object_handle = self.bindings().FPDF_NewFormObjectFromXObject(x_object);
+        let object_handle = unsafe { self.bindings().FPDF_NewFormObjectFromXObject(x_object) };
         if object_handle.is_null() {
             return Err(PdfiumError::PdfiumLibraryInternalError(
                 crate::error::PdfiumInternalError::Unknown,
@@ -492,7 +499,9 @@ impl<'a> PdfPageGroupObject<'a> {
             PdfPageObjectOwnership::owned_by_document(destination_document_handle),
         );
 
-        self.bindings().FPDF_CloseXObject(x_object);
+        unsafe {
+            self.bindings().FPDF_CloseXObject(x_object);
+        }
 
         // ... and move objects on the temporary page back to their original locations.
 
@@ -517,8 +526,11 @@ impl<'a> PdfPageGroupObject<'a> {
         PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
 
         PdfPageIndexCache::remove_index_for_page(src_doc_handle, tmp_page);
-        self.bindings()
-            .FPDFPage_Delete(src_doc_handle, tmp_page_index);
+
+        unsafe {
+            self.bindings()
+                .FPDFPage_Delete(src_doc_handle, tmp_page_index);
+        }
 
         Ok(PdfPageObject::XObjectForm(object))
     }

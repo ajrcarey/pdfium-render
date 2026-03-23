@@ -140,9 +140,10 @@ impl<'a> PdfMetadata<'a> {
         // length and call FPDF_GetMetaText() again with a pointer to the buffer;
         // this will write the metadata text to the buffer in UTF16-LE format.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings()
-                .FPDF_GetMetaText(self.document_handle, tag, std::ptr::null_mut(), 0);
+                .FPDF_GetMetaText(self.document_handle, tag, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // The tag is not present.
@@ -152,12 +153,14 @@ impl<'a> PdfMetadata<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDF_GetMetaText(
-            self.document_handle,
-            tag,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDF_GetMetaText(
+                self.document_handle,
+                tag,
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 

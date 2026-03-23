@@ -96,9 +96,10 @@ impl<'a> PdfBookmark<'a> {
         // length and call FPDFBookmark_GetTitle() again with a pointer to the buffer;
         // this will write the bookmark title to the buffer in UTF16-LE format.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings()
-                .FPDFBookmark_GetTitle(self.bookmark_handle, std::ptr::null_mut(), 0);
+                .FPDFBookmark_GetTitle(self.bookmark_handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // No title is defined.
@@ -108,11 +109,13 @@ impl<'a> PdfBookmark<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDFBookmark_GetTitle(
-            self.bookmark_handle,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFBookmark_GetTitle(
+                self.bookmark_handle,
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -126,7 +129,7 @@ impl<'a> PdfBookmark<'a> {
     /// of type [PdfActionType::GoToDestinationInSameDocument], but the PDF file format supports
     /// a variety of other actions.
     pub fn action(&self) -> Option<PdfAction<'a>> {
-        let handle = self.bindings().FPDFBookmark_GetAction(self.bookmark_handle);
+        let handle = unsafe { self.bindings().FPDFBookmark_GetAction(self.bookmark_handle) };
 
         if handle.is_null() {
             None
@@ -144,9 +147,10 @@ impl<'a> PdfBookmark<'a> {
     /// The destination specifies the page and region, if any, that will be the target
     /// of the action behaviour specified by [PdfBookmark::action()].
     pub fn destination(&self) -> Option<PdfDestination<'a>> {
-        let handle = self
-            .bindings()
-            .FPDFBookmark_GetDest(self.document_handle, self.bookmark_handle);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFBookmark_GetDest(self.document_handle, self.bookmark_handle)
+        };
 
         if handle.is_null() {
             None
@@ -173,16 +177,19 @@ impl<'a> PdfBookmark<'a> {
         // If there are N child bookmarks, then FPDFBookmark_GetCount returns a
         // N if the bookmark tree should be displayed open by default, and -N if
         // the child tree should be displayed closed by deafult.
-        self.bindings()
-            .FPDFBookmark_GetCount(self.bookmark_handle)
-            .unsigned_abs() as usize
+        (unsafe {
+            self.bindings()
+                .FPDFBookmark_GetCount(self.bookmark_handle)
+                .unsigned_abs()
+        }) as usize
     }
 
     /// Returns the first child [PdfBookmark] of this [PdfBookmark], if any.
     pub fn first_child(&self) -> Option<PdfBookmark<'a>> {
-        let handle = self
-            .bindings()
-            .FPDFBookmark_GetFirstChild(self.document_handle, self.bookmark_handle);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFBookmark_GetFirstChild(self.document_handle, self.bookmark_handle)
+        };
 
         if handle.is_null() {
             None
@@ -197,9 +204,10 @@ impl<'a> PdfBookmark<'a> {
 
     /// Returns the next [PdfBookmark] at the same tree level as this [PdfBookmark], if any.
     pub fn next_sibling(&self) -> Option<PdfBookmark<'a>> {
-        let handle = self
-            .bindings()
-            .FPDFBookmark_GetNextSibling(self.document_handle, self.bookmark_handle);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFBookmark_GetNextSibling(self.document_handle, self.bookmark_handle)
+        };
 
         if handle.is_null() {
             None

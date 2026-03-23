@@ -42,9 +42,10 @@ impl<'a> PdfFormFieldOptions<'a> {
 
     /// Returns the number of options in this [PdfFormFieldOptions] collection.
     pub fn len(&self) -> PdfFormFieldOptionIndex {
-        let result = self
-            .bindings
-            .FPDFAnnot_GetOptionCount(self.form_handle, self.annotation_handle);
+        let result = unsafe {
+            self.bindings
+                .FPDFAnnot_GetOptionCount(self.form_handle, self.annotation_handle)
+        };
 
         if result == -1 {
             0
@@ -90,13 +91,15 @@ impl<'a> PdfFormFieldOptions<'a> {
         // length and call FPDFAnnot_GetOptionLabel() again with a pointer to the buffer;
         // this will write the option label to the buffer in UTF16LE format.
 
-        let buffer_length = self.bindings().FPDFAnnot_GetOptionLabel(
-            self.form_handle,
-            self.annotation_handle,
-            index as c_int,
-            std::ptr::null_mut(),
-            0,
-        );
+        let buffer_length = unsafe {
+            self.bindings().FPDFAnnot_GetOptionLabel(
+                self.form_handle,
+                self.annotation_handle,
+                index as c_int,
+                std::ptr::null_mut(),
+                0,
+            )
+        };
 
         let option_label = if buffer_length == 0 {
             // The field value is not present.
@@ -105,26 +108,28 @@ impl<'a> PdfFormFieldOptions<'a> {
         } else {
             let mut buffer = create_byte_buffer(buffer_length as usize);
 
-            let result = self.bindings().FPDFAnnot_GetOptionLabel(
-                self.form_handle,
-                self.annotation_handle,
-                index as c_int,
-                buffer.as_mut_ptr() as *mut FPDF_WCHAR,
-                buffer_length,
-            );
+            let result = unsafe {
+                self.bindings().FPDFAnnot_GetOptionLabel(
+                    self.form_handle,
+                    self.annotation_handle,
+                    index as c_int,
+                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                    buffer_length,
+                )
+            };
 
             debug_assert_eq!(result, buffer_length);
 
             get_string_from_pdfium_utf16le_bytes(buffer)
         };
 
-        let option_is_set = self
-            .bindings
-            .is_true(self.bindings.FPDFAnnot_IsOptionSelected(
+        let option_is_set = self.bindings.is_true(unsafe {
+            self.bindings.FPDFAnnot_IsOptionSelected(
                 self.form_handle,
                 self.annotation_handle,
                 index as c_int,
-            ));
+            )
+        });
 
         Ok(PdfFormFieldOption::new(index, option_is_set, option_label))
     }

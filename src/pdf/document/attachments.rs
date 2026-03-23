@@ -59,8 +59,10 @@ impl<'a> PdfAttachments<'a> {
 
     /// Returns the number of attachments in this [PdfAttachments] collection.
     pub fn len(&self) -> PdfAttachmentIndex {
-        self.bindings()
-            .FPDFDoc_GetAttachmentCount(self.document_handle) as PdfAttachmentIndex
+        (unsafe {
+            self.bindings()
+                .FPDFDoc_GetAttachmentCount(self.document_handle)
+        }) as PdfAttachmentIndex
     }
 
     /// Returns `true` if this [PdfAttachments] collection is empty.
@@ -92,9 +94,10 @@ impl<'a> PdfAttachments<'a> {
             return Err(PdfiumError::AttachmentIndexOutOfBounds);
         }
 
-        let handle = self
-            .bindings()
-            .FPDFDoc_GetAttachment(self.document_handle, index as c_int);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFDoc_GetAttachment(self.document_handle, index as c_int)
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -116,9 +119,10 @@ impl<'a> PdfAttachments<'a> {
         // Creating the attachment is a two step operation. First, we create the FPDF_ATTACHMENT
         // handle using the given name. Then, we add the given byte data to the FPDF_ATTACHMENT.
 
-        let handle = self
-            .bindings()
-            .FPDFDoc_AddAttachment_str(self.document_handle, name);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFDoc_AddAttachment_str(self.document_handle, name)
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -127,15 +131,14 @@ impl<'a> PdfAttachments<'a> {
         } else {
             // With the FPDF_ATTACHMENT correctly created, we can now apply the byte data to the attachment.
 
-            if self
-                .bindings()
-                .is_true(self.bindings().FPDFAttachment_SetFile(
+            if self.bindings().is_true(unsafe {
+                self.bindings().FPDFAttachment_SetFile(
                     handle,
                     self.document_handle,
                     bytes.as_ptr() as *const c_void,
                     bytes.len() as c_ulong,
-                ))
-            {
+                )
+            }) {
                 Ok(PdfAttachment::from_pdfium(handle, self.bindings))
             } else {
                 // The return value from FPDFAttachment_SetFile() indicates failure.
@@ -269,10 +272,10 @@ impl<'a> PdfAttachments<'a> {
             return Err(PdfiumError::AttachmentIndexOutOfBounds);
         }
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFDoc_DeleteAttachment(self.document_handle, index as c_int),
-        ) {
+                .FPDFDoc_DeleteAttachment(self.document_handle, index as c_int)
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(

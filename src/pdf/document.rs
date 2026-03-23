@@ -228,10 +228,10 @@ impl<'a> PdfDocument<'a> {
     pub fn version(&self) -> PdfDocumentVersion {
         let mut version = 0;
 
-        if self
-            .bindings()
-            .FPDF_GetFileVersion(self.handle, &mut version)
-            != 0
+        if unsafe {
+            self.bindings()
+                .FPDF_GetFileVersion(self.handle, &mut version)
+        } != 0
         {
             PdfDocumentVersion::from_pdfium(version)
         } else {
@@ -322,19 +322,23 @@ impl<'a> PdfDocument<'a> {
         let mut pdfium_file_writer = get_pdfium_file_writer_from_writer(writer);
 
         let result = match self.output_version {
-            Some(version) => self.bindings().FPDF_SaveWithVersion(
-                self.handle,
-                pdfium_file_writer.as_fpdf_file_write_mut_ptr(),
-                flags,
-                version
-                    .as_pdfium()
-                    .unwrap_or_else(|| PdfDocumentVersion::DEFAULT_VERSION.as_pdfium().unwrap()),
-            ),
-            None => self.bindings().FPDF_SaveAsCopy(
-                self.handle,
-                pdfium_file_writer.as_fpdf_file_write_mut_ptr(),
-                flags,
-            ),
+            Some(version) => unsafe {
+                self.bindings().FPDF_SaveWithVersion(
+                    self.handle,
+                    pdfium_file_writer.as_fpdf_file_write_mut_ptr(),
+                    flags,
+                    version.as_pdfium().unwrap_or_else(|| {
+                        PdfDocumentVersion::DEFAULT_VERSION.as_pdfium().unwrap()
+                    }),
+                )
+            },
+            None => unsafe {
+                self.bindings().FPDF_SaveAsCopy(
+                    self.handle,
+                    pdfium_file_writer.as_fpdf_file_write_mut_ptr(),
+                    flags,
+                )
+            },
         };
 
         match self.bindings().is_true(result) {
@@ -404,7 +408,9 @@ impl<'a> Drop for PdfDocument<'a> {
         // avoiding a segmentation fault when using Pdfium builds compiled with V8/XFA support.
 
         self.form = None;
-        self.bindings().FPDF_CloseDocument(self.handle);
+        unsafe {
+            self.bindings().FPDF_CloseDocument(self.handle);
+        }
     }
 }
 

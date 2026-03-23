@@ -60,8 +60,10 @@ pub(crate) mod internal {
             document_handle: FPDF_DOCUMENT,
             page_handle: FPDF_PAGE,
         ) -> Result<(), PdfiumError> {
-            self.bindings()
-                .FPDFPage_InsertObject(page_handle, self.object_handle());
+            unsafe {
+                self.bindings()
+                    .FPDFPage_InsertObject(page_handle, self.object_handle());
+            }
 
             self.set_ownership(PdfPageObjectOwnership::owned_by_page(
                 document_handle,
@@ -104,14 +106,14 @@ pub(crate) mod internal {
             page_handle: FPDF_PAGE,
             index: PdfPageObjectIndex,
         ) -> Result<(), PdfiumError> {
-            if self
-                .bindings()
-                .is_true(self.bindings().FPDFPage_InsertObjectAtIndex(
-                    page_handle,
-                    self.object_handle(),
-                    index,
-                ))
-            {
+            if unsafe {
+                self.bindings()
+                    .is_true(self.bindings().FPDFPage_InsertObjectAtIndex(
+                        page_handle,
+                        self.object_handle(),
+                        index,
+                    ))
+            } {
                 self.set_ownership(PdfPageObjectOwnership::owned_by_page(
                     document_handle,
                     page_handle,
@@ -129,10 +131,10 @@ pub(crate) mod internal {
         fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
             match self.ownership() {
                 PdfPageObjectOwnership::Page(ownership) => {
-                    if self.bindings().is_true(
+                    if self.bindings().is_true(unsafe {
                         self.bindings()
-                            .FPDFPage_RemoveObject(ownership.page_handle(), self.object_handle()),
-                    ) {
+                            .FPDFPage_RemoveObject(ownership.page_handle(), self.object_handle())
+                    }) {
                         match PdfPageIndexCache::get_content_regeneration_strategy_for_page(
                             ownership.document_handle(),
                             ownership.page_handle(),
@@ -166,13 +168,12 @@ pub(crate) mod internal {
         ) -> Result<(), PdfiumError> {
             match annotation_objects.ownership() {
                 PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
-                    if self
-                        .bindings()
-                        .is_true(self.bindings().FPDFAnnot_AppendObject(
+                    if self.bindings().is_true(unsafe {
+                        self.bindings().FPDFAnnot_AppendObject(
                             ownership.annotation_handle(),
                             self.object_handle(),
-                        ))
-                    {
+                        )
+                    }) {
                         self.set_ownership(PdfPageObjectOwnership::owned_by_attached_annotation(
                             ownership.document_handle(),
                             ownership.page_handle(),
@@ -186,13 +187,12 @@ pub(crate) mod internal {
                     }
                 }
                 PdfPageObjectOwnership::UnattachedAnnotation(ownership) => {
-                    if self
-                        .bindings()
-                        .is_true(self.bindings().FPDFAnnot_AppendObject(
+                    if self.bindings().is_true(unsafe {
+                        self.bindings().FPDFAnnot_AppendObject(
                             ownership.annotation_handle(),
                             self.object_handle(),
-                        ))
-                    {
+                        )
+                    }) {
                         self.set_ownership(PdfPageObjectOwnership::owned_by_unattached_annotation(
                             ownership.document_handle(),
                             ownership.annotation_handle(),
@@ -217,10 +217,10 @@ pub(crate) mod internal {
                     if let Some(index) =
                         self.get_index_for_annotation(ownership.annotation_handle())
                     {
-                        if self.bindings().is_true(
+                        if self.bindings().is_true(unsafe {
                             self.bindings()
-                                .FPDFAnnot_RemoveObject(ownership.annotation_handle(), index),
-                        ) {
+                                .FPDFAnnot_RemoveObject(ownership.annotation_handle(), index)
+                        }) {
                             match PdfPageIndexCache::get_content_regeneration_strategy_for_page(
                                 ownership.document_handle(),
                                 ownership.page_handle(),
@@ -252,10 +252,10 @@ pub(crate) mod internal {
                     if let Some(index) =
                         self.get_index_for_annotation(ownership.annotation_handle())
                     {
-                        if self.bindings().is_true(
+                        if self.bindings().is_true(unsafe {
                             self.bindings()
-                                .FPDFAnnot_RemoveObject(ownership.annotation_handle(), index),
-                        ) {
+                                .FPDFAnnot_RemoveObject(ownership.annotation_handle(), index)
+                        }) {
                             self.set_ownership(PdfPageObjectOwnership::unowned());
                             self.regenerate_content_after_mutation()
                         } else {
@@ -279,8 +279,9 @@ pub(crate) mod internal {
         fn get_index_for_annotation(&self, annotation_handle: FPDF_ANNOTATION) -> Option<i32> {
             let mut result = None;
 
-            for i in 0..self.bindings().FPDFAnnot_GetObjectCount(annotation_handle) {
-                if self.object_handle() == self.bindings().FPDFAnnot_GetObject(annotation_handle, i)
+            for i in 0..(unsafe { self.bindings().FPDFAnnot_GetObjectCount(annotation_handle) }) {
+                if self.object_handle()
+                    == unsafe { self.bindings().FPDFAnnot_GetObject(annotation_handle, i) }
                 {
                     result = Some(i);
 
@@ -295,23 +296,25 @@ pub(crate) mod internal {
         fn has_transparency_impl(&self) -> bool {
             let bindings = self.bindings();
 
-            bindings.is_true(bindings.FPDFPageObj_HasTransparency(self.object_handle()))
+            bindings.is_true(unsafe { bindings.FPDFPageObj_HasTransparency(self.object_handle()) })
         }
 
         /// Internal implementation of [PdfPageObjectCommon::bounds()].
         fn bounds_impl(&self) -> Result<PdfQuadPoints, PdfiumError> {
-            match PdfPageObjectType::from_pdfium(
-                self.bindings().FPDFPageObj_GetType(self.object_handle()) as u32,
-            ) {
+            match PdfPageObjectType::from_pdfium(unsafe {
+                self.bindings().FPDFPageObj_GetType(self.object_handle())
+            } as u32)
+            {
                 Ok(PdfPageObjectType::Text) | Ok(PdfPageObjectType::Image) => {
                     // Text and image page objects support tight fitting bounds via the
                     // FPDFPageObject_GetRotatedBounds() function.
 
                     let mut points = PdfQuadPoints::ZERO.as_pdfium();
 
-                    let result = self
-                        .bindings()
-                        .FPDFPageObj_GetRotatedBounds(self.object_handle(), &mut points);
+                    let result = unsafe {
+                        self.bindings()
+                            .FPDFPageObj_GetRotatedBounds(self.object_handle(), &mut points)
+                    };
 
                     PdfQuadPoints::from_pdfium_as_result(result, points, self.bindings())
                 }
@@ -319,20 +322,19 @@ pub(crate) mod internal {
                     // All other page objects support the FPDFPageObj_GetBounds() function.
 
                     let mut left = 0.0;
-
                     let mut bottom = 0.0;
-
                     let mut right = 0.0;
-
                     let mut top = 0.0;
 
-                    let result = self.bindings().FPDFPageObj_GetBounds(
-                        self.object_handle(),
-                        &mut left,
-                        &mut bottom,
-                        &mut right,
-                        &mut top,
-                    );
+                    let result = unsafe {
+                        self.bindings().FPDFPageObj_GetBounds(
+                            self.object_handle(),
+                            &mut left,
+                            &mut bottom,
+                            &mut right,
+                            &mut top,
+                        )
+                    };
 
                     PdfRect::from_pdfium_as_result(
                         result,
@@ -360,15 +362,17 @@ pub(crate) mod internal {
             e: PdfMatrixValue,
             f: PdfMatrixValue,
         ) -> Result<(), PdfiumError> {
-            self.bindings().FPDFPageObj_Transform(
-                self.object_handle(),
-                a as c_double,
-                b as c_double,
-                c as c_double,
-                d as c_double,
-                e as c_double,
-                f as c_double,
-            );
+            unsafe {
+                self.bindings().FPDFPageObj_Transform(
+                    self.object_handle(),
+                    a as c_double,
+                    b as c_double,
+                    c as c_double,
+                    d as c_double,
+                    e as c_double,
+                    f as c_double,
+                );
+            }
 
             self.regenerate_content_after_mutation()
         }
@@ -384,10 +388,10 @@ pub(crate) mod internal {
                 f: 0.0,
             };
 
-            if self.bindings().is_true(
+            if self.bindings().is_true(unsafe {
                 self.bindings()
-                    .FPDFPageObj_GetMatrix(self.object_handle(), &mut matrix),
-            ) {
+                    .FPDFPageObj_GetMatrix(self.object_handle(), &mut matrix)
+            }) {
                 Ok(PdfMatrix::from_pdfium(matrix))
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
@@ -399,10 +403,10 @@ pub(crate) mod internal {
         /// Resets the raw transformation matrix for this page object, overwriting
         /// the existing transformation matrix.
         fn reset_matrix_impl(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
-            if self.bindings().is_true(
+            if self.bindings().is_true(unsafe {
                 self.bindings()
-                    .FPDFPageObj_SetMatrix(self.object_handle(), &matrix.as_pdfium()),
-            ) {
+                    .FPDFPageObj_SetMatrix(self.object_handle(), &matrix.as_pdfium())
+            }) {
                 self.regenerate_content_after_mutation()
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
@@ -494,7 +498,9 @@ pub(crate) mod internal {
                 // Responsibility for de-allocation lies with us, not Pdfium, since
                 // the object is not attached to a page or an annotation.
 
-                self.bindings().FPDFPageObj_Destroy(self.object_handle());
+                unsafe {
+                    self.bindings().FPDFPageObj_Destroy(self.object_handle());
+                }
             }
         }
     }

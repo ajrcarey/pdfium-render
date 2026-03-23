@@ -125,16 +125,17 @@ impl<'a> PdfPageTextSearch<'a> {
         direction: PdfSearchDirection,
     ) -> Option<PdfPageTextSegments<'_>> {
         let has_next = if direction == PdfSearchDirection::SearchForward {
-            self.bindings().FPDFText_FindNext(self.search_handle()) != 0
+            (unsafe { self.bindings().FPDFText_FindNext(self.search_handle()) }) != 0
         } else {
-            self.bindings().FPDFText_FindPrev(self.search_handle()) != 0
+            (unsafe { self.bindings().FPDFText_FindPrev(self.search_handle()) }) != 0
         };
 
         if has_next {
-            let start_index = self
-                .bindings()
-                .FPDFText_GetSchResultIndex(self.search_handle());
-            let count = self.bindings().FPDFText_GetSchCount(self.search_handle());
+            let start_index = unsafe {
+                self.bindings()
+                    .FPDFText_GetSchResultIndex(self.search_handle())
+            };
+            let count = unsafe { self.bindings().FPDFText_GetSchCount(self.search_handle()) };
 
             Some(self.text_page.segments_subset(
                 start_index as PdfPageTextCharIndex,
@@ -157,7 +158,9 @@ impl<'a> Drop for PdfPageTextSearch<'a> {
     /// Closes this [PdfPageTextSearch] object, releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings().FPDFText_FindClose(self.search_handle());
+        unsafe {
+            self.bindings().FPDFText_FindClose(self.search_handle());
+        }
     }
 }
 

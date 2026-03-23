@@ -72,15 +72,17 @@ impl<'a> PdfPathSegment<'a> {
     /// Returns the [PdfPathSegmentType] of this [PdfPathSegment].
     #[inline]
     pub fn segment_type(&self) -> PdfPathSegmentType {
-        PdfPathSegmentType::from_pdfium(self.bindings().FPDFPathSegment_GetType(self.handle))
-            .unwrap_or(PdfPathSegmentType::Unknown)
+        PdfPathSegmentType::from_pdfium(unsafe {
+            self.bindings().FPDFPathSegment_GetType(self.handle)
+        })
+        .unwrap_or(PdfPathSegmentType::Unknown)
     }
 
     /// Returns `true` if this [PdfPathSegment] closes the current sub-path.
     #[inline]
     pub fn is_close(&self) -> bool {
         self.bindings()
-            .is_true(self.bindings().FPDFPathSegment_GetClose(self.handle()))
+            .is_true(unsafe { self.bindings().FPDFPathSegment_GetClose(self.handle()) })
     }
 
     /// Returns the horizontal and vertical destination positions of this [PdfPathSegment].
@@ -89,13 +91,10 @@ impl<'a> PdfPathSegment<'a> {
 
         let mut y: c_float = 0.0;
 
-        if self
-            .bindings()
-            .is_true(
-                self.bindings()
-                    .FPDFPathSegment_GetPoint(self.handle(), &mut x, &mut y),
-            )
-        {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFPathSegment_GetPoint(self.handle(), &mut x, &mut y)
+        }) {
             let x = PdfPoints::new(x as f32);
 
             let y = PdfPoints::new(y as f32);

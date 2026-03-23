@@ -68,14 +68,17 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        self.bindings()
-            .FPDFAnnot_GetObjectCount(self.annotation_handle()) as PdfPageObjectIndex
+        (unsafe {
+            self.bindings()
+                .FPDFAnnot_GetObjectCount(self.annotation_handle())
+        }) as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        let object_handle = self
-            .bindings()
-            .FPDFAnnot_GetObject(self.annotation_handle(), index as c_int);
+        let object_handle = unsafe {
+            self.bindings()
+                .FPDFAnnot_GetObject(self.annotation_handle(), index as c_int)
+        };
 
         if object_handle.is_null() {
             if index >= self.len() {

@@ -92,14 +92,10 @@ where
     fn font_size(&self, form: &PdfForm) -> Result<PdfPoints, PdfiumError> {
         let mut value: c_float = 0.0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAnnot_GetFontSize(
-                form.handle(),
-                self.handle(),
-                &mut value,
-            ))
-        {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFAnnot_GetFontSize(form.handle(), self.handle(), &mut value)
+        }) {
             Ok(PdfPoints::new(value))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -134,16 +130,15 @@ where
         let mut green: c_uint = 0;
         let mut blue: c_uint = 0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAnnot_GetFontColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAnnot_GetFontColor(
                 form.handle(),
                 self.handle(),
                 &mut red,
                 &mut green,
                 &mut blue,
-            ))
-        {
+            )
+        }) {
             Ok(PdfColor::new(red as u8, green as u8, blue as u8, 255))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -154,16 +149,15 @@ where
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     fn set_font_color(&mut self, form: &PdfForm, color: PdfColor) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAnnot_SetFontColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAnnot_SetFontColor(
                 form.handle(),
                 self.handle(),
                 color.red() as c_uint,
                 color.green() as c_uint,
                 color.blue() as c_uint,
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -175,13 +169,10 @@ where
     fn justification(&self) -> Result<PdfPageAnnotationVariableTextJustification, PdfiumError> {
         let mut value: c_float = 0.0;
 
-        if self
-            .bindings()
-            .is_true(
-                self.bindings()
-                    .FPDFAnnot_GetNumberValue(self.handle(), "Q", &mut value),
-            )
-        {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFAnnot_GetNumberValue(self.handle(), "Q", &mut value)
+        }) {
             PdfPageAnnotationVariableTextJustification::from_pdfium(value as i32)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(

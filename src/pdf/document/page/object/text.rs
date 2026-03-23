@@ -216,7 +216,7 @@ impl<'a> PdfPageTextObject<'a> {
         font_size: PdfPoints,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
-        let handle = bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value);
+        let handle = unsafe { bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value) };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -237,10 +237,10 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Returns the text rendering mode for the text contained within this [PdfPageTextObject].
     pub fn render_mode(&self) -> PdfPageTextRenderMode {
-        PdfPageTextRenderMode::from_pdfium(
+        PdfPageTextRenderMode::from_pdfium(unsafe {
             self.bindings()
-                .FPDFTextObj_GetTextRenderMode(self.object_handle),
-        )
+                .FPDFTextObj_GetTextRenderMode(self.object_handle)
+        })
         .unwrap_or(PdfPageTextRenderMode::Unknown)
     }
 
@@ -275,10 +275,10 @@ impl<'a> PdfPageTextObject<'a> {
     pub fn unscaled_font_size(&self) -> PdfPoints {
         let mut result = 0.0;
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFTextObj_GetFontSize(self.object_handle, &mut result),
-        ) {
+                .FPDFTextObj_GetFontSize(self.object_handle, &mut result)
+        }) {
             PdfPoints::new(result)
         } else {
             PdfPoints::ZERO
@@ -288,7 +288,7 @@ impl<'a> PdfPageTextObject<'a> {
     /// Returns the [PdfFont] used to render the text contained within this [PdfPageTextObject].
     pub fn font(&self) -> PdfFont<'_> {
         PdfFont::from_pdfium(
-            self.bindings().FPDFTextObj_GetFont(self.object_handle),
+            unsafe { self.bindings().FPDFTextObj_GetFont(self.object_handle) },
             None,
             false,
         )
@@ -331,15 +331,17 @@ impl<'a> PdfPageTextObject<'a> {
         };
 
         if let Some(page_handle) = page_handle {
-            let text_handle = self.bindings().FPDFText_LoadPage(page_handle);
+            let text_handle = unsafe { self.bindings().FPDFText_LoadPage(page_handle) };
 
             if !text_handle.is_null() {
-                let buffer_length = self.bindings().FPDFTextObj_GetText(
-                    self.object_handle(),
-                    text_handle,
-                    std::ptr::null_mut(),
-                    0,
-                );
+                let buffer_length = unsafe {
+                    self.bindings().FPDFTextObj_GetText(
+                        self.object_handle(),
+                        text_handle,
+                        std::ptr::null_mut(),
+                        0,
+                    )
+                };
 
                 if buffer_length == 0 {
                     // There is no text.
@@ -349,16 +351,20 @@ impl<'a> PdfPageTextObject<'a> {
 
                 let mut buffer = create_byte_buffer(buffer_length as usize);
 
-                let result = self.bindings().FPDFTextObj_GetText(
-                    self.object_handle(),
-                    text_handle,
-                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
-                    buffer_length,
-                );
+                let result = unsafe {
+                    self.bindings().FPDFTextObj_GetText(
+                        self.object_handle(),
+                        text_handle,
+                        buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                        buffer_length,
+                    )
+                };
 
                 assert_eq!(result, buffer_length);
 
-                self.bindings().FPDFText_ClosePage(text_handle);
+                unsafe {
+                    self.bindings().FPDFText_ClosePage(text_handle);
+                }
 
                 get_string_from_pdfium_utf16le_bytes(buffer).unwrap_or_default()
             } else {
@@ -383,10 +389,10 @@ impl<'a> PdfPageTextObject<'a> {
 
         let text = if text.is_empty() { " " } else { text.as_str() };
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFText_SetText_str(self.object_handle(), text),
-        ) {
+                .FPDFText_SetText_str(self.object_handle(), text)
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -400,10 +406,10 @@ impl<'a> PdfPageTextObject<'a> {
         &mut self,
         render_mode: PdfPageTextRenderMode,
     ) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFTextObj_SetTextRenderMode(self.object_handle(), render_mode.as_pdfium()),
-        ) {
+                .FPDFTextObj_SetTextRenderMode(self.object_handle(), render_mode.as_pdfium())
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(

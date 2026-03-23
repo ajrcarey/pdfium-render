@@ -57,9 +57,13 @@ impl<'a> PdfPageTextSegments<'a> {
     /// the page may be much larger than the number of text segments.
     #[inline]
     pub fn len(&self) -> PdfPageTextSegmentIndex {
-        self.bindings
-            .FPDFText_CountRects(self.text.text_page_handle(), self.start, self.characters)
-            as PdfPageTextSegmentIndex
+        (unsafe {
+            self.bindings.FPDFText_CountRects(
+                self.text.text_page_handle(),
+                self.start,
+                self.characters,
+            )
+        }) as PdfPageTextSegmentIndex
     }
 
     /// Returns `true` if this [PdfPageTextSegments] collection is empty.
@@ -96,21 +100,20 @@ impl<'a> PdfPageTextSegments<'a> {
         }
 
         let mut left = 0.0;
-
         let mut bottom = 0.0;
-
         let mut right = 0.0;
-
         let mut top = 0.0;
 
-        let result = self.bindings.FPDFText_GetRect(
-            self.text.text_page_handle(),
-            index as c_int,
-            &mut left,
-            &mut top,
-            &mut right,
-            &mut bottom,
-        );
+        let result = unsafe {
+            self.bindings.FPDFText_GetRect(
+                self.text.text_page_handle(),
+                index as c_int,
+                &mut left,
+                &mut top,
+                &mut right,
+                &mut bottom,
+            )
+        };
 
         PdfRect::from_pdfium_as_result(
             result,

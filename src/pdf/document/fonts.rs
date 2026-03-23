@@ -150,8 +150,10 @@ impl<'a> PdfFonts<'a> {
     #[inline]
     pub fn new_built_in(&mut self, font: PdfFontBuiltin) -> PdfFontToken {
         let font = PdfFont::from_pdfium(
-            self.bindings()
-                .FPDFText_LoadStandardFont(self.document_handle, font.to_pdf_font_name()),
+            unsafe {
+                self.bindings()
+                    .FPDFText_LoadStandardFont(self.document_handle, font.to_pdf_font_name())
+            },
             Some(font),
             true,
         );
@@ -541,13 +543,15 @@ impl<'a> PdfFonts<'a> {
         font_type: c_uint,
         is_cid_font: bool,
     ) -> Result<PdfFontToken, PdfiumError> {
-        let handle = self.bindings().FPDFText_LoadFont(
-            self.document_handle,
-            font_data.as_ptr(),
-            font_data.len() as c_uint,
-            font_type as c_int,
-            self.bindings().bool_to_pdfium(is_cid_font),
-        );
+        let handle = unsafe {
+            self.bindings().FPDFText_LoadFont(
+                self.document_handle,
+                font_data.as_ptr(),
+                font_data.len() as c_uint,
+                font_type as c_int,
+                self.bindings().bool_to_pdfium(is_cid_font),
+            )
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(

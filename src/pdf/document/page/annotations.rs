@@ -78,7 +78,8 @@ impl<'a> PdfPageAnnotations<'a> {
     /// Returns the total number of annotations that have been added to the containing `PdfPage`.
     #[inline]
     pub fn len(&self) -> PdfPageAnnotationIndex {
-        self.bindings().FPDFPage_GetAnnotCount(self.page_handle) as PdfPageAnnotationIndex
+        (unsafe { self.bindings().FPDFPage_GetAnnotCount(self.page_handle) })
+            as PdfPageAnnotationIndex
     }
 
     /// Returns true if this [PdfPageAnnotations] collection is empty.
@@ -99,9 +100,10 @@ impl<'a> PdfPageAnnotations<'a> {
             return Err(PdfiumError::PageAnnotationIndexOutOfBounds);
         }
 
-        let annotation_handle = self
-            .bindings()
-            .FPDFPage_GetAnnot(self.page_handle, index as c_int);
+        let annotation_handle = unsafe {
+            self.bindings()
+                .FPDFPage_GetAnnot(self.page_handle, index as c_int)
+        };
 
         if annotation_handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -155,9 +157,10 @@ impl<'a> PdfPageAnnotations<'a> {
         annotation_type: PdfPageAnnotationType,
         constructor: fn(FPDF_DOCUMENT, FPDF_PAGE, FPDF_ANNOTATION) -> T,
     ) -> Result<T, PdfiumError> {
-        let handle = self
-            .bindings()
-            .FPDFPage_CreateAnnot(self.page_handle(), annotation_type.as_pdfium());
+        let handle = unsafe {
+            self.bindings()
+                .FPDFPage_CreateAnnot(self.page_handle(), annotation_type.as_pdfium())
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -555,18 +558,19 @@ impl<'a> PdfPageAnnotations<'a> {
         &mut self,
         annotation: PdfPageAnnotation<'a>,
     ) -> Result<(), PdfiumError> {
-        let index = self
-            .bindings()
-            .FPDFPage_GetAnnotIndex(self.page_handle(), annotation.handle());
+        let index = unsafe {
+            self.bindings()
+                .FPDFPage_GetAnnotIndex(self.page_handle(), annotation.handle())
+        };
 
         if index == -1 {
             return Err(PdfiumError::PageAnnotationIndexOutOfBounds);
         }
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPage_RemoveAnnot(self.page_handle(), index),
-        ) {
+                .FPDFPage_RemoveAnnot(self.page_handle(), index)
+        }) {
             if let Some(content_regeneration_strategy) =
                 PdfPageIndexCache::get_content_regeneration_strategy_for_page(
                     self.document_handle(),

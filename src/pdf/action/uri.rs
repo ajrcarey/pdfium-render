@@ -39,12 +39,14 @@ impl<'a> PdfActionUri<'a> {
         // length and call FPDFAction_GetURIPath() again with a pointer to the buffer;
         // this will write the path to the buffer as an array of 7-bit ASCII characters.
 
-        let buffer_length = self.bindings().FPDFAction_GetURIPath(
-            self.document,
-            self.handle,
-            std::ptr::null_mut(),
-            0,
-        );
+        let buffer_length = unsafe {
+            self.bindings().FPDFAction_GetURIPath(
+                self.document,
+                self.handle,
+                std::ptr::null_mut(),
+                0,
+            )
+        };
 
         if buffer_length == 0 {
             // There is no URI path for this action.
@@ -54,12 +56,14 @@ impl<'a> PdfActionUri<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDFAction_GetURIPath(
-            self.document,
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFAction_GetURIPath(
+                self.document,
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 

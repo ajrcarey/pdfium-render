@@ -252,14 +252,14 @@ impl<'a> PdfPage<'a> {
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn width(&self) -> PdfPoints {
-        PdfPoints::new(self.bindings.FPDF_GetPageWidthF(self.page_handle))
+        PdfPoints::new(unsafe { self.bindings.FPDF_GetPageWidthF(self.page_handle) })
     }
 
     /// Returns the height of this [PdfPage] in device-independent points.
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn height(&self) -> PdfPoints {
-        PdfPoints::new(self.bindings.FPDF_GetPageHeightF(self.page_handle))
+        PdfPoints::new(unsafe { self.bindings.FPDF_GetPageHeightF(self.page_handle) })
     }
 
     /// Returns the width and height of this [PdfPage] expressed as a [PdfRect].
@@ -296,21 +296,27 @@ impl<'a> PdfPage<'a> {
     /// should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn rotation(&self) -> Result<PdfPageRenderRotation, PdfiumError> {
-        PdfPageRenderRotation::from_pdfium(self.bindings.FPDFPage_GetRotation(self.page_handle))
+        PdfPageRenderRotation::from_pdfium(unsafe {
+            self.bindings.FPDFPage_GetRotation(self.page_handle)
+        })
     }
 
     /// Sets the intrinsic rotation that should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn set_rotation(&mut self, rotation: PdfPageRenderRotation) {
-        self.bindings
-            .FPDFPage_SetRotation(self.page_handle, rotation.as_pdfium());
+        unsafe {
+            self.bindings
+                .FPDFPage_SetRotation(self.page_handle, rotation.as_pdfium());
+        }
     }
 
     /// Returns `true` if any object on the page contains transparency.
     #[inline]
     pub fn has_transparency(&self) -> bool {
-        self.bindings
-            .is_true(self.bindings.FPDFPage_HasTransparency(self.page_handle))
+        unsafe {
+            self.bindings
+                .is_true(self.bindings.FPDFPage_HasTransparency(self.page_handle))
+        }
     }
 
     /// Returns the paper size of this [PdfPage].
@@ -338,9 +344,10 @@ impl<'a> PdfPage<'a> {
         // To determine whether the page includes a thumbnail, we ask Pdfium to return the
         // size of the thumbnail data. A non-zero value indicates a thumbnail exists.
 
-        self.bindings
-            .FPDFPage_GetRawThumbnailData(self.page_handle, std::ptr::null_mut(), 0)
-            > 0
+        (unsafe {
+            self.bindings
+                .FPDFPage_GetRawThumbnailData(self.page_handle, std::ptr::null_mut(), 0)
+        }) > 0
     }
 
     /// Returns the embedded thumbnail for this [PdfPage], if any.
@@ -358,9 +365,10 @@ impl<'a> PdfPage<'a> {
     ///     )?; // Renders a 128 x 128 thumbnail of the page
     /// ```
     pub fn embedded_thumbnail(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
-        let thumbnail_handle = self
-            .bindings()
-            .FPDFPage_GetThumbnailAsBitmap(self.page_handle);
+        let thumbnail_handle = unsafe {
+            self.bindings()
+                .FPDFPage_GetThumbnailAsBitmap(self.page_handle)
+        };
 
         if thumbnail_handle.is_null() {
             // No thumbnail is available for this page.
@@ -373,7 +381,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the collection of text boxes contained within this [PdfPage].
     pub fn text(&self) -> Result<PdfPageText<'_>, PdfiumError> {
-        let text_handle = self.bindings().FPDFText_LoadPage(self.page_handle);
+        let text_handle = unsafe { self.bindings().FPDFText_LoadPage(self.page_handle) };
 
         if text_handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -466,18 +474,20 @@ impl<'a> PdfPage<'a> {
 
         let settings = config.apply_to_page(self);
 
-        if self.bindings.is_true(self.bindings.FPDF_DeviceToPage(
-            self.page_handle,
-            settings.clipping.left as c_int,
-            settings.clipping.top as c_int,
-            (settings.clipping.right - settings.clipping.left) as c_int,
-            (settings.clipping.bottom - settings.clipping.top) as c_int,
-            settings.rotate,
-            x as c_int,
-            y as c_int,
-            &mut page_x,
-            &mut page_y,
-        )) {
+        if self.bindings.is_true(unsafe {
+            self.bindings.FPDF_DeviceToPage(
+                self.page_handle,
+                settings.clipping.left as c_int,
+                settings.clipping.top as c_int,
+                (settings.clipping.right - settings.clipping.left) as c_int,
+                (settings.clipping.bottom - settings.clipping.top) as c_int,
+                settings.rotate,
+                x as c_int,
+                y as c_int,
+                &mut page_x,
+                &mut page_y,
+            )
+        }) {
             Ok((PdfPoints::new(page_x as f32), PdfPoints::new(page_y as f32)))
         } else {
             Err(PdfiumError::CoordinateConversionFunctionIndicatedError)
@@ -498,18 +508,20 @@ impl<'a> PdfPage<'a> {
 
         let settings = config.apply_to_page(self);
 
-        if self.bindings.is_true(self.bindings.FPDF_PageToDevice(
-            self.page_handle,
-            settings.clipping.left as c_int,
-            settings.clipping.top as c_int,
-            (settings.clipping.right - settings.clipping.left) as c_int,
-            (settings.clipping.bottom - settings.clipping.top) as c_int,
-            settings.rotate,
-            x.value.into(),
-            y.value.into(),
-            &mut device_x,
-            &mut device_y,
-        )) {
+        if self.bindings.is_true(unsafe {
+            self.bindings.FPDF_PageToDevice(
+                self.page_handle,
+                settings.clipping.left as c_int,
+                settings.clipping.top as c_int,
+                (settings.clipping.right - settings.clipping.left) as c_int,
+                (settings.clipping.bottom - settings.clipping.top) as c_int,
+                settings.rotate,
+                x.value.into(),
+                y.value.into(),
+                &mut device_x,
+                &mut device_y,
+            )
+        }) {
             Ok((device_x as Pixels, device_y as Pixels))
         } else {
             Err(PdfiumError::CoordinateConversionFunctionIndicatedError)
@@ -629,49 +641,24 @@ impl<'a> PdfPage<'a> {
         if settings.do_clear_bitmap_before_rendering {
             // Clear the bitmap buffer by setting every pixel to a known color.
 
-            self.bindings().FPDFBitmap_FillRect(
-                bitmap_handle,
-                0,
-                0,
-                settings.width,
-                settings.height,
-                settings.clear_color,
-            );
+            unsafe {
+                self.bindings().FPDFBitmap_FillRect(
+                    bitmap_handle,
+                    0,
+                    0,
+                    settings.width,
+                    settings.height,
+                    settings.clear_color,
+                );
+            }
         }
 
         if settings.do_render_form_data {
             // Render the PDF page into the bitmap buffer, ignoring any custom transformation matrix.
             // (Custom transforms cannot be applied to the rendering of form fields.)
 
-            self.bindings.FPDF_RenderPageBitmap(
-                bitmap_handle,
-                self.page_handle,
-                0,
-                0,
-                settings.width,
-                settings.height,
-                settings.rotate,
-                settings.render_flags,
-            );
-
-            if let Some(form_handle) = self.form_handle {
-                // Render user-supplied form data, if any, as an overlay on top of the page.
-
-                if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
-                    for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
-                        self.bindings.FPDF_SetFormFieldHighlightColor(
-                            form_handle,
-                            *form_field_type,
-                            *color,
-                        );
-
-                        self.bindings
-                            .FPDF_SetFormFieldHighlightAlpha(form_handle, *alpha);
-                    }
-                }
-
-                self.bindings.FPDF_FFLDraw(
-                    form_handle,
+            unsafe {
+                self.bindings.FPDF_RenderPageBitmap(
                     bitmap_handle,
                     self.page_handle,
                     0,
@@ -682,16 +669,51 @@ impl<'a> PdfPage<'a> {
                     settings.render_flags,
                 );
             }
+
+            if let Some(form_handle) = self.form_handle {
+                // Render user-supplied form data, if any, as an overlay on top of the page.
+
+                if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
+                    for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
+                        unsafe {
+                            self.bindings.FPDF_SetFormFieldHighlightColor(
+                                form_handle,
+                                *form_field_type,
+                                *color,
+                            );
+
+                            self.bindings
+                                .FPDF_SetFormFieldHighlightAlpha(form_handle, *alpha);
+                        }
+                    }
+                }
+
+                unsafe {
+                    self.bindings.FPDF_FFLDraw(
+                        form_handle,
+                        bitmap_handle,
+                        self.page_handle,
+                        0,
+                        0,
+                        settings.width,
+                        settings.height,
+                        settings.rotate,
+                        settings.render_flags,
+                    );
+                }
+            }
         } else {
             // Render the PDF page into the bitmap buffer, applying any custom transformation matrix.
 
-            self.bindings.FPDF_RenderPageBitmapWithMatrix(
-                bitmap_handle,
-                self.page_handle,
-                &settings.matrix,
-                &settings.clipping,
-                settings.render_flags,
-            );
+            unsafe {
+                self.bindings.FPDF_RenderPageBitmapWithMatrix(
+                    bitmap_handle,
+                    self.page_handle,
+                    &settings.matrix,
+                    &settings.clipping,
+                    settings.render_flags,
+                );
+            }
         }
 
         bitmap.set_byte_order_from_render_settings(&settings);
@@ -747,14 +769,13 @@ impl<'a> PdfPage<'a> {
         matrix: PdfMatrix,
         clip: PdfRect,
     ) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPage_TransFormWithClip(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPage_TransFormWithClip(
                 self.page_handle,
                 &matrix.as_pdfium(),
                 &clip.as_pdfium(),
-            ))
-        {
+            )
+        }) {
             // A probable bug in Pdfium means we must reload the page in order for the
             // transformation to take effect. For more information, see:
             // https://github.com/ajrcarey/pdfium-render/issues/93
@@ -816,9 +837,10 @@ impl<'a> PdfPage<'a> {
         // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
         let flag = FLAT_PRINT;
 
-        match self
-            .bindings()
-            .FPDFPage_Flatten(self.page_handle, flag as c_int) as u32
+        match unsafe {
+            self.bindings()
+                .FPDFPage_Flatten(self.page_handle, flag as c_int)
+        } as u32
         {
             FLATTEN_SUCCESS => {
                 self.regenerate_content()?;
@@ -843,8 +865,10 @@ impl<'a> PdfPage<'a> {
         let index = PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
             .ok_or(PdfiumError::SourcePageIndexNotInCache)?;
 
-        self.bindings
-            .FPDFPage_Delete(self.document_handle, index as c_int);
+        unsafe {
+            self.bindings
+                .FPDFPage_Delete(self.document_handle, index as c_int);
+        }
 
         PdfPageIndexCache::delete_pages_at_index(self.document_handle, index, 1);
 
@@ -940,7 +964,7 @@ impl<'a> PdfPage<'a> {
         page: FPDF_PAGE,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
-        if bindings.is_true(bindings.FPDFPage_GenerateContent(page)) {
+        if bindings.is_true(unsafe { bindings.FPDFPage_GenerateContent(page) }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -957,9 +981,10 @@ impl<'a> PdfPage<'a> {
         {
             self.drop_impl();
 
-            self.page_handle = self
-                .bindings
-                .FPDF_LoadPage(self.document_handle, page_index as c_int);
+            self.page_handle = unsafe {
+                self.bindings
+                    .FPDF_LoadPage(self.document_handle, page_index as c_int)
+            };
 
             PdfPageIndexCache::cache_props_for_page(
                 self.document_handle,
@@ -983,7 +1008,9 @@ impl<'a> PdfPage<'a> {
             debug_assert!(result.is_ok());
         }
 
-        self.bindings.FPDF_ClosePage(self.page_handle);
+        unsafe {
+            self.bindings.FPDF_ClosePage(self.page_handle);
+        }
 
         PdfPageIndexCache::remove_index_for_page(self.document_handle, self.page_handle);
     }

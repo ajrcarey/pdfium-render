@@ -61,9 +61,10 @@ impl<'a> PdfAttachment<'a> {
         // length and call FPDFAttachment_GetName() again with a pointer to the buffer;
         // this will write the name to the buffer in UTF16-LE format.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings()
-                .FPDFAttachment_GetName(self.handle, std::ptr::null_mut(), 0);
+                .FPDFAttachment_GetName(self.handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // There is no name given for this attachment.
@@ -73,11 +74,13 @@ impl<'a> PdfAttachment<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDFAttachment_GetName(
-            self.handle,
-            buffer.as_mut_ptr() as *mut FPDF_WCHAR,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFAttachment_GetName(
+                self.handle,
+                buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -91,15 +94,14 @@ impl<'a> PdfAttachment<'a> {
 
         let mut out_buflen: c_ulong = 0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAttachment_GetFile(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAttachment_GetFile(
                 self.handle,
                 std::ptr::null_mut(),
                 0,
                 &mut out_buflen,
-            ))
-        {
+            )
+        }) {
             out_buflen as usize
         } else {
             0
@@ -126,27 +128,28 @@ impl<'a> PdfAttachment<'a> {
 
         let mut out_buflen: c_ulong = 0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAttachment_GetFile(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAttachment_GetFile(
                 self.handle,
                 std::ptr::null_mut(),
                 0,
                 &mut out_buflen,
-            ))
-        {
+            )
+        }) {
             // out_buflen now contains the length of the file data.
 
             let buffer_length = out_buflen;
 
             let mut buffer = create_byte_buffer(buffer_length as usize);
 
-            let result = self.bindings().FPDFAttachment_GetFile(
-                self.handle,
-                buffer.as_mut_ptr() as *mut c_void,
-                buffer_length,
-                &mut out_buflen,
-            );
+            let result = unsafe {
+                self.bindings().FPDFAttachment_GetFile(
+                    self.handle,
+                    buffer.as_mut_ptr() as *mut c_void,
+                    buffer_length,
+                    &mut out_buflen,
+                )
+            };
 
             assert!(self.bindings.is_true(result));
             assert_eq!(buffer_length, out_buflen);

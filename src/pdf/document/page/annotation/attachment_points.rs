@@ -31,13 +31,14 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
 
     /// Returns the number of attachment points in this [PdfPageAnnotationAttachmentPoints] collection.
     pub fn len(&self) -> PdfPageAnnotationAttachmentPointIndex {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFAnnot_HasAttachmentPoints(self.annotation_handle),
-        ) {
-            self.bindings()
-                .FPDFAnnot_CountAttachmentPoints(self.annotation_handle)
-                as PdfPageAnnotationAttachmentPointIndex
+                .FPDFAnnot_HasAttachmentPoints(self.annotation_handle)
+        }) {
+            (unsafe {
+                self.bindings()
+                    .FPDFAnnot_CountAttachmentPoints(self.annotation_handle)
+            }) as PdfPageAnnotationAttachmentPointIndex
         } else {
             // Attachment points are not supported for this annotation type.
 
@@ -81,14 +82,13 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
 
         let mut result = PdfQuadPoints::ZERO.as_pdfium();
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAnnot_GetAttachmentPoints(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAnnot_GetAttachmentPoints(
                 self.annotation_handle,
                 index,
                 &mut result,
-            ))
-        {
+            )
+        }) {
             Ok(PdfQuadPoints::from_pdfium(result))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -126,13 +126,12 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         &mut self,
         attachment_point: PdfQuadPoints,
     ) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAnnot_AppendAttachmentPoints(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAnnot_AppendAttachmentPoints(
                 self.annotation_handle,
                 &attachment_point.as_pdfium(),
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -148,14 +147,13 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         index: PdfPageAnnotationAttachmentPointIndex,
         attachment_point: PdfQuadPoints,
     ) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFAnnot_SetAttachmentPoints(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFAnnot_SetAttachmentPoints(
                 self.annotation_handle,
                 index,
                 &attachment_point.as_pdfium(),
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(

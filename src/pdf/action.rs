@@ -64,7 +64,7 @@ impl<'a> PdfAction<'a> {
         document: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        match PdfActionType::from_pdfium(bindings.FPDFAction_GetType(handle) as u32)
+        match PdfActionType::from_pdfium(unsafe { bindings.FPDFAction_GetType(handle) } as u32)
             .unwrap_or(PdfActionType::Unsupported)
         {
             PdfActionType::Unsupported => {

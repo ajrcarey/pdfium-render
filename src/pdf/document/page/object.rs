@@ -330,8 +330,10 @@ impl<'a> PdfPageObject<'a> {
         ownership: PdfPageObjectOwnership,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        match PdfPageObjectType::from_pdfium(bindings.FPDFPageObj_GetType(object_handle) as u32)
-            .unwrap_or(PdfPageObjectType::Unsupported)
+        match PdfPageObjectType::from_pdfium(
+            unsafe { bindings.FPDFPageObj_GetType(object_handle) } as u32
+        )
+        .unwrap_or(PdfPageObjectType::Unsupported)
         {
             PdfPageObjectType::Unsupported => PdfPageObject::Unsupported(
                 PdfPageUnsupportedObject::from_pdfium(object_handle, ownership),
@@ -518,9 +520,10 @@ impl<'a> PdfPageObject<'a> {
 
     /// Returns the clip path for this object, if any.
     pub fn get_clip_path(&self) -> Option<PdfClipPath<'_>> {
-        let path_handle = self
-            .bindings()
-            .FPDFPageObj_GetClipPath(self.object_handle());
+        let path_handle = unsafe {
+            self.bindings()
+                .FPDFPageObj_GetClipPath(self.object_handle())
+        };
 
         if path_handle.is_null() {
             return None;
@@ -543,10 +546,10 @@ impl<'a> PdfPageObject<'a> {
     /// Marks this [PdfPageObject] as active on its containing page. All page objects
     /// start in the active state by default.
     pub fn set_active(&mut self) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_SetIsActive(self.object_handle(), self.bindings().TRUE()),
-        ) {
+                .FPDFPageObj_SetIsActive(self.object_handle(), self.bindings().TRUE())
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -567,10 +570,10 @@ impl<'a> PdfPageObject<'a> {
     pub fn is_active(&self) -> Result<bool, PdfiumError> {
         let mut result = self.bindings().FALSE();
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_GetIsActive(self.object_handle(), &mut result),
-        ) {
+                .FPDFPageObj_GetIsActive(self.object_handle(), &mut result)
+        }) {
             Ok(self.bindings().is_true(result))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -590,10 +593,10 @@ impl<'a> PdfPageObject<'a> {
     /// Marks this [PdfPageObject] as inactive on its containing page. The page object will
     /// be treated as if it were not in the document, even though it exists internally.
     pub fn set_inactive(&mut self) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_SetIsActive(self.object_handle(), self.bindings().FALSE()),
-        ) {
+                .FPDFPageObj_SetIsActive(self.object_handle(), self.bindings().FALSE())
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -860,8 +863,10 @@ where
 
     #[inline]
     fn set_blend_mode(&mut self, blend_mode: PdfPageObjectBlendMode) -> Result<(), PdfiumError> {
-        self.bindings()
-            .FPDFPageObj_SetBlendMode(self.object_handle(), blend_mode.as_pdfium());
+        unsafe {
+            self.bindings()
+                .FPDFPageObj_SetBlendMode(self.object_handle(), blend_mode.as_pdfium());
+        }
 
         Ok(())
     }
@@ -869,23 +874,19 @@ where
     #[inline]
     fn fill_color(&self) -> Result<PdfColor, PdfiumError> {
         let mut r = 0;
-
         let mut g = 0;
-
         let mut b = 0;
-
         let mut a = 0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPageObj_GetFillColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPageObj_GetFillColor(
                 self.object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
                 &mut a,
-            ))
-        {
+            )
+        }) {
             Ok(PdfColor::new(
                 r.try_into()
                     .map_err(PdfiumError::UnableToConvertPdfiumColorValueToRustu8)?,
@@ -903,16 +904,15 @@ where
 
     #[inline]
     fn set_fill_color(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPageObj_SetFillColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPageObj_SetFillColor(
                 self.object_handle(),
                 fill_color.red() as c_uint,
                 fill_color.green() as c_uint,
                 fill_color.blue() as c_uint,
                 fill_color.alpha() as c_uint,
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -922,23 +922,19 @@ where
     #[inline]
     fn stroke_color(&self) -> Result<PdfColor, PdfiumError> {
         let mut r = 0;
-
         let mut g = 0;
-
         let mut b = 0;
-
         let mut a = 0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPageObj_GetStrokeColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPageObj_GetStrokeColor(
                 self.object_handle(),
                 &mut r,
                 &mut g,
                 &mut b,
                 &mut a,
-            ))
-        {
+            )
+        }) {
             Ok(PdfColor::new(
                 r.try_into()
                     .map_err(PdfiumError::UnableToConvertPdfiumColorValueToRustu8)?,
@@ -956,16 +952,15 @@ where
 
     #[inline]
     fn set_stroke_color(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPageObj_SetStrokeColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPageObj_SetStrokeColor(
                 self.object_handle(),
                 stroke_color.red() as c_uint,
                 stroke_color.green() as c_uint,
                 stroke_color.blue() as c_uint,
                 stroke_color.alpha() as c_uint,
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -976,10 +971,10 @@ where
     fn stroke_width(&self) -> Result<PdfPoints, PdfiumError> {
         let mut width = 0.0;
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_GetStrokeWidth(self.object_handle(), &mut width),
-        ) {
+                .FPDFPageObj_GetStrokeWidth(self.object_handle(), &mut width)
+        }) {
             Ok(PdfPoints::new(width))
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -988,10 +983,10 @@ where
 
     #[inline]
     fn set_stroke_width(&mut self, stroke_width: PdfPoints) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_SetStrokeWidth(self.object_handle(), stroke_width.value),
-        ) {
+                .FPDFPageObj_SetStrokeWidth(self.object_handle(), stroke_width.value)
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1000,19 +995,19 @@ where
 
     #[inline]
     fn line_join(&self) -> Result<PdfPageObjectLineJoin, PdfiumError> {
-        PdfPageObjectLineJoin::from_pdfium(
+        PdfPageObjectLineJoin::from_pdfium(unsafe {
             self.bindings()
-                .FPDFPageObj_GetLineJoin(self.object_handle()),
-        )
+                .FPDFPageObj_GetLineJoin(self.object_handle())
+        })
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
 
     #[inline]
     fn set_line_join(&mut self, line_join: PdfPageObjectLineJoin) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_SetLineJoin(self.object_handle(), line_join.as_pdfium() as c_int),
-        ) {
+                .FPDFPageObj_SetLineJoin(self.object_handle(), line_join.as_pdfium() as c_int)
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1021,18 +1016,18 @@ where
 
     #[inline]
     fn line_cap(&self) -> Result<PdfPageObjectLineCap, PdfiumError> {
-        PdfPageObjectLineCap::from_pdfium(
-            self.bindings().FPDFPageObj_GetLineCap(self.object_handle()),
-        )
+        PdfPageObjectLineCap::from_pdfium(unsafe {
+            self.bindings().FPDFPageObj_GetLineCap(self.object_handle())
+        })
         .ok_or(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
     }
 
     #[inline]
     fn set_line_cap(&mut self, line_cap: PdfPageObjectLineCap) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_SetLineCap(self.object_handle(), line_cap.as_pdfium() as c_int),
-        ) {
+                .FPDFPageObj_SetLineCap(self.object_handle(), line_cap.as_pdfium() as c_int)
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1043,10 +1038,10 @@ where
     fn dash_phase(&self) -> Result<PdfPoints, PdfiumError> {
         let mut phase = 0.0;
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_GetDashPhase(self.object_handle(), &mut phase),
-        ) {
+                .FPDFPageObj_GetDashPhase(self.object_handle(), &mut phase)
+        }) {
             Ok(PdfPoints::new(phase))
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1055,10 +1050,10 @@ where
 
     #[inline]
     fn set_dash_phase(&mut self, dash_phase: PdfPoints) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFPageObj_SetDashPhase(self.object_handle(), dash_phase.value),
-        ) {
+                .FPDFPageObj_SetDashPhase(self.object_handle(), dash_phase.value)
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1067,20 +1062,20 @@ where
 
     #[inline]
     fn dash_array(&self) -> Result<Vec<PdfPoints>, PdfiumError> {
-        let dash_count = self
-            .bindings()
-            .FPDFPageObj_GetDashCount(self.object_handle()) as usize;
+        let dash_count = unsafe {
+            self.bindings()
+                .FPDFPageObj_GetDashCount(self.object_handle())
+        } as usize;
 
         let mut dash_array = vec![0.0; dash_count];
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPageObj_GetDashArray(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPageObj_GetDashArray(
                 self.object_handle(),
                 dash_array.as_mut_ptr(),
                 dash_count,
-            ))
-        {
+            )
+        }) {
             Ok(dash_array
                 .iter()
                 .map(|dash| PdfPoints::new(*dash))
@@ -1093,15 +1088,14 @@ where
     fn set_dash_array(&mut self, array: &[PdfPoints], phase: PdfPoints) -> Result<(), PdfiumError> {
         let dash_array = array.iter().map(|dash| dash.value).collect::<Vec<_>>();
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPageObj_SetDashArray(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPageObj_SetDashArray(
                 self.object_handle(),
                 dash_array.as_ptr(),
                 dash_array.len(),
                 phase.value,
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumFunctionReturnValueIndicatedFailure)
@@ -1287,7 +1281,9 @@ impl<'a> Drop for PdfPageObject<'a> {
         // (Indeed, if we try to, Pdfium segfaults.)
 
         if !self.ownership().is_owned() {
-            self.bindings().FPDFPageObj_Destroy(self.object_handle());
+            unsafe {
+                self.bindings().FPDFPageObj_Destroy(self.object_handle());
+            }
         }
     }
 }

@@ -122,13 +122,15 @@ impl<'a> PdfBitmap<'a> {
         format: PdfBitmapFormat,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
-        let handle = bindings.FPDFBitmap_CreateEx(
-            width as c_int,
-            height as c_int,
-            format.as_pdfium() as c_int,
-            std::ptr::null_mut(),
-            0, // Not relevant because Pdfium will create the buffer itself.
-        );
+        let handle = unsafe {
+            bindings.FPDFBitmap_CreateEx(
+                width as c_int,
+                height as c_int,
+                format.as_pdfium() as c_int,
+                std::ptr::null_mut(),
+                0, // Not relevant because Pdfium will create the buffer itself.
+            )
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -198,19 +200,21 @@ impl<'a> PdfBitmap<'a> {
     /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn width(&self) -> Pixels {
-        self.bindings().FPDFBitmap_GetWidth(self.handle()) as Pixels
+        (unsafe { self.bindings().FPDFBitmap_GetWidth(self.handle()) }) as Pixels
     }
 
     /// Returns the height of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn height(&self) -> Pixels {
-        self.bindings().FPDFBitmap_GetHeight(self.handle()) as Pixels
+        (unsafe { self.bindings().FPDFBitmap_GetHeight(self.handle()) }) as Pixels
     }
 
     /// Returns the pixel format of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn format(&self) -> Result<PdfBitmapFormat, PdfiumError> {
-        PdfBitmapFormat::from_pdfium(self.bindings().FPDFBitmap_GetFormat(self.handle()) as u32)
+        PdfBitmapFormat::from_pdfium(
+            unsafe { self.bindings().FPDFBitmap_GetFormat(self.handle()) } as u32,
+        )
     }
 
     /// Returns an immutable reference to the bitmap buffer backing this [PdfBitmap].
@@ -220,7 +224,7 @@ impl<'a> PdfBitmap<'a> {
     /// [PdfiumLibraryBindings::bgra_to_rgba], [PdfiumLibraryBindings::rgb_to_bgra],
     /// and [PdfiumLibraryBindings::rgba_to_bgra] functions.
     pub fn as_raw_bytes(&self) -> Vec<u8> {
-        self.bindings().FPDFBitmap_GetBuffer_as_vec(self.handle)
+        unsafe { self.bindings().FPDFBitmap_GetBuffer_as_vec(self.handle) }
     }
 
     /// Returns an owned copy of the bitmap buffer backing this [PdfBitmap], normalizing all
@@ -298,7 +302,7 @@ impl<'a> PdfBitmap<'a> {
     #[cfg(any(doc, target_arch = "wasm32"))]
     #[inline]
     pub fn as_array(&self) -> Uint8Array {
-        self.bindings().FPDFBitmap_GetBuffer_as_array(self.handle())
+        unsafe { self.bindings().FPDFBitmap_GetBuffer_as_array(self.handle()) }
     }
 
     /// Returns a new Javascript `ImageData` object created from the bitmap buffer backing
@@ -338,7 +342,9 @@ impl<'a> Drop for PdfBitmap<'a> {
     /// Closes this [PdfBitmap], releasing the memory held by the bitmap buffer.
     #[inline]
     fn drop(&mut self) {
-        self.bindings().FPDFBitmap_Destroy(self.handle());
+        unsafe {
+            self.bindings().FPDFBitmap_Destroy(self.handle());
+        }
     }
 }
 
@@ -373,11 +379,11 @@ mod tests {
         assert_eq!(bitmap.width(), test_width);
         assert_eq!(bitmap.height(), test_height);
         assert_eq!(
-            pdfium.bindings().FPDFBitmap_GetBuffer(bitmap.handle) as usize,
+            unsafe { pdfium.bindings().FPDFBitmap_GetBuffer(bitmap.handle) } as usize,
             buffer_ptr as usize
         );
         assert_eq!(
-            pdfium.bindings().FPDFBitmap_GetStride(bitmap.handle),
+            unsafe { pdfium.bindings().FPDFBitmap_GetStride(bitmap.handle) },
             // The stride length is always a multiple of four bytes; for image formats
             // that require less than four bytes per pixel, the extra bytes serve as
             // alignment padding. For this test, we use the PdfBitmapFormat::BGRx which

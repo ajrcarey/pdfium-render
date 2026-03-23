@@ -172,12 +172,14 @@ impl<'a> PdfPageImageObject<'a> {
 
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
-        let result = document.bindings().FPDFImageObj_LoadJpegFileInline(
-            std::ptr::null_mut(),
-            0,
-            object.object_handle(),
-            reader.as_fpdf_file_access_mut_ptr(),
-        );
+        let result = unsafe {
+            document.bindings().FPDFImageObj_LoadJpegFileInline(
+                std::ptr::null_mut(),
+                0,
+                object.object_handle(),
+                reader.as_fpdf_file_access_mut_ptr(),
+            )
+        };
 
         if object.bindings().is_true(result) {
             Ok(object)
@@ -194,7 +196,7 @@ impl<'a> PdfPageImageObject<'a> {
         document: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
-        let handle = bindings.FPDFPageObj_NewImageObj(document);
+        let handle = unsafe { bindings.FPDFPageObj_NewImageObj(document) };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -272,7 +274,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// transforms applied to this page object.
     pub fn get_raw_bitmap(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
         Ok(PdfBitmap::from_pdfium(
-            self.bindings().FPDFImageObj_GetBitmap(self.object_handle()),
+            unsafe { self.bindings().FPDFImageObj_GetBitmap(self.object_handle()) },
             self.bindings(),
         ))
     }
@@ -467,16 +469,20 @@ impl<'a> PdfPageImageObject<'a> {
         };
 
         let bitmap_handle = match page_handle {
-            Some(page_handle) => self.bindings().FPDFImageObj_GetRenderedBitmap(
-                document.handle(),
-                page_handle,
-                self.object_handle(),
-            ),
-            None => self.bindings().FPDFImageObj_GetRenderedBitmap(
-                document.handle(),
-                std::ptr::null_mut::<fpdf_page_t__>(),
-                self.object_handle(),
-            ),
+            Some(page_handle) => unsafe {
+                self.bindings().FPDFImageObj_GetRenderedBitmap(
+                    document.handle(),
+                    page_handle,
+                    self.object_handle(),
+                )
+            },
+            None => unsafe {
+                self.bindings().FPDFImageObj_GetRenderedBitmap(
+                    document.handle(),
+                    std::ptr::null_mut::<fpdf_page_t__>(),
+                    self.object_handle(),
+                )
+            },
         };
 
         if bitmap_handle.is_null() {
@@ -516,16 +522,20 @@ impl<'a> PdfPageImageObject<'a> {
 
             let result = PdfBitmap::from_pdfium(
                 match page_handle {
-                    Some(page_handle) => self.bindings().FPDFImageObj_GetRenderedBitmap(
-                        document.handle(),
-                        page_handle,
-                        self.object_handle(),
-                    ),
-                    None => self.bindings().FPDFImageObj_GetRenderedBitmap(
-                        document.handle(),
-                        std::ptr::null_mut::<fpdf_page_t__>(),
-                        self.object_handle(),
-                    ),
+                    Some(page_handle) => unsafe {
+                        self.bindings().FPDFImageObj_GetRenderedBitmap(
+                            document.handle(),
+                            page_handle,
+                            self.object_handle(),
+                        )
+                    },
+                    None => unsafe {
+                        self.bindings().FPDFImageObj_GetRenderedBitmap(
+                            document.handle(),
+                            std::ptr::null_mut::<fpdf_page_t__>(),
+                            self.object_handle(),
+                        )
+                    },
                 },
                 self.bindings(),
             );
@@ -564,21 +574,19 @@ impl<'a> PdfPageImageObject<'a> {
         bitmap: &PdfBitmap,
     ) -> Result<DynamicImage, PdfiumError> {
         let handle = bitmap.handle();
-
-        let width = self.bindings().FPDFBitmap_GetWidth(handle);
-
-        let height = self.bindings().FPDFBitmap_GetHeight(handle);
-
-        let stride = self.bindings().FPDFBitmap_GetStride(handle);
-
+        let width = unsafe { self.bindings().FPDFBitmap_GetWidth(handle) };
+        let height = unsafe { self.bindings().FPDFBitmap_GetHeight(handle) };
+        let stride = unsafe { self.bindings().FPDFBitmap_GetStride(handle) };
         let format =
-            PdfBitmapFormat::from_pdfium(self.bindings().FPDFBitmap_GetFormat(handle) as u32)?;
+            PdfBitmapFormat::from_pdfium(
+                unsafe { self.bindings().FPDFBitmap_GetFormat(handle) } as u32
+            )?;
 
         #[cfg(not(target_arch = "wasm32"))]
-        let buffer = self.bindings().FPDFBitmap_GetBuffer_as_slice(handle);
+        let buffer = unsafe { self.bindings().FPDFBitmap_GetBuffer_as_slice(handle) };
 
         #[cfg(target_arch = "wasm32")]
-        let buffer_vec = self.bindings().FPDFBitmap_GetBuffer_as_vec(handle);
+        let buffer_vec = unsafe { self.bindings().FPDFBitmap_GetBuffer_as_vec(handle) };
         #[cfg(target_arch = "wasm32")]
         let buffer = buffer_vec.as_slice();
 
@@ -609,11 +617,13 @@ impl<'a> PdfPageImageObject<'a> {
     ///
     /// The returned byte buffer may be empty if the image object does not contain any data.
     pub fn get_raw_image_data(&self) -> Result<Vec<u8>, PdfiumError> {
-        let buffer_length = self.bindings().FPDFImageObj_GetImageDataRaw(
-            self.object_handle(),
-            std::ptr::null_mut(),
-            0,
-        );
+        let buffer_length = unsafe {
+            self.bindings().FPDFImageObj_GetImageDataRaw(
+                self.object_handle(),
+                std::ptr::null_mut(),
+                0,
+            )
+        };
 
         if buffer_length == 0 {
             return Ok(Vec::new());
@@ -621,11 +631,13 @@ impl<'a> PdfPageImageObject<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDFImageObj_GetImageDataRaw(
-            self.object_handle(),
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFImageObj_GetImageDataRaw(
+                self.object_handle(),
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -700,10 +712,10 @@ impl<'a> PdfPageImageObject<'a> {
             rgba_to_bgra(image.as_bytes())
         };
 
-        if !self
-            .bindings()
-            .FPDFBitmap_SetBuffer(bitmap.handle(), buffer.as_slice())
-        {
+        if !(unsafe {
+            self.bindings()
+                .FPDFBitmap_SetBuffer(bitmap.handle(), buffer.as_slice())
+        }) {
             return Err(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
             ));
@@ -714,15 +726,14 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Applies the byte data in the given [PdfBitmap] to this [PdfPageImageObject].
     pub fn set_bitmap(&mut self, bitmap: &PdfBitmap) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFImageObj_SetBitmap(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFImageObj_SetBitmap(
                 std::ptr::null_mut::<FPDF_PAGE>(),
                 0,
                 self.object_handle(),
                 bitmap.handle(),
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -749,14 +760,16 @@ impl<'a> PdfPageImageObject<'a> {
             _ => None,
         };
 
-        let result = self.bindings().FPDFImageObj_GetImageMetadata(
-            self.object_handle(),
-            match page_handle {
-                Some(page_handle) => page_handle,
-                None => std::ptr::null_mut::<fpdf_page_t__>(),
-            },
-            &mut metadata,
-        );
+        let result = unsafe {
+            self.bindings().FPDFImageObj_GetImageMetadata(
+                self.object_handle(),
+                match page_handle {
+                    Some(page_handle) => page_handle,
+                    None => std::ptr::null_mut::<fpdf_page_t__>(),
+                },
+                &mut metadata,
+            )
+        };
 
         if self.bindings().is_true(result) {
             Ok(metadata)
@@ -879,9 +892,11 @@ impl<'a> PdfPageImageObjectFilters<'a> {
 
     /// Returns the number of image filters applied to the parent [PdfPageImageObject].
     pub fn len(&self) -> usize {
-        self.object
-            .bindings()
-            .FPDFImageObj_GetImageFilterCount(self.object.object_handle()) as usize
+        (unsafe {
+            self.object
+                .bindings()
+                .FPDFImageObj_GetImageFilterCount(self.object.object_handle())
+        }) as usize
     }
 
     /// Returns true if this [PdfPageImageObjectFilters] collection is empty.
@@ -924,12 +939,14 @@ impl<'a> PdfPageImageObjectFilters<'a> {
         // this will write the font name into the buffer. Unlike most text handling in
         // Pdfium, image filter names are returned in UTF-8 format.
 
-        let buffer_length = self.object.bindings().FPDFImageObj_GetImageFilter(
-            self.object.object_handle(),
-            index as c_int,
-            std::ptr::null_mut(),
-            0,
-        );
+        let buffer_length = unsafe {
+            self.object.bindings().FPDFImageObj_GetImageFilter(
+                self.object.object_handle(),
+                index as c_int,
+                std::ptr::null_mut(),
+                0,
+            )
+        };
 
         if buffer_length == 0 {
             // The image filter name is not present.
@@ -939,12 +956,14 @@ impl<'a> PdfPageImageObjectFilters<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.object.bindings().FPDFImageObj_GetImageFilter(
-            self.object.object_handle(),
-            index as c_int,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.object.bindings().FPDFImageObj_GetImageFilter(
+                self.object.object_handle(),
+                index as c_int,
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 

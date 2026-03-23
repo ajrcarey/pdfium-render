@@ -159,13 +159,15 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        self.bindings().FPDFFormObj_CountObjects(self.object_handle) as PdfPageObjectIndex
+        (unsafe { self.bindings().FPDFFormObj_CountObjects(self.object_handle) })
+            as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        let object_handle = self
-            .bindings()
-            .FPDFFormObj_GetObject(self.object_handle, index as c_ulong);
+        let object_handle = unsafe {
+            self.bindings()
+                .FPDFFormObj_GetObject(self.object_handle, index as c_ulong)
+        };
 
         if object_handle.is_null() {
             if index >= self.len() {
@@ -207,10 +209,10 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFFormObj_RemoveObject(self.object_handle, object.object_handle()),
-        ) {
+                .FPDFFormObj_RemoveObject(self.object_handle, object.object_handle())
+        }) {
             object.set_ownership(PdfPageObjectOwnership::Unowned);
 
             Ok(object)

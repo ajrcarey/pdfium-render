@@ -291,7 +291,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// You have to call this function before you can call any PDF processing functions.
     #[allow(non_snake_case)]
-    fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG);
+    unsafe fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG);
 
     /// Initializes the PDFium library (alternative form).
     ///
@@ -300,7 +300,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// call [PdfiumLibraryBindings::FPDF_InitLibraryWithConfig] instead.
     /// This will be deprecated in the future.
     #[allow(non_snake_case)]
-    fn FPDF_InitLibrary(&self);
+    unsafe fn FPDF_InitLibrary(&self);
 
     /// Releases global resources allocated to the PDFium library by [PdfiumLibraryBindings::FPDF_InitLibrary]
     /// or [PdfiumLibraryBindings::FPDF_InitLibraryWithConfig]. After this function is called,
@@ -308,7 +308,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// close other objects. It is recommended to close other objects before closing the library
     /// with this function.
     #[allow(non_snake_case)]
-    fn FPDF_DestroyLibrary(&self);
+    unsafe fn FPDF_DestroyLibrary(&self);
 
     /// Sets the policy for the sandbox environment.
     ///
@@ -316,7 +316,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `enable` -   `true` to enable, `false` to disable the policy.
     #[allow(non_snake_case)]
-    fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL);
+    unsafe fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL);
 
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(feature = "pdfium_use_win32")]
@@ -351,7 +351,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful, `false` if unsuccessful (typically invalid input).
     #[allow(non_snake_case)]
-    fn FPDF_SetPrintMode(&self, mode: c_int);
+    unsafe fn FPDF_SetPrintMode(&self, mode: c_int);
 
     /// Gets the last error code when a function fails.
     ///
@@ -361,42 +361,42 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// This function only works in conjunction with APIs that mention `FPDF_GetLastError`
     /// in their documentation.
     #[allow(non_snake_case)]
-    fn FPDF_GetLastError(&self) -> c_ulong;
+    unsafe fn FPDF_GetLastError(&self) -> c_ulong;
 
     /// Coalesces the given individual R, G, B, and alpha color components into
     // a 32-bit hexadecimal 0xAARRGGBB value, suitable for passing to Pdfium.
     #[allow(non_snake_case)]
-    fn FPDF_ARGB(&self, a: u8, r: u8, g: u8, b: u8) -> FPDF_DWORD {
+    unsafe fn FPDF_ARGB(&self, a: u8, r: u8, g: u8, b: u8) -> FPDF_DWORD {
         PdfColor::new(r, g, b, a).as_pdfium_color()
     }
 
     /// Returns the blue component of the given color.
     #[allow(non_snake_case)]
-    fn FPDF_GetBValue(&self, argb: FPDF_DWORD) -> u8 {
+    unsafe fn FPDF_GetBValue(&self, argb: FPDF_DWORD) -> u8 {
         PdfColor::from_pdfium(argb).blue()
     }
 
     /// Returns the green component of the given color.
     #[allow(non_snake_case)]
-    fn FPDF_GetGValue(&self, argb: FPDF_DWORD) -> u8 {
+    unsafe fn FPDF_GetGValue(&self, argb: FPDF_DWORD) -> u8 {
         PdfColor::from_pdfium(argb).green()
     }
 
     /// Returns the red component of the given color.
     #[allow(non_snake_case)]
-    fn FPDF_GetRValue(&self, argb: FPDF_DWORD) -> u8 {
+    unsafe fn FPDF_GetRValue(&self, argb: FPDF_DWORD) -> u8 {
         PdfColor::from_pdfium(argb).red()
     }
 
     /// Returns the alpha component of the given color.
     #[allow(non_snake_case)]
-    fn FPDF_GetAValue(&self, argb: FPDF_DWORD) -> u8 {
+    unsafe fn FPDF_GetAValue(&self, argb: FPDF_DWORD) -> u8 {
         PdfColor::from_pdfium(argb).alpha()
     }
 
     /// Creates a new empty PDF document. Returns a handle to a new document, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT;
+    unsafe fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT;
 
     #[cfg(not(target_arch = "wasm32"))]
     /// Opens and loads an existing PDF document.
@@ -421,7 +421,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// [PdfiumLibraryBindings::FPDF_LoadMemDocument], [PdfiumLibraryBindings::FPDF_LoadMemDocument64],
     /// or [PdfiumLibraryBindings::FPDF_LoadCustomDocument] functions instead.
     #[allow(non_snake_case)]
-    fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
+    unsafe fn FPDF_LoadDocument(&self, file_path: &str, password: Option<&str>) -> FPDF_DOCUMENT;
 
     /// Opens and loads an existing PDF document from memory.
     ///
@@ -448,7 +448,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// internally upgraded to [PdfiumLibraryBindings::FPDF_LoadMemDocument64] by `pdfium-render`.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
+    unsafe fn FPDF_LoadMemDocument(&self, bytes: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
         self.FPDF_LoadMemDocument64(bytes, password)
     }
 
@@ -473,7 +473,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If PDFium is built with the XFA module, the application should call [PdfiumLibraryBindings::FPDF_LoadXFA]
     /// function after the PDF document loaded to support XFA fields defined in the `fpdfformfill.h` file.
     #[allow(non_snake_case)]
-    fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT;
+    unsafe fn FPDF_LoadMemDocument64(
+        &self,
+        data_buf: &[u8],
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT;
 
     /// Loads a PDF document from a custom access descriptor.
     ///
@@ -493,7 +497,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If PDFium is built with the XFA module, the application should call [PdfiumLibraryBindings::FPDF_LoadXFA]
     /// function after the PDF document loaded to support XFA fields defined in the `fpdfformfill.h` file.
     #[allow(non_snake_case)]
-    fn FPDF_LoadCustomDocument(
+    unsafe fn FPDF_LoadCustomDocument(
         &self,
         pFileAccess: *mut FPDF_FILEACCESS,
         password: Option<&str>,
@@ -510,7 +514,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success, `false` on failure.
     #[allow(non_snake_case)]
-    fn FPDF_SaveAsCopy(
+    unsafe fn FPDF_SaveAsCopy(
         &self,
         document: FPDF_DOCUMENT,
         pFileWrite: *mut FPDF_FILEWRITE,
@@ -531,7 +535,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success, `false` on failure.
     #[allow(non_snake_case)]
-    fn FPDF_SaveWithVersion(
+    unsafe fn FPDF_SaveWithVersion(
         &self,
         document: FPDF_DOCUMENT,
         pFileWrite: *mut FPDF_FILEWRITE,
@@ -550,7 +554,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// [PdfiumLibraryBindings::FPDFAvail_Destroy] must be called when done with the
     /// availability provider.
     #[allow(non_snake_case)]
-    fn FPDFAvail_Create(
+    unsafe fn FPDFAvail_Create(
         &self,
         file_avail: *mut FX_FILEAVAIL,
         file: *mut FPDF_FILEACCESS,
@@ -560,7 +564,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///   `avail` - handle to document availability provider to be destroyed.
     #[allow(non_snake_case)]
-    fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL);
+    unsafe fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL);
 
     /// Checks if the document is ready for loading; if not, gets download hints.
     ///
@@ -585,7 +589,8 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Once all data is available, call [PdfiumLibraryBindings::FPDFAvail_GetDocument] to get
     /// a document handle.
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int;
+    unsafe fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS)
+        -> c_int;
 
     /// Gets a document from the availability provider.
     ///
@@ -600,7 +605,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// See the comments for [PdfiumLibraryBindings::FPDF_LoadDocument] regarding the encoding
     /// for `password`.
     #[allow(non_snake_case)]
-    fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT;
+    unsafe fn FPDFAvail_GetDocument(
+        &self,
+        avail: FPDF_AVAIL,
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT;
 
     /// Gets the page number for the first available page in a linearized PDF.
     ///
@@ -613,7 +622,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// For non-linearized PDFs, this function will always return zero.
     #[allow(non_snake_case)]
-    fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int;
 
     /// Checks if `page_index` is ready for loading, if not, get the `FX_DOWNLOADHINTS`.
     ///
@@ -639,7 +648,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// If `hints` is `NULL`, the function just check current availability of specified page.
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsPageAvail(
+    unsafe fn FPDFAvail_IsPageAvail(
         &self,
         avail: FPDF_AVAIL,
         page_index: c_int,
@@ -673,7 +682,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Applications can then perform page loading. It is recommend to call
     /// [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment] when `PDF_FORM_AVAIL` is returned.
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int;
+    unsafe fn FPDFAvail_IsFormAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int;
 
     /// Checks whether a document is a linearized PDF.
     ///
@@ -692,19 +705,19 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// than 1kb, it returns `PDF_LINEARIZATION_UNKNOWN` as there is insufficient information
     // to determine if the PDF is linearlized.
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int;
+    unsafe fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int;
 
     /// Closes a loaded PDF page.
     ///
     ///    `page`        -   Handle to the loaded page.
     #[allow(non_snake_case)]
-    fn FPDF_ClosePage(&self, page: FPDF_PAGE);
+    unsafe fn FPDF_ClosePage(&self, page: FPDF_PAGE);
 
     /// Closes a loaded PDF document.
     ///
     ///    `document`    -   Handle to the loaded document.
     #[allow(non_snake_case)]
-    fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
+    unsafe fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT);
 
     /// Converts the screen coordinates of a point to page coordinates.
     ///
@@ -749,7 +762,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// have exactly same values as you used in the [PdfiumLibraryBindings::FPDF_RenderPage] function call.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDF_DeviceToPage(
+    unsafe fn FPDF_DeviceToPage(
         &self,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -795,7 +808,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Refer to [PdfiumLibraryBindings::FPDF_DeviceToPage] for comments on coordinate systems.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDF_PageToDevice(
+    unsafe fn FPDF_PageToDevice(
         &self,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -821,7 +834,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If the document was created by [PdfiumLibraryBindings::FPDF_CreateNewDocument],
     /// then this function will always fail.
     #[allow(non_snake_case)]
-    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
+    unsafe fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL;
 
     /// Returns whether the document's cross reference table is valid or not.
     ///
@@ -833,7 +846,8 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// The return value may change over time as the PDF parser evolves.
     #[allow(non_snake_case)]
-    fn FPDF_DocumentHasValidCrossReferenceTable(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
+    unsafe fn FPDF_DocumentHasValidCrossReferenceTable(&self, document: FPDF_DOCUMENT)
+        -> FPDF_BOOL;
 
     /// Gets the byte offsets of trailer ends.
     ///
@@ -849,7 +863,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// trailer ends in the document. If `length` is less than the returned length,
     /// or `document` or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_GetTrailerEnds(
+    unsafe fn FPDF_GetTrailerEnds(
         &self,
         document: FPDF_DOCUMENT,
         buffer: *mut c_uint,
@@ -864,7 +878,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// for detailed descriptions. If the document is not protected or was unlocked
     /// by the owner, `0xffffffff` will be returned.
     #[allow(non_snake_case)]
-    fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
+    unsafe fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -892,7 +906,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// for detailed descriptions. If the document is not protected, `0xffffffff` will be returned.
     /// Always returns user permissions, even if the document was unlocked by the owner.
     #[allow(non_snake_case)]
-    fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
+    unsafe fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong;
 
     /// Gets the revision for the security handler.
     ///
@@ -901,7 +915,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the security handler revision number. Please refer to the PDF Reference
     /// for a detailed description. If the document is not protected, `-1` will be returned.
     #[allow(non_snake_case)]
-    fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Gets the total number of pages in the document.
     ///
@@ -909,7 +923,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the total number of pages in the document."]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Loads a page inside the document.
     ///
@@ -922,7 +936,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The loaded page can be rendered to devices using [PdfiumLibraryBindings::FPDF_RenderPage].
     /// The loaded page can be closed using [PdfiumLibraryBindings::FPDF_ClosePage].
     #[allow(non_snake_case)]
-    fn FPDF_LoadPage(&self, document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE;
+    unsafe fn FPDF_LoadPage(&self, document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE;
 
     /// Starts rendering page contents to a device independent bitmap progressively with a
     /// specified color scheme for the content.
@@ -958,7 +972,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the rendering status. See flags for progressive process status for details.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmapWithColorScheme_Start(
+    unsafe fn FPDF_RenderPageBitmapWithColorScheme_Start(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -1001,7 +1015,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the rendering status. See flags for progressive process status for details.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmap_Start(
+    unsafe fn FPDF_RenderPageBitmap_Start(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -1024,14 +1038,14 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the rendering status. See flags for progressive process status for details.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int;
+    unsafe fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int;
 
     /// Releases the resource allocate during page rendering. Needs to be called after finishing
     /// rendering or after cancelling the rendering.
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage()].
     #[allow(non_snake_case)]
-    fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE);
+    unsafe fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE);
 
     /// Imports pages into a `FPDF_DOCUMENT`.
     ///
@@ -1053,7 +1067,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [vec]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDF_ImportPagesByIndex_vec].
     #[allow(non_snake_case)]
-    fn FPDF_ImportPagesByIndex(
+    unsafe fn FPDF_ImportPagesByIndex(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -1078,7 +1092,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` on success. Returns `false` if any pages in `page_indices` are invalid.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDF_ImportPagesByIndex_vec(
+    unsafe fn FPDF_ImportPagesByIndex_vec(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -1109,7 +1123,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` on success. Returns `false` if any pages in `pagerange` is invalid
     /// or if `pagerange` cannot be read.
     #[allow(non_snake_case)]
-    fn FPDF_ImportPages(
+    unsafe fn FPDF_ImportPages(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -1134,7 +1148,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// The total number of pages per page = num_pages_on_x_axis * num_pages_on_y_axis.
     #[allow(non_snake_case)]
-    fn FPDF_ImportNPagesToOne(
+    unsafe fn FPDF_ImportNPagesToOne(
         &self,
         src_doc: FPDF_DOCUMENT,
         output_width: c_float,
@@ -1148,7 +1162,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle on success, or `NULL` on failure. Caller owns the newly created object.
     #[allow(non_snake_case)]
-    fn FPDF_NewXObjectFromPage(
+    unsafe fn FPDF_NewXObjectFromPage(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -1158,13 +1172,13 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Closes an `FPDF_XOBJECT` handle created by [PdfiumLibraryBindings::FPDF_NewXObjectFromPage].
     /// `FPDF_PAGEOBJECT`s created from the `FPDF_XOBJECT` handle are not affected.
     #[allow(non_snake_case)]
-    fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT);
+    unsafe fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT);
 
     /// Creates a new form object from an `FPDF_XOBJECT` object.
     ///
     /// Returns a new form object on success, or `NULL` on failure. Caller owns the newly created object.
     #[allow(non_snake_case)]
-    fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT;
+    unsafe fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT;
 
     /// Copies the viewer preferences from `src_doc` into `dest_doc`.
     ///
@@ -1174,7 +1188,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDF_CopyViewerPreferences(
+    unsafe fn FPDF_CopyViewerPreferences(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -1189,7 +1203,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Note that changing the rotation of the page affects the return value.
     #[allow(non_snake_case)]
-    fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
+    unsafe fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float;
 
     /// Gets page width.
     ///
@@ -1207,7 +1221,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         note = "Prefer FPDF_GetPageWidthF() over FPDF_GetPageWidth(). FPDF_GetPageWidth() is deprecated and will likely be removed in a future version of Pdfium."
     )]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64;
+    unsafe fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64;
 
     /// Gets page height.
     ///
@@ -1218,7 +1232,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Note that changing the rotation of the page affects the return value.
     #[allow(non_snake_case)]
-    fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float;
+    unsafe fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float;
 
     /// Gets page height.
     ///
@@ -1236,7 +1250,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         note = "Prefer FPDF_GetPageHeightF() over FPDF_GetPageHeight(). FPDF_GetPageHeight() is deprecated and will likely be removed in a future version of Pdfium."
     )]
     #[allow(non_snake_case)]
-    fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64;
+    unsafe fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64;
 
     /// Gets the character index in the `text_page` internal character list.
     ///
@@ -1246,7 +1260,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the index of the character in the internal character list, or `-1` for error.
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharIndexFromTextIndex(
+    unsafe fn FPDFText_GetCharIndexFromTextIndex(
         &self,
         text_page: FPDF_TEXTPAGE,
         nTextIndex: c_int,
@@ -1261,7 +1275,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the index of the text returned from [PdfiumLibraryBindings::FPDFText_GetText],
     /// or `-1` for error.
     #[allow(non_snake_case)]
-    fn FPDFText_GetTextIndexFromCharIndex(
+    unsafe fn FPDFText_GetTextIndexFromCharIndex(
         &self,
         text_page: FPDF_TEXTPAGE,
         nCharIndex: c_int,
@@ -1273,7 +1287,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the total number of signatures in the document on success, or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Gets the nth signature in the document.
     ///
@@ -1285,7 +1299,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// does not take ownership of the returned `FPDF_SIGNATURE`. Instead, it
     /// remains valid until [PdfiumLibraryBindings::FPDF_CloseDocument] is called for the document.
     #[allow(non_snake_case)]
-    fn FPDF_GetSignatureObject(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE;
+    unsafe fn FPDF_GetSignatureObject(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+    ) -> FPDF_SIGNATURE;
 
     /// Gets the contents of a signature object.
     ///
@@ -1301,7 +1319,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// a DER-encoded PKCS#7 binary. If `length` is less than the returned length, or
     /// `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetContents(
+    unsafe fn FPDFSignatureObj_GetContents(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_void,
@@ -1322,7 +1340,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// that describes the exact byte range for the digest calculation. If `length` is
     /// less than the returned length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetByteRange(
+    unsafe fn FPDFSignatureObj_GetByteRange(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_int,
@@ -1343,7 +1361,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer` will
     // not be modified.
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetSubFilter(
+    unsafe fn FPDFSignatureObj_GetSubFilter(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_char,
@@ -1364,7 +1382,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// string is terminated by a UTF16 `NUL` character. If `length` is less than the
     /// returned length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetReason(
+    unsafe fn FPDFSignatureObj_GetReason(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_void,
@@ -1388,7 +1406,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// precision is seconds, with timezone information. This value should be used
     /// only when the time of signing is not available in the PKCS#7 binary signature.
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetTime(
+    unsafe fn FPDFSignatureObj_GetTime(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_char,
@@ -1412,7 +1430,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///                      annotation creation, deletion, and modification; other changes
     ///                      invalidate the signature.
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint;
+    unsafe fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint;
 
     /// Gets the structure tree for a page.
     ///
@@ -1423,14 +1441,14 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// The handle should be released before `page` is released.
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE;
+    unsafe fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE;
 
     /// Releases a resource allocated by [PdfiumLibraryBindings::FPDF_StructTree_GetForPage].
     ///
     ///   `struct_tree` -   Handle to the structure tree, as returned by
     ///                     [PdfiumLibraryBindings::FPDF_StructTree_GetForPage].
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE);
+    unsafe fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE);
 
     /// Counts the number of children for the structure tree.
     ///
@@ -1439,7 +1457,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Return value: the number of children, or -1 on error.
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int;
+    unsafe fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int;
 
     /// Gets a child in the structure tree.
     ///
@@ -1453,7 +1471,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructTree_CountChildren] return value.
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_GetChildAtIndex(
+    unsafe fn FPDF_StructTree_GetChildAtIndex(
         &self,
         struct_tree: FPDF_STRUCTTREE,
         index: c_int,
@@ -1474,7 +1492,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetAltText(
+    unsafe fn FPDF_StructElement_GetAltText(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1496,7 +1514,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetActualText(
+    unsafe fn FPDF_StructElement_GetActualText(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1519,7 +1537,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetID(
+    unsafe fn FPDF_StructElement_GetID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1542,7 +1560,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetLang(
+    unsafe fn FPDF_StructElement_GetLang(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1567,7 +1585,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetStringAttribute(
+    unsafe fn FPDF_StructElement_GetStringAttribute(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         attr_name: &str,
@@ -1585,7 +1603,10 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// extract more marked content IDs out of `struct_element`. This API may be deprecated
     /// in the future.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
+    unsafe fn FPDF_StructElement_GetMarkedContentID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int;
 
     /// Gets the type (/S) for a given element.
     ///
@@ -1603,7 +1624,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetType(
+    unsafe fn FPDF_StructElement_GetType(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1626,7 +1647,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetObjType(
+    unsafe fn FPDF_StructElement_GetObjType(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1648,7 +1669,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetTitle(
+    unsafe fn FPDF_StructElement_GetTitle(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -1661,7 +1682,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of children, or -1 on error.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
+    unsafe fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
 
     /// Gets a child in the structure element.
     ///
@@ -1677,7 +1698,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_CountChildren]
     /// return value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetChildAtIndex(
+    unsafe fn FPDF_StructElement_GetChildAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -1721,7 +1742,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_CountChildren]
     /// return value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetChildMarkedContentID(
+    unsafe fn FPDF_StructElement_GetChildMarkedContentID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -1735,7 +1756,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// If structure element is StructTreeRoot, then this function will return `NULL`.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetParent(
+    unsafe fn FPDF_StructElement_GetParent(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> FPDF_STRUCTELEMENT;
@@ -1746,7 +1767,10 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of attributes, or -1 on error.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetAttributeCount(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int;
+    unsafe fn FPDF_StructElement_GetAttributeCount(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int;
 
     /// Gets an attribute object in the structure element.
     ///
@@ -1763,7 +1787,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_GetAttributeCount]
     /// return value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetAttributeAtIndex(
+    unsafe fn FPDF_StructElement_GetAttributeAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -1775,7 +1799,10 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of attributes, or -1 on error.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetCount(&self, struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int;
+    unsafe fn FPDF_StructElement_Attr_GetCount(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+    ) -> c_int;
 
     /// Gets the name of an attribute in a structure element attribute map.
     ///
@@ -1796,7 +1823,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation was successful.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetName(
+    unsafe fn FPDF_StructElement_Attr_GetName(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         index: c_int,
@@ -1830,7 +1857,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// The handle remains valid as long as `struct_attribute` remains valid.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetValue(
+    unsafe fn FPDF_StructElement_Attr_GetValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -1857,7 +1884,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the type of the value, or `FPDF_OBJECT_UNKNOWN` in case of failure.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetType(
+    unsafe fn FPDF_StructElement_Attr_GetType(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -1884,7 +1911,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the type of the value, or `FPDF_OBJECT_UNKNOWN` in case of failure. Note that
     /// this will never return `FPDF_OBJECT_REFERENCE`, as references are always dereferenced.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetType(
+    unsafe fn FPDF_StructElement_Attr_GetType(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
     ) -> FPDF_OBJECT_TYPE;
@@ -1915,7 +1942,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the name maps to a boolean value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBooleanValue(
+    unsafe fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -1947,7 +1974,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the attribute maps to a boolean value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBooleanValue(
+    unsafe fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut FPDF_BOOL,
@@ -1979,7 +2006,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the name maps to a number value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetNumberValue(
+    unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -2011,7 +2038,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the attribute maps to a number value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetNumberValue(
+    unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut f32,
@@ -2052,7 +2079,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the name maps to a string value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetStringValue(
+    unsafe fn FPDF_StructElement_Attr_GetStringValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -2094,7 +2121,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the attribute maps to a string value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetStringValue(
+    unsafe fn FPDF_StructElement_Attr_GetStringValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut c_void,
@@ -2135,7 +2162,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `TRUE` if the name maps to a string value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBlobValue(
+    unsafe fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -2174,7 +2201,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the attribute maps to a string value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBlobValue(
+    unsafe fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut c_void,
@@ -2202,7 +2229,10 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of children, or -1 on error.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int;
+    unsafe fn FPDF_StructElement_Attr_CountChildren(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> c_int;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -2229,7 +2259,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The `index` must be less than the [PdfiumLibraryBindings::FPDF_StructElement_Attr_CountChildren]
     /// return value.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetChildAtIndex(
+    unsafe fn FPDF_StructElement_Attr_GetChildAtIndex(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         index: c_int,
@@ -2241,7 +2271,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the count of marked content ids or -1 if none exists.
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetMarkedContentIdCount(
+    unsafe fn FPDF_StructElement_GetMarkedContentIdCount(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> c_int;
@@ -2259,7 +2289,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// This function will likely supersede [PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentID].
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetMarkedContentIdAtIndex(
+    unsafe fn FPDF_StructElement_GetMarkedContentIdAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -2282,7 +2312,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The page should be closed with [PdfiumLibraryBindings::FPDF_ClosePage()] when finished as
     /// with any other page in the document.
     #[allow(non_snake_case)]
-    fn FPDFPage_New(
+    unsafe fn FPDFPage_New(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -2296,7 +2326,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///   `page_index` - the index of the page to delete.
     #[allow(non_snake_case)]
-    fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int);
+    unsafe fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int);
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -2344,7 +2374,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// >
     /// >  Move(doc, [2, 2], 2, 0); // returns `false` because [2, 2] contains duplicates.
     #[allow(non_snake_case)]
-    fn FPDF_MovePages(
+    unsafe fn FPDF_MovePages(
         &self,
         document: FPDF_DOCUMENT,
         page_indices: *const c_int,
@@ -2366,7 +2396,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///   `3` - Rotated 270 degrees clockwise.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int;
+    unsafe fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int;
 
     /// Sets rotation for `page`.
     ///
@@ -2382,7 +2412,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///              3 - Rotated 270 degrees clockwise.
     #[allow(non_snake_case)]
-    fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int);
+    unsafe fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int);
 
     /// Gets the bounding box of the page. This is the intersection between
     /// its media box and its crop box.
@@ -2394,7 +2424,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
+    unsafe fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
     /// Gets the size of the page at the given index.
     ///
@@ -2406,7 +2436,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns non-zero value for success, `0` for error (document or page not found).
     #[allow(non_snake_case)]
-    fn FPDF_GetPageSizeByIndexF(
+    unsafe fn FPDF_GetPageSizeByIndexF(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -2428,7 +2458,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Note: prefer [PdfiumLibraryBindings::FPDF_GetPageSizeByIndexF]. This function
     /// will be deprecated in the future.
     #[allow(non_snake_case)]
-    fn FPDF_GetPageSizeByIndex(
+    unsafe fn FPDF_GetPageSizeByIndex(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -2451,7 +2481,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
     /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetMediaBox(
+    unsafe fn FPDFPage_GetMediaBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -2475,7 +2505,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
     /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetCropBox(
+    unsafe fn FPDFPage_GetCropBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -2499,7 +2529,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
     /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetBleedBox(
+    unsafe fn FPDFPage_GetBleedBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -2523,7 +2553,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
     /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetTrimBox(
+    unsafe fn FPDFPage_GetTrimBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -2547,7 +2577,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// On success, returns `true` and writes to the out parameters. Otherwise returns `false`
     /// and leaves the out parameters unmodified.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetArtBox(
+    unsafe fn FPDFPage_GetArtBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -2568,7 +2598,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
-    fn FPDFPage_SetMediaBox(
+    unsafe fn FPDFPage_SetMediaBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -2589,7 +2619,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
-    fn FPDFPage_SetCropBox(
+    unsafe fn FPDFPage_SetCropBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -2610,7 +2640,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
-    fn FPDFPage_SetBleedBox(
+    unsafe fn FPDFPage_SetBleedBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -2631,7 +2661,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
-    fn FPDFPage_SetTrimBox(
+    unsafe fn FPDFPage_SetTrimBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -2652,7 +2682,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `top`    - The top of the rectangle.
     #[allow(non_snake_case)]
-    fn FPDFPage_SetArtBox(
+    unsafe fn FPDFPage_SetArtBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -2676,7 +2706,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `clipRect`    - Clipping rectangle.
     #[allow(non_snake_case)]
-    fn FPDFPage_TransFormWithClip(
+    unsafe fn FPDFPage_TransFormWithClip(
         &self,
         page: FPDF_PAGE,
         matrix: *const FS_MATRIX,
@@ -2700,7 +2730,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///    `f`  - The coefficient "f" of the matrix.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFPageObj_TransformClipPath(
+    unsafe fn FPDFPageObj_TransformClipPath(
         &self,
         page_object: FPDF_PAGEOBJECT,
         a: f64,
@@ -2720,7 +2750,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// take ownership of the returned `FPDF_CLIPPATH`. Instead, it remains valid until
     /// [PdfiumLibraryBindings::FPDF_ClosePage] is called for the page containing `page_object`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH;
+    unsafe fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH;
 
     /// Gets the number of paths inside `clip_path`.
     ///
@@ -2728,7 +2758,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of objects in `clip_path`, or `-1` on failure.
     #[allow(non_snake_case)]
-    fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int;
+    unsafe fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int;
 
     /// Gets the number of segments inside one path of `clip_path`.
     ///
@@ -2738,7 +2768,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of segments, or `-1` on failure.
     #[allow(non_snake_case)]
-    fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int;
+    unsafe fn FPDFClipPath_CountPathSegments(
+        &self,
+        clip_path: FPDF_CLIPPATH,
+        path_index: c_int,
+    ) -> c_int;
 
     /// Gets a specific segment in a specific path of `clip_path`.
     ///
@@ -2752,7 +2786,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// take ownership of the returned `FPDF_PATHSEGMENT`. Instead, it remains valid
     /// until [PdfiumLibraryBindings::FPDF_ClosePage] is called for the page containing `clip_path`.
     #[allow(non_snake_case)]
-    fn FPDFClipPath_GetPathSegment(
+    unsafe fn FPDFClipPath_GetPathSegment(
         &self,
         clip_path: FPDF_CLIPPATH,
         path_index: c_int,
@@ -2772,13 +2806,19 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `top`    - The top of the clip box.
     #[allow(non_snake_case)]
-    fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH;
+    unsafe fn FPDF_CreateClipPath(
+        &self,
+        left: f32,
+        bottom: f32,
+        right: f32,
+        top: f32,
+    ) -> FPDF_CLIPPATH;
 
     /// Destroys a clip path.
     ///
     ///    `clipPath` - A handle to the clip path. It will be invalid after this call.
     #[allow(non_snake_case)]
-    fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH);
+    unsafe fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH);
 
     /// Clips the page content. Content outside the clipping region will become invisible.
     ///
@@ -2789,7 +2829,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `clipPath`    - A handle to the clip path. The caller does not take ownership.
     #[allow(non_snake_case)]
-    fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH);
+    unsafe fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH);
 
     /// Checks if `page` contains transparency.
     ///
@@ -2797,7 +2837,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `page` contains transparency.
     #[allow(non_snake_case)]
-    fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Generates the content of `page`. Before you save `page` to a file or reload `page`,
     /// you must call this function or any changes to `page` will be lost.
@@ -2806,7 +2846,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Transforms all annotations in `page`.
     ///
@@ -2833,7 +2873,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// and can be used to scale, rotate, shear, and translate the `page` annotations.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFPage_TransformAnnots(
+    unsafe fn FPDFPage_TransformAnnots(
         &self,
         page: FPDF_PAGE,
         a: f64,
@@ -2870,7 +2910,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// to fill the bitmap using any color. If the OS allows it, this function can allocate
     /// up to 4 GB of memory.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP;
+    unsafe fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP;
 
     /// Creates a device independent bitmap (FXDIB).
     ///
@@ -2906,7 +2946,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// It is recommended to use [PdfiumLibraryBindings::FPDFBitmap_GetStride to get the stride
     /// value.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_CreateEx(
+    unsafe fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,
         height: c_int,
@@ -2925,7 +2965,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Only formats supported by [PdfiumLibraryBindings::FPDFBitmap_CreateEx] are supported by this
     /// function; see the list of such formats above.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int;
+    unsafe fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int;
 
     #[cfg(any(
         feature = "pdfium_6611",
@@ -2966,7 +3006,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// with the source color, instead the background will be replaced by the source color
     /// and the alpha. If the alpha channel is not used, the alpha parameter is ignored.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_FillRect(
+    unsafe fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -3010,7 +3050,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// with the source color, instead the background will be replaced by the source color
     /// and the alpha. If the alpha channel is not used, the alpha parameter is ignored.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_FillRect(
+    unsafe fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -3050,7 +3090,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void;
+    unsafe fn FPDFBitmap_GetBuffer(&self, bitmap: FPDF_BITMAP) -> *mut c_void;
 
     #[cfg(not(target_arch = "wasm32"))]
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as an
@@ -3062,7 +3102,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// does not have the same length as the bitmap's current buffer then the current buffer
     /// will be unchanged and a value of `false` will be returned.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+    unsafe fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
         let buffer_length =
             (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as usize;
 
@@ -3090,7 +3130,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// does not have the same length as the bitmap's current buffer then the current buffer
     /// will be unchanged and a value of `false` will be returned.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool;
+    unsafe fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool;
 
     #[cfg(not(target_arch = "wasm32"))]
     /// Gets the data buffer of a bitmap as a Rust slice.
@@ -3104,7 +3144,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer_as_slice(&self, bitmap: FPDF_BITMAP) -> &[u8] {
+    unsafe fn FPDFBitmap_GetBuffer_as_slice(&self, bitmap: FPDF_BITMAP) -> &[u8] {
         let buffer = self.FPDFBitmap_GetBuffer(bitmap);
 
         let len = self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap);
@@ -3140,7 +3180,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// to the returned [Vec] back to the originating bitmap.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
+    unsafe fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
         Vec::from(self.FPDFBitmap_GetBuffer_as_slice(bitmap))
     }
 
@@ -3160,7 +3200,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// to the returned [Vec] back to the originating bitmap.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
+    unsafe fn FPDFBitmap_GetBuffer_as_vec(&self, bitmap: FPDF_BITMAP) -> Vec<u8> {
         self.FPDFBitmap_GetBuffer_as_array(bitmap).to_vec()
     }
 
@@ -3185,7 +3225,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     ///
     /// Changes made to the returned array will directly mutate the pixel data of the bitmap.
-    fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
+    unsafe fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> js_sys::Uint8Array;
 
     #[cfg(doc)]
     /// This function is not part of the Pdfium API. It is provided by `pdfium-render` as a
@@ -3207,7 +3247,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Use [PdfiumLibraryBindings::FPDFBitmap_GetFormat] to find out the format of the data.
     ///
     /// Changes made to the returned array will directly mutate the pixel data of the bitmap.
-    fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {}
+    unsafe fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {}
 
     /// Gets the width of a bitmap.
     ///
@@ -3216,7 +3256,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the width of the bitmap in pixels.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int;
+    unsafe fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int;
 
     /// Gets the height of a bitmap.
     ///
@@ -3225,7 +3265,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the height of the bitmap in pixels.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> c_int;
+    unsafe fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> c_int;
 
     /// Gets the number of bytes for each line in the bitmap buffer.
     ///
@@ -3236,7 +3276,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// The stride may be more than `width * number of bytes per pixel`.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> c_int;
+    unsafe fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> c_int;
 
     /// Destroys a bitmap and releases all related buffers.
     ///
@@ -3246,7 +3286,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// This function will not destroy any external buffers provided when
     /// the bitmap was created.
     #[allow(non_snake_case)]
-    fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP);
+    unsafe fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP);
 
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(feature = "pdfium_use_win32")]
@@ -3273,7 +3313,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `flags`       -   0 for normal display, or combination of flags defined above.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPage(
+    unsafe fn FPDF_RenderPage(
         &self,
         dc: windows::Win32::Graphics::Gdi::HDC,
         page: FPDF_PAGE,
@@ -3309,7 +3349,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `flags`       -   0 for normal display, or combination of flags defined above.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPage(
+    unsafe fn FPDF_RenderPage(
         &self,
         dc: HDC,
         page: FPDF_PAGE,
@@ -3350,7 +3390,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///                      user-interaction, which are all annotations except widget and popup annotations.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDF_RenderPageBitmap(
+    unsafe fn FPDF_RenderPageBitmap(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -3382,7 +3422,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Note that behavior is undefined if det of `matrix` is 0.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmapWithMatrix(
+    unsafe fn FPDF_RenderPageBitmapWithMatrix(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -3402,7 +3442,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `size_y`      -   Vertical size (in pixels) for displaying the page.
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageSkia(
+    unsafe fn FPDF_RenderPageSkia(
         &self,
         canvas: FPDF_SKIA_CANVAS,
         page: FPDF_PAGE,
@@ -3443,7 +3483,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if this subtype supported.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
 
     /// Creates an annotation in `page` of the subtype `subtype`. If the specified
     /// subtype is illegal or unsupported, then a new annotation will not be created.
@@ -3456,7 +3496,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the new annotation object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPage_CreateAnnot(
+    unsafe fn FPDFPage_CreateAnnot(
         &self,
         page: FPDF_PAGE,
         subtype: FPDF_ANNOTATION_SUBTYPE,
@@ -3468,7 +3508,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of annotations in `page`.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetAnnotCount(&self, page: FPDF_PAGE) -> c_int;
+    unsafe fn FPDFPage_GetAnnotCount(&self, page: FPDF_PAGE) -> c_int;
 
     /// Gets annotation in `page` at `index`. Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the
     /// annotation returned by this function is no longer needed.
@@ -3479,7 +3519,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the annotation object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_ANNOTATION;
+    unsafe fn FPDFPage_GetAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_ANNOTATION;
 
     /// Gets the index of `annot` in `page`. This is the opposite of
     /// [PdfiumLibraryBindings::FPDFPage_GetAnnot].
@@ -3490,7 +3530,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the index of `annot`, or -1 on failure.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetAnnotIndex(&self, page: FPDF_PAGE, annot: FPDF_ANNOTATION) -> c_int;
+    unsafe fn FPDFPage_GetAnnotIndex(&self, page: FPDF_PAGE, annot: FPDF_ANNOTATION) -> c_int;
 
     /// Closes an annotation. Must be called when the annotation returned by
     /// [PdfiumLibraryBindings::FPDFPage_CreateAnnot] or [PdfiumLibraryBindings::FPDFPage_GetAnnot]
@@ -3498,7 +3538,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///   `annot`  - handle to an annotation.
     #[allow(non_snake_case)]
-    fn FPDFPage_CloseAnnot(&self, annot: FPDF_ANNOTATION);
+    unsafe fn FPDFPage_CloseAnnot(&self, annot: FPDF_ANNOTATION);
 
     /// Removes the annotation in `page` at `index`.
     ///
@@ -3508,7 +3548,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL;
+    unsafe fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL;
 
     /// Gets the subtype of an annotation.
     ///
@@ -3516,7 +3556,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the annotation subtype.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetSubtype(&self, annot: FPDF_ANNOTATION) -> FPDF_ANNOTATION_SUBTYPE;
+    unsafe fn FPDFAnnot_GetSubtype(&self, annot: FPDF_ANNOTATION) -> FPDF_ANNOTATION_SUBTYPE;
 
     /// Checks if an annotation subtype is currently supported for object extraction,
     /// update, and removal.
@@ -3527,7 +3567,10 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if this subtype supported.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsObjectSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_IsObjectSupportedSubtype(
+        &self,
+        subtype: FPDF_ANNOTATION_SUBTYPE,
+    ) -> FPDF_BOOL;
 
     /// Updates `obj` in `annot`. `obj` must be in `annot` already and must have
     /// been retrieved by [PdfiumLibraryBindings::FPDFAnnot_GetObject]. Currently, only ink and stamp
@@ -3541,7 +3584,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_UpdateObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_UpdateObject(
+        &self,
+        annot: FPDF_ANNOTATION,
+        obj: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL;
 
     /// Adds a new InkStroke, represented by an array of points, to the InkList of
     /// `annot`. The API creates an InkList if one doesn't already exist in `annot`.
@@ -3558,7 +3605,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the 0-based index at which the new InkStroke is added in the InkList
     /// of the `annot`. Returns -1 on failure.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AddInkStroke(
+    unsafe fn FPDFAnnot_AddInkStroke(
         &self,
         annot: FPDF_ANNOTATION,
         points: *const FS_POINTF,
@@ -3574,7 +3621,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Return true on successful removal of `/InkList` entry from context of the
     /// non-null ink `annot`. Returns `false` on failure.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
     /// Adds `obj` to `annot`. `obj` must have been created by
     /// [PdfiumLibraryBindings::FPDFPageObj_CreateNewPath], [PdfiumLibraryBindings::FPDFPageObj_CreateNewRect],
@@ -3589,7 +3636,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AppendObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_AppendObject(
+        &self,
+        annot: FPDF_ANNOTATION,
+        obj: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL;
 
     /// Gets the total number of objects in `annot`, including path objects, text
     /// objects, external objects, image objects, and shading objects.
@@ -3598,7 +3649,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of objects in `annot`.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetObjectCount(&self, annot: FPDF_ANNOTATION) -> c_int;
+    unsafe fn FPDFAnnot_GetObjectCount(&self, annot: FPDF_ANNOTATION) -> c_int;
 
     /// Gets the object in `annot` at `index`.
     ///
@@ -3608,7 +3659,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_PAGEOBJECT;
+    unsafe fn FPDFAnnot_GetObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_PAGEOBJECT;
 
     /// Removes the object in `annot` at `index`.
     ///
@@ -3618,7 +3669,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL;
 
     /// Sets the color of an annotation. Fails when called on annotations with
     /// appearance streams already defined; instead use
@@ -3634,7 +3685,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetColor(
+    unsafe fn FPDFAnnot_SetColor(
         &self,
         annot: FPDF_ANNOTATION,
         color_type: FPDFANNOT_COLORTYPE,
@@ -3659,7 +3710,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetColor(
+    unsafe fn FPDFAnnot_GetColor(
         &self,
         annot: FPDF_ANNOTATION,
         color_type: FPDFANNOT_COLORTYPE,
@@ -3680,7 +3731,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the annotation is of a type that has quadpoints.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
     /// Replaces the attachment points (i.e. quadpoints) set of an annotation at
     /// `quad_index`. This index needs to be within the result of
@@ -3698,7 +3749,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetAttachmentPoints(
+    unsafe fn FPDFAnnot_SetAttachmentPoints(
         &self,
         annot: FPDF_ANNOTATION,
         quad_index: size_t,
@@ -3716,7 +3767,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AppendAttachmentPoints(
+    unsafe fn FPDFAnnot_AppendAttachmentPoints(
         &self,
         annot: FPDF_ANNOTATION,
         quad_points: *const FS_QUADPOINTSF,
@@ -3728,7 +3779,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of sets of quadpoints, or 0 on failure.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_CountAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> size_t;
+    unsafe fn FPDFAnnot_CountAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> size_t;
 
     /// Gets the attachment points (i.e. quadpoints) of an annotation.
     ///
@@ -3740,7 +3791,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetAttachmentPoints(
+    unsafe fn FPDFAnnot_GetAttachmentPoints(
         &self,
         annot: FPDF_ANNOTATION,
         quad_index: size_t,
@@ -3758,7 +3809,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL;
 
     /// Gets the annotation rectangle defining the location of the annotation.
     ///
@@ -3768,7 +3819,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
     /// Gets the vertices of a polygon or polyline annotation. `buffer` is an array of
     /// points of the annotation. If `length` is less than the returned length, or
@@ -3783,7 +3834,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the number of points if the annotation is of type polygon or
     /// polyline, 0 otherwise.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetVertices(
+    unsafe fn FPDFAnnot_GetVertices(
         &self,
         annot: FPDF_ANNOTATION,
         buffer: *mut FS_POINTF,
@@ -3797,7 +3848,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the number of paths in the ink list if the annotation is of type ink,
     /// 0 otherwise.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetInkListCount(&self, annot: FPDF_ANNOTATION) -> c_ulong;
+    unsafe fn FPDFAnnot_GetInkListCount(&self, annot: FPDF_ANNOTATION) -> c_ulong;
 
     /// Gets a path in the ink list of an ink annotation. `buffer` is an array of
     /// points of the path. If `length` is less than the returned length, or `annot`
@@ -3814,7 +3865,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the number of points of the path if the annotation is of type ink, 0
     /// otherwise.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetInkListPath(
+    unsafe fn FPDFAnnot_GetInkListPath(
         &self,
         annot: FPDF_ANNOTATION,
         path_index: c_ulong,
@@ -3832,7 +3883,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the annotation is of type line and `start` and `end` are not `NULL`.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetLine(
+    unsafe fn FPDFAnnot_GetLine(
         &self,
         annot: FPDF_ANNOTATION,
         start: *mut FS_POINTF,
@@ -3854,7 +3905,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `annot` contains an appearance stream that overrides the border values,
     /// then the appearance stream will be removed on success.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetBorder(
+    unsafe fn FPDFAnnot_SetBorder(
         &self,
         annot: FPDF_ANNOTATION,
         horizontal_radius: c_float,
@@ -3874,7 +3925,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `horizontal_radius`, `vertical_radius` and `border_width` are not `NULL`.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetBorder(
+    unsafe fn FPDFAnnot_GetBorder(
         &self,
         annot: FPDF_ANNOTATION,
         horizontal_radius: *mut c_float,
@@ -3904,7 +3955,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes, including the 2-byte null terminator.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormAdditionalActionJavaScript(
+    unsafe fn FPDFAnnot_GetFormAdditionalActionJavaScript(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -3931,7 +3982,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldAlternateName(
+    unsafe fn FPDFAnnot_GetFormFieldAlternateName(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -3947,7 +3998,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `key` exists.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL;
 
     /// Gets the type of the value corresponding to `key` in `annot`'s dictionary.
     ///
@@ -3957,7 +4008,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the type of the dictionary value.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE;
+    unsafe fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE;
 
     /// Sets the string value corresponding to `key` in `annot`'s dictionary,
     /// overwriting the existing value if any. The value type would be
@@ -3974,7 +4025,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_SetStringValue_str].
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetStringValue(
+    unsafe fn FPDFAnnot_SetStringValue(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -3996,7 +4047,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` if successful.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetStringValue_str(
+    unsafe fn FPDFAnnot_SetStringValue_str(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -4027,7 +4078,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetStringValue(
+    unsafe fn FPDFAnnot_GetStringValue(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -4048,7 +4099,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if value found.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetNumberValue(
+    unsafe fn FPDFAnnot_GetNumberValue(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -4072,7 +4123,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_SetAP_str].
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetAP(
+    unsafe fn FPDFAnnot_SetAP(
         &self,
         annot: FPDF_ANNOTATION,
         appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
@@ -4097,7 +4148,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// a null pointer for `value`. To clear an appearance string, use [PdfiumLibraryBindings::FPDFAnnot_SetAP].
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetAP_str(
+    unsafe fn FPDFAnnot_SetAP_str(
         &self,
         annot: FPDF_ANNOTATION,
         appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
@@ -4133,7 +4184,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetAP(
+    unsafe fn FPDFAnnot_GetAP(
         &self,
         annot: FPDF_ANNOTATION,
         appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
@@ -4152,7 +4203,8 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the linked annotation object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetLinkedAnnot(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_ANNOTATION;
+    unsafe fn FPDFAnnot_GetLinkedAnnot(&self, annot: FPDF_ANNOTATION, key: &str)
+        -> FPDF_ANNOTATION;
 
     /// Gets the annotation flags of `annot`.
     ///
@@ -4160,7 +4212,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the annotation flags.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFlags(&self, annot: FPDF_ANNOTATION) -> c_int;
+    unsafe fn FPDFAnnot_GetFlags(&self, annot: FPDF_ANNOTATION) -> c_int;
 
     /// Sets the `annot`'s flags to be of the value `flags`.
     ///
@@ -4170,7 +4222,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL;
 
     /// Gets the annotation flags of `annot`.
     ///
@@ -4181,7 +4233,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the annotation flags specific to interactive forms.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldFlags(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
+    unsafe fn FPDFAnnot_GetFormFieldFlags(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Sets the form field flags for an interactive form annotation.
@@ -4195,7 +4251,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFormFieldFlags(
+    unsafe fn FPDFAnnot_SetFormFieldFlags(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4216,7 +4272,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the interactive form annotation whose rectangle contains the given
     /// coordinates on the page. If there is no such annotation, return `NULL`.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldAtPoint(
+    unsafe fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4239,7 +4295,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldName(
+    unsafe fn FPDFAnnot_GetFormFieldName(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4257,7 +4313,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the type of the form field (one of the `FPDF_FORMFIELD_*` values) on
     /// success. Returns -1 on error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldType(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
+    unsafe fn FPDFAnnot_GetFormFieldType(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
 
     /// Gets the value of `annot`, which is an interactive form annotation.
     /// `buffer` is only modified if `buflen` is longer than the length of contents.
@@ -4275,7 +4335,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldValue(
+    unsafe fn FPDFAnnot_GetFormFieldValue(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4294,7 +4354,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the number of options in "Opt" dictionary on success. Return value
     /// will be -1 if annotation does not have an "Opt" dictionary or other error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int;
+    unsafe fn FPDFAnnot_GetOptionCount(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
 
     /// Gets the string value for the label of the option at `index` in `annot`'s
     /// "Opt" dictionary. Intended for use with listbox and combobox widget
@@ -4318,7 +4382,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `annot` does not have an "Opt" array, `index` is out of range or if any
     /// other error occurs, returns 0.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionLabel(
+    unsafe fn FPDFAnnot_GetOptionLabel(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4339,7 +4403,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the option at `index` in `annot`'s "Opt" dictionary is selected.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsOptionSelected(
+    unsafe fn FPDFAnnot_IsOptionSelected(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4360,7 +4424,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` if the font size was set in `value`, `false` on error or if
     /// `value` not provided.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFontSize(
+    unsafe fn FPDFAnnot_GetFontSize(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4387,7 +4451,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Currently supported subtypes: freetext.
     /// The range for the color components is 0 to 255.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFontColor(
+    unsafe fn FPDFAnnot_SetFontColor(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4421,7 +4485,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` if the font color was set, `false` on error or if the font color
     /// was not provided.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFontColor(
+    unsafe fn FPDFAnnot_GetFontColor(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4440,7 +4504,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `annot` is a form widget and is checked.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsChecked(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_IsChecked(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_BOOL;
 
     /// Sets the list of focusable annotation subtypes. Annotations of subtype
     /// `FPDF_ANNOT_WIDGET` are by default focusable. New subtypes set using this API
@@ -4455,7 +4523,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if list of annotation subtype is set successfully.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFocusableSubtypes(
+    unsafe fn FPDFAnnot_SetFocusableSubtypes(
         &self,
         form: FPDF_FORMHANDLE,
         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
@@ -4472,7 +4540,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int;
+    unsafe fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int;
 
     /// Gets the list of focusable annotation subtype as set by host.
     ///
@@ -4490,7 +4558,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Note: Annotations of type `FPDF_ANNOT_WIDGET` are by default focusable.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypes(
+    unsafe fn FPDFAnnot_GetFocusableSubtypes(
         &self,
         form: FPDF_FORMHANDLE,
         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
@@ -4504,7 +4572,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `FPDF_LINK` from the `FPDF_ANNOTATION` and `NULL` on failure,
     /// if the input annot is `NULL`, or input annot's subtype is not link.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetLink(&self, annot: FPDF_ANNOTATION) -> FPDF_LINK;
+    unsafe fn FPDFAnnot_GetLink(&self, annot: FPDF_ANNOTATION) -> FPDF_LINK;
 
     /// Gets the count of annotations in the `annot`'s control group.
     ///
@@ -4519,8 +4587,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns number of controls in its control group or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormControlCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
-        -> c_int;
+    unsafe fn FPDFAnnot_GetFormControlCount(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
 
     /// Gets the index of `annot` in `annot`'s control group.
     ///
@@ -4535,8 +4606,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns index of a given `annot` in its control group or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormControlIndex(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION)
-        -> c_int;
+    unsafe fn FPDFAnnot_GetFormControlIndex(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int;
 
     /// Gets the export value of `annot` which is an interactive form annotation.
     ///
@@ -4557,7 +4631,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the string value in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldExportValue(
+    unsafe fn FPDFAnnot_GetFormFieldExportValue(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -4573,7 +4647,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
+    unsafe fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
 
     /// Get the attachment from `annot`.
     ///
@@ -4597,7 +4671,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         feature = "pdfium_6337",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT;
+    unsafe fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT;
 
     /// Add an embedded file with `name` to `annot`.
     ///
@@ -4626,7 +4700,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         feature = "pdfium_6337",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AddFileAttachment(
+    unsafe fn FPDFAnnot_AddFileAttachment(
         &self,
         annot: FPDF_ANNOTATION,
         name: FPDF_WIDESTRING,
@@ -4659,7 +4733,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ))]
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AddFileAttachment_str(
+    unsafe fn FPDFAnnot_AddFileAttachment_str(
         &self,
         annot: FPDF_ANNOTATION,
         name: &str,
@@ -4684,7 +4758,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///        The `FPDF_FORMFILLINFO` passed in via `form_info` must remain valid until
     ///        the returned `FPDF_FORMHANDLE` is closed.
     #[allow(non_snake_case)]
-    fn FPDFDOC_InitFormFillEnvironment(
+    unsafe fn FPDFDOC_InitFormFillEnvironment(
         &self,
         document: FPDF_DOCUMENT,
         form_info: *mut FPDF_FORMFILLINFO,
@@ -4697,7 +4771,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// This function is a no-op when `form` is null.
     #[allow(non_snake_case)]
-    fn FPDFDOC_ExitFormFillEnvironment(&self, form: FPDF_FORMHANDLE);
+    unsafe fn FPDFDOC_ExitFormFillEnvironment(&self, form: FPDF_FORMHANDLE);
 
     /// This method is required for implementing all the form related
     /// functions. Should be invoked after user successfully loaded a
@@ -4706,7 +4780,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///    `form`      -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     #[allow(non_snake_case)]
-    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE);
+    unsafe fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE);
 
     /// This method is required for implementing all the form related
     /// functions. Should be invoked before user closes the PDF page.
@@ -4716,7 +4790,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///    `form`      -   Handle to the form fill module, as returned by
     ///                    [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     #[allow(non_snake_case)]
-    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE);
+    unsafe fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE);
 
     /// Gets the document's page mode.
     ///
@@ -4725,7 +4799,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns one of the `PAGEMODE_*` flags defined above.
     /// The page mode defines how the document should be initially displayed.
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Flattens annotations and form fields into the page contents.
     ///
@@ -4736,7 +4810,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns one of the `FLATTEN_*` values. Currently, all failures return `FLATTEN_FAIL`
     /// with no indication of the cause.
     #[allow(non_snake_case)]
-    fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int;
+    unsafe fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int;
 
     /// This method is required for performing document-level JavaScript actions.
     /// It should be invoked after the PDF document has been loaded.
@@ -4747,7 +4821,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If there is document-level JavaScript action embedded in the document, this method
     /// will execute the JavaScript action. Otherwise, the method will do nothing.
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE);
+    unsafe fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE);
 
     /// This method is required for performing open-action when the document is opened.
     ///
@@ -4756,7 +4830,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// This method will do nothing if there are no open-actions embedded in the document.
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE);
+    unsafe fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE);
 
     /// This method is required for performing the document's additional-action.
     ///
@@ -4768,7 +4842,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// This method will do nothing if there is no document additional-action corresponding
     /// to the specified `aaType`.
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int);
+    unsafe fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int);
 
     /// This method is required for performing the page object's additional-action when
     /// opened or closed.
@@ -4784,7 +4858,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// This method will do nothing if no additional-action corresponding to the specified
     /// `aaType` exists.
     #[allow(non_snake_case)]
-    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int);
+    unsafe fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int);
 
     /// Call this member function when the mouse cursor moves.
     ///
@@ -4801,7 +4875,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on  success.
     #[allow(non_snake_case)]
-    fn FORM_OnMouseMove(
+    unsafe fn FORM_OnMouseMove(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4835,7 +4909,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// e.g. on Windows, a delta value of `240` for a `WM_MOUSEWHEEL` event normalizes to `2`,
     /// since Windows defines `WHEEL_DELTA` as 120.
     #[allow(non_snake_case)]
-    fn FORM_OnMouseWheel(
+    unsafe fn FORM_OnMouseWheel(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4862,7 +4936,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if there is an annotation at the given point and it has focus.
     #[allow(non_snake_case)]
-    fn FORM_OnFocus(
+    unsafe fn FORM_OnFocus(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4886,7 +4960,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_OnLButtonDown(
+    unsafe fn FORM_OnLButtonDown(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4900,7 +4974,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// At the present time, has no effect except in XFA builds, but is included for the sake
     /// of symmetry.
     #[allow(non_snake_case)]
-    fn FORM_OnRButtonDown(
+    unsafe fn FORM_OnRButtonDown(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4924,7 +4998,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_OnLButtonUp(
+    unsafe fn FORM_OnLButtonUp(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4938,7 +5012,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// At the present time, has no effect except in XFA builds, but is included for the sake
     /// of symmetry.
     #[allow(non_snake_case)]
-    fn FORM_OnRButtonUp(
+    unsafe fn FORM_OnRButtonUp(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4962,7 +5036,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_OnLButtonDoubleClick(
+    unsafe fn FORM_OnLButtonDoubleClick(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -4985,7 +5059,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_OnKeyDown(
+    unsafe fn FORM_OnKeyDown(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5010,7 +5084,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Note: currently unimplemented, always returns `false`. PDFium reserves this API
     /// and may implement it in the future on an as-needed basis.
     #[allow(non_snake_case)]
-    fn FORM_OnKeyUp(
+    unsafe fn FORM_OnKeyUp(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5031,7 +5105,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_OnChar(
+    unsafe fn FORM_OnChar(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5054,7 +5128,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length in bytes of the text in the focused field.
     #[allow(non_snake_case)]
-    fn FORM_GetFocusedText(
+    unsafe fn FORM_GetFocusedText(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5078,7 +5152,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length in bytes of selected text in form text field or form combo-box text field.
     #[allow(non_snake_case)]
-    fn FORM_GetSelectedText(
+    unsafe fn FORM_GetSelectedText(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5099,7 +5173,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `wsText`      -   The text to be inserted, in UTF-16LE format.
     #[allow(non_snake_case)]
-    fn FORM_ReplaceAndKeepSelection(
+    unsafe fn FORM_ReplaceAndKeepSelection(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5119,7 +5193,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `wsText`      -   The text to be inserted, in UTF-16LE format.
     #[allow(non_snake_case)]
-    fn FORM_ReplaceSelection(
+    unsafe fn FORM_ReplaceSelection(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5136,7 +5210,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Finds out if it is possible for the current focused widget in a given form to perform
     /// an undo operation.
@@ -5148,7 +5222,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if it is possible to undo.
     #[allow(non_snake_case)]
-    fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Finds out if it is possible for the current focused widget in a given form to perform
     /// a redo operation.
@@ -5160,7 +5234,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if it is possible to redo.
     #[allow(non_snake_case)]
-    fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Makes the current focused widget perform an undo operation.
     ///
@@ -5171,7 +5245,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the undo operation succeeded.
     #[allow(non_snake_case)]
-    fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Makes the current focused widget perform a redo operation.
     ///
@@ -5182,7 +5256,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the redo operation succeeded.
     #[allow(non_snake_case)]
-    fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
+    unsafe fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
     /// Calls this member function to force to kill the focus of the form field which has focus.
     /// If it would kill the focus of a form field, saves the value of form field if was
@@ -5193,7 +5267,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL;
+    unsafe fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL;
 
     /// Calls this member function to get the currently focused annotation.
     ///
@@ -5214,7 +5288,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Must call [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the annotation returned
     /// in `annot` by this function is no longer needed.
     #[allow(non_snake_case)]
-    fn FORM_GetFocusedAnnot(
+    unsafe fn FORM_GetFocusedAnnot(
         &self,
         form: FPDF_FORMHANDLE,
         page_index: *mut c_int,
@@ -5233,7 +5307,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Note: `annot` must not be `NULL`. To kill focus, use
     /// [PdfiumLibraryBindings::FORM_ForceToKillFocus] instead.
     #[allow(non_snake_case)]
-    fn FORM_SetFocusedAnnot(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
+    unsafe fn FORM_SetFocusedAnnot(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_BOOL;
 
     /// Gets the form field type by point.
     ///
@@ -5249,7 +5327,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the type of the form field. `-1` indicates no field at the given point.
     /// See field types above.
     #[allow(non_snake_case)]
-    fn FPDFPage_HasFormFieldAtPoint(
+    unsafe fn FPDFPage_HasFormFieldAtPoint(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5271,7 +5349,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the z-order of the form field. `-1` indicates no field.
     /// Higher numbers are closer to the front.
     #[allow(non_snake_case)]
-    fn FPDFPage_FormFieldZOrderAtPoint(
+    unsafe fn FPDFPage_FormFieldZOrderAtPoint(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5295,7 +5373,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// the highlight color will be applied to all the form fields in the document.
     /// Please refresh the client window to show the highlight immediately if necessary.
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightColor(
+    unsafe fn FPDF_SetFormFieldHighlightColor(
         &self,
         form: FPDF_FORMHANDLE,
         field_type: c_int,
@@ -5312,7 +5390,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `alpha`       -   The transparency of the form field highlight color, between `0` - `255`.
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar);
+    unsafe fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar);
 
     /// Removes the form field highlight color in the document.
     ///
@@ -5321,7 +5399,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Please refresh the client window to remove the highlight immediately if necessary.
     #[allow(non_snake_case)]
-    fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE);
+    unsafe fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE);
 
     /// Renders form fields and pop-up windows on a page to a device independent bitmap.
     ///
@@ -5358,7 +5436,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// the page contents.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDF_FFLDraw(
+    unsafe fn FPDF_FFLDraw(
         &self,
         form: FPDF_FORMHANDLE,
         bitmap: FPDF_BITMAP,
@@ -5407,7 +5485,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// after rendering functions, such as [PdfiumLibraryBindings::FPDF_RenderPageBitmap]
     /// or [PdfiumLibraryBindings::FPDF_RenderPageBitmap_Start], have finished rendering
     /// the page contents.
-    fn FPDF_FFLDrawSkia(
+    unsafe fn FPDF_FFLDrawSkia(
         &self,
         form: FPDF_FORMHANDLE,
         canvas: FPDF_SKIA_CANVAS,
@@ -5427,7 +5505,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns an integer value representing one of the `FORMTYPE_*` values.
     /// If `document` is `NULL`, then the return value is `FORMTYPE_NONE`.
     #[allow(non_snake_case)]
-    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Selects or deselects the value at the given `index` of the focused annotation.
     ///
@@ -5448,7 +5526,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// XFA forms - will return `false`. Combo-boxes have at most a single value selected at
     /// a time which cannot be deselected. Deselect on a combo-box is a no-op that returns `false`.
     #[allow(non_snake_case)]
-    fn FORM_SetIndexSelected(
+    unsafe fn FORM_SetIndexSelected(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5472,7 +5550,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// a no-op that will return `false` for other types. Not currently supported for
     /// XFA forms - will return `false`.
     #[allow(non_snake_case)]
-    fn FORM_IsIndexSelected(
+    unsafe fn FORM_IsIndexSelected(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -5486,7 +5564,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` upon success. If XFA support is not built into
     /// PDFium, performs no action and always returns `false`.
     #[allow(non_snake_case)]
-    fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
+    unsafe fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
     /// Gets the number of JavaScript actions in `document`.
     ///
@@ -5494,7 +5572,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of JavaScript actions in `document` or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Gets the JavaScript action at `index` in `document`.
     ///
@@ -5507,7 +5585,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Caller owns the returned handle and must close it with
     /// [PdfiumLibraryBindings::FPDFDoc_CloseJavaScriptAction].
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetJavaScriptAction(
+    unsafe fn FPDFDoc_GetJavaScriptAction(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -5517,7 +5595,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `javascript` - Handle to a JavaScript action.
     #[allow(non_snake_case)]
-    fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION);
+    unsafe fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION);
 
     /// Gets the name from the `javascript` handle. `buffer` is only modified if
     /// `buflen` is longer than the length of the name. On errors, `buffer` is
@@ -5531,7 +5609,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the JavaScript action name in bytes.
     #[allow(non_snake_case)]
-    fn FPDFJavaScriptAction_GetName(
+    unsafe fn FPDFJavaScriptAction_GetName(
         &self,
         javascript: FPDF_JAVASCRIPT_ACTION,
         buffer: *mut FPDF_WCHAR,
@@ -5550,7 +5628,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the JavaScript action name in bytes.
     #[allow(non_snake_case)]
-    fn FPDFJavaScriptAction_GetScript(
+    unsafe fn FPDFJavaScriptAction_GetScript(
         &self,
         javascript: FPDF_JAVASCRIPT_ACTION,
         buffer: *mut FPDF_WCHAR,
@@ -5563,7 +5641,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// and [PdfiumLibraryBindings::FPDF_GetDefaultTTFMapEntry] are no longer experimental,
     /// this API will be marked as deprecated. See: <https://crbug.com/348468114>
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap;
+    unsafe fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -5579,7 +5657,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ))]
     /// Returns the number of entries in the default character set to TT Font name map.
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultTTFMapCount(&self) -> usize;
+    unsafe fn FPDF_GetDefaultTTFMapCount(&self) -> usize;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -5600,7 +5678,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns a pointer to the entry, if it is in the map, or `NULL` if the index is out
     /// of bounds.
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap;
+    unsafe fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap;
 
     /// Adds a system font to the list in PDFium.
     ///
@@ -5612,7 +5690,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `charset`   -   Font character set. See above defined constants.
     #[allow(non_snake_case)]
-    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int);
+    unsafe fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int);
 
     /// Sets the system font info interface into PDFium.
     ///
@@ -5624,7 +5702,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Call this with `NULL` to tell PDFium to stop using a previously set `FPDF_SYSFONTINFO`.
     #[allow(non_snake_case)]
-    fn FPDF_SetSystemFontInfo(&self, font_info: *mut FPDF_SYSFONTINFO);
+    unsafe fn FPDF_SetSystemFontInfo(&self, font_info: *mut FPDF_SYSFONTINFO);
 
     /// Gets default system font info interface for current platform.
     ///
@@ -5636,7 +5714,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// of system font info interface. The default implementation can be passed to
     /// [PdfiumLibraryBindings::FPDF_SetSystemFontInfo].
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO;
+    unsafe fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO;
 
     /// Frees a default system font info interface.
     ///
@@ -5645,7 +5723,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// This function should be called on the output from
     /// [PdfiumLibraryBindings::FPDF_GetDefaultSystemFontInfo] once it is no longer needed.
     #[allow(non_snake_case)]
-    fn FPDF_FreeDefaultSystemFontInfo(&self, font_info: *mut FPDF_SYSFONTINFO);
+    unsafe fn FPDF_FreeDefaultSystemFontInfo(&self, font_info: *mut FPDF_SYSFONTINFO);
 
     /// Gets the first child of `bookmark`, or the first top-level bookmark item.
     ///
@@ -5659,7 +5737,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Note that another name for the bookmarks is the document outline, as
     /// described in ISO 32000-1:2008, section 12.3.3.
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetFirstChild(
+    unsafe fn FPDFBookmark_GetFirstChild(
         &self,
         document: FPDF_DOCUMENT,
         bookmark: FPDF_BOOKMARK,
@@ -5677,7 +5755,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Note that the caller is responsible for handling circular bookmark
     /// references, as may arise from malformed documents.
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetNextSibling(
+    unsafe fn FPDFBookmark_GetNextSibling(
         &self,
         document: FPDF_DOCUMENT,
         bookmark: FPDF_BOOKMARK,
@@ -5699,7 +5777,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// string is terminated by a UTF16 `NUL` character. If `buflen` is less than the
     /// required length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetTitle(
+    unsafe fn FPDFBookmark_GetTitle(
         &self,
         bookmark: FPDF_BOOKMARK,
         buffer: *mut c_void,
@@ -5716,7 +5794,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// default (closed state). Please refer to PDF 32000-1:2008, Table 153.
     /// Returns 0 if the bookmark has no children or is invalid.
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int;
+    unsafe fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int;
 
     /// Finds the bookmark with `title` in `document`.
     ///
@@ -5732,7 +5810,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFBookmark_Find_str].
     #[allow(non_snake_case)]
-    fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK;
+    unsafe fn FPDFBookmark_Find(
+        &self,
+        document: FPDF_DOCUMENT,
+        title: FPDF_WIDESTRING,
+    ) -> FPDF_BOOKMARK;
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFBookmark_Find].
     ///
@@ -5748,7 +5830,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// multiple bookmarks have the same `title`.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBookmark_Find_str(&self, document: FPDF_DOCUMENT, title: &str) -> FPDF_BOOKMARK {
+    unsafe fn FPDFBookmark_Find_str(&self, document: FPDF_DOCUMENT, title: &str) -> FPDF_BOOKMARK {
         self.FPDFBookmark_Find(
             document,
             get_pdfium_utf16le_bytes_from_str(title).as_ptr() as FPDF_WIDESTRING,
@@ -5764,7 +5846,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the handle to the destination data, or `NULL` if no destination is
     /// associated with `bookmark`.
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetDest(&self, document: FPDF_DOCUMENT, bookmark: FPDF_BOOKMARK) -> FPDF_DEST;
+    unsafe fn FPDFBookmark_GetDest(
+        &self,
+        document: FPDF_DOCUMENT,
+        bookmark: FPDF_BOOKMARK,
+    ) -> FPDF_DEST;
 
     /// Gets the action associated with `bookmark`.
     ///
@@ -5779,7 +5865,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If this function returns `NULL`, `FPDFBookmark_GetDest()` should be called to get
     /// the `bookmark` destination data.
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetAction(&self, bookmark: FPDF_BOOKMARK) -> FPDF_ACTION;
+    unsafe fn FPDFBookmark_GetAction(&self, bookmark: FPDF_BOOKMARK) -> FPDF_ACTION;
 
     /// Gets the type of `action`.
     ///
@@ -5792,7 +5878,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///   - `PDFACTION_URI`
     ///   - `PDFACTION_LAUNCH`
     #[allow(non_snake_case)]
-    fn FPDFAction_GetType(&self, action: FPDF_ACTION) -> c_ulong;
+    unsafe fn FPDFAction_GetType(&self, action: FPDF_ACTION) -> c_ulong;
 
     /// Gets the destination of `action`.
     ///
@@ -5808,7 +5894,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// `FPDFAction_GetFilePath()`, then load the document at that path, then pass
     /// the document handle from that document as `document` to `FPDFAction_GetDest()`.
     #[allow(non_snake_case)]
-    fn FPDFAction_GetDest(&self, document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST;
+    unsafe fn FPDFAction_GetDest(&self, document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST;
 
     /// Gets the file path of `action`.
     ///
@@ -5827,7 +5913,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `buflen` is less than the returned length, or `buffer` is `NULL`, `buffer`
     /// will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFAction_GetFilePath(
+    unsafe fn FPDFAction_GetFilePath(
         &self,
         action: FPDF_ACTION,
         buffer: *mut c_void,
@@ -5861,7 +5947,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// used UTF-8. As of this writing, this API reverted back to its original
     /// behavior prior to commit d609e84cee.
     #[allow(non_snake_case)]
-    fn FPDFAction_GetURIPath(
+    unsafe fn FPDFAction_GetURIPath(
         &self,
         document: FPDF_DOCUMENT,
         action: FPDF_ACTION,
@@ -5877,7 +5963,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the 0-based page index containing `dest`. Returns -1 on error.
     #[allow(non_snake_case)]
-    fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int;
+    unsafe fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int;
 
     /// Gets the view (fit type) specified by `dest`.
     ///
@@ -5891,7 +5977,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns one of the `PDFDEST_VIEW_*` constants, or `PDFDEST_VIEW_UNKNOWN_MODE` if
     /// `dest` does not specify a view.
     #[allow(non_snake_case)]
-    fn FPDFDest_GetView(
+    unsafe fn FPDFDest_GetView(
         &self,
         dest: FPDF_DEST,
         pNumParams: *mut c_ulong,
@@ -5921,7 +6007,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// `hasYVal`, or `hasZoomVal` flags are true.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFDest_GetLocationInPage(
+    unsafe fn FPDFDest_GetLocationInPage(
         &self,
         dest: FPDF_DEST,
         hasXVal: *mut FPDF_BOOL,
@@ -5945,7 +6031,12 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// You can convert coordinates from screen coordinates to page coordinates using
     /// `FPDF_DeviceToPage()`.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK;
+    unsafe fn FPDFLink_GetLinkAtPoint(
+        &self,
+        page: FPDF_PAGE,
+        x: c_double,
+        y: c_double,
+    ) -> FPDF_LINK;
 
     /// Finds the Z-order of link at point (`x`, `y`) on `page`.
     ///
@@ -5961,7 +6052,12 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// You can convert coordinates from screen coordinates to page coordinates using
     /// `FPDF_DeviceToPage()`.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int;
+    unsafe fn FPDFLink_GetLinkZOrderAtPoint(
+        &self,
+        page: FPDF_PAGE,
+        x: c_double,
+        y: c_double,
+    ) -> c_int;
 
     /// Gets destination info for `link`.
     ///
@@ -5973,7 +6069,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// associated with the link. In this case, you should call `FPDFLink_GetAction()`
     /// to retrieve the action associated with `link`.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;
+    unsafe fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;
 
     /// Gets action info for `link`.
     ///
@@ -5983,7 +6079,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If this function returns a valid handle, it is valid as long as `link` is
     /// valid.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION;
+    unsafe fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION;
 
     /// Enumerates all the link annotations in `page`.
     ///
@@ -5996,7 +6092,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFLink_Enumerate(
+    unsafe fn FPDFLink_Enumerate(
         &self,
         page: FPDF_PAGE,
         start_pos: *mut c_int,
@@ -6012,7 +6108,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `FPDF_ANNOTATION` from the `FPDF_LINK` or `NULL` on failure,
     /// if the input link annot or page is `NULL`.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION;
+    unsafe fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION;
 
     /// Gets the rectangle for `link_annot`.
     ///
@@ -6022,7 +6118,8 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL;
+    unsafe fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF)
+        -> FPDF_BOOL;
 
     /// Gets the count of quadrilateral points to the `link_annot`.
     ///
@@ -6030,7 +6127,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the count of quadrilateral points.
     #[allow(non_snake_case)]
-    fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int;
+    unsafe fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int;
 
     /// Gets the quadrilateral points for the specified `quad_index` in `link_annot`.
     ///
@@ -6042,7 +6139,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetQuadPoints(
+    unsafe fn FPDFLink_GetQuadPoints(
         &self,
         link_annot: FPDF_LINK,
         quad_index: c_int,
@@ -6062,7 +6159,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///   If this function returns a valid handle, it is valid as long as `page` is
     ///   valid.
     #[allow(non_snake_case)]
-    fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION;
+    unsafe fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION;
 
     /// Gets the file identifier defined in the trailer of `document`.
     ///
@@ -6081,7 +6178,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// terminator.  If `buflen` is less than the returned length, or `buffer` is
     /// `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_GetFileIdentifier(
+    unsafe fn FPDF_GetFileIdentifier(
         &self,
         document: FPDF_DOCUMENT,
         id_type: FPDF_FILEIDTYPE,
@@ -6114,7 +6211,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// it must have returned `PDF_FORM_AVAIL` or `PDF_FORM_NOTEXIST`. Before that, there
     /// is no guarantee the metadata has been loaded.
     #[allow(non_snake_case)]
-    fn FPDF_GetMetaText(
+    unsafe fn FPDF_GetMetaText(
         &self,
         document: FPDF_DOCUMENT,
         tag: &str,
@@ -6138,7 +6235,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// bytes of zeros indicating the end of the string.  If `buflen` is less than
     /// the returned length, or `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_GetPageLabel(
+    unsafe fn FPDF_GetPageLabel(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -6153,7 +6250,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of valid packets, or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     #[cfg(feature = "pdfium_enable_xfa")]
     /// Gets the name of a packet in the XFA array.
@@ -6173,7 +6270,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// equal to the length of the packet name. The packet name includes a terminating `NUL` character.
     /// `buffer` is unmodified on error.
     #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketName(
+    unsafe fn FPDF_GetXFAPacketName(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -6205,7 +6302,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Callers must check both the return value and that the input `buflen` is no less than
     /// the returned `out_buflen` before using the data in `buffer`.
     #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketContent(
+    unsafe fn FPDF_GetXFAPacketContent(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -6222,7 +6319,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns a `NUL`-terminated string of the form `--flag1 --flag2`.
     /// The caller must not attempt to modify or free the result.
     #[allow(non_snake_case)]
-    fn FPDF_GetRecommendedV8Flags(&self) -> *const c_char;
+    unsafe fn FPDF_GetRecommendedV8Flags(&self) -> *const c_char;
 
     #[cfg(feature = "pdfium_enable_v8")]
     #[cfg(not(target_arch = "wasm32"))] // pdfium_enable_v8 feature not supported on WASM
@@ -6235,17 +6332,17 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// `FPDF_LIBRARY_CONFIG::m_pIsolate`. Can only be called when the library is in an
     /// uninitialized or destroyed state.
     #[allow(non_snake_case)]
-    fn FPDF_GetArrayBufferAllocatorSharedInstance(&self) -> *mut c_void;
+    unsafe fn FPDF_GetArrayBufferAllocatorSharedInstance(&self) -> *mut c_void;
 
     #[cfg(feature = "pdfium_enable_xfa")]
     /// A helper function to initialize a `FPDF_BSTR`.
     #[allow(non_snake_case)]
-    fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT;
+    unsafe fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT;
 
     #[cfg(feature = "pdfium_enable_xfa")]
     /// A helper function to copy string data into the `FPDF_BSTR`.
     #[allow(non_snake_case)]
-    fn FPDF_BStr_Set(
+    unsafe fn FPDF_BStr_Set(
         &self,
         bstr: *mut FPDF_BSTR,
         cstr: *const c_char,
@@ -6255,7 +6352,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     #[cfg(feature = "pdfium_enable_xfa")]
     /// A helper function to clear a `FPDF_BSTR`.
     #[allow(non_snake_case)]
-    fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT;
+    unsafe fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT;
 
     /// Prepares information about all characters in a page.
     ///
@@ -6266,14 +6363,14 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Application must call [PdfiumLibraryBindings::FPDFText_ClosePage] to release the
     /// text page information.
     #[allow(non_snake_case)]
-    fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE;
+    unsafe fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE;
 
     /// Releases all resources allocated for a text page information structure.
     ///
     ///    `text_page`   -   handle to a text page information structure.
     ///                      Returned by [PdfiumLibraryBindings::FPDFText_LoadPage].
     #[allow(non_snake_case)]
-    fn FPDFText_ClosePage(&self, text_page: FPDF_TEXTPAGE);
+    unsafe fn FPDFText_ClosePage(&self, text_page: FPDF_TEXTPAGE);
 
     /// Gets the number of characters in a page.
     ///
@@ -6288,7 +6385,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// We will use the index parameters in many of the `FPDFTEXT` functions. The
     /// first character in the page has an index value of zero.
     #[allow(non_snake_case)]
-    fn FPDFText_CountChars(&self, text_page: FPDF_TEXTPAGE) -> c_int;
+    unsafe fn FPDFText_CountChars(&self, text_page: FPDF_TEXTPAGE) -> c_int;
 
     /// Gets the Unicode of a character in a page.
     ///
@@ -6300,7 +6397,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the Unicode of the particular character. If a character is not encoded in
     /// Unicode and Foxit engine can't convert to Unicode, the return value will be zero.
     #[allow(non_snake_case)]
-    fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint;
+    unsafe fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -6324,7 +6421,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The returned text object, if non-`NULL`, is of type `FPDF_PAGEOBJ_TEXT`.
     /// The caller does not own the returned object.
     #[allow(non_snake_case)]
-    fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT;
+    unsafe fn FPDFText_GetTextObject(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+    ) -> FPDF_PAGEOBJECT;
 
     /// Returns whether or not a character in a page is generated by PDFium.
     ///
@@ -6336,7 +6437,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `1` if the character is generated by PDFium, `0` if the character is not
     /// generated by PDFium, or `-1` if there was an error.
     #[allow(non_snake_case)]
-    fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
+    unsafe fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -6372,7 +6473,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `1` if the character is a hyphen, `0` if the character is not a hyphen,
     /// or `-1` if there was an error.
     #[allow(non_snake_case)]
-    fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
+    unsafe fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
     /// Returns whether or not a character in a page has an invalid unicode mapping.
     ///
@@ -6384,7 +6485,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `1` if the character has an invalid unicode mapping, `0` if the character
     /// has no known unicode mapping issues, or `-1` if there was an error.
     #[allow(non_snake_case)]
-    fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
+    unsafe fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
     /// Gets the font size of a particular character.
     ///
@@ -6396,7 +6497,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the font size of the particular character, measured in points (about 1/72 inch).
     /// This is the typographic size of the font (so called "em size").
     #[allow(non_snake_case)]
-    fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double;
+    unsafe fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double;
 
     /// Gets the font name and flags of a particular character.
     ///
@@ -6418,7 +6519,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// font name, `flags` is set to the font flags. `buffer` is in UTF-8 encoding.
     /// Returns `0` on failure.
     #[allow(non_snake_case)]
-    fn FPDFText_GetFontInfo(
+    unsafe fn FPDFText_GetFontInfo(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6438,7 +6539,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// is invalid, if `index` is out of bounds, or if the character's text object is
     /// undefined, return `-1`.
     #[allow(non_snake_case)]
-    fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
+    unsafe fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int;
 
     #[cfg(any(
         feature = "pdfium_6569",
@@ -6467,7 +6568,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// `FPDF_TEXT_RENDERMODE`. If `text_page` is invalid, if `index` is out of bounds,
     /// or if the text object is undefined, then returns `FPDF_TEXTRENDERMODE_UNKNOWN`.
     #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(
+    unsafe fn FPDFText_GetTextRenderMode(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6494,7 +6595,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns whether the call succeeded. If false, `R`, `G`, `B` and `A` are unchanged.
     #[allow(non_snake_case)]
-    fn FPDFText_GetFillColor(
+    unsafe fn FPDFText_GetFillColor(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6525,7 +6626,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns whether the call succeeded. If false, `R`, `G`, `B` and `A` are unchanged.
     #[allow(non_snake_case)]
-    fn FPDFText_GetStrokeColor(
+    unsafe fn FPDFText_GetStrokeColor(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6546,7 +6647,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// equal to `0`. If `text_page` is invalid, or if `index` is out of bounds,
     /// then returns `-1`.
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float;
+    unsafe fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float;
 
     /// Gets bounding box of a particular character.
     ///
@@ -6573,7 +6674,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// All positions are measured in PDF user space.
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharBox(
+    unsafe fn FPDFText_GetCharBox(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6599,7 +6700,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// All positions are measured in PDF "user space".
     #[allow(non_snake_case)]
-    fn FPDFText_GetLooseCharBox(
+    unsafe fn FPDFText_GetLooseCharBox(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6619,7 +6720,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// `index` is out of bounds, or if `matrix` is `NULL`, then returns `false`, and
     /// `matrix` remains unmodified.
     #[allow(non_snake_case)]
-    fn FPDFText_GetMatrix(
+    unsafe fn FPDFText_GetMatrix(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6643,7 +6744,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// All positions are measured in PDF "user space".
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharOrigin(
+    unsafe fn FPDFText_GetCharOrigin(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -6670,7 +6771,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If there is no character at or nearby the point, the return value will be `-1`.
     /// If an error occurs, `-3` will be returned.
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharIndexAtPos(
+    unsafe fn FPDFText_GetCharIndexAtPos(
         &self,
         text_page: FPDF_TEXTPAGE,
         x: c_double,
@@ -6700,7 +6801,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// a cropbox. To filter out the characters outside of the cropbox, use
     /// [PdfiumLibraryBindings::FPDF_GetPageBoundingBox] and [PdfiumLibraryBindings::FPDFText_GetCharBox].
     #[allow(non_snake_case)]
-    fn FPDFText_GetText(
+    unsafe fn FPDFText_GetText(
         &self,
         text_page: FPDF_TEXTPAGE,
         start_index: c_int,
@@ -6725,7 +6826,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// can be highlighted. The `FPDFText_*` functions will automatically merge small character
     /// boxes into bigger one if those characters are on the same line and use same font settings.
     #[allow(non_snake_case)]
-    fn FPDFText_CountRects(
+    unsafe fn FPDFText_CountRects(
         &self,
         text_page: FPDF_TEXTPAGE,
         start_index: c_int,
@@ -6753,7 +6854,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `text_page` is valid but `rect_index` is out of bounds, then returns `false`
     ///  and sets the out parameters to `0`.
     #[allow(non_snake_case)]
-    fn FPDFText_GetRect(
+    unsafe fn FPDFText_GetRect(
         &self,
         text_page: FPDF_TEXTPAGE,
         rect_index: c_int,
@@ -6792,7 +6893,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// a split surrogate in that case.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFText_GetBoundedText(
+    unsafe fn FPDFText_GetBoundedText(
         &self,
         text_page: FPDF_TEXTPAGE,
         left: c_double,
@@ -6820,7 +6921,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFText_FindStart_str].
     #[allow(non_snake_case)]
-    fn FPDFText_FindStart(
+    unsafe fn FPDFText_FindStart(
         &self,
         text_page: FPDF_TEXTPAGE,
         findwhat: FPDF_WIDESTRING,
@@ -6844,7 +6945,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns a handle for the search context. [PdfiumLibraryBindings::FPDFText_FindClose]
     /// must be called to release this handle.
     #[allow(non_snake_case)]
-    fn FPDFText_FindStart_str(
+    unsafe fn FPDFText_FindStart_str(
         &self,
         text_page: FPDF_TEXTPAGE,
         findwhat: &str,
@@ -6866,7 +6967,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns whether or not a match is found.
     #[allow(non_snake_case)]
-    fn FPDFText_FindNext(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
+    unsafe fn FPDFText_FindNext(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
 
     /// Searches in the direction from page end to start.
     ///
@@ -6875,7 +6976,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns whether or not a match is found.
     #[allow(non_snake_case)]
-    fn FPDFText_FindPrev(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
+    unsafe fn FPDFText_FindPrev(&self, handle: FPDF_SCHHANDLE) -> FPDF_BOOL;
 
     /// Gets the starting character index of the search result.
     ///
@@ -6884,7 +6985,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the index for the starting character.
     #[allow(non_snake_case)]
-    fn FPDFText_GetSchResultIndex(&self, handle: FPDF_SCHHANDLE) -> c_int;
+    unsafe fn FPDFText_GetSchResultIndex(&self, handle: FPDF_SCHHANDLE) -> c_int;
 
     /// Gets the number of matched characters in the search result.
     ///
@@ -6893,14 +6994,14 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of matched characters.
     #[allow(non_snake_case)]
-    fn FPDFText_GetSchCount(&self, handle: FPDF_SCHHANDLE) -> c_int;
+    unsafe fn FPDFText_GetSchCount(&self, handle: FPDF_SCHHANDLE) -> c_int;
 
     /// Releases a search context.
     ///
     ///    `handle`      -   A search context handle returned by
     ///                      [PdfiumLibraryBindings::FPDFText_FindStart].
     #[allow(non_snake_case)]
-    fn FPDFText_FindClose(&self, handle: FPDF_SCHHANDLE);
+    unsafe fn FPDFText_FindClose(&self, handle: FPDF_SCHHANDLE);
 
     /// Prepares information about weblinks in a page.
     ///
@@ -6917,7 +7018,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// [PdfiumLibraryBindings::FPDFLink_CloseWebLinks] must be called to release resources.
     #[allow(non_snake_case)]
-    fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK;
+    unsafe fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK;
 
     /// Counts the number of detected web links.
     ///
@@ -6925,7 +7026,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the umber of detected web links.
     #[allow(non_snake_case)]
-    fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int;
+    unsafe fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int;
 
     /// Gets the URL information for a detected web link.
     ///
@@ -6946,7 +7047,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// If `link_index` does not correspond to a valid link, then the result is an empty string.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetURL(
+    unsafe fn FPDFLink_GetURL(
         &self,
         link_page: FPDF_PAGELINK,
         link_index: c_int,
@@ -6963,7 +7064,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the number of rectangular areas for the link. If `link_index` does not
     /// correspond to a valid link, then returns `0`.
     #[allow(non_snake_case)]
-    fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int;
+    unsafe fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int;
 
     /// Gets the boundaries of one rectangular area for a given link.
     ///
@@ -6986,7 +7087,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// then returns `false`, and the out parameters remain unmodified.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFLink_GetRect(
+    unsafe fn FPDFLink_GetRect(
         &self,
         link_page: FPDF_PAGELINK,
         link_index: c_int,
@@ -7011,7 +7112,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `link_page` is invalid or if `link_index` does not correspond to a valid link,
     /// then returns `false` and the out parameters remain unmodified.
     #[allow(non_snake_case)]
-    fn FPDFLink_GetTextRange(
+    unsafe fn FPDFLink_GetTextRange(
         &self,
         link_page: FPDF_PAGELINK,
         link_index: c_int,
@@ -7023,7 +7124,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `link_page`   -   Handle returned by [PdfiumLibraryBindings::FPDFLink_LoadWebLinks].
     #[allow(non_snake_case)]
-    fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK);
+    unsafe fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK);
 
     /// Gets the decoded data from the thumbnail of `page`, if it exists.
     ///
@@ -7037,7 +7138,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// decoded data. Returns the size of the decoded data, or `0` if thumbnail does not exist.
     /// Optionally, pass `NULL` to just retrieve the size of the buffer needed.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetDecodedThumbnailData(
+    unsafe fn FPDFPage_GetDecodedThumbnailData(
         &self,
         page: FPDF_PAGE,
         buffer: *mut c_void,
@@ -7056,7 +7157,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// raw data. Returns the size of the raw data, or `0` if thumbnail does not exist.
     /// Optionally, pass `NULL` to just retrieve the size of the buffer needed.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetRawThumbnailData(
+    unsafe fn FPDFPage_GetRawThumbnailData(
         &self,
         page: FPDF_PAGE,
         buffer: *mut c_void,
@@ -7069,7 +7170,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `NULL` if unable to access the thumbnail's stream.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP;
+    unsafe fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP;
 
     /// Gets the number of page objects inside `form_object`.
     ///
@@ -7077,7 +7178,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of objects in `form_object` on success, or `-1` on error.
     #[allow(non_snake_case)]
-    fn FPDFFormObj_CountObjects(&self, form_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFFormObj_CountObjects(&self, form_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Gets the page object in `form_object` at `index`.
     ///
@@ -7087,7 +7188,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the handle to the page object, or `NULL` on error.
     #[allow(non_snake_case)]
-    fn FPDFFormObj_GetObject(
+    unsafe fn FPDFFormObj_GetObject(
         &self,
         form_object: FPDF_PAGEOBJECT,
         index: c_ulong,
@@ -7110,7 +7211,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Ownership of the removed `page_object` is transferred to the caller.
     /// Call [PdfiumLibraryBindings::FPDFPageObj_Destroy]` on the removed page_object to free it.
     #[allow(non_snake_case)]
-    fn FPDFFormObj_RemoveObject(
+    unsafe fn FPDFFormObj_RemoveObject(
         &self,
         form_object: FPDF_PAGEOBJECT,
         page_object: FPDF_PAGEOBJECT,
@@ -7126,7 +7227,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to a new text object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CreateTextObj(
+    unsafe fn FPDFPageObj_CreateTextObj(
         &self,
         document: FPDF_DOCUMENT,
         font: FPDF_FONT,
@@ -7140,7 +7241,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns one of the known `FPDF_TEXT_RENDERMODE` enum values on success,
     /// `FPDF_TEXTRENDERMODE_UNKNOWN` on error.
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetTextRenderMode(&self, text: FPDF_PAGEOBJECT) -> FPDF_TEXT_RENDERMODE;
+    unsafe fn FPDFTextObj_GetTextRenderMode(&self, text: FPDF_PAGEOBJECT) -> FPDF_TEXT_RENDERMODE;
 
     /// Sets the text rendering mode of a text object.
     ///
@@ -7151,7 +7252,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFTextObj_SetTextRenderMode(
+    unsafe fn FPDFTextObj_SetTextRenderMode(
         &self,
         text: FPDF_PAGEOBJECT,
         render_mode: FPDF_TEXT_RENDERMODE,
@@ -7172,7 +7273,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// UTF-16LE encoding. If `length` is less than the returned length, or `buffer` is
     /// `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetText(
+    unsafe fn FPDFTextObj_GetText(
         &self,
         text_object: FPDF_PAGEOBJECT,
         text_page: FPDF_TEXTPAGE,
@@ -7196,7 +7297,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the bitmap or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetRenderedBitmap(
+    unsafe fn FPDFTextObj_GetRenderedBitmap(
         &self,
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
@@ -7210,7 +7311,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the font object held by `text` which retains ownership.
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT;
+    unsafe fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT;
 
     /// Gets the font size of a text object.
     ///
@@ -7221,13 +7322,17 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetFontSize(&self, text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL;
+    unsafe fn FPDFTextObj_GetFontSize(
+        &self,
+        text: FPDF_PAGEOBJECT,
+        size: *mut c_float,
+    ) -> FPDF_BOOL;
 
     /// Closes a loaded PDF font.
     ///
     ///    `font`   - Handle to the loaded font.
     #[allow(non_snake_case)]
-    fn FPDFFont_Close(&self, font: FPDF_FONT);
+    unsafe fn FPDFFont_Close(&self, font: FPDF_FONT);
 
     /// Moves a path's current point.
     ///
@@ -7240,7 +7345,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Note that no line will be created between the previous current point and the
     /// new one. Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
+    unsafe fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
     /// Adds a line between the current point and a new point in the path.
     ///
@@ -7253,7 +7358,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The path's current point is changed to `(x, y)`. Returns `true` on success,
     /// `false` otherwise.
     #[allow(non_snake_case)]
-    fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
+    unsafe fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
     /// Adds a cubic Bezier curve to the given path, starting at the current point.
     ///
@@ -7274,7 +7379,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` on success.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFPath_BezierTo(
+    unsafe fn FPDFPath_BezierTo(
         &self,
         path: FPDF_PAGEOBJECT,
         x1: c_float,
@@ -7292,7 +7397,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// This will add a line between the current point and the initial point of the subpath,
     /// thus terminating the current subpath. Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+    unsafe fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
     /// Sets the drawing mode of a path.
     ///
@@ -7304,7 +7409,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPath_SetDrawMode(
+    unsafe fn FPDFPath_SetDrawMode(
         &self,
         path: FPDF_PAGEOBJECT,
         fillmode: c_int,
@@ -7321,7 +7426,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPath_GetDrawMode(
+    unsafe fn FPDFPath_GetDrawMode(
         &self,
         path: FPDF_PAGEOBJECT,
         fillmode: *mut c_int,
@@ -7338,7 +7443,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to a new text object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_NewTextObj(
+    unsafe fn FPDFPageObj_NewTextObj(
         &self,
         document: FPDF_DOCUMENT,
         font: &str,
@@ -7356,7 +7461,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFText_SetText_str].
     #[allow(non_snake_case)]
-    fn FPDFText_SetText(&self, text_object: FPDF_PAGEOBJECT, text: FPDF_WIDESTRING) -> FPDF_BOOL;
+    unsafe fn FPDFText_SetText(
+        &self,
+        text_object: FPDF_PAGEOBJECT,
+        text: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
 
     /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFText_SetText].
     ///
@@ -7369,7 +7478,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` on success.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFText_SetText_str(&self, text_object: FPDF_PAGEOBJECT, text: &str) -> FPDF_BOOL {
+    unsafe fn FPDFText_SetText_str(&self, text_object: FPDF_PAGEOBJECT, text: &str) -> FPDF_BOOL {
         self.FPDFText_SetText(
             text_object,
             get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
@@ -7386,7 +7495,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFText_SetCharcodes(
+    unsafe fn FPDFText_SetCharcodes(
         &self,
         text_object: FPDF_PAGEOBJECT,
         charcodes: *const c_uint,
@@ -7410,7 +7519,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The loaded font can be closed using [PdfiumLibraryBindings::FPDFFont_Close].
     /// Returns `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFText_LoadFont(
+    unsafe fn FPDFText_LoadFont(
         &self,
         document: FPDF_DOCUMENT,
         data: *const c_uchar,
@@ -7430,7 +7539,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The loaded font can be closed using [PdfiumLibraryBindings::FPDFFont_Close].
     /// Returns `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT;
+    unsafe fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -7470,7 +7579,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// The loaded font can be closed using [PdfiumLibraryBindings::FPDFFont_Close].
     /// Returns `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFText_LoadCidType2Font(
+    unsafe fn FPDFText_LoadCidType2Font(
         &self,
         document: FPDF_DOCUMENT,
         font_data: *const u8,
@@ -7487,7 +7596,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///    `page_object` - handle to a page object. The `page_object` will be
     ///                    automatically freed.
     #[allow(non_snake_case)]
-    fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT);
+    unsafe fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT);
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     /// Inserts `page_object` into `page` at the specified `index`.
@@ -7508,7 +7617,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPage_InsertObjectAtIndex(
+    unsafe fn FPDFPage_InsertObjectAtIndex(
         &self,
         page: FPDF_PAGE,
         page_object: FPDF_PAGEOBJECT,
@@ -7526,7 +7635,8 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// a `page_object` of type `FPDF_PAGEOBJ_TEXT`, all `FPDF_TEXTPAGE` handles for `page`
     /// are no longer valid.
     #[allow(non_snake_case)]
-    fn FPDFPage_RemoveObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+    unsafe fn FPDFPage_RemoveObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT)
+        -> FPDF_BOOL;
 
     /// Gets the number of page objects inside `page`.
     ///
@@ -7534,7 +7644,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of objects in `page`.
     #[allow(non_snake_case)]
-    fn FPDFPage_CountObjects(&self, page: FPDF_PAGE) -> c_int;
+    unsafe fn FPDFPage_CountObjects(&self, page: FPDF_PAGE) -> c_int;
 
     /// Gets the object in `page` at `index`.
     ///
@@ -7544,7 +7654,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the handle to the page object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPage_GetObject(&self, page: FPDF_PAGE, index: c_int) -> FPDF_PAGEOBJECT;
+    unsafe fn FPDFPage_GetObject(&self, page: FPDF_PAGE, index: c_int) -> FPDF_PAGEOBJECT;
 
     /// Destroys `page_object` by releasing its resources. `page_object` must have
     /// been created by [PdfiumLibraryBindings::FPDFPageObj_CreateNewPath],
@@ -7557,7 +7667,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `page_object` - handle to a page object.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_Destroy(&self, page_obj: FPDF_PAGEOBJECT);
+    unsafe fn FPDFPageObj_Destroy(&self, page_obj: FPDF_PAGEOBJECT);
 
     /// Checks if `page` contains transparency.
     ///
@@ -7565,7 +7675,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `page` contains transparency.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_HasTransparency(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_HasTransparency(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
     /// Gets the type of `page_object`.
     ///
@@ -7573,7 +7683,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns one of the `FPDF_PAGEOBJ_*` values on success, or `FPDF_PAGEOBJ_UNKNOWN` on error.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -7597,7 +7707,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetIsActive(
+    unsafe fn FPDFPageObj_GetIsActive(
         &self,
         page_object: FPDF_PAGEOBJECT,
         active: *mut FPDF_BOOL,
@@ -7625,8 +7735,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// When `active` is false, this makes the `page_object` be treated as if it
     /// wasn't in the document even though it is still held internally.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetIsActive(&self, page_object: FPDF_PAGEOBJECT, active: FPDF_BOOL)
-        -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_SetIsActive(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        active: FPDF_BOOL,
+    ) -> FPDF_BOOL;
 
     /// Transforms `page_object` by the given matrix.
     ///
@@ -7653,7 +7766,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// and can be used to scale, rotate, shear and translate the `page_object`.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFPageObj_Transform(
+    unsafe fn FPDFPageObj_Transform(
         &self,
         page_object: FPDF_PAGEOBJECT,
         a: c_double,
@@ -7688,7 +7801,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// that does not do unnecessary double to float conversions, and only uses 1 parameter
     /// for the matrix. It also returns whether the operation succeeded or not.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_TransformF(
+    unsafe fn FPDFPageObj_TransformF(
         &self,
         page_object: FPDF_PAGEOBJECT,
         matrix: *const FS_MATRIX,
@@ -7713,7 +7826,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetMatrix(
+    unsafe fn FPDFPageObj_GetMatrix(
         &self,
         page_object: FPDF_PAGEOBJECT,
         matrix: *mut FS_MATRIX,
@@ -7735,7 +7848,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetMatrix(&self, path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_SetMatrix(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL;
 
     /// Creates a new image object.
     ///
@@ -7743,7 +7860,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to a new image object.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
+    unsafe fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -7762,7 +7879,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the page object's marked content ID, or -1 on error.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Gets the number of content marks in `page_object`.
     ///
@@ -7770,7 +7887,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of content marks in `page_object`, or -1 in case of failure.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CountMarks(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPageObj_CountMarks(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Gets content mark in `page_object` at `index`.
     ///
@@ -7783,7 +7900,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// invalid if the page object is destroyed, either directly or indirectly by
     /// unloading the page.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetMark(
+    unsafe fn FPDFPageObj_GetMark(
         &self,
         page_object: FPDF_PAGEOBJECT,
         index: c_ulong,
@@ -7800,7 +7917,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// invalid if the page object is destroyed, either directly or indirectly by
     /// unloading the page.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_AddMark(&self, page_object: FPDF_PAGEOBJECT, name: &str) -> FPDF_PAGEOBJECTMARK;
+    unsafe fn FPDFPageObj_AddMark(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        name: &str,
+    ) -> FPDF_PAGEOBJECTMARK;
 
     /// Removes a content `mark` from a `page_object`. The mark handle will be invalid
     /// after the removal.
@@ -7811,7 +7932,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_RemoveMark(
+    unsafe fn FPDFPageObj_RemoveMark(
         &self,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
@@ -7842,7 +7963,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetName(
+    unsafe fn FPDFPageObjMark_GetName(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         buffer: *mut FPDF_WCHAR,
@@ -7884,7 +8005,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetName(
+    unsafe fn FPDFPageObjMark_GetName(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         buffer: *mut c_void,
@@ -7898,7 +8019,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of key/value pair parameters `mark`, or `-1` in case of failure.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int;
+    unsafe fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -7926,7 +8047,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation was successful.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamKey(
+    unsafe fn FPDFPageObjMark_GetParamKey(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         index: c_ulong,
@@ -7971,7 +8092,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation was successful.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamKey(
+    unsafe fn FPDFPageObjMark_GetParamKey(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         index: c_ulong,
@@ -7988,7 +8109,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the type of the value, or `FPDF_OBJECT_UNKNOWN` in case of failure.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamValueType(
+    unsafe fn FPDFPageObjMark_GetParamValueType(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8007,7 +8128,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the key maps to a number value.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamIntValue(
+    unsafe fn FPDFPageObjMark_GetParamIntValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8028,7 +8149,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the key maps to a number value.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamFloatValue(
+    unsafe fn FPDFPageObjMark_GetParamFloatValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8061,7 +8182,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamStringValue(
+    unsafe fn FPDFPageObjMark_GetParamStringValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8106,7 +8227,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamStringValue(
+    unsafe fn FPDFPageObjMark_GetParamStringValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8141,7 +8262,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamBlobValue(
+    unsafe fn FPDFPageObjMark_GetParamBlobValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8186,7 +8307,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamBlobValue(
+    unsafe fn FPDFPageObjMark_GetParamBlobValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -8211,7 +8332,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetIntParam(
+    unsafe fn FPDFPageObjMark_SetIntParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -8237,7 +8358,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetFloatParam(
+    unsafe fn FPDFPageObjMark_SetFloatParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -8262,7 +8383,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetStringParam(
+    unsafe fn FPDFPageObjMark_SetStringParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -8297,7 +8418,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetBlobParam(
+    unsafe fn FPDFPageObjMark_SetBlobParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -8344,7 +8465,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetBlobParam(
+    unsafe fn FPDFPageObjMark_SetBlobParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -8364,7 +8485,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if the operation succeeded.
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_RemoveParam(
+    unsafe fn FPDFPageObjMark_RemoveParam(
         &self,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
@@ -8389,7 +8510,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// to clear the image cache. If the image is not previously shared, or `NULL` is a
     /// valid `pages` value.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_LoadJpegFile(
+    unsafe fn FPDFImageObj_LoadJpegFile(
         &self,
         pages: *mut FPDF_PAGE,
         count: c_int,
@@ -8417,7 +8538,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// content is copied to the file. This allows `file_access` and its associated
     /// data to be deleted after this function returns.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_LoadJpegFileInline(
+    unsafe fn FPDFImageObj_LoadJpegFileInline(
         &self,
         pages: *mut FPDF_PAGE,
         count: c_int,
@@ -8455,7 +8576,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     #[deprecated(
         note = "Prefer FPDFPageObj_SetMatrix() over FPDFImageObj_SetMatrix(). FPDFImageObj_SetMatrix() is deprecated and will likely be removed in a future version of Pdfium."
     )]
-    fn FPDFImageObj_SetMatrix(
+    unsafe fn FPDFImageObj_SetMatrix(
         &self,
         image_object: FPDF_PAGEOBJECT,
         a: c_double,
@@ -8478,7 +8599,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_SetBitmap(
+    unsafe fn FPDFImageObj_SetBitmap(
         &self,
         pages: *mut FPDF_PAGE,
         count: c_int,
@@ -8496,7 +8617,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the bitmap.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetBitmap(&self, image_object: FPDF_PAGEOBJECT) -> FPDF_BITMAP;
+    unsafe fn FPDFImageObj_GetBitmap(&self, image_object: FPDF_PAGEOBJECT) -> FPDF_BITMAP;
 
     /// Gets a bitmap rasterization of `image_object` that takes the image mask and
     /// image matrix into account. To render correctly, the caller must provide the
@@ -8514,7 +8635,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the bitmap or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetRenderedBitmap(
+    unsafe fn FPDFImageObj_GetRenderedBitmap(
         &self,
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
@@ -8533,7 +8654,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the decoded image data.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageDataDecoded(
+    unsafe fn FPDFImageObj_GetImageDataDecoded(
         &self,
         image_object: FPDF_PAGEOBJECT,
         buffer: *mut c_void,
@@ -8552,7 +8673,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the raw image data.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageDataRaw(
+    unsafe fn FPDFImageObj_GetImageDataRaw(
         &self,
         image_object: FPDF_PAGEOBJECT,
         buffer: *mut c_void,
@@ -8565,7 +8686,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of `image_object`'s filters.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageFilterCount(&self, image_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFImageObj_GetImageFilterCount(&self, image_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Gets the filter at `index` of `image_object`'s list of filters. Note that the
     /// filters need to be applied in order, i.e. the first filter should be applied
@@ -8582,7 +8703,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the filter string.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageFilter(
+    unsafe fn FPDFImageObj_GetImageFilter(
         &self,
         image_object: FPDF_PAGEOBJECT,
         index: c_int,
@@ -8604,7 +8725,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageMetadata(
+    unsafe fn FPDFImageObj_GetImageMetadata(
         &self,
         image_object: FPDF_PAGEOBJECT,
         page: FPDF_PAGE,
@@ -8621,7 +8742,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if successful.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImagePixelSize(
+    unsafe fn FPDFImageObj_GetImagePixelSize(
         &self,
         image_object: FPDF_PAGEOBJECT,
         width: *mut c_uint,
@@ -8661,7 +8782,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` if `out_buflen` is not `NULL` and an ICC profile exists for the
     /// given `image_object`.
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetIccProfileDataDecoded(
+    unsafe fn FPDFImageObj_GetIccProfileDataDecoded(
         &self,
         image_object: FPDF_PAGEOBJECT,
         page: FPDF_PAGE,
@@ -8678,7 +8799,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to a new path object.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT;
+    unsafe fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT;
 
     /// Creates a closed path consisting of a rectangle.
     ///
@@ -8692,7 +8813,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the new path object.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CreateNewRect(
+    unsafe fn FPDFPageObj_CreateNewRect(
         &self,
         x: c_float,
         y: c_float,
@@ -8714,7 +8835,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// On success, returns `true` and fills in the four coordinates.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetBounds(
+    unsafe fn FPDFPageObj_GetBounds(
         &self,
         page_object: FPDF_PAGEOBJECT,
         left: *mut c_float,
@@ -8738,7 +8859,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Currently only works the following `page_object` types: `FPDF_PAGEOBJ_TEXT` and `FPDF_PAGEOBJ_IMAGE`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetRotatedBounds(
+    unsafe fn FPDFPageObj_GetRotatedBounds(
         &self,
         page_object: FPDF_PAGEOBJECT,
         quad_points: *mut FS_QUADPOINTSF,
@@ -8754,7 +8875,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// `Difference`, `Exclusion`, `HardLight`, `Hue`, `Lighten`, `Luminosity`, `Multiply`,
     /// `Normal`, `Overlay`, `Saturation`, `Screen`, `SoftLight`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str);
+    unsafe fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str);
 
     /// Sets the stroke RGBA of a page object. Range of values: `0` - `255`.
     ///
@@ -8770,7 +8891,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetStrokeColor(
+    unsafe fn FPDFPageObj_SetStrokeColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: c_uint,
@@ -8793,7 +8914,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetStrokeColor(
+    unsafe fn FPDFPageObj_GetStrokeColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: *mut c_uint,
@@ -8810,8 +8931,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetStrokeWidth(&self, page_object: FPDF_PAGEOBJECT, width: c_float)
-        -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_SetStrokeWidth(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        width: c_float,
+    ) -> FPDF_BOOL;
 
     /// Gets the stroke width of a page object.
     ///
@@ -8821,7 +8945,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetStrokeWidth(
+    unsafe fn FPDFPageObj_GetStrokeWidth(
         &self,
         page_object: FPDF_PAGEOBJECT,
         width: *mut c_float,
@@ -8836,7 +8960,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Line join can be one of following: `FPDF_LINEJOIN_MITER`, `FPDF_LINEJOIN_ROUND`,
     /// `FPDF_LINEJOIN_BEVEL`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetLineJoin(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPageObj_GetLineJoin(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Sets the line join of `page_object`.
     ///
@@ -8847,7 +8971,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Line join can be one of following: `FPDF_LINEJOIN_MITER`, `FPDF_LINEJOIN_ROUND`,
     /// `FPDF_LINEJOIN_BEVEL`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetLineJoin(&self, page_object: FPDF_PAGEOBJECT, line_join: c_int) -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_SetLineJoin(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        line_join: c_int,
+    ) -> FPDF_BOOL;
 
     /// Gets the line cap of `page_object`.
     ///
@@ -8858,7 +8986,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Line cap can be one of following: `FPDF_LINECAP_BUTT`, `FPDF_LINECAP_ROUND`,
     /// `FPDF_LINECAP_PROJECTING_SQUARE`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetLineCap(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPageObj_GetLineCap(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Sets the line cap of `page_object`.
     ///
@@ -8869,7 +8997,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Line cap can be one of following: `FPDF_LINECAP_BUTT`, `FPDF_LINECAP_ROUND`,
     /// `FPDF_LINECAP_PROJECTING_SQUARE`.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetLineCap(&self, page_object: FPDF_PAGEOBJECT, line_cap: c_int) -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_SetLineCap(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        line_cap: c_int,
+    ) -> FPDF_BOOL;
 
     /// Sets the fill RGBA of a page object. Range of values: `0` - `255`.
     ///
@@ -8885,7 +9017,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetFillColor(
+    unsafe fn FPDFPageObj_SetFillColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: c_uint,
@@ -8908,7 +9040,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetFillColor(
+    unsafe fn FPDFPageObj_GetFillColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: *mut c_uint,
@@ -8925,7 +9057,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetDashPhase(
+    unsafe fn FPDFPageObj_GetDashPhase(
         &self,
         page_object: FPDF_PAGEOBJECT,
         phase: *mut c_float,
@@ -8939,7 +9071,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetDashPhase(&self, page_object: FPDF_PAGEOBJECT, phase: c_float) -> FPDF_BOOL;
+    unsafe fn FPDFPageObj_SetDashPhase(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        phase: c_float,
+    ) -> FPDF_BOOL;
 
     /// Gets the line dash array of `page_object`.
     ///
@@ -8947,7 +9083,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the line dash array size, or `-1` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetDashCount(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPageObj_GetDashCount(&self, page_object: FPDF_PAGEOBJECT) -> c_int;
 
     /// Gets the line dash array of `page_object`.
     ///
@@ -8959,7 +9095,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetDashArray(
+    unsafe fn FPDFPageObj_GetDashArray(
         &self,
         page_object: FPDF_PAGEOBJECT,
         dash_array: *mut c_float,
@@ -8978,7 +9114,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetDashArray(
+    unsafe fn FPDFPageObj_SetDashArray(
         &self,
         page_object: FPDF_PAGEOBJECT,
         dash_array: *const c_float,
@@ -8995,7 +9131,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of objects in `path`, or `-1` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int;
+    unsafe fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int;
 
     /// Gets segment in `path` at `index`.
     ///
@@ -9005,7 +9141,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the handle to the segment, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFPath_GetPathSegment(&self, path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT;
+    unsafe fn FPDFPath_GetPathSegment(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        index: c_int,
+    ) -> FPDF_PATHSEGMENT;
 
     /// Gets coordinates of `segment`.
     ///
@@ -9017,7 +9157,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success, otherwise `x` and `y` is not set.
     #[allow(non_snake_case)]
-    fn FPDFPathSegment_GetPoint(
+    unsafe fn FPDFPathSegment_GetPoint(
         &self,
         segment: FPDF_PATHSEGMENT,
         x: *mut c_float,
@@ -9031,7 +9171,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns one of the `FPDF_SEGMENT_*` values on success, or `FPDF_SEGMENT_UNKNOWN`
     /// on error.
     #[allow(non_snake_case)]
-    fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int;
+    unsafe fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int;
 
     /// Indicates whether or not the `segment` closes the current subpath of a given path.
     ///
@@ -9039,7 +9179,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns close flag for non-`NULL` segment.
     #[allow(non_snake_case)]
-    fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
+    unsafe fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -9067,7 +9207,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
     /// will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetBaseFontName(
+    unsafe fn FPDFFont_GetBaseFontName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -9099,7 +9239,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
     /// will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFamilyName(
+    unsafe fn FPDFFont_GetFamilyName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -9122,7 +9262,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
     /// will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFamilyName(
+    unsafe fn FPDFFont_GetFamilyName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -9160,7 +9300,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If `length` is less than the returned length, or `buffer` is `NULL`, `buffer`
     /// will not be modified.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
+    unsafe fn FPDFFont_GetFontName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -9189,7 +9329,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// If the font is not embedded, then this API will instead return the data for
     /// the substitution font it is using.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontData(
+    unsafe fn FPDFFont_GetFontData(
         &self,
         font: FPDF_FONT,
         buffer: *mut u8,
@@ -9203,7 +9343,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns 1 if the font is embedded, 0 if it not, or -1 on failure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int;
+    unsafe fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int;
 
     /// Gets the descriptor flags of a font.
     ///
@@ -9212,7 +9352,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the bit flags specifying various characteristics of the font as
     /// defined in ISO 32000-1:2008, table 123, or -1 on failure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int;
+    unsafe fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int;
 
     /// Gets the font weight of a font.
     ///
@@ -9220,7 +9360,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the font weight, or -1 on failure. Typical values include 400 (normal) and 700 (bold).
     #[allow(non_snake_case)]
-    fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int;
+    unsafe fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int;
 
     /// Gets the italic angle of a font.
     ///
@@ -9233,7 +9373,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success; `angle` unmodified on failure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL;
+    unsafe fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL;
 
     /// Gets ascent distance of a font.
     ///
@@ -9248,7 +9388,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success; `ascent` unmodified on failure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetAscent(
+    unsafe fn FPDFFont_GetAscent(
         &self,
         font: FPDF_FONT,
         font_size: c_float,
@@ -9268,7 +9408,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success; `descent` unmodified on failure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetDescent(
+    unsafe fn FPDFFont_GetDescent(
         &self,
         font: FPDF_FONT,
         font_size: c_float,
@@ -9290,7 +9430,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success; `width` unmodified on failure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetGlyphWidth(
+    unsafe fn FPDFFont_GetGlyphWidth(
         &self,
         font: FPDF_FONT,
         glyph: c_uint,
@@ -9308,7 +9448,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the handle to the segment, or `NULL` on faiure.
     #[allow(non_snake_case)]
-    fn FPDFFont_GetGlyphPath(
+    unsafe fn FPDFFont_GetGlyphPath(
         &self,
         font: FPDF_FONT,
         glyph: c_uint,
@@ -9321,7 +9461,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of objects in `glyphpath` or -1 on failure.
     #[allow(non_snake_case)]
-    fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int;
+    unsafe fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int;
 
     /// Gets the segment in `glyphpath` at `index`.
     ///
@@ -9331,7 +9471,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the handle to the segment, or `NULL` on faiure.
     #[allow(non_snake_case)]
-    fn FPDFGlyphPath_GetGlyphPathSegment(
+    unsafe fn FPDFGlyphPath_GetGlyphPathSegment(
         &self,
         glyphpath: FPDF_GLYPHPATH,
         index: c_int,
@@ -9341,7 +9481,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     ///    `document`    -   Handle to the loaded document.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
+    unsafe fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
     /// Returns the number of copies to be printed.
     ///
@@ -9349,7 +9489,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of copies to be printed.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Page numbers to initialize print dialog box when file is printed.
     ///
@@ -9357,7 +9497,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the print page range to be used for printing.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE;
+    unsafe fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE;
 
     /// Returns the number of elements in a `FPDF_PAGERANGE`.
     ///
@@ -9365,7 +9505,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of elements in the page range. Returns 0 on error.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t;
+    unsafe fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t;
 
     /// Returns an element from a `FPDF_PAGERANGE`.
     ///
@@ -9376,7 +9516,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the value of the element in the page range at a given index.
     /// Returns -1 on error.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+    unsafe fn FPDF_VIEWERREF_GetPrintPageRangeElement(
         &self,
         pagerange: FPDF_PAGERANGE,
         index: size_t,
@@ -9388,7 +9528,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the paper handling option to be used when printing.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE;
+    unsafe fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE;
 
     /// Gets the contents for a viewer ref, with a given key. The value must
     /// be of type "name".
@@ -9408,7 +9548,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// as when `document` is invalid. If `length` is less than the required length, or
     /// `buffer` is `NULL`, `buffer` will not be modified.
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetName(
+    unsafe fn FPDF_VIEWERREF_GetName(
         &self,
         document: FPDF_DOCUMENT,
         key: &str,
@@ -9422,7 +9562,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the count of named destinations.
     #[allow(non_snake_case)]
-    fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD;
+    unsafe fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD;
 
     /// Gets a the destination handle for the given name.
     ///
@@ -9432,7 +9572,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the destination.
     #[allow(non_snake_case)]
-    fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST;
+    unsafe fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST;
 
     /// Gets the named destination by index.
     ///
@@ -9456,7 +9596,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// If `buflen` is not sufficiently large, it will be set to -1 upon return.
     #[allow(non_snake_case)]
-    fn FPDF_GetNamedDest(
+    unsafe fn FPDF_GetNamedDest(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -9470,7 +9610,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the number of embedded files in `document`.
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int;
+    unsafe fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int;
 
     /// Adds an embedded file with `name` in `document`. If `name` is empty, or if
     /// `name` is the name of a existing embedded file in `document`, or if
@@ -9486,7 +9626,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFDoc_AddAttachment_str].
     #[allow(non_snake_case)]
-    fn FPDFDoc_AddAttachment(
+    unsafe fn FPDFDoc_AddAttachment(
         &self,
         document: FPDF_DOCUMENT,
         name: FPDF_WIDESTRING,
@@ -9505,7 +9645,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns a handle to the new attachment object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFDoc_AddAttachment_str(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_ATTACHMENT {
+    unsafe fn FPDFDoc_AddAttachment_str(
+        &self,
+        document: FPDF_DOCUMENT,
+        name: &str,
+    ) -> FPDF_ATTACHMENT {
         self.FPDFDoc_AddAttachment(
             document,
             get_pdfium_utf16le_bytes_from_str(name).as_ptr() as FPDF_WIDESTRING,
@@ -9521,7 +9665,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the handle to the attachment object, or `NULL` on failure.
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT;
+    unsafe fn FPDFDoc_GetAttachment(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+    ) -> FPDF_ATTACHMENT;
 
     /// Deletes the embedded attachment at `index` in `document`. Note that this does
     /// not remove the attachment data from the PDF file; it simply removes the
@@ -9534,7 +9682,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
+    unsafe fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
 
     /// Gets the name of the `attachment` file. `buffer` is only modified if `buflen`
     /// is longer than the length of the file name. On errors, `buffer` is unmodified
@@ -9548,7 +9696,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the file name in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetName(
+    unsafe fn FPDFAttachment_GetName(
         &self,
         attachment: FPDF_ATTACHMENT,
         buffer: *mut FPDF_WCHAR,
@@ -9563,7 +9711,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `key` exists.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL;
+    unsafe fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL;
 
     /// Gets the type of the value corresponding to `key` in the params dictionary of
     /// the embedded `attachment`.
@@ -9574,7 +9722,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the type of the dictionary value.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetValueType(
+    unsafe fn FPDFAttachment_GetValueType(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -9595,7 +9743,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAttachment_SetStringValue_str].
     #[allow(non_snake_case)]
-    fn FPDFAttachment_SetStringValue(
+    unsafe fn FPDFAttachment_SetStringValue(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -9617,7 +9765,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns `true` on success.
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAttachment_SetStringValue_str(
+    unsafe fn FPDFAttachment_SetStringValue_str(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -9649,7 +9797,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the dictionary value string in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetStringValue(
+    unsafe fn FPDFAttachment_GetStringValue(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -9670,7 +9818,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_SetFile(
+    unsafe fn FPDFAttachment_SetFile(
         &self,
         attachment: FPDF_ATTACHMENT,
         document: FPDF_DOCUMENT,
@@ -9700,7 +9848,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetFile(
+    unsafe fn FPDFAttachment_GetFile(
         &self,
         attachment: FPDF_ATTACHMENT,
         buffer: *mut c_void,
@@ -9723,7 +9871,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns the length of the MIME type string in bytes.
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetSubtype(
+    unsafe fn FPDFAttachment_GetSubtype(
         &self,
         attachment: FPDF_ATTACHMENT,
         buffer: *mut FPDF_WCHAR,
@@ -9738,7 +9886,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` if `document` is a tagged PDF.
     #[allow(non_snake_case)]
-    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
+    unsafe fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -9758,7 +9906,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL;
+    unsafe fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL;
 }
 
 #[cfg(test)]

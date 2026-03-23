@@ -64,7 +64,6 @@ fn log_debug(msg: impl ToString) {
     console::debug_1(&JsValue::from(msg.to_string()));
 }
 
-#[allow(unused)] // Function may be unused if the wasm_debug feature is not enabled.
 #[inline]
 fn log_warn(msg: impl ToString) {
     console::warn_1(&JsValue::from(msg.to_string()));
@@ -1561,7 +1560,7 @@ impl Default for WasmPdfiumBindings {
 
 impl PdfiumLibraryBindings for WasmPdfiumBindings {
     #[allow(non_snake_case)]
-    fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG) {
+    unsafe fn FPDF_InitLibraryWithConfig(&self, config: *const FPDF_LIBRARY_CONFIG) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_InitLibraryWithConfig()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -1582,7 +1581,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_InitLibrary(&self) {
+    unsafe fn FPDF_InitLibrary(&self) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_InitLibrary()");
 
         // Different Pdfium WASM builds have different ways of initializing the library.
@@ -1602,7 +1601,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL) {
+    unsafe fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_SetSandBoxPolicy()");
 
         PdfiumRenderWasmState::lock().call(
@@ -1620,7 +1619,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_DestroyLibrary(&self) {
+    unsafe fn FPDF_DestroyLibrary(&self) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_DestroyLibrary()");
 
         PdfiumRenderWasmState::lock().call(
@@ -1632,14 +1631,14 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetLastError(&self) -> c_ulong {
+    unsafe fn FPDF_GetLastError(&self) -> c_ulong {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetLastError()");
 
         PdfiumRenderWasmState::lock().get_last_error()
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT {
+    unsafe fn FPDF_CreateNewDocument(&self) -> FPDF_DOCUMENT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_CreateNewDocument()");
 
         PdfiumRenderWasmState::lock()
@@ -1654,7 +1653,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_LoadMemDocument64(&self, data_buf: &[u8], password: Option<&str>) -> FPDF_DOCUMENT {
+    unsafe fn FPDF_LoadMemDocument64(
+        &self,
+        data_buf: &[u8],
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_LoadMemDocument64(): entering");
 
         let mut state = PdfiumRenderWasmState::lock_mut();
@@ -1695,7 +1698,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_LoadCustomDocument(
+    unsafe fn FPDF_LoadCustomDocument(
         &self,
         pFileAccess: *mut FPDF_FILEACCESS,
         password: Option<&str>,
@@ -1724,7 +1727,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_SaveAsCopy(
+    unsafe fn FPDF_SaveAsCopy(
         &self,
         document: FPDF_DOCUMENT,
         pFileWrite: *mut FPDF_FILEWRITE,
@@ -1794,7 +1797,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_SaveWithVersion(
+    unsafe fn FPDF_SaveWithVersion(
         &self,
         document: FPDF_DOCUMENT,
         pFileWrite: *mut FPDF_FILEWRITE,
@@ -1868,7 +1871,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_Create(
+    unsafe fn FPDFAvail_Create(
         &self,
         file_avail: *mut FX_FILEAVAIL,
         file: *mut FPDF_FILEACCESS,
@@ -1912,7 +1915,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL) {
+    unsafe fn FPDFAvail_Destroy(&self, avail: FPDF_AVAIL) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAvail_Destroy()");
 
         PdfiumRenderWasmState::lock().call(
@@ -1927,7 +1930,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsDocAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+    unsafe fn FPDFAvail_IsDocAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsDocAvail()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -1961,7 +1968,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_GetDocument(&self, avail: FPDF_AVAIL, password: Option<&str>) -> FPDF_DOCUMENT {
+    unsafe fn FPDFAvail_GetDocument(
+        &self,
+        avail: FPDF_AVAIL,
+        password: Option<&str>,
+    ) -> FPDF_DOCUMENT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAvail_GetDocument(): entering");
 
         let result = PdfiumRenderWasmState::lock()
@@ -1992,7 +2003,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDFAvail_GetFirstPageNum(&self, doc: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAvail_GetFirstPageNum()");
 
         PdfiumRenderWasmState::lock()
@@ -2010,7 +2021,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsPageAvail(
+    unsafe fn FPDFAvail_IsPageAvail(
         &self,
         avail: FPDF_AVAIL,
         page_index: c_int,
@@ -2051,7 +2062,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsFormAvail(&self, avail: FPDF_AVAIL, hints: *mut FX_DOWNLOADHINTS) -> c_int {
+    unsafe fn FPDFAvail_IsFormAvail(
+        &self,
+        avail: FPDF_AVAIL,
+        hints: *mut FX_DOWNLOADHINTS,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsFormAvail()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -2085,7 +2100,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int {
+    unsafe fn FPDFAvail_IsLinearized(&self, avail: FPDF_AVAIL) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAvail_IsLinearized()");
 
         PdfiumRenderWasmState::lock()
@@ -2102,7 +2117,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT) {
+    unsafe fn FPDF_CloseDocument(&self, document: FPDF_DOCUMENT) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_CloseDocument(): entering");
 
         let state = PdfiumRenderWasmState::lock();
@@ -2130,7 +2145,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_DeviceToPage(
+    unsafe fn FPDF_DeviceToPage(
         &self,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -2197,7 +2212,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_PageToDevice(
+    unsafe fn FPDF_PageToDevice(
         &self,
         page: FPDF_PAGE,
         start_x: c_int,
@@ -2264,7 +2279,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL {
+    unsafe fn FPDF_GetFileVersion(&self, doc: FPDF_DOCUMENT, fileVersion: *mut c_int) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetFileVersion()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -2299,7 +2314,10 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_DocumentHasValidCrossReferenceTable(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+    unsafe fn FPDF_DocumentHasValidCrossReferenceTable(
+        &self,
+        document: FPDF_DOCUMENT,
+    ) -> FPDF_BOOL {
         log_debug(
             "pdfium-render::PdfiumLibraryBindings::FPDF_DocumentHasValidCrossReferenceTable()",
         );
@@ -2318,7 +2336,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetTrailerEnds(
+    unsafe fn FPDF_GetTrailerEnds(
         &self,
         document: FPDF_DOCUMENT,
         buffer: *mut c_uint,
@@ -2372,7 +2390,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetFileIdentifier(
+    unsafe fn FPDF_GetFileIdentifier(
         &self,
         document: FPDF_DOCUMENT,
         id_type: FPDF_FILEIDTYPE,
@@ -2429,7 +2447,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetMetaText(
+    unsafe fn FPDF_GetMetaText(
         &self,
         document: FPDF_DOCUMENT,
         tag: &str,
@@ -2491,7 +2509,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
+    unsafe fn FPDF_GetDocPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetDocPermissions()");
 
         PdfiumRenderWasmState::lock()
@@ -2526,7 +2544,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6295",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
+    unsafe fn FPDF_GetDocUserPermissions(&self, document: FPDF_DOCUMENT) -> c_ulong {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetDocUserPermissions()");
 
         PdfiumRenderWasmState::lock()
@@ -2543,7 +2561,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDF_GetSecurityHandlerRevision(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetSecurityHandlerRevision()");
 
         PdfiumRenderWasmState::lock()
@@ -2560,7 +2578,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDF_GetPageCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageCount()");
 
         PdfiumRenderWasmState::lock()
@@ -2577,7 +2595,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_LoadPage(&self, document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE {
+    unsafe fn FPDF_LoadPage(&self, document: FPDF_DOCUMENT, page_index: c_int) -> FPDF_PAGE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_LoadPage()");
 
         PdfiumRenderWasmState::lock()
@@ -2598,7 +2616,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_ClosePage(&self, page: FPDF_PAGE) {
+    unsafe fn FPDF_ClosePage(&self, page: FPDF_PAGE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_ClosePage()");
 
         PdfiumRenderWasmState::lock().call(
@@ -2610,7 +2628,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmapWithColorScheme_Start(
+    unsafe fn FPDF_RenderPageBitmapWithColorScheme_Start(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -2684,7 +2702,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmap_Start(
+    unsafe fn FPDF_RenderPageBitmap_Start(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -2749,7 +2767,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int {
+    unsafe fn FPDF_RenderPage_Continue(&self, page: FPDF_PAGE, pause: *mut IFSDK_PAUSE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_RenderPage_Continue()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -2789,7 +2807,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE) {
+    unsafe fn FPDF_RenderPage_Close(&self, page: FPDF_PAGE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_RenderPage_Close()");
 
         PdfiumRenderWasmState::lock().call(
@@ -2801,7 +2819,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_ImportPagesByIndex(
+    unsafe fn FPDF_ImportPagesByIndex(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -2844,7 +2862,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_ImportPages(
+    unsafe fn FPDF_ImportPages(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -2885,7 +2903,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_ImportNPagesToOne(
+    unsafe fn FPDF_ImportNPagesToOne(
         &self,
         src_doc: FPDF_DOCUMENT,
         output_width: c_float,
@@ -2919,7 +2937,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_NewXObjectFromPage(
+    unsafe fn FPDF_NewXObjectFromPage(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -2947,7 +2965,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT) {
+    unsafe fn FPDF_CloseXObject(&self, xobject: FPDF_XOBJECT) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_CloseXObject()");
 
         PdfiumRenderWasmState::lock().call(
@@ -2961,7 +2979,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT {
+    unsafe fn FPDF_NewFormObjectFromXObject(&self, xobject: FPDF_XOBJECT) -> FPDF_PAGEOBJECT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_NewFormObjectFromXObject()");
 
         PdfiumRenderWasmState::lock()
@@ -2978,7 +2996,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_CopyViewerPreferences(
+    unsafe fn FPDF_CopyViewerPreferences(
         &self,
         dest_doc: FPDF_DOCUMENT,
         src_doc: FPDF_DOCUMENT,
@@ -3003,7 +3021,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float {
+    unsafe fn FPDF_GetPageWidthF(&self, page: FPDF_PAGE) -> c_float {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageWidthF()");
 
         PdfiumRenderWasmState::lock()
@@ -3018,7 +3036,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64 {
+    unsafe fn FPDF_GetPageWidth(&self, page: FPDF_PAGE) -> f64 {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageWidth()");
 
         PdfiumRenderWasmState::lock()
@@ -3033,7 +3051,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float {
+    unsafe fn FPDF_GetPageHeightF(&self, page: FPDF_PAGE) -> c_float {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageHeightF()");
 
         PdfiumRenderWasmState::lock()
@@ -3048,7 +3066,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64 {
+    unsafe fn FPDF_GetPageHeight(&self, page: FPDF_PAGE) -> f64 {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageHeight()");
 
         PdfiumRenderWasmState::lock()
@@ -3063,7 +3081,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageLabel(
+    unsafe fn FPDF_GetPageLabel(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -3121,7 +3139,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_enable_xfa")]
     #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDF_GetXFAPacketCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetXFAPacketCount()");
 
         PdfiumRenderWasmState::lock()
@@ -3139,7 +3157,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_enable_xfa")]
     #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketName(
+    unsafe fn FPDF_GetXFAPacketName(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -3197,7 +3215,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_enable_xfa")]
     #[allow(non_snake_case)]
-    fn FPDF_GetXFAPacketContent(
+    unsafe fn FPDF_GetXFAPacketContent(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -3267,7 +3285,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_enable_xfa")]
     #[allow(non_snake_case)]
-    fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
+    unsafe fn FPDF_BStr_Init(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_BStr_Init()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -3299,7 +3317,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_enable_xfa")]
     #[allow(non_snake_case)]
-    fn FPDF_BStr_Set(
+    unsafe fn FPDF_BStr_Set(
         &self,
         bstr: *mut FPDF_BSTR,
         cstr: *const c_char,
@@ -3345,7 +3363,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_enable_xfa")]
     #[allow(non_snake_case)]
-    fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
+    unsafe fn FPDF_BStr_Clear(&self, bstr: *mut FPDF_BSTR) -> FPDF_RESULT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_BStr_Clear()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -3376,7 +3394,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharIndexFromTextIndex(
+    unsafe fn FPDFText_GetCharIndexFromTextIndex(
         &self,
         text_page: FPDF_TEXTPAGE,
         nTextIndex: c_int,
@@ -3401,7 +3419,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetTextIndexFromCharIndex(
+    unsafe fn FPDFText_GetTextIndexFromCharIndex(
         &self,
         text_page: FPDF_TEXTPAGE,
         nCharIndex: c_int,
@@ -3426,7 +3444,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDF_GetSignatureCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetSignatureCount()");
 
         PdfiumRenderWasmState::lock()
@@ -3443,7 +3461,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetSignatureObject(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_SIGNATURE {
+    unsafe fn FPDF_GetSignatureObject(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+    ) -> FPDF_SIGNATURE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetSignatureObject()");
 
         PdfiumRenderWasmState::lock()
@@ -3464,7 +3486,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetContents(
+    unsafe fn FPDFSignatureObj_GetContents(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_void,
@@ -3518,7 +3540,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetByteRange(
+    unsafe fn FPDFSignatureObj_GetByteRange(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_int,
@@ -3574,7 +3596,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetSubFilter(
+    unsafe fn FPDFSignatureObj_GetSubFilter(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_char,
@@ -3630,7 +3652,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetReason(
+    unsafe fn FPDFSignatureObj_GetReason(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_void,
@@ -3684,7 +3706,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetTime(
+    unsafe fn FPDFSignatureObj_GetTime(
         &self,
         signature: FPDF_SIGNATURE,
         buffer: *mut c_char,
@@ -3738,7 +3760,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint {
+    unsafe fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFSignatureObj_GetDocMDPPermission()");
 
         PdfiumRenderWasmState::lock()
@@ -3755,7 +3777,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE {
+    unsafe fn FPDF_StructTree_GetForPage(&self, page: FPDF_PAGE) -> FPDF_STRUCTTREE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructTree_GetForPage()");
 
         PdfiumRenderWasmState::lock()
@@ -3770,7 +3792,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE) {
+    unsafe fn FPDF_StructTree_Close(&self, struct_tree: FPDF_STRUCTTREE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructTree_Close()");
 
         PdfiumRenderWasmState::lock().call(
@@ -3784,7 +3806,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int {
+    unsafe fn FPDF_StructTree_CountChildren(&self, struct_tree: FPDF_STRUCTTREE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructTree_CountChildren()");
 
         PdfiumRenderWasmState::lock()
@@ -3801,7 +3823,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructTree_GetChildAtIndex(
+    unsafe fn FPDF_StructTree_GetChildAtIndex(
         &self,
         struct_tree: FPDF_STRUCTTREE,
         index: c_int,
@@ -3826,7 +3848,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetAltText(
+    unsafe fn FPDF_StructElement_GetAltText(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -3882,7 +3904,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetActualText(
+    unsafe fn FPDF_StructElement_GetActualText(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -3940,7 +3962,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetID(
+    unsafe fn FPDF_StructElement_GetID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -3994,7 +4016,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetLang(
+    unsafe fn FPDF_StructElement_GetLang(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -4048,7 +4070,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetStringAttribute(
+    unsafe fn FPDF_StructElement_GetStringAttribute(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         attr_name: &str,
@@ -4111,7 +4133,10 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetMarkedContentID(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+    unsafe fn FPDF_StructElement_GetMarkedContentID(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetMarkedContentID()");
 
         PdfiumRenderWasmState::lock()
@@ -4128,7 +4153,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetType(
+    unsafe fn FPDF_StructElement_GetType(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -4182,7 +4207,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetObjType(
+    unsafe fn FPDF_StructElement_GetObjType(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -4238,7 +4263,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetTitle(
+    unsafe fn FPDF_StructElement_GetTitle(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         buffer: *mut c_void,
@@ -4292,7 +4317,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+    unsafe fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_CountChildren()");
 
         PdfiumRenderWasmState::lock()
@@ -4309,7 +4334,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetChildAtIndex(
+    unsafe fn FPDF_StructElement_GetChildAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -4356,7 +4381,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6084",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetChildMarkedContentID(
+    unsafe fn FPDF_StructElement_GetChildMarkedContentID(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -4383,7 +4408,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetParent(
+    unsafe fn FPDF_StructElement_GetParent(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> FPDF_STRUCTELEMENT {
@@ -4403,7 +4428,10 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetAttributeCount(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+    unsafe fn FPDF_StructElement_GetAttributeCount(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetAttributeCount()");
 
         PdfiumRenderWasmState::lock()
@@ -4420,7 +4448,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetAttributeAtIndex(
+    unsafe fn FPDF_StructElement_GetAttributeAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -4445,7 +4473,10 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetCount(&self, struct_attribute: FPDF_STRUCTELEMENT_ATTR) -> c_int {
+    unsafe fn FPDF_StructElement_Attr_GetCount(
+        &self,
+        struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetCount()");
 
         PdfiumRenderWasmState::lock()
@@ -4462,7 +4493,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetName(
+    unsafe fn FPDF_StructElement_Attr_GetName(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         index: c_int,
@@ -4545,7 +4576,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetValue(
+    unsafe fn FPDF_StructElement_Attr_GetValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -4593,7 +4624,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6406"
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetType(
+    unsafe fn FPDF_StructElement_Attr_GetType(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -4642,7 +4673,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetType(
+    unsafe fn FPDF_StructElement_Attr_GetType(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
     ) -> FPDF_OBJECT_TYPE {
@@ -4675,7 +4706,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6406"
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBooleanValue(
+    unsafe fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -4744,7 +4775,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBooleanValue(
+    unsafe fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut FPDF_BOOL,
@@ -4804,7 +4835,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6406"
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetNumberValue(
+    unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -4871,7 +4902,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetNumberValue(
+    unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut f32,
@@ -4929,7 +4960,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6406"
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetStringValue(
+    unsafe fn FPDF_StructElement_Attr_GetStringValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -5017,7 +5048,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetStringValue(
+    unsafe fn FPDF_StructElement_Attr_GetStringValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut c_void,
@@ -5096,7 +5127,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6406"
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBlobValue(
+    unsafe fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
@@ -5184,7 +5215,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetBlobValue(
+    unsafe fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         buffer: *mut c_void,
@@ -5264,7 +5295,10 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_CountChildren(&self, value: FPDF_STRUCTELEMENT_ATTR_VALUE) -> c_int {
+    unsafe fn FPDF_StructElement_Attr_CountChildren(
+        &self,
+        value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_Attr_GetBlobValue()");
 
         PdfiumRenderWasmState::lock()
@@ -5295,7 +5329,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6490",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_Attr_GetChildAtIndex(
+    unsafe fn FPDF_StructElement_Attr_GetChildAtIndex(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         index: c_int,
@@ -5322,7 +5356,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetMarkedContentIdCount(
+    unsafe fn FPDF_StructElement_GetMarkedContentIdCount(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> c_int {
@@ -5344,7 +5378,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_StructElement_GetMarkedContentIdAtIndex(
+    unsafe fn FPDF_StructElement_GetMarkedContentIdAtIndex(
         &self,
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
@@ -5371,7 +5405,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_New(
+    unsafe fn FPDFPage_New(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -5402,7 +5436,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int) {
+    unsafe fn FPDFPage_Delete(&self, document: FPDF_DOCUMENT, page_index: c_int) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_Delete()");
 
         PdfiumRenderWasmState::lock().call(
@@ -5443,7 +5477,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6043",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_MovePages(
+    unsafe fn FPDF_MovePages(
         &self,
         document: FPDF_DOCUMENT,
         page_indices: *const c_int,
@@ -5485,7 +5519,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int {
+    unsafe fn FPDFPage_GetRotation(&self, page: FPDF_PAGE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetRotation()");
 
         PdfiumRenderWasmState::lock()
@@ -5500,7 +5534,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int) {
+    unsafe fn FPDFPage_SetRotation(&self, page: FPDF_PAGE, rotate: c_int) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_SetRotation()");
 
         PdfiumRenderWasmState::lock().call(
@@ -5518,7 +5552,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL {
+    unsafe fn FPDF_GetPageBoundingBox(&self, page: FPDF_PAGE, rect: *mut FS_RECTF) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetPageBoundingBox()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -5553,7 +5587,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageSizeByIndexF(
+    unsafe fn FPDF_GetPageSizeByIndexF(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -5595,7 +5629,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageSizeByIndex(
+    unsafe fn FPDF_GetPageSizeByIndex(
         &self,
         document: FPDF_DOCUMENT,
         page_index: c_int,
@@ -5655,7 +5689,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetMediaBox(
+    unsafe fn FPDFPage_GetMediaBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -5669,7 +5703,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetCropBox(
+    unsafe fn FPDFPage_GetCropBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -5683,7 +5717,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetBleedBox(
+    unsafe fn FPDFPage_GetBleedBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -5697,7 +5731,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetTrimBox(
+    unsafe fn FPDFPage_GetTrimBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -5711,7 +5745,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetArtBox(
+    unsafe fn FPDFPage_GetArtBox(
         &self,
         page: FPDF_PAGE,
         left: *mut c_float,
@@ -5725,7 +5759,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_SetMediaBox(
+    unsafe fn FPDFPage_SetMediaBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -5739,7 +5773,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_SetCropBox(
+    unsafe fn FPDFPage_SetCropBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -5753,7 +5787,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_SetBleedBox(
+    unsafe fn FPDFPage_SetBleedBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -5767,7 +5801,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_SetTrimBox(
+    unsafe fn FPDFPage_SetTrimBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -5781,7 +5815,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_SetArtBox(
+    unsafe fn FPDFPage_SetArtBox(
         &self,
         page: FPDF_PAGE,
         left: c_float,
@@ -5795,7 +5829,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_TransFormWithClip(
+    unsafe fn FPDFPage_TransFormWithClip(
         &self,
         page: FPDF_PAGE,
         matrix: *const FS_MATRIX,
@@ -5835,7 +5869,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_TransformClipPath(
+    unsafe fn FPDFPageObj_TransformClipPath(
         &self,
         page_object: FPDF_PAGEOBJECT,
         a: f64,
@@ -5872,7 +5906,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH {
+    unsafe fn FPDFPageObj_GetClipPath(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_CLIPPATH {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetClipPath()");
 
         PdfiumRenderWasmState::lock()
@@ -5889,7 +5923,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int {
+    unsafe fn FPDFClipPath_CountPaths(&self, clip_path: FPDF_CLIPPATH) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFClipPath_CountPaths()");
 
         PdfiumRenderWasmState::lock()
@@ -5906,7 +5940,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFClipPath_CountPathSegments(&self, clip_path: FPDF_CLIPPATH, path_index: c_int) -> c_int {
+    unsafe fn FPDFClipPath_CountPathSegments(
+        &self,
+        clip_path: FPDF_CLIPPATH,
+        path_index: c_int,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFClipPath_CountPathSegments()");
 
         PdfiumRenderWasmState::lock()
@@ -5927,7 +5965,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFClipPath_GetPathSegment(
+    unsafe fn FPDFClipPath_GetPathSegment(
         &self,
         clip_path: FPDF_CLIPPATH,
         path_index: c_int,
@@ -5955,7 +5993,13 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_CreateClipPath(&self, left: f32, bottom: f32, right: f32, top: f32) -> FPDF_CLIPPATH {
+    unsafe fn FPDF_CreateClipPath(
+        &self,
+        left: f32,
+        bottom: f32,
+        right: f32,
+        top: f32,
+    ) -> FPDF_CLIPPATH {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_CreateClipPath()");
 
         PdfiumRenderWasmState::lock()
@@ -5980,7 +6024,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH) {
+    unsafe fn FPDF_DestroyClipPath(&self, clipPath: FPDF_CLIPPATH) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_DestroyClipPath()");
 
         PdfiumRenderWasmState::lock().call(
@@ -5994,7 +6038,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH) {
+    unsafe fn FPDFPage_InsertClipPath(&self, page: FPDF_PAGE, clipPath: FPDF_CLIPPATH) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_InsertClipPath()");
 
         PdfiumRenderWasmState::lock().call(
@@ -6012,7 +6056,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FPDFPage_HasTransparency(&self, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_HasTransparency()");
 
         PdfiumRenderWasmState::lock()
@@ -6027,7 +6071,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FPDFPage_GenerateContent(&self, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GenerateContent()");
 
         PdfiumRenderWasmState::lock()
@@ -6042,7 +6086,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_TransformAnnots(
+    unsafe fn FPDFPage_TransformAnnots(
         &self,
         page: FPDF_PAGE,
         a: c_double,
@@ -6079,7 +6123,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP {
+    unsafe fn FPDFBitmap_Create(&self, width: c_int, height: c_int, alpha: c_int) -> FPDF_BITMAP {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_Create()");
 
         PdfiumRenderWasmState::lock()
@@ -6102,7 +6146,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_CreateEx(
+    unsafe fn FPDFBitmap_CreateEx(
         &self,
         width: c_int,
         height: c_int,
@@ -6136,7 +6180,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP) {
+    unsafe fn FPDFBitmap_Destroy(&self, bitmap: FPDF_BITMAP) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_Destroy()");
 
         PdfiumRenderWasmState::lock().call(
@@ -6151,7 +6195,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
+    unsafe fn FPDFBitmap_GetFormat(&self, bitmap: FPDF_BITMAP) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetFormat()");
 
         PdfiumRenderWasmState::lock()
@@ -6185,7 +6229,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_FillRect(
+    unsafe fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -6229,7 +6273,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6666"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFBitmap_FillRect(
+    unsafe fn FPDFBitmap_FillRect(
         &self,
         bitmap: FPDF_BITMAP,
         left: c_int,
@@ -6266,7 +6310,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {
+    unsafe fn FPDFBitmap_GetBuffer_as_array(&self, bitmap: FPDF_BITMAP) -> Uint8Array {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_array()");
 
         let buffer_len =
@@ -6292,7 +6336,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
+    unsafe fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_SetBuffer()");
 
         let buffer_length =
@@ -6322,7 +6366,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int {
+    unsafe fn FPDFBitmap_GetWidth(&self, bitmap: FPDF_BITMAP) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetWidth()");
 
         PdfiumRenderWasmState::lock()
@@ -6339,7 +6383,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> c_int {
+    unsafe fn FPDFBitmap_GetHeight(&self, bitmap: FPDF_BITMAP) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetHeight()");
 
         PdfiumRenderWasmState::lock()
@@ -6356,7 +6400,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> c_int {
+    unsafe fn FPDFBitmap_GetStride(&self, bitmap: FPDF_BITMAP) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBitmap_GetStride()");
 
         PdfiumRenderWasmState::lock()
@@ -6373,7 +6417,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmap(
+    unsafe fn FPDF_RenderPageBitmap(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -6413,7 +6457,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageBitmapWithMatrix(
+    unsafe fn FPDF_RenderPageBitmapWithMatrix(
         &self,
         bitmap: FPDF_BITMAP,
         page: FPDF_PAGE,
@@ -6454,7 +6498,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_use_skia")]
     #[allow(non_snake_case)]
-    fn FPDF_RenderPageSkia(
+    unsafe fn FPDF_RenderPageSkia(
         &self,
         canvas: FPDF_SKIA_CANVAS,
         page: FPDF_PAGE,
@@ -6482,7 +6526,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_IsSupportedSubtype()");
 
         PdfiumRenderWasmState::lock()
@@ -6499,7 +6543,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_CreateAnnot(
+    unsafe fn FPDFPage_CreateAnnot(
         &self,
         page: FPDF_PAGE,
         subtype: FPDF_ANNOTATION_SUBTYPE,
@@ -6524,7 +6568,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetAnnotCount(&self, page: FPDF_PAGE) -> c_int {
+    unsafe fn FPDFPage_GetAnnotCount(&self, page: FPDF_PAGE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetAnnotCount()");
 
         PdfiumRenderWasmState::lock()
@@ -6539,7 +6583,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_ANNOTATION {
+    unsafe fn FPDFPage_GetAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_ANNOTATION {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetAnnot()");
 
         PdfiumRenderWasmState::lock()
@@ -6560,7 +6604,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetAnnotIndex(&self, page: FPDF_PAGE, annot: FPDF_ANNOTATION) -> c_int {
+    unsafe fn FPDFPage_GetAnnotIndex(&self, page: FPDF_PAGE, annot: FPDF_ANNOTATION) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetAnnotIndex()");
 
         PdfiumRenderWasmState::lock()
@@ -6581,7 +6625,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_CloseAnnot(&self, annot: FPDF_ANNOTATION) {
+    unsafe fn FPDFPage_CloseAnnot(&self, annot: FPDF_ANNOTATION) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetAnnotIndex()");
 
         PdfiumRenderWasmState::lock().call(
@@ -6595,7 +6639,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL {
+    unsafe fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_RemoveAnnot()");
 
         PdfiumRenderWasmState::lock()
@@ -6616,7 +6660,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetSubtype(&self, annot: FPDF_ANNOTATION) -> FPDF_ANNOTATION_SUBTYPE {
+    unsafe fn FPDFAnnot_GetSubtype(&self, annot: FPDF_ANNOTATION) -> FPDF_ANNOTATION_SUBTYPE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetSubtype()");
 
         PdfiumRenderWasmState::lock()
@@ -6633,7 +6677,10 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsObjectSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_IsObjectSupportedSubtype(
+        &self,
+        subtype: FPDF_ANNOTATION_SUBTYPE,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetSubtype()");
 
         PdfiumRenderWasmState::lock()
@@ -6650,7 +6697,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_UpdateObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_UpdateObject(
+        &self,
+        annot: FPDF_ANNOTATION,
+        obj: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_UpdateObject()");
 
         PdfiumRenderWasmState::lock()
@@ -6671,7 +6722,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AddInkStroke(
+    unsafe fn FPDFAnnot_AddInkStroke(
         &self,
         annot: FPDF_ANNOTATION,
         points: *const FS_POINTF,
@@ -6708,7 +6759,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_RemoveInkList()");
 
         PdfiumRenderWasmState::lock()
@@ -6725,7 +6776,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AppendObject(&self, annot: FPDF_ANNOTATION, obj: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_AppendObject(
+        &self,
+        annot: FPDF_ANNOTATION,
+        obj: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_AppendObject()");
 
         PdfiumRenderWasmState::lock()
@@ -6746,7 +6801,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetObjectCount(&self, annot: FPDF_ANNOTATION) -> c_int {
+    unsafe fn FPDFAnnot_GetObjectCount(&self, annot: FPDF_ANNOTATION) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetObjectCount()");
 
         PdfiumRenderWasmState::lock()
@@ -6763,7 +6818,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_PAGEOBJECT {
+    unsafe fn FPDFAnnot_GetObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_PAGEOBJECT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetObject()");
 
         PdfiumRenderWasmState::lock()
@@ -6784,7 +6839,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_RemoveObject()");
 
         PdfiumRenderWasmState::lock()
@@ -6805,7 +6860,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetColor(
+    unsafe fn FPDFAnnot_SetColor(
         &self,
         annot: FPDF_ANNOTATION,
         color_type: FPDFANNOT_COLORTYPE,
@@ -6842,7 +6897,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetColor(
+    unsafe fn FPDFAnnot_GetColor(
         &self,
         annot: FPDF_ANNOTATION,
         color_type: FPDFANNOT_COLORTYPE,
@@ -6926,7 +6981,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_HasAttachmentPoints()");
 
         PdfiumRenderWasmState::lock()
@@ -6943,7 +6998,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetAttachmentPoints(
+    unsafe fn FPDFAnnot_SetAttachmentPoints(
         &self,
         annot: FPDF_ANNOTATION,
         quad_index: size_t,
@@ -6979,7 +7034,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AppendAttachmentPoints(
+    unsafe fn FPDFAnnot_AppendAttachmentPoints(
         &self,
         annot: FPDF_ANNOTATION,
         quad_points: *const FS_QUADPOINTSF,
@@ -7012,7 +7067,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_CountAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> size_t {
+    unsafe fn FPDFAnnot_CountAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> size_t {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_CountAttachmentPoints()");
 
         PdfiumRenderWasmState::lock()
@@ -7029,7 +7084,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetAttachmentPoints(
+    unsafe fn FPDFAnnot_GetAttachmentPoints(
         &self,
         annot: FPDF_ANNOTATION,
         quad_index: size_t,
@@ -7071,7 +7126,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_SetRect()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -7100,7 +7155,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetRect()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -7135,7 +7190,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetVertices(
+    unsafe fn FPDFAnnot_GetVertices(
         &self,
         annot: FPDF_ANNOTATION,
         buffer: *mut FS_POINTF,
@@ -7181,7 +7236,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetInkListCount(&self, annot: FPDF_ANNOTATION) -> c_ulong {
+    unsafe fn FPDFAnnot_GetInkListCount(&self, annot: FPDF_ANNOTATION) -> c_ulong {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetInkListCount()");
 
         PdfiumRenderWasmState::lock()
@@ -7198,7 +7253,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetInkListPath(
+    unsafe fn FPDFAnnot_GetInkListPath(
         &self,
         annot: FPDF_ANNOTATION,
         path_index: c_ulong,
@@ -7247,7 +7302,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetLine(
+    unsafe fn FPDFAnnot_GetLine(
         &self,
         annot: FPDF_ANNOTATION,
         start: *mut FS_POINTF,
@@ -7293,7 +7348,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetBorder(
+    unsafe fn FPDFAnnot_SetBorder(
         &self,
         annot: FPDF_ANNOTATION,
         horizontal_radius: c_float,
@@ -7324,7 +7379,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetBorder(
+    unsafe fn FPDFAnnot_GetBorder(
         &self,
         annot: FPDF_ANNOTATION,
         horizontal_radius: *mut c_float,
@@ -7393,7 +7448,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormAdditionalActionJavaScript(
+    unsafe fn FPDFAnnot_GetFormAdditionalActionJavaScript(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -7453,7 +7508,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldAlternateName(
+    unsafe fn FPDFAnnot_GetFormFieldAlternateName(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -7515,7 +7570,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_HasKey()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -7546,7 +7601,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE {
+    unsafe fn FPDFAnnot_GetValueType(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_OBJECT_TYPE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetValueType()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -7577,7 +7632,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetStringValue(
+    unsafe fn FPDFAnnot_SetStringValue(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -7618,7 +7673,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetStringValue(
+    unsafe fn FPDFAnnot_GetStringValue(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -7680,7 +7735,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetNumberValue(
+    unsafe fn FPDFAnnot_GetNumberValue(
         &self,
         annot: FPDF_ANNOTATION,
         key: &str,
@@ -7733,7 +7788,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetAP(
+    unsafe fn FPDFAnnot_SetAP(
         &self,
         annot: FPDF_ANNOTATION,
         appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
@@ -7769,7 +7824,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetAP(
+    unsafe fn FPDFAnnot_GetAP(
         &self,
         annot: FPDF_ANNOTATION,
         appearanceMode: FPDF_ANNOT_APPEARANCEMODE,
@@ -7826,7 +7881,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetLinkedAnnot(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_ANNOTATION {
+    unsafe fn FPDFAnnot_GetLinkedAnnot(
+        &self,
+        annot: FPDF_ANNOTATION,
+        key: &str,
+    ) -> FPDF_ANNOTATION {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFlags()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -7857,7 +7916,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFlags(&self, annot: FPDF_ANNOTATION) -> c_int {
+    unsafe fn FPDFAnnot_GetFlags(&self, annot: FPDF_ANNOTATION) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFlags()");
 
         PdfiumRenderWasmState::lock()
@@ -7874,7 +7933,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_SetFlags()");
 
         PdfiumRenderWasmState::lock()
@@ -7895,7 +7954,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldFlags(
+    unsafe fn FPDFAnnot_GetFormFieldFlags(
         &self,
         handle: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -7921,7 +7980,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFormFieldFlags(
+    unsafe fn FPDFAnnot_SetFormFieldFlags(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -7949,7 +8008,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldAtPoint(
+    unsafe fn FPDFAnnot_GetFormFieldAtPoint(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -7985,7 +8044,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldName(
+    unsafe fn FPDFAnnot_GetFormFieldName(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8042,7 +8101,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldType(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+    unsafe fn FPDFAnnot_GetFormFieldType(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFormFieldType()");
 
         PdfiumRenderWasmState::lock()
@@ -8063,7 +8126,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldValue(
+    unsafe fn FPDFAnnot_GetFormFieldValue(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8120,7 +8183,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionCount(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> c_int {
+    unsafe fn FPDFAnnot_GetOptionCount(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetOptionCount()");
 
         PdfiumRenderWasmState::lock()
@@ -8141,7 +8208,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetOptionLabel(
+    unsafe fn FPDFAnnot_GetOptionLabel(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8201,7 +8268,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsOptionSelected(
+    unsafe fn FPDFAnnot_IsOptionSelected(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8229,7 +8296,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFontSize(
+    unsafe fn FPDFAnnot_GetFontSize(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8278,7 +8345,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFontColor(
+    unsafe fn FPDFAnnot_SetFontColor(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8325,7 +8392,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6555",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFontColor(
+    unsafe fn FPDFAnnot_GetFontColor(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8397,7 +8464,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_IsChecked(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_IsChecked(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_IsChecked()");
 
         PdfiumRenderWasmState::lock()
@@ -8418,7 +8489,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetFocusableSubtypes(
+    unsafe fn FPDFAnnot_SetFocusableSubtypes(
         &self,
         form: FPDF_FORMHANDLE,
         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
@@ -8457,7 +8528,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int {
+    unsafe fn FPDFAnnot_GetFocusableSubtypesCount(&self, form: FPDF_FORMHANDLE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFocusableSubtypesCount()");
 
         PdfiumRenderWasmState::lock()
@@ -8472,7 +8543,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFocusableSubtypes(
+    unsafe fn FPDFAnnot_GetFocusableSubtypes(
         &self,
         form: FPDF_FORMHANDLE,
         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
@@ -8530,7 +8601,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetLink(&self, annot: FPDF_ANNOTATION) -> FPDF_LINK {
+    unsafe fn FPDFAnnot_GetLink(&self, annot: FPDF_ANNOTATION) -> FPDF_LINK {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetLink()");
 
         PdfiumRenderWasmState::lock()
@@ -8547,7 +8618,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormControlCount(
+    unsafe fn FPDFAnnot_GetFormControlCount(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8572,7 +8643,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormControlIndex(
+    unsafe fn FPDFAnnot_GetFormControlIndex(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8597,7 +8668,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFormFieldExportValue(
+    unsafe fn FPDFAnnot_GetFormFieldExportValue(
         &self,
         form: FPDF_FORMHANDLE,
         annot: FPDF_ANNOTATION,
@@ -8654,7 +8725,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL {
+    unsafe fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_SetURI()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -8701,7 +8772,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6337",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT {
+    unsafe fn FPDFAnnot_GetFileAttachment(&self, annot: FPDF_ANNOTATION) -> FPDF_ATTACHMENT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAnnot_GetFileAttachment()");
 
         PdfiumRenderWasmState::lock()
@@ -8734,7 +8805,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6337",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFAnnot_AddFileAttachment(
+    unsafe fn FPDFAnnot_AddFileAttachment(
         &self,
         annot: FPDF_ANNOTATION,
         name: FPDF_WIDESTRING,
@@ -8764,7 +8835,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDOC_InitFormFillEnvironment(
+    unsafe fn FPDFDOC_InitFormFillEnvironment(
         &self,
         document: FPDF_DOCUMENT,
         form_info: *mut FPDF_FORMFILLINFO,
@@ -8798,7 +8869,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDOC_ExitFormFillEnvironment(&self, form: FPDF_FORMHANDLE) {
+    unsafe fn FPDFDOC_ExitFormFillEnvironment(&self, form: FPDF_FORMHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDOC_ExitFormFillEnvironment()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8810,7 +8881,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE) {
+    unsafe fn FORM_OnAfterLoadPage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_OnAfterLoadPage()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8828,7 +8899,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE) {
+    unsafe fn FORM_OnBeforeClosePage(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_OnBeforeClosePage()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8846,7 +8917,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDFDoc_GetPageMode(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetPageMode()");
 
         PdfiumRenderWasmState::lock()
@@ -8863,7 +8934,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int {
+    unsafe fn FPDFPage_Flatten(&self, page: FPDF_PAGE, nFlag: c_int) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_Flatten()");
 
         PdfiumRenderWasmState::lock()
@@ -8884,7 +8955,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE) {
+    unsafe fn FORM_DoDocumentJSAction(&self, form: FPDF_FORMHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_DoDocumentJSAction()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8896,7 +8967,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE) {
+    unsafe fn FORM_DoDocumentOpenAction(&self, form: FPDF_FORMHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_DoDocumentOpenAction()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8908,7 +8979,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int) {
+    unsafe fn FORM_DoDocumentAAction(&self, form: FPDF_FORMHANDLE, aaType: c_int) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_DoDocumentAAction()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8926,7 +8997,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int) {
+    unsafe fn FORM_DoPageAAction(&self, page: FPDF_PAGE, form: FPDF_FORMHANDLE, aaType: c_int) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_DoPageAAction()");
 
         PdfiumRenderWasmState::lock().call(
@@ -8946,7 +9017,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnMouseMove(
+    unsafe fn FORM_OnMouseMove(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -8960,7 +9031,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnMouseWheel(
+    unsafe fn FORM_OnMouseWheel(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9005,7 +9076,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnFocus(
+    unsafe fn FORM_OnFocus(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9019,7 +9090,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnLButtonDown(
+    unsafe fn FORM_OnLButtonDown(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9033,7 +9104,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnRButtonDown(
+    unsafe fn FORM_OnRButtonDown(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9047,7 +9118,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnLButtonUp(
+    unsafe fn FORM_OnLButtonUp(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9061,7 +9132,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnRButtonUp(
+    unsafe fn FORM_OnRButtonUp(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9075,7 +9146,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnLButtonDoubleClick(
+    unsafe fn FORM_OnLButtonDoubleClick(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9096,7 +9167,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnKeyDown(
+    unsafe fn FORM_OnKeyDown(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9127,7 +9198,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnKeyUp(
+    unsafe fn FORM_OnKeyUp(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9158,7 +9229,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_OnChar(
+    unsafe fn FORM_OnChar(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9189,7 +9260,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_GetFocusedText(
+    unsafe fn FORM_GetFocusedText(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9246,7 +9317,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_GetSelectedText(
+    unsafe fn FORM_GetSelectedText(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9303,7 +9374,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_ReplaceAndKeepSelection(
+    unsafe fn FORM_ReplaceAndKeepSelection(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9334,7 +9405,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_ReplaceSelection(
+    unsafe fn FORM_ReplaceSelection(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9365,7 +9436,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_SelectAllText()");
 
         PdfiumRenderWasmState::lock()
@@ -9386,7 +9457,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_CanUndo()");
 
         PdfiumRenderWasmState::lock()
@@ -9407,7 +9478,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_CanRedo()");
 
         PdfiumRenderWasmState::lock()
@@ -9428,7 +9499,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_Undo()");
 
         PdfiumRenderWasmState::lock()
@@ -9449,7 +9520,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
+    unsafe fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_Redo()");
 
         PdfiumRenderWasmState::lock()
@@ -9470,7 +9541,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL {
+    unsafe fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_ForceToKillFocus()");
 
         PdfiumRenderWasmState::lock()
@@ -9485,7 +9556,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_GetFocusedAnnot(
+    unsafe fn FORM_GetFocusedAnnot(
         &self,
         form: FPDF_FORMHANDLE,
         page_index: *mut c_int,
@@ -9546,7 +9617,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_SetFocusedAnnot(&self, form: FPDF_FORMHANDLE, annot: FPDF_ANNOTATION) -> FPDF_BOOL {
+    unsafe fn FORM_SetFocusedAnnot(
+        &self,
+        form: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FORM_SetFocusedAnnot()");
 
         PdfiumRenderWasmState::lock()
@@ -9567,7 +9642,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_HasFormFieldAtPoint(
+    unsafe fn FPDFPage_HasFormFieldAtPoint(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9598,7 +9673,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_FormFieldZOrderAtPoint(
+    unsafe fn FPDFPage_FormFieldZOrderAtPoint(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9629,7 +9704,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightColor(
+    unsafe fn FPDF_SetFormFieldHighlightColor(
         &self,
         form: FPDF_FORMHANDLE,
         field_type: c_int,
@@ -9654,7 +9729,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar) {
+    unsafe fn FPDF_SetFormFieldHighlightAlpha(&self, form: FPDF_FORMHANDLE, alpha: c_uchar) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_SetFormFieldHighlightAlpha()");
 
         PdfiumRenderWasmState::lock().call(
@@ -9672,7 +9747,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE) {
+    unsafe fn FPDF_RemoveFormFieldHighlight(&self, form: FPDF_FORMHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_RemoveFormFieldHighlight()");
 
         PdfiumRenderWasmState::lock().call(
@@ -9684,7 +9759,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_FFLDraw(
+    unsafe fn FPDF_FFLDraw(
         &self,
         form: FPDF_FORMHANDLE,
         bitmap: FPDF_BITMAP,
@@ -9729,7 +9804,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     #[cfg(feature = "pdfium_use_skia")]
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDF_FFLDrawSkia(
+    unsafe fn FPDF_FFLDrawSkia(
         &self,
         form: FPDF_FORMHANDLE,
         canvas: FPDF_SKIA_CANVAS,
@@ -9772,7 +9847,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDF_GetFormType(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetFormType()");
 
         PdfiumRenderWasmState::lock()
@@ -9789,7 +9864,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_SetIndexSelected(
+    unsafe fn FORM_SetIndexSelected(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9820,7 +9895,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FORM_IsIndexSelected(
+    unsafe fn FORM_IsIndexSelected(
         &self,
         form: FPDF_FORMHANDLE,
         page: FPDF_PAGE,
@@ -9848,7 +9923,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+    unsafe fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_LoadXFA()");
 
         PdfiumRenderWasmState::lock()
@@ -9865,7 +9940,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDFDoc_GetJavaScriptActionCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetJavaScriptActionCount()");
 
         PdfiumRenderWasmState::lock()
@@ -9882,7 +9957,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetJavaScriptAction(
+    unsafe fn FPDFDoc_GetJavaScriptAction(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -9907,7 +9982,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION) {
+    unsafe fn FPDFDoc_CloseJavaScriptAction(&self, javascript: FPDF_JAVASCRIPT_ACTION) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDoc_CloseJavaScriptAction()");
 
         PdfiumRenderWasmState::lock().call(
@@ -9921,7 +9996,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFJavaScriptAction_GetName(
+    unsafe fn FPDFJavaScriptAction_GetName(
         &self,
         javascript: FPDF_JAVASCRIPT_ACTION,
         buffer: *mut FPDF_WCHAR,
@@ -9975,7 +10050,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFJavaScriptAction_GetScript(
+    unsafe fn FPDFJavaScriptAction_GetScript(
         &self,
         javascript: FPDF_JAVASCRIPT_ACTION,
         buffer: *mut FPDF_WCHAR,
@@ -10033,7 +10108,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap {
+    unsafe fn FPDF_GetDefaultTTFMap(&self) -> *const FPDF_CharsetFontMap {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultTTFMap()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10067,7 +10142,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6569",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultTTFMapCount(&self) -> usize {
+    unsafe fn FPDF_GetDefaultTTFMapCount(&self) -> usize {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultTTFMapCount()");
 
         PdfiumRenderWasmState::lock()
@@ -10094,7 +10169,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6569",
     ))]
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap {
+    unsafe fn FPDF_GetDefaultTTFMapEntry(&self, index: usize) -> *const FPDF_CharsetFontMap {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultTTFMapEntry()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10116,7 +10191,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int) {
+    unsafe fn FPDF_AddInstalledFont(&self, mapper: *mut c_void, face: &str, charset: c_int) {
         // TODO: AJRC - 7-Sep-2024 - this almost certainly won't work on WASM because
         // mapper is (according to the documentation) meant to be a pointer to a Foxit font mapper,
         // which doesn't exist on WASM.
@@ -10151,7 +10226,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
+    unsafe fn FPDF_SetSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_SetSystemFontInfo()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10175,7 +10250,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO {
+    unsafe fn FPDF_GetDefaultSystemFontInfo(&self) -> *mut FPDF_SYSFONTINFO {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetDefaultSystemFontInfo()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10196,7 +10271,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
+    unsafe fn FPDF_FreeDefaultSystemFontInfo(&self, pFontInfo: *mut FPDF_SYSFONTINFO) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_FreeDefaultSystemFontInfo()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10220,7 +10295,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetFirstChild(
+    unsafe fn FPDFBookmark_GetFirstChild(
         &self,
         document: FPDF_DOCUMENT,
         bookmark: FPDF_BOOKMARK,
@@ -10245,7 +10320,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetNextSibling(
+    unsafe fn FPDFBookmark_GetNextSibling(
         &self,
         document: FPDF_DOCUMENT,
         bookmark: FPDF_BOOKMARK,
@@ -10270,7 +10345,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetTitle(
+    unsafe fn FPDFBookmark_GetTitle(
         &self,
         bookmark: FPDF_BOOKMARK,
         buffer: *mut c_void,
@@ -10324,7 +10399,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int {
+    unsafe fn FPDFBookmark_GetCount(&self, bookmark: FPDF_BOOKMARK) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_GetCount()");
 
         PdfiumRenderWasmState::lock()
@@ -10341,7 +10416,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_Find(&self, document: FPDF_DOCUMENT, title: FPDF_WIDESTRING) -> FPDF_BOOKMARK {
+    unsafe fn FPDFBookmark_Find(
+        &self,
+        document: FPDF_DOCUMENT,
+        title: FPDF_WIDESTRING,
+    ) -> FPDF_BOOKMARK {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_Find()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10370,7 +10449,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetDest(&self, document: FPDF_DOCUMENT, bookmark: FPDF_BOOKMARK) -> FPDF_DEST {
+    unsafe fn FPDFBookmark_GetDest(
+        &self,
+        document: FPDF_DOCUMENT,
+        bookmark: FPDF_BOOKMARK,
+    ) -> FPDF_DEST {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_GetDest()");
 
         PdfiumRenderWasmState::lock()
@@ -10391,7 +10474,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFBookmark_GetAction(&self, bookmark: FPDF_BOOKMARK) -> FPDF_ACTION {
+    unsafe fn FPDFBookmark_GetAction(&self, bookmark: FPDF_BOOKMARK) -> FPDF_ACTION {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_GetAction()");
 
         PdfiumRenderWasmState::lock()
@@ -10408,7 +10491,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAction_GetType(&self, action: FPDF_ACTION) -> c_ulong {
+    unsafe fn FPDFAction_GetType(&self, action: FPDF_ACTION) -> c_ulong {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAction_GetType()");
 
         PdfiumRenderWasmState::lock()
@@ -10425,7 +10508,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAction_GetDest(&self, document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST {
+    unsafe fn FPDFAction_GetDest(&self, document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAction_GetDest()");
 
         PdfiumRenderWasmState::lock()
@@ -10446,7 +10529,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAction_GetFilePath(
+    unsafe fn FPDFAction_GetFilePath(
         &self,
         action: FPDF_ACTION,
         buffer: *mut c_void,
@@ -10500,7 +10583,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAction_GetURIPath(
+    unsafe fn FPDFAction_GetURIPath(
         &self,
         document: FPDF_DOCUMENT,
         action: FPDF_ACTION,
@@ -10557,7 +10640,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int {
+    unsafe fn FPDFDest_GetDestPageIndex(&self, document: FPDF_DOCUMENT, dest: FPDF_DEST) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDest_GetDestPageIndex()");
 
         PdfiumRenderWasmState::lock()
@@ -10578,7 +10661,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDest_GetView(
+    unsafe fn FPDFDest_GetView(
         &self,
         dest: FPDF_DEST,
         pNumParams: *mut c_ulong,
@@ -10636,7 +10719,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFDest_GetLocationInPage(
+    unsafe fn FPDFDest_GetLocationInPage(
         &self,
         dest: FPDF_DEST,
         hasXVal: *mut FPDF_BOOL,
@@ -10751,7 +10834,12 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> FPDF_LINK {
+    unsafe fn FPDFLink_GetLinkAtPoint(
+        &self,
+        page: FPDF_PAGE,
+        x: c_double,
+        y: c_double,
+    ) -> FPDF_LINK {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetLinkAtPoint()");
 
         PdfiumRenderWasmState::lock()
@@ -10774,7 +10862,12 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetLinkZOrderAtPoint(&self, page: FPDF_PAGE, x: c_double, y: c_double) -> c_int {
+    unsafe fn FPDFLink_GetLinkZOrderAtPoint(
+        &self,
+        page: FPDF_PAGE,
+        x: c_double,
+        y: c_double,
+    ) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetLinkZOrderAtPoint()");
 
         PdfiumRenderWasmState::lock()
@@ -10797,7 +10890,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST {
+    unsafe fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetDest()");
 
         PdfiumRenderWasmState::lock()
@@ -10818,7 +10911,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION {
+    unsafe fn FPDFLink_GetAction(&self, link: FPDF_LINK) -> FPDF_ACTION {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetAction()");
 
         PdfiumRenderWasmState::lock()
@@ -10833,7 +10926,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_Enumerate(
+    unsafe fn FPDFLink_Enumerate(
         &self,
         page: FPDF_PAGE,
         start_pos: *mut c_int,
@@ -10888,7 +10981,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION {
+    unsafe fn FPDFLink_GetAnnot(&self, page: FPDF_PAGE, link_annot: FPDF_LINK) -> FPDF_ANNOTATION {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetAnnot()");
 
         PdfiumRenderWasmState::lock()
@@ -10909,7 +11002,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF) -> FPDF_BOOL {
+    unsafe fn FPDFLink_GetAnnotRect(
+        &self,
+        link_annot: FPDF_LINK,
+        rect: *mut FS_RECTF,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_GetAnnotRect()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -10944,7 +11041,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int {
+    unsafe fn FPDFLink_CountQuadPoints(&self, link_annot: FPDF_LINK) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_CountQuadPoints()");
 
         PdfiumRenderWasmState::lock()
@@ -10961,7 +11058,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetQuadPoints(
+    unsafe fn FPDFLink_GetQuadPoints(
         &self,
         link_annot: FPDF_LINK,
         quad_index: c_int,
@@ -11003,7 +11100,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION {
+    unsafe fn FPDF_GetPageAAction(&self, page: FPDF_PAGE, aa_type: c_int) -> FPDF_ACTION {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetPageAAction()");
 
         PdfiumRenderWasmState::lock()
@@ -11024,7 +11121,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE {
+    unsafe fn FPDFText_LoadPage(&self, page: FPDF_PAGE) -> FPDF_TEXTPAGE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_LoadPage()");
 
         PdfiumRenderWasmState::lock()
@@ -11039,7 +11136,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_ClosePage(&self, text_page: FPDF_TEXTPAGE) {
+    unsafe fn FPDFText_ClosePage(&self, text_page: FPDF_TEXTPAGE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_ClosePage()");
 
         PdfiumRenderWasmState::lock().call(
@@ -11053,7 +11150,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_CountChars(&self, text_page: FPDF_TEXTPAGE) -> c_int {
+    unsafe fn FPDFText_CountChars(&self, text_page: FPDF_TEXTPAGE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_CountChars()");
 
         PdfiumRenderWasmState::lock()
@@ -11070,7 +11167,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint {
+    unsafe fn FPDFText_GetUnicode(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_uint {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetUnicode()");
 
         PdfiumRenderWasmState::lock()
@@ -11102,7 +11199,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6611",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFText_GetTextObject(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> FPDF_PAGEOBJECT {
+    unsafe fn FPDFText_GetTextObject(
+        &self,
+        text_page: FPDF_TEXTPAGE,
+        index: c_int,
+    ) -> FPDF_PAGEOBJECT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetTextObject()");
 
         PdfiumRenderWasmState::lock()
@@ -11123,7 +11224,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
+    unsafe fn FPDFText_GetFontSize(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_double {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetFontSize()");
 
         PdfiumRenderWasmState::lock()
@@ -11144,7 +11245,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetFontInfo(
+    unsafe fn FPDFText_GetFontInfo(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11217,7 +11318,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+    unsafe fn FPDFText_GetFontWeight(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetFontWeight()");
 
         PdfiumRenderWasmState::lock()
@@ -11254,7 +11355,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFText_GetTextRenderMode(
+    unsafe fn FPDFText_GetTextRenderMode(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11279,7 +11380,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetFillColor(
+    unsafe fn FPDFText_GetFillColor(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11362,7 +11463,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetStrokeColor(
+    unsafe fn FPDFText_GetStrokeColor(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11445,7 +11546,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float {
+    unsafe fn FPDFText_GetCharAngle(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_float {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetCharAngle()");
 
         PdfiumRenderWasmState::lock()
@@ -11466,7 +11567,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharBox(
+    unsafe fn FPDFText_GetCharBox(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11550,7 +11651,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetLooseCharBox(
+    unsafe fn FPDFText_GetLooseCharBox(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11592,7 +11693,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetMatrix(
+    unsafe fn FPDFText_GetMatrix(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11634,7 +11735,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharOrigin(
+    unsafe fn FPDFText_GetCharOrigin(
         &self,
         text_page: FPDF_TEXTPAGE,
         index: c_int,
@@ -11694,7 +11795,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetCharIndexAtPos(
+    unsafe fn FPDFText_GetCharIndexAtPos(
         &self,
         text_page: FPDF_TEXTPAGE,
         x: c_double,
@@ -11728,7 +11829,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetText(
+    unsafe fn FPDFText_GetText(
         &self,
         text_page: FPDF_TEXTPAGE,
         start_index: c_int,
@@ -11779,7 +11880,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_CountRects(
+    unsafe fn FPDFText_CountRects(
         &self,
         text_page: FPDF_TEXTPAGE,
         start_index: c_int,
@@ -11807,7 +11908,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetRect(
+    unsafe fn FPDFText_GetRect(
         &self,
         text_page: FPDF_TEXTPAGE,
         rect_index: c_int,
@@ -11891,7 +11992,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetBoundedText(
+    unsafe fn FPDFText_GetBoundedText(
         &self,
         text_page: FPDF_TEXTPAGE,
         left: c_double,
@@ -11959,7 +12060,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_FindStart(
+    unsafe fn FPDFText_FindStart(
         &self,
         text_page: FPDF_TEXTPAGE,
         findwhat: FPDF_WIDESTRING,
@@ -11998,7 +12099,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_FindNext(&self, form: FPDF_SCHHANDLE) -> FPDF_BOOL {
+    unsafe fn FPDFText_FindNext(&self, form: FPDF_SCHHANDLE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_FindNext()");
 
         PdfiumRenderWasmState::lock()
@@ -12015,7 +12116,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_FindPrev(&self, form: FPDF_SCHHANDLE) -> FPDF_BOOL {
+    unsafe fn FPDFText_FindPrev(&self, form: FPDF_SCHHANDLE) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_FindPrev()");
 
         PdfiumRenderWasmState::lock()
@@ -12032,7 +12133,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetSchResultIndex(&self, form: FPDF_SCHHANDLE) -> c_int {
+    unsafe fn FPDFText_GetSchResultIndex(&self, form: FPDF_SCHHANDLE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetSchResultIndex()");
 
         PdfiumRenderWasmState::lock()
@@ -12049,7 +12150,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_GetSchCount(&self, form: FPDF_SCHHANDLE) -> c_int {
+    unsafe fn FPDFText_GetSchCount(&self, form: FPDF_SCHHANDLE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_GetSchCount()");
 
         PdfiumRenderWasmState::lock()
@@ -12066,7 +12167,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_FindClose(&self, form: FPDF_SCHHANDLE) {
+    unsafe fn FPDFText_FindClose(&self, form: FPDF_SCHHANDLE) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_FindClose()");
 
         PdfiumRenderWasmState::lock().call(
@@ -12080,7 +12181,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK {
+    unsafe fn FPDFLink_LoadWebLinks(&self, text_page: FPDF_TEXTPAGE) -> FPDF_PAGELINK {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_LoadWebLinks()");
 
         PdfiumRenderWasmState::lock()
@@ -12097,7 +12198,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int {
+    unsafe fn FPDFLink_CountWebLinks(&self, link_page: FPDF_PAGELINK) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_CountWebLinks()");
 
         PdfiumRenderWasmState::lock()
@@ -12114,7 +12215,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetURL(
+    unsafe fn FPDFLink_GetURL(
         &self,
         link_page: FPDF_PAGELINK,
         link_index: c_int,
@@ -12171,7 +12272,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int {
+    unsafe fn FPDFLink_CountRects(&self, link_page: FPDF_PAGELINK, link_index: c_int) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_CountRects()");
 
         PdfiumRenderWasmState::lock()
@@ -12193,7 +12294,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
-    fn FPDFLink_GetRect(
+    unsafe fn FPDFLink_GetRect(
         &self,
         link_page: FPDF_PAGELINK,
         link_index: c_int,
@@ -12280,7 +12381,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_GetTextRange(
+    unsafe fn FPDFLink_GetTextRange(
         &self,
         link_page: FPDF_PAGELINK,
         link_index: c_int,
@@ -12340,7 +12441,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK) {
+    unsafe fn FPDFLink_CloseWebLinks(&self, link_page: FPDF_PAGELINK) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFLink_CloseWebLinks()");
 
         PdfiumRenderWasmState::lock().call(
@@ -12354,7 +12455,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetDecodedThumbnailData(
+    unsafe fn FPDFPage_GetDecodedThumbnailData(
         &self,
         page: FPDF_PAGE,
         buffer: *mut c_void,
@@ -12410,7 +12511,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetRawThumbnailData(
+    unsafe fn FPDFPage_GetRawThumbnailData(
         &self,
         page: FPDF_PAGE,
         buffer: *mut c_void,
@@ -12464,7 +12565,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP {
+    unsafe fn FPDFPage_GetThumbnailAsBitmap(&self, page: FPDF_PAGE) -> FPDF_BITMAP {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetThumbnailAsBitmap()");
 
         PdfiumRenderWasmState::lock()
@@ -12479,7 +12580,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFormObj_CountObjects(&self, form_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFFormObj_CountObjects(&self, form_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFormObj_CountObjects()");
 
         PdfiumRenderWasmState::lock()
@@ -12496,7 +12597,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFormObj_GetObject(
+    unsafe fn FPDFFormObj_GetObject(
         &self,
         form_object: FPDF_PAGEOBJECT,
         index: c_ulong,
@@ -12527,7 +12628,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_7215"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFFormObj_RemoveObject(
+    unsafe fn FPDFFormObj_RemoveObject(
         &self,
         form_object: FPDF_PAGEOBJECT,
         page_object: FPDF_PAGEOBJECT,
@@ -12552,7 +12653,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CreateTextObj(
+    unsafe fn FPDFPageObj_CreateTextObj(
         &self,
         document: FPDF_DOCUMENT,
         font: FPDF_FONT,
@@ -12580,7 +12681,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetTextRenderMode(&self, text: FPDF_PAGEOBJECT) -> FPDF_TEXT_RENDERMODE {
+    unsafe fn FPDFTextObj_GetTextRenderMode(&self, text: FPDF_PAGEOBJECT) -> FPDF_TEXT_RENDERMODE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetTextRenderMode()");
 
         PdfiumRenderWasmState::lock()
@@ -12597,7 +12698,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFTextObj_SetTextRenderMode(
+    unsafe fn FPDFTextObj_SetTextRenderMode(
         &self,
         text: FPDF_PAGEOBJECT,
         render_mode: FPDF_TEXT_RENDERMODE,
@@ -12622,7 +12723,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetText(
+    unsafe fn FPDFTextObj_GetText(
         &self,
         text_object: FPDF_PAGEOBJECT,
         text_page: FPDF_TEXTPAGE,
@@ -12679,7 +12780,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetRenderedBitmap(
+    unsafe fn FPDFTextObj_GetRenderedBitmap(
         &self,
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
@@ -12710,7 +12811,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT {
+    unsafe fn FPDFTextObj_GetFont(&self, text: FPDF_PAGEOBJECT) -> FPDF_FONT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetFont()");
 
         PdfiumRenderWasmState::lock()
@@ -12727,7 +12828,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+    unsafe fn FPDFText_IsGenerated(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_IsGenerated()");
 
         PdfiumRenderWasmState::lock()
@@ -12772,7 +12873,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6015",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+    unsafe fn FPDFText_IsHyphen(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_IsHyphen()");
 
         PdfiumRenderWasmState::lock()
@@ -12793,7 +12894,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
+    unsafe fn FPDFText_HasUnicodeMapError(&self, text_page: FPDF_TEXTPAGE, index: c_int) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_HasUnicodeMapError()");
 
         PdfiumRenderWasmState::lock()
@@ -12814,7 +12915,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFTextObj_GetFontSize(&self, text: FPDF_PAGEOBJECT, size: *mut c_float) -> FPDF_BOOL {
+    unsafe fn FPDFTextObj_GetFontSize(
+        &self,
+        text: FPDF_PAGEOBJECT,
+        size: *mut c_float,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_GetFontSize()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -12855,7 +12960,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_Close(&self, font: FPDF_FONT) {
+    unsafe fn FPDFFont_Close(&self, font: FPDF_FONT) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_Close()");
 
         PdfiumRenderWasmState::lock().call(
@@ -12867,7 +12972,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
+    unsafe fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPath_MoveTo()");
 
         PdfiumRenderWasmState::lock()
@@ -12890,7 +12995,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
+    unsafe fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPath_LineTo()");
 
         PdfiumRenderWasmState::lock()
@@ -12913,7 +13018,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_BezierTo(
+    unsafe fn FPDFPath_BezierTo(
         &self,
         path: FPDF_PAGEOBJECT,
         x1: c_float,
@@ -12953,7 +13058,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+    unsafe fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPath_Close()");
 
         PdfiumRenderWasmState::lock()
@@ -12970,7 +13075,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_SetDrawMode(
+    unsafe fn FPDFPath_SetDrawMode(
         &self,
         path: FPDF_PAGEOBJECT,
         fillmode: c_int,
@@ -12998,7 +13103,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_GetDrawMode(
+    unsafe fn FPDFPath_GetDrawMode(
         &self,
         path: FPDF_PAGEOBJECT,
         fillmode: *mut c_int,
@@ -13054,7 +13159,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_NewTextObj(
+    unsafe fn FPDFPageObj_NewTextObj(
         &self,
         document: FPDF_DOCUMENT,
         font: &str,
@@ -13092,7 +13197,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_SetText(&self, text_object: FPDF_PAGEOBJECT, text: FPDF_WIDESTRING) -> FPDF_BOOL {
+    unsafe fn FPDFText_SetText(
+        &self,
+        text_object: FPDF_PAGEOBJECT,
+        text: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_SetText()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -13121,7 +13230,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_SetCharcodes(
+    unsafe fn FPDFText_SetCharcodes(
         &self,
         text_object: FPDF_PAGEOBJECT,
         charcodes: *const c_uint,
@@ -13158,7 +13267,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_LoadFont(
+    unsafe fn FPDFText_LoadFont(
         &self,
         document: FPDF_DOCUMENT,
         data: *const c_uchar,
@@ -13202,7 +13311,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT {
+    unsafe fn FPDFText_LoadStandardFont(&self, document: FPDF_DOCUMENT, font: &str) -> FPDF_FONT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFText_LoadStandardFont()");
 
         PdfiumRenderWasmState::lock()
@@ -13240,7 +13349,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6295",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFText_LoadCidType2Font(
+    unsafe fn FPDFText_LoadCidType2Font(
         &self,
         document: FPDF_DOCUMENT,
         font_data: *const u8,
@@ -13295,7 +13404,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) {
+    unsafe fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_InsertObject()");
 
         PdfiumRenderWasmState::lock().call(
@@ -13314,7 +13423,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
-    fn FPDFPage_InsertObjectAtIndex(
+    unsafe fn FPDFPage_InsertObjectAtIndex(
         &self,
         page: FPDF_PAGE,
         page_object: FPDF_PAGEOBJECT,
@@ -13342,7 +13451,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_RemoveObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+    unsafe fn FPDFPage_RemoveObject(
+        &self,
+        page: FPDF_PAGE,
+        page_obj: FPDF_PAGEOBJECT,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_RemoveObject()");
 
         PdfiumRenderWasmState::lock()
@@ -13363,7 +13476,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_CountObjects(&self, page: FPDF_PAGE) -> c_int {
+    unsafe fn FPDFPage_CountObjects(&self, page: FPDF_PAGE) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_CountObjects()");
 
         PdfiumRenderWasmState::lock()
@@ -13378,7 +13491,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPage_GetObject(&self, page: FPDF_PAGE, index: c_int) -> FPDF_PAGEOBJECT {
+    unsafe fn FPDFPage_GetObject(&self, page: FPDF_PAGE, index: c_int) -> FPDF_PAGEOBJECT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPage_GetObject()");
 
         PdfiumRenderWasmState::lock()
@@ -13399,7 +13512,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_Destroy(&self, page_obj: FPDF_PAGEOBJECT) {
+    unsafe fn FPDFPageObj_Destroy(&self, page_obj: FPDF_PAGEOBJECT) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_Destroy()");
 
         PdfiumRenderWasmState::lock().call(
@@ -13413,7 +13526,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_HasTransparency(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL {
+    unsafe fn FPDFPageObj_HasTransparency(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_HasTransparency()");
 
         PdfiumRenderWasmState::lock()
@@ -13430,7 +13543,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPageObj_GetType(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetType()");
 
         PdfiumRenderWasmState::lock()
@@ -13455,7 +13568,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetIsActive(
+    unsafe fn FPDFPageObj_GetIsActive(
         &self,
         page_object: FPDF_PAGEOBJECT,
         active: *mut FPDF_BOOL,
@@ -13508,7 +13621,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetIsActive(
+    unsafe fn FPDFPageObj_SetIsActive(
         &self,
         page_object: FPDF_PAGEOBJECT,
         active: FPDF_BOOL,
@@ -13533,7 +13646,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_Transform(
+    unsafe fn FPDFPageObj_Transform(
         &self,
         page_object: FPDF_PAGEOBJECT,
         a: c_double,
@@ -13581,7 +13694,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6611",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObj_TransformF(
+    unsafe fn FPDFPageObj_TransformF(
         &self,
         page_object: FPDF_PAGEOBJECT,
         matrix: *const FS_MATRIX,
@@ -13614,7 +13727,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetMatrix(
+    unsafe fn FPDFPageObj_GetMatrix(
         &self,
         page_object: FPDF_PAGEOBJECT,
         matrix: *mut FS_MATRIX,
@@ -13653,7 +13766,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetMatrix(&self, path: FPDF_PAGEOBJECT, matrix: *const FS_MATRIX) -> FPDF_BOOL {
+    unsafe fn FPDFPageObj_SetMatrix(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        matrix: *const FS_MATRIX,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_SetMatrix()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -13682,7 +13799,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT {
+    unsafe fn FPDFPageObj_NewImageObj(&self, document: FPDF_DOCUMENT) -> FPDF_PAGEOBJECT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_NewImageObj()");
 
         PdfiumRenderWasmState::lock()
@@ -13710,7 +13827,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6611",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPageObj_GetMarkedContentID(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetMarkedContentID()");
 
         PdfiumRenderWasmState::lock()
@@ -13727,7 +13844,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CountMarks(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPageObj_CountMarks(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_CountMarks()");
 
         PdfiumRenderWasmState::lock()
@@ -13744,7 +13861,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetMark(
+    unsafe fn FPDFPageObj_GetMark(
         &self,
         page_object: FPDF_PAGEOBJECT,
         index: c_ulong,
@@ -13769,7 +13886,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_AddMark(&self, page_object: FPDF_PAGEOBJECT, name: &str) -> FPDF_PAGEOBJECTMARK {
+    unsafe fn FPDFPageObj_AddMark(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        name: &str,
+    ) -> FPDF_PAGEOBJECTMARK {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_AddMark()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -13800,7 +13921,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_RemoveMark(
+    unsafe fn FPDFPageObj_RemoveMark(
         &self,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
@@ -13833,7 +13954,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetName(
+    unsafe fn FPDFPageObjMark_GetName(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         buffer: *mut FPDF_WCHAR,
@@ -13917,7 +14038,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetName(
+    unsafe fn FPDFPageObjMark_GetName(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         buffer: *mut c_void,
@@ -13982,7 +14103,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int {
+    unsafe fn FPDFPageObjMark_CountParams(&self, mark: FPDF_PAGEOBJECTMARK) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObjMark_CountParams()");
 
         PdfiumRenderWasmState::lock()
@@ -14005,7 +14126,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamKey(
+    unsafe fn FPDFPageObjMark_GetParamKey(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         index: c_ulong,
@@ -14093,7 +14214,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamKey(
+    unsafe fn FPDFPageObjMark_GetParamKey(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         index: c_ulong,
@@ -14162,7 +14283,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamValueType(
+    unsafe fn FPDFPageObjMark_GetParamValueType(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14197,7 +14318,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamIntValue(
+    unsafe fn FPDFPageObjMark_GetParamIntValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14249,7 +14370,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamFloatValue(
+    unsafe fn FPDFPageObjMark_GetParamFloatValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14307,7 +14428,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamStringValue(
+    unsafe fn FPDFPageObjMark_GetParamStringValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14400,7 +14521,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamStringValue(
+    unsafe fn FPDFPageObjMark_GetParamStringValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14482,7 +14603,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamBlobValue(
+    unsafe fn FPDFPageObjMark_GetParamBlobValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14575,7 +14696,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_GetParamBlobValue(
+    unsafe fn FPDFPageObjMark_GetParamBlobValue(
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
@@ -14649,7 +14770,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetIntParam(
+    unsafe fn FPDFPageObjMark_SetIntParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -14695,7 +14816,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7543"))]
     #[inline]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetFloatParam(
+    unsafe fn FPDFPageObjMark_SetFloatParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -14739,7 +14860,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetStringParam(
+    unsafe fn FPDFPageObjMark_SetStringParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -14796,7 +14917,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetBlobParam(
+    unsafe fn FPDFPageObjMark_SetBlobParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -14865,7 +14986,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961",
     ))]
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_SetBlobParam(
+    unsafe fn FPDFPageObjMark_SetBlobParam(
         &self,
         document: FPDF_DOCUMENT,
         page_object: FPDF_PAGEOBJECT,
@@ -14915,7 +15036,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObjMark_RemoveParam(
+    unsafe fn FPDFPageObjMark_RemoveParam(
         &self,
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
@@ -14953,7 +15074,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_LoadJpegFile(
+    unsafe fn FPDFImageObj_LoadJpegFile(
         &self,
         pages: *mut FPDF_PAGE,
         count: c_int,
@@ -14988,7 +15109,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_LoadJpegFileInline(
+    unsafe fn FPDFImageObj_LoadJpegFileInline(
         &self,
         pages: *mut FPDF_PAGE,
         count: c_int,
@@ -15023,7 +15144,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_SetMatrix(
+    unsafe fn FPDFImageObj_SetMatrix(
         &self,
         image_object: FPDF_PAGEOBJECT,
         a: c_double,
@@ -15063,7 +15184,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_SetBitmap(
+    unsafe fn FPDFImageObj_SetBitmap(
         &self,
         pages: *mut FPDF_PAGE,
         count: c_int,
@@ -15094,7 +15215,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetBitmap(&self, image_object: FPDF_PAGEOBJECT) -> FPDF_BITMAP {
+    unsafe fn FPDFImageObj_GetBitmap(&self, image_object: FPDF_PAGEOBJECT) -> FPDF_BITMAP {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFImageObj_GetBitmap()");
 
         PdfiumRenderWasmState::lock()
@@ -15111,7 +15232,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetRenderedBitmap(
+    unsafe fn FPDFImageObj_GetRenderedBitmap(
         &self,
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
@@ -15139,7 +15260,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageDataDecoded(
+    unsafe fn FPDFImageObj_GetImageDataDecoded(
         &self,
         image_object: FPDF_PAGEOBJECT,
         buffer: *mut c_void,
@@ -15195,7 +15316,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageDataRaw(
+    unsafe fn FPDFImageObj_GetImageDataRaw(
         &self,
         image_object: FPDF_PAGEOBJECT,
         buffer: *mut c_void,
@@ -15249,7 +15370,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageFilterCount(&self, image_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFImageObj_GetImageFilterCount(&self, image_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFImageObj_GetImageFilterCount()");
 
         PdfiumRenderWasmState::lock()
@@ -15266,7 +15387,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageFilter(
+    unsafe fn FPDFImageObj_GetImageFilter(
         &self,
         image_object: FPDF_PAGEOBJECT,
         index: c_int,
@@ -15311,7 +15432,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImageMetadata(
+    unsafe fn FPDFImageObj_GetImageMetadata(
         &self,
         image_object: FPDF_PAGEOBJECT,
         page: FPDF_PAGE,
@@ -15353,7 +15474,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetImagePixelSize(
+    unsafe fn FPDFImageObj_GetImagePixelSize(
         &self,
         image_object: FPDF_PAGEOBJECT,
         width: *mut c_uint,
@@ -15418,7 +15539,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6996"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFImageObj_GetIccProfileDataDecoded(
+    unsafe fn FPDFImageObj_GetIccProfileDataDecoded(
         &self,
         image_object: FPDF_PAGEOBJECT,
         page: FPDF_PAGE,
@@ -15479,7 +15600,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT {
+    unsafe fn FPDFPageObj_CreateNewPath(&self, x: c_float, y: c_float) -> FPDF_PAGEOBJECT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_CreateNewPath()");
 
         PdfiumRenderWasmState::lock()
@@ -15500,7 +15621,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_CreateNewRect(
+    unsafe fn FPDFPageObj_CreateNewRect(
         &self,
         x: c_float,
         y: c_float,
@@ -15531,7 +15652,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetBounds(
+    unsafe fn FPDFPageObj_GetBounds(
         &self,
         page_object: FPDF_PAGEOBJECT,
         left: *mut c_float,
@@ -15612,7 +15733,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetRotatedBounds(
+    unsafe fn FPDFPageObj_GetRotatedBounds(
         &self,
         page_object: FPDF_PAGEOBJECT,
         quad_points: *mut FS_QUADPOINTSF,
@@ -15651,7 +15772,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str) {
+    unsafe fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str) {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_SetBlendMode()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -15677,7 +15798,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetStrokeColor(
+    unsafe fn FPDFPageObj_SetStrokeColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: c_uint,
@@ -15711,7 +15832,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetStrokeColor(
+    unsafe fn FPDFPageObj_GetStrokeColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: *mut c_uint,
@@ -15792,7 +15913,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetStrokeWidth(
+    unsafe fn FPDFPageObj_SetStrokeWidth(
         &self,
         page_object: FPDF_PAGEOBJECT,
         width: c_float,
@@ -15817,7 +15938,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetStrokeWidth(
+    unsafe fn FPDFPageObj_GetStrokeWidth(
         &self,
         page_object: FPDF_PAGEOBJECT,
         width: *mut c_float,
@@ -15862,7 +15983,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetLineJoin(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPageObj_GetLineJoin(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetLineJoin()");
 
         PdfiumRenderWasmState::lock()
@@ -15879,7 +16000,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetLineJoin(&self, page_object: FPDF_PAGEOBJECT, line_join: c_int) -> FPDF_BOOL {
+    unsafe fn FPDFPageObj_SetLineJoin(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        line_join: c_int,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_SetLineJoin()");
 
         PdfiumRenderWasmState::lock()
@@ -15900,7 +16025,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetLineCap(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPageObj_GetLineCap(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetLineCap()");
 
         PdfiumRenderWasmState::lock()
@@ -15917,7 +16042,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetLineCap(&self, page_object: FPDF_PAGEOBJECT, line_cap: c_int) -> FPDF_BOOL {
+    unsafe fn FPDFPageObj_SetLineCap(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        line_cap: c_int,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_SetLineCap()");
 
         PdfiumRenderWasmState::lock()
@@ -15938,7 +16067,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetFillColor(
+    unsafe fn FPDFPageObj_SetFillColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: c_uint,
@@ -15972,7 +16101,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetFillColor(
+    unsafe fn FPDFPageObj_GetFillColor(
         &self,
         page_object: FPDF_PAGEOBJECT,
         R: *mut c_uint,
@@ -16053,7 +16182,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetDashPhase(
+    unsafe fn FPDFPageObj_GetDashPhase(
         &self,
         page_object: FPDF_PAGEOBJECT,
         phase: *mut c_float,
@@ -16098,7 +16227,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetDashPhase(&self, page_object: FPDF_PAGEOBJECT, phase: c_float) -> FPDF_BOOL {
+    unsafe fn FPDFPageObj_SetDashPhase(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        phase: c_float,
+    ) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_SetDashPhase()");
 
         PdfiumRenderWasmState::lock()
@@ -16119,7 +16252,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetDashCount(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPageObj_GetDashCount(&self, page_object: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetDashCount()");
 
         PdfiumRenderWasmState::lock()
@@ -16136,7 +16269,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_GetDashArray(
+    unsafe fn FPDFPageObj_GetDashArray(
         &self,
         page_object: FPDF_PAGEOBJECT,
         dash_array: *mut c_float,
@@ -16186,7 +16319,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPageObj_SetDashArray(
+    unsafe fn FPDFPageObj_SetDashArray(
         &self,
         page_object: FPDF_PAGEOBJECT,
         dash_array: *const c_float,
@@ -16226,7 +16359,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int {
+    unsafe fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPath_CountSegments()");
 
         PdfiumRenderWasmState::lock()
@@ -16243,7 +16376,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPath_GetPathSegment(&self, path: FPDF_PAGEOBJECT, index: c_int) -> FPDF_PATHSEGMENT {
+    unsafe fn FPDFPath_GetPathSegment(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        index: c_int,
+    ) -> FPDF_PATHSEGMENT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPath_GetPathSegment()");
 
         PdfiumRenderWasmState::lock()
@@ -16264,7 +16401,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPathSegment_GetPoint(
+    unsafe fn FPDFPathSegment_GetPoint(
         &self,
         segment: FPDF_PATHSEGMENT,
         x: *mut c_float,
@@ -16321,7 +16458,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int {
+    unsafe fn FPDFPathSegment_GetType(&self, segment: FPDF_PATHSEGMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPathSegment_GetType()");
 
         PdfiumRenderWasmState::lock()
@@ -16338,7 +16475,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL {
+    unsafe fn FPDFPathSegment_GetClose(&self, segment: FPDF_PATHSEGMENT) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFPathSegment_GetClose()");
 
         PdfiumRenderWasmState::lock()
@@ -16365,7 +16502,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6666"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetBaseFontName(
+    unsafe fn FPDFFont_GetBaseFontName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -16427,7 +16564,12 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6666"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFamilyName(&self, font: FPDF_FONT, buffer: *mut c_char, length: usize) -> usize {
+    unsafe fn FPDFFont_GetFamilyName(
+        &self,
+        font: FPDF_FONT,
+        buffer: *mut c_char,
+        length: usize,
+    ) -> usize {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFamilyName()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -16475,7 +16617,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(feature = "pdfium_6611")]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFamilyName(
+    unsafe fn FPDFFont_GetFamilyName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -16549,7 +16691,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_5961"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontName(
+    unsafe fn FPDFFont_GetFontName(
         &self,
         font: FPDF_FONT,
         buffer: *mut c_char,
@@ -16607,7 +16749,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFontData(
+    unsafe fn FPDFFont_GetFontData(
         &self,
         font: FPDF_FONT,
         buffer: *mut u8,
@@ -16671,7 +16813,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int {
+    unsafe fn FPDFFont_GetIsEmbedded(&self, font: FPDF_FONT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetIsEmbedded()");
 
         PdfiumRenderWasmState::lock()
@@ -16686,7 +16828,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int {
+    unsafe fn FPDFFont_GetFlags(&self, font: FPDF_FONT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetFlags()");
 
         PdfiumRenderWasmState::lock()
@@ -16701,7 +16843,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int {
+    unsafe fn FPDFFont_GetWeight(&self, font: FPDF_FONT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetWeight()");
 
         PdfiumRenderWasmState::lock()
@@ -16716,7 +16858,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL {
+    unsafe fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFFont_GetItalicAngle()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -16757,7 +16899,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetAscent(
+    unsafe fn FPDFFont_GetAscent(
         &self,
         font: FPDF_FONT,
         font_size: c_float,
@@ -16805,7 +16947,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetDescent(
+    unsafe fn FPDFFont_GetDescent(
         &self,
         font: FPDF_FONT,
         font_size: c_float,
@@ -16853,7 +16995,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetGlyphWidth(
+    unsafe fn FPDFFont_GetGlyphWidth(
         &self,
         font: FPDF_FONT,
         glyph: c_uint,
@@ -16904,7 +17046,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFFont_GetGlyphPath(
+    unsafe fn FPDFFont_GetGlyphPath(
         &self,
         font: FPDF_FONT,
         glyph: c_uint,
@@ -16932,7 +17074,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int {
+    unsafe fn FPDFGlyphPath_CountGlyphSegments(&self, glyphpath: FPDF_GLYPHPATH) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFGlyphPath_CountGlyphSegments()");
 
         PdfiumRenderWasmState::lock()
@@ -16949,7 +17091,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFGlyphPath_GetGlyphPathSegment(
+    unsafe fn FPDFGlyphPath_GetGlyphPathSegment(
         &self,
         glyphpath: FPDF_GLYPHPATH,
         index: c_int,
@@ -16974,7 +17116,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+    unsafe fn FPDF_VIEWERREF_GetPrintScaling(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_VIEWERREF_GetPrintScaling()");
 
         PdfiumRenderWasmState::lock()
@@ -16991,7 +17133,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDF_VIEWERREF_GetNumCopies(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_VIEWERREF_GetNumCopies()");
 
         PdfiumRenderWasmState::lock()
@@ -17008,7 +17150,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE {
+    unsafe fn FPDF_VIEWERREF_GetPrintPageRange(&self, document: FPDF_DOCUMENT) -> FPDF_PAGERANGE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_VIEWERREF_GetPrintPageRange()");
 
         PdfiumRenderWasmState::lock()
@@ -17025,7 +17167,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
+    unsafe fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_VIEWERREF_GetPrintPageRangeCount()");
 
         PdfiumRenderWasmState::lock()
@@ -17042,7 +17184,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetPrintPageRangeElement(
+    unsafe fn FPDF_VIEWERREF_GetPrintPageRangeElement(
         &self,
         pagerange: FPDF_PAGERANGE,
         index: size_t,
@@ -17069,7 +17211,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE {
+    unsafe fn FPDF_VIEWERREF_GetDuplex(&self, document: FPDF_DOCUMENT) -> FPDF_DUPLEXTYPE {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_VIEWERREF_GetDuplex()");
 
         PdfiumRenderWasmState::lock()
@@ -17086,7 +17228,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_VIEWERREF_GetName(
+    unsafe fn FPDF_VIEWERREF_GetName(
         &self,
         document: FPDF_DOCUMENT,
         key: &str,
@@ -17142,7 +17284,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD {
+    unsafe fn FPDF_CountNamedDests(&self, document: FPDF_DOCUMENT) -> FPDF_DWORD {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_CountNamedDests()");
 
         PdfiumRenderWasmState::lock()
@@ -17159,7 +17301,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST {
+    unsafe fn FPDF_GetNamedDestByName(&self, document: FPDF_DOCUMENT, name: &str) -> FPDF_DEST {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDF_GetNamedDestByName()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -17190,7 +17332,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDF_GetNamedDest(
+    unsafe fn FPDF_GetNamedDest(
         &self,
         document: FPDF_DOCUMENT,
         index: c_int,
@@ -17256,7 +17398,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int {
+    unsafe fn FPDFDoc_GetAttachmentCount(&self, document: FPDF_DOCUMENT) -> c_int {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetAttachmentCount()");
 
         PdfiumRenderWasmState::lock()
@@ -17273,7 +17415,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_AddAttachment(
+    unsafe fn FPDFDoc_AddAttachment(
         &self,
         document: FPDF_DOCUMENT,
         name: FPDF_WIDESTRING,
@@ -17306,7 +17448,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_GetAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_ATTACHMENT {
+    unsafe fn FPDFDoc_GetAttachment(
+        &self,
+        document: FPDF_DOCUMENT,
+        index: c_int,
+    ) -> FPDF_ATTACHMENT {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDoc_GetAttachment()");
 
         PdfiumRenderWasmState::lock()
@@ -17327,7 +17473,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL {
+    unsafe fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFDoc_DeleteAttachment()");
 
         PdfiumRenderWasmState::lock()
@@ -17348,7 +17494,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetName(
+    unsafe fn FPDFAttachment_GetName(
         &self,
         attachment: FPDF_ATTACHMENT,
         buffer: *mut FPDF_WCHAR,
@@ -17402,7 +17548,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL {
+    unsafe fn FPDFAttachment_HasKey(&self, attachment: FPDF_ATTACHMENT, key: &str) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFAttachment_HasKey()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -17433,7 +17579,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetValueType(
+    unsafe fn FPDFAttachment_GetValueType(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -17468,7 +17614,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_SetStringValue(
+    unsafe fn FPDFAttachment_SetStringValue(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -17509,7 +17655,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetStringValue(
+    unsafe fn FPDFAttachment_GetStringValue(
         &self,
         attachment: FPDF_ATTACHMENT,
         key: &str,
@@ -17573,7 +17719,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_SetFile(
+    unsafe fn FPDFAttachment_SetFile(
         &self,
         attachment: FPDF_ATTACHMENT,
         document: FPDF_DOCUMENT,
@@ -17612,7 +17758,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetFile(
+    unsafe fn FPDFAttachment_GetFile(
         &self,
         attachment: FPDF_ATTACHMENT,
         buffer: *mut c_void,
@@ -17679,7 +17825,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
     #[allow(non_snake_case)]
-    fn FPDFAttachment_GetSubtype(
+    unsafe fn FPDFAttachment_GetSubtype(
         &self,
         attachment: FPDF_ATTACHMENT,
         buffer: *mut FPDF_WCHAR,
@@ -17734,7 +17880,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
     }
 
     #[allow(non_snake_case)]
-    fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
+    unsafe fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFCatalog_IsTagged()");
 
         PdfiumRenderWasmState::lock()
@@ -17761,7 +17907,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6666"
     ))]
     #[allow(non_snake_case)]
-    fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
+    unsafe fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
         log_debug("pdfium-render::PdfiumLibraryBindings::FPDFCatalog_SetLanguage()");
 
         let state = PdfiumRenderWasmState::lock();
@@ -17794,6 +17940,8 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
 impl Drop for WasmPdfiumBindings {
     fn drop(&mut self) {
-        self.FPDF_DestroyLibrary();
+        unsafe {
+            self.FPDF_DestroyLibrary();
+        }
     }
 }

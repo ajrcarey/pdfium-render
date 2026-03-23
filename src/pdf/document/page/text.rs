@@ -79,7 +79,7 @@ impl<'a> PdfPageText<'a> {
     /// from the result of calling `PdfPageText::all().len()`.
     #[inline]
     pub fn len(&self) -> i32 {
-        self.bindings.FPDFText_CountChars(self.text_page_handle())
+        unsafe { self.bindings.FPDFText_CountChars(self.text_page_handle()) }
     }
 
     /// Returns `true` if there are no characters in any text box collection in the containing [PdfPage].
@@ -144,9 +144,10 @@ impl<'a> PdfPageText<'a> {
             self.chars()
                 .iter()
                 .filter(|char| {
-                    self.bindings
-                        .FPDFText_GetTextObject(self.text_page_handle(), char.index() as i32)
-                        == object.object_handle()
+                    (unsafe {
+                        self.bindings
+                            .FPDFText_GetTextObject(self.text_page_handle(), char.index() as i32)
+                    }) == object.object_handle()
                 })
                 .map(|char| char.index() as i32)
                 .collect(),
@@ -229,13 +230,15 @@ impl<'a> PdfPageText<'a> {
         tolerance_y: PdfPoints,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Option<PdfPageTextCharIndex> {
-        match bindings.FPDFText_GetCharIndexAtPos(
-            text_page_handle,
-            x.value as c_double,
-            y.value as c_double,
-            tolerance_x.value as c_double,
-            tolerance_y.value as c_double,
-        ) {
+        match unsafe {
+            bindings.FPDFText_GetCharIndexAtPos(
+                text_page_handle,
+                x.value as c_double,
+                y.value as c_double,
+                tolerance_x.value as c_double,
+                tolerance_y.value as c_double,
+            )
+        } {
             -1 => None, // No character at position within tolerances
             -3 => None, // An error occurred, but we'll eat it
             index => Some(index as PdfPageTextCharIndex),
@@ -277,15 +280,17 @@ impl<'a> PdfPageText<'a> {
 
         let bottom = rect.bottom().value as f64;
 
-        let chars_count = self.bindings().FPDFText_GetBoundedText(
-            self.text_page_handle(),
-            left,
-            top,
-            right,
-            bottom,
-            null_mut(),
-            0,
-        );
+        let chars_count = unsafe {
+            self.bindings().FPDFText_GetBoundedText(
+                self.text_page_handle(),
+                left,
+                top,
+                right,
+                bottom,
+                null_mut(),
+                0,
+            )
+        };
 
         if chars_count == 0 {
             // No text lies within the given rectangle.
@@ -295,15 +300,17 @@ impl<'a> PdfPageText<'a> {
 
         let mut buffer = create_sized_buffer(chars_count as usize);
 
-        let result = self.bindings().FPDFText_GetBoundedText(
-            self.text_page_handle(),
-            left,
-            top,
-            right,
-            bottom,
-            buffer.as_mut_ptr(),
-            chars_count,
-        );
+        let result = unsafe {
+            self.bindings().FPDFText_GetBoundedText(
+                self.text_page_handle(),
+                left,
+                top,
+                right,
+                bottom,
+                buffer.as_mut_ptr(),
+                chars_count,
+            )
+        };
 
         assert_eq!(result, chars_count);
 
@@ -323,12 +330,14 @@ impl<'a> PdfPageText<'a> {
         // length and call FPDFTextObj_GetText() again with a pointer to the buffer;
         // this will write the text for the page object into the buffer.
 
-        let buffer_length = self.bindings().FPDFTextObj_GetText(
-            object.object_handle(),
-            self.text_page_handle(),
-            null_mut(),
-            0,
-        );
+        let buffer_length = unsafe {
+            self.bindings().FPDFTextObj_GetText(
+                object.object_handle(),
+                self.text_page_handle(),
+                null_mut(),
+                0,
+            )
+        };
 
         if buffer_length == 0 {
             // There is no text.
@@ -338,12 +347,14 @@ impl<'a> PdfPageText<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDFTextObj_GetText(
-            object.object_handle(),
-            self.text_page_handle(),
-            buffer.as_mut_ptr() as *mut FPDF_WCHAR,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFTextObj_GetText(
+                object.object_handle(),
+                self.text_page_handle(),
+                buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -388,12 +399,14 @@ impl<'a> PdfPageText<'a> {
             Err(PdfiumError::TextSearchTargetIsEmpty)
         } else {
             Ok(PdfPageTextSearch::from_pdfium(
-                self.bindings().FPDFText_FindStart(
-                    self.text_page_handle(),
-                    get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
-                    options.as_pdfium(),
-                    index as c_int,
-                ),
+                unsafe {
+                    self.bindings().FPDFText_FindStart(
+                        self.text_page_handle(),
+                        get_pdfium_utf16le_bytes_from_str(text).as_ptr() as FPDF_WIDESTRING,
+                        options.as_pdfium(),
+                        index as c_int,
+                    )
+                },
                 self,
                 self.bindings(),
             ))
@@ -412,7 +425,9 @@ impl<'a> Drop for PdfPageText<'a> {
     /// Closes the [PdfPageText] collection, releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings().FPDFText_ClosePage(self.text_page_handle());
+        unsafe {
+            self.bindings().FPDFText_ClosePage(self.text_page_handle());
+        }
     }
 }
 

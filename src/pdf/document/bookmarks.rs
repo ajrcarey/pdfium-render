@@ -41,9 +41,10 @@ impl<'a> PdfBookmarks<'a> {
 
     /// Returns the root [PdfBookmark] in the containing `PdfDocument`, if any.
     pub fn root(&self) -> Option<PdfBookmark<'_>> {
-        let bookmark_handle = self
-            .bindings()
-            .FPDFBookmark_GetFirstChild(self.document_handle, std::ptr::null_mut());
+        let bookmark_handle = unsafe {
+            self.bindings()
+                .FPDFBookmark_GetFirstChild(self.document_handle, std::ptr::null_mut())
+        };
 
         if bookmark_handle.is_null() {
             None
@@ -63,9 +64,10 @@ impl<'a> PdfBookmarks<'a> {
     /// bookmarks could match a given title. This function only ever returns the first. To return
     /// all matches, use [PdfBookmarks::find_all_by_title()].
     pub fn find_first_by_title(&self, title: &str) -> Result<PdfBookmark<'_>, PdfiumError> {
-        let handle = self
-            .bindings()
-            .FPDFBookmark_Find_str(self.document_handle, title);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFBookmark_Find_str(self.document_handle, title)
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -194,7 +196,7 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
         // - PdfIterator::visited keeps a HashSet of visited nodes, to ensure
         //   termination even if the PDF's bookmark graph is cyclic.
         // - PdfIterator::skip_sibling keeps a FPDF_BOOKMARK that will not be
-        //   returned by the iterator (but, importantly, it's siblings will
+        //   returned by the iterator (but, importantly, its siblings will
         //   still be explored).
 
         while let Some((node, parent)) = self.pending_stack.pop() {
@@ -207,17 +209,21 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
             // after having addressed our descendants. It's okay if it's NULL,
             // we'll handle that when it comes off the stack.
             self.pending_stack.push((
-                self.bindings()
-                    .FPDFBookmark_GetNextSibling(self.document_handle, node),
+                unsafe {
+                    self.bindings()
+                        .FPDFBookmark_GetNextSibling(self.document_handle, node)
+                },
                 parent,
             ));
 
             // Add our first descendant to the stack if we should include them.
-            // Again, its okay if it's NULL.
+            // Again, it's okay if it's NULL.
             if self.include_descendants {
                 self.pending_stack.push((
-                    self.bindings()
-                        .FPDFBookmark_GetFirstChild(self.document_handle, node),
+                    unsafe {
+                        self.bindings()
+                            .FPDFBookmark_GetFirstChild(self.document_handle, node)
+                    },
                     node,
                 ));
             }
@@ -229,7 +235,7 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
             }
         }
 
-        // If we got here, then the stack is empty and we're done.
+        // If we get here then the stack is empty and we're done.
         None
     }
 }

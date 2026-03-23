@@ -29,7 +29,8 @@ impl<'a> PdfSignatures<'a> {
 
     /// Returns the number of signatures in this [PdfSignatures] collection.
     pub fn len(&self) -> PdfSignatureIndex {
-        self.bindings().FPDF_GetSignatureCount(self.document_handle) as PdfSignatureIndex
+        (unsafe { self.bindings().FPDF_GetSignatureCount(self.document_handle) })
+            as PdfSignatureIndex
     }
 
     /// Returns `true` if this [PdfSignatures] collection is empty.
@@ -61,9 +62,10 @@ impl<'a> PdfSignatures<'a> {
             return Err(PdfiumError::SignatureIndexOutOfBounds);
         }
 
-        let handle = self
-            .bindings()
-            .FPDF_GetSignatureObject(self.document_handle, index as c_int);
+        let handle = unsafe {
+            self.bindings()
+                .FPDF_GetSignatureObject(self.document_handle, index as c_int)
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(

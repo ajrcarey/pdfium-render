@@ -33,15 +33,14 @@ impl<'a> PdfFontGlyph<'a> {
     pub fn width_at_font_size(&self, size: PdfPoints) -> PdfPoints {
         let mut width = 0.0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFFont_GetGlyphWidth(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFFont_GetGlyphWidth(
                 self.handle,
                 self.index as c_uint,
                 size.value as c_float,
                 &mut width,
-            ))
-        {
+            )
+        }) {
             PdfPoints::new(width)
         } else {
             PdfPoints::ZERO
@@ -53,11 +52,13 @@ impl<'a> PdfFontGlyph<'a> {
         &self,
         size: PdfPoints,
     ) -> Result<PdfFontGlyphPath<'_>, PdfiumError> {
-        let handle = self.bindings().FPDFFont_GetGlyphPath(
-            self.handle,
-            self.index as c_uint,
-            size.value as c_float,
-        );
+        let handle = unsafe {
+            self.bindings().FPDFFont_GetGlyphPath(
+                self.handle,
+                self.index as c_uint,
+                size.value as c_float,
+            )
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -95,16 +96,19 @@ impl<'a> PdfFontGlyphPath<'a> {
 impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
-        self.bindings()
-            .FPDFGlyphPath_CountGlyphSegments(self.handle)
-            .try_into()
-            .unwrap_or(0)
+        (unsafe {
+            self.bindings()
+                .FPDFGlyphPath_CountGlyphSegments(self.handle)
+        })
+        .try_into()
+        .unwrap_or(0)
     }
 
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
-        let handle = self
-            .bindings()
-            .FPDFGlyphPath_GetGlyphPathSegment(self.handle, index as c_int);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFGlyphPath_GetGlyphPathSegment(self.handle, index as c_int)
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(

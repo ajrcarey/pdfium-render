@@ -41,7 +41,7 @@ impl<'a> PdfClipPath<'a> {
     /// Returns the number of path objects inside this [PdfClipPath] instance.
     #[inline]
     pub fn len(&self) -> PdfClipPathSegmentIndex {
-        let path_count = self.bindings().FPDFClipPath_CountPaths(self.handle());
+        let path_count = unsafe { self.bindings().FPDFClipPath_CountPaths(self.handle()) };
 
         if path_count < 0 {
             // FPDFClipPath_CountPaths() returns -1 on failure.
@@ -101,7 +101,9 @@ impl<'a> Drop for PdfClipPath<'a> {
             // Responsibility for de-allocation lies with us, not Pdfium, since
             // the clip path is not attached to a page, a page object, or an annotation.
 
-            self.bindings().FPDF_DestroyClipPath(self.handle)
+            unsafe {
+                self.bindings().FPDF_DestroyClipPath(self.handle);
+            }
         }
     }
 }
@@ -163,18 +165,22 @@ impl<'a> PdfClipPathSegments<'a> {
 impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
-        self.bindings()
-            .FPDFClipPath_CountPathSegments(self.handle, self.index as i32)
-            .try_into()
-            .unwrap_or(0)
+        unsafe {
+            self.bindings()
+                .FPDFClipPath_CountPathSegments(self.handle, self.index as i32)
+        }
+        .try_into()
+        .unwrap_or(0)
     }
 
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
-        let handle = self.bindings().FPDFClipPath_GetPathSegment(
-            self.handle,
-            self.index as i32,
-            index as c_int,
-        );
+        let handle = unsafe {
+            self.bindings().FPDFClipPath_GetPathSegment(
+                self.handle,
+                self.index as i32,
+                index as c_int,
+            )
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(

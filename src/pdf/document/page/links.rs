@@ -126,11 +126,10 @@ impl<'a> PdfPageLinks<'a> {
 
         let mut handle = null_mut();
 
-        if self.bindings.is_true(self.bindings.FPDFLink_Enumerate(
-            self.page_handle,
-            &mut start_pos,
-            &mut handle,
-        )) && !handle.is_null()
+        if self.bindings.is_true(unsafe {
+            self.bindings
+                .FPDFLink_Enumerate(self.page_handle, &mut start_pos, &mut handle)
+        }) && !handle.is_null()
         {
             Ok(PdfLink::from_pdfium(
                 handle,
@@ -158,9 +157,10 @@ impl<'a> PdfPageLinks<'a> {
 
     /// Returns the [PdfLink] object at the given position on the containing page, if any.
     pub fn link_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfLink<'_>> {
-        let handle =
+        let handle = unsafe {
             self.bindings
-                .FPDFLink_GetLinkAtPoint(self.page_handle, x.value as f64, y.value as f64);
+                .FPDFLink_GetLinkAtPoint(self.page_handle, x.value as f64, y.value as f64)
+        };
 
         if handle.is_null() {
             None

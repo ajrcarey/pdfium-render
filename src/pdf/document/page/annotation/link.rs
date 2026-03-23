@@ -46,7 +46,7 @@ impl<'a> PdfPageLinkAnnotation<'a> {
 
     /// Returns the [PdfLink] associated with this [PdfPageLinkAnnotation], if any.
     pub fn link(&self) -> Result<PdfLink<'_>, PdfiumError> {
-        let handle = self.bindings().FPDFAnnot_GetLink(self.handle);
+        let handle = unsafe { self.bindings().FPDFAnnot_GetLink(self.handle) };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -80,7 +80,7 @@ impl<'a> PdfPageLinkAnnotation<'a> {
     pub fn set_link(&mut self, uri: &str) -> Result<(), PdfiumError> {
         if self
             .bindings()
-            .is_true(self.bindings().FPDFAnnot_SetURI(self.handle(), uri))
+            .is_true(unsafe { self.bindings().FPDFAnnot_SetURI(self.handle(), uri) })
         {
             Ok(())
         } else {

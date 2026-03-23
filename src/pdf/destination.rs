@@ -99,58 +99,58 @@ impl PdfDestinationViewSettings {
 
         let mut zoom_value: FS_FLOAT = 0.0;
 
-        let (x, y, zoom) =
-            if destination
-                .bindings
-                .is_true(destination.bindings.FPDFDest_GetLocationInPage(
-                    destination.destination_handle,
-                    &mut has_x_value,
-                    &mut has_y_value,
-                    &mut has_zoom_value,
-                    &mut x_value,
-                    &mut y_value,
-                    &mut zoom_value,
-                ))
-            {
-                let x = if destination.bindings.is_true(has_x_value) {
-                    Some(PdfPoints::new(x_value))
-                } else {
-                    None
-                };
-
-                let y = if destination.bindings.is_true(has_y_value) {
-                    Some(PdfPoints::new(y_value))
-                } else {
-                    None
-                };
-
-                let zoom = if destination.bindings.is_true(has_zoom_value) {
-                    // The PDF specification states that a zoom value of 0 has the same meaning
-                    // as a null value.
-
-                    if zoom_value != 0.0 {
-                        Some(zoom_value)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                };
-
-                (x, y, zoom)
+        let (x, y, zoom) = if destination.bindings.is_true(unsafe {
+            destination.bindings.FPDFDest_GetLocationInPage(
+                destination.destination_handle,
+                &mut has_x_value,
+                &mut has_y_value,
+                &mut has_zoom_value,
+                &mut x_value,
+                &mut y_value,
+                &mut zoom_value,
+            )
+        }) {
+            let x = if destination.bindings.is_true(has_x_value) {
+                Some(PdfPoints::new(x_value))
             } else {
-                (None, None, None)
+                None
             };
+
+            let y = if destination.bindings.is_true(has_y_value) {
+                Some(PdfPoints::new(y_value))
+            } else {
+                None
+            };
+
+            let zoom = if destination.bindings.is_true(has_zoom_value) {
+                // The PDF specification states that a zoom value of 0 has the same meaning
+                // as a null value.
+
+                if zoom_value != 0.0 {
+                    Some(zoom_value)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            (x, y, zoom)
+        } else {
+            (None, None, None)
+        };
 
         let mut p_num_params = 0;
 
         let mut p_params: Vec<FS_FLOAT> = create_sized_buffer(4);
 
-        let view = destination.bindings.FPDFDest_GetView(
-            destination.destination_handle,
-            &mut p_num_params,
-            p_params.as_mut_ptr(),
-        );
+        let view = unsafe {
+            destination.bindings.FPDFDest_GetView(
+                destination.destination_handle,
+                &mut p_num_params,
+                p_params.as_mut_ptr(),
+            )
+        };
 
         match view as u32 {
             PDFDEST_VIEW_UNKNOWN_MODE => Ok(PdfDestinationViewSettings::Unknown),
@@ -274,10 +274,10 @@ impl<'a> PdfDestination<'a> {
     /// Returns the zero-based index of the `PdfPage` containing this [PdfDestination].
     #[inline]
     pub fn page_index(&self) -> Result<PdfPageIndex, PdfiumError> {
-        match self
-            .bindings
-            .FPDFDest_GetDestPageIndex(self.document_handle, self.destination_handle)
-        {
+        match unsafe {
+            self.bindings
+                .FPDFDest_GetDestPageIndex(self.document_handle, self.destination_handle)
+        } {
             -1 => Err(PdfiumError::DestinationPageIndexNotAvailable),
             index => Ok(index as PdfPageIndex),
         }

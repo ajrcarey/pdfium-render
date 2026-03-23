@@ -104,13 +104,16 @@ impl<'a> PdfPageObjects<'a> {
 
         match page_index {
             Some(page_index) => {
-                let x_object = self.bindings().FPDF_NewXObjectFromPage(
-                    destination.handle(),
-                    self.document_handle(),
-                    page_index as c_int,
-                );
+                let x_object = unsafe {
+                    self.bindings().FPDF_NewXObjectFromPage(
+                        destination.handle(),
+                        self.document_handle(),
+                        page_index as c_int,
+                    )
+                };
 
-                let object_handle = self.bindings().FPDF_NewFormObjectFromXObject(x_object);
+                let object_handle =
+                    unsafe { self.bindings().FPDF_NewFormObjectFromXObject(x_object) };
                 if object_handle.is_null() {
                     return Err(PdfiumError::PdfiumLibraryInternalError(
                         crate::error::PdfiumInternalError::Unknown,
@@ -122,7 +125,9 @@ impl<'a> PdfPageObjects<'a> {
                     PdfPageObjectOwnership::owned_by_document(destination.handle()),
                 );
 
-                self.bindings().FPDF_CloseXObject(x_object);
+                unsafe {
+                    self.bindings().FPDF_CloseXObject(x_object);
+                }
 
                 Ok(PdfPageObject::XObjectForm(object))
             }
@@ -157,13 +162,14 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        self.bindings.FPDFPage_CountObjects(self.page_handle) as PdfPageObjectIndex
+        (unsafe { self.bindings.FPDFPage_CountObjects(self.page_handle) }) as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        let object_handle = self
-            .bindings
-            .FPDFPage_GetObject(self.page_handle, index as c_int);
+        let object_handle = unsafe {
+            self.bindings
+                .FPDFPage_GetObject(self.page_handle, index as c_int)
+        };
 
         if object_handle.is_null() {
             if index >= self.len() {

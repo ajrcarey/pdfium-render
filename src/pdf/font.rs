@@ -130,9 +130,10 @@ impl<'a> PdfFont<'a> {
         // this will write the font name into the buffer. Unlike most text handling in
         // Pdfium, font names are returned in UTF-8 format.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings()
-                .FPDFFont_GetBaseFontName(self.handle, std::ptr::null_mut(), 0);
+                .FPDFFont_GetBaseFontName(self.handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // The font name is not present.
@@ -142,11 +143,13 @@ impl<'a> PdfFont<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings().FPDFFont_GetBaseFontName(
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_char,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFFont_GetBaseFontName(
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_char,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -179,9 +182,10 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6666",
             feature = "pdfium_6611"
         ))]
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings()
-                .FPDFFont_GetFamilyName(self.handle, std::ptr::null_mut(), 0);
+                .FPDFFont_GetFamilyName(self.handle, std::ptr::null_mut(), 0)
+        };
 
         #[cfg(any(
             feature = "pdfium_6569",
@@ -199,9 +203,10 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6015",
             feature = "pdfium_5961"
         ))]
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings()
-                .FPDFFont_GetFontName(self.handle, std::ptr::null_mut(), 0);
+                .FPDFFont_GetFontName(self.handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // The font name is not present.
@@ -222,11 +227,13 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6666",
             feature = "pdfium_6611"
         ))]
-        let result = self.bindings().FPDFFont_GetFamilyName(
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_char,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFFont_GetFamilyName(
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_char,
+                buffer_length,
+            )
+        };
 
         #[cfg(any(
             feature = "pdfium_6569",
@@ -244,11 +251,13 @@ impl<'a> PdfFont<'a> {
             feature = "pdfium_6015",
             feature = "pdfium_5961"
         ))]
-        let result = self.bindings().FPDFFont_GetFontName(
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_char,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings().FPDFFont_GetFontName(
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_char,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -263,9 +272,10 @@ impl<'a> PdfFont<'a> {
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn weight(&self) -> Result<PdfFontWeight, PdfiumError> {
-        PdfFontWeight::from_pdfium(self.bindings().FPDFFont_GetWeight(self.handle)).ok_or(
-            PdfiumError::PdfiumLibraryInternalError(PdfiumInternalError::Unknown),
-        )
+        PdfFontWeight::from_pdfium(unsafe { self.bindings().FPDFFont_GetWeight(self.handle) })
+            .ok_or(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
     }
 
     /// Returns the italic angle of this [PdfFont]. The italic angle is the angle,
@@ -277,10 +287,10 @@ impl<'a> PdfFont<'a> {
     pub fn italic_angle(&self) -> Result<i32, PdfiumError> {
         let mut angle = 0;
 
-        if self.bindings().is_true(
+        if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFFont_GetItalicAngle(self.handle, &mut angle),
-        ) {
+                .FPDFFont_GetItalicAngle(self.handle, &mut angle)
+        }) {
             Ok(angle)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -295,11 +305,10 @@ impl<'a> PdfFont<'a> {
     pub fn ascent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
         let mut ascent = 0.0;
 
-        if self.bindings().is_true(self.bindings().FPDFFont_GetAscent(
-            self.handle,
-            font_size.value,
-            &mut ascent,
-        )) {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFFont_GetAscent(self.handle, font_size.value, &mut ascent)
+        }) {
             Ok(PdfPoints::new(ascent))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -314,11 +323,10 @@ impl<'a> PdfFont<'a> {
     pub fn descent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
         let mut descent = 0.0;
 
-        if self.bindings().is_true(self.bindings().FPDFFont_GetDescent(
-            self.handle,
-            font_size.value,
-            &mut descent,
-        )) {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFFont_GetDescent(self.handle, font_size.value, &mut descent)
+        }) {
             Ok(PdfPoints::new(descent))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -330,9 +338,9 @@ impl<'a> PdfFont<'a> {
     /// Returns the raw font descriptor bitflags for the containing [PdfFont].
     #[inline]
     fn get_flags_bits(&self) -> FpdfFontDescriptorFlags {
-        FpdfFontDescriptorFlags::from_bits_truncate(
-            self.bindings().FPDFFont_GetFlags(self.handle) as u32
-        )
+        FpdfFontDescriptorFlags::from_bits_truncate(unsafe {
+            self.bindings().FPDFFont_GetFlags(self.handle)
+        } as u32)
     }
 
     /// Returns `true` if all the glyphs in this [PdfFont] have the same width.
@@ -469,7 +477,7 @@ impl<'a> PdfFont<'a> {
 
     /// Returns `true` if the data for this [PdfFont] is embedded in the containing [PdfDocument].
     pub fn is_embedded(&self) -> Result<bool, PdfiumError> {
-        let result = self.bindings().FPDFFont_GetIsEmbedded(self.handle);
+        let result = unsafe { self.bindings().FPDFFont_GetIsEmbedded(self.handle) };
 
         match result {
             1 => Ok(true),
@@ -496,27 +504,28 @@ impl<'a> PdfFont<'a> {
 
         let mut out_buflen: usize = 0;
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFFont_GetFontData(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFFont_GetFontData(
                 self.handle,
                 std::ptr::null_mut(),
                 0,
                 &mut out_buflen,
-            ))
-        {
+            )
+        }) {
             // out_buflen now contains the length of the font data.
 
             let buffer_length = out_buflen;
 
             let mut buffer = create_byte_buffer(buffer_length);
 
-            let result = self.bindings().FPDFFont_GetFontData(
-                self.handle,
-                buffer.as_mut_ptr(),
-                buffer_length,
-                &mut out_buflen,
-            );
+            let result = unsafe {
+                self.bindings().FPDFFont_GetFontData(
+                    self.handle,
+                    buffer.as_mut_ptr(),
+                    buffer_length,
+                    &mut out_buflen,
+                )
+            };
 
             assert!(self.bindings().is_true(result));
             assert_eq!(buffer_length, out_buflen);
@@ -558,7 +567,9 @@ impl<'a> Drop for PdfFont<'a> {
         // (Indeed, if we try to, Pdfium segfaults.)
 
         if self.is_font_memory_loaded {
-            self.bindings().FPDFFont_Close(self.handle);
+            unsafe {
+                self.bindings().FPDFFont_Close(self.handle);
+            }
         }
     }
 }

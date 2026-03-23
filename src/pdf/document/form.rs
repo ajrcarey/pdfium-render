@@ -150,9 +150,10 @@ impl<'a> PdfForm<'a> {
             lifetime: PhantomData,
         };
 
-        let form_handle = form
-            .bindings()
-            .FPDFDOC_InitFormFillEnvironment(document_handle, form.form_fill_info.deref_mut());
+        let form_handle = unsafe {
+            form.bindings()
+                .FPDFDOC_InitFormFillEnvironment(document_handle, form.form_fill_info.deref_mut())
+        };
 
         if !form_handle.is_null() {
             // There is a form embedded in this document, and we retrieved a valid handle to it.
@@ -184,8 +185,10 @@ impl<'a> PdfForm<'a> {
     /// Returns the [PdfFormType] of this [PdfForm].
     #[inline]
     pub fn form_type(&self) -> PdfFormType {
-        PdfFormType::from_pdfium(self.bindings().FPDF_GetFormType(self.document_handle) as u32)
-            .unwrap()
+        PdfFormType::from_pdfium(
+            unsafe { self.bindings().FPDF_GetFormType(self.document_handle) } as u32,
+        )
+        .unwrap()
     }
 
     /// Captures a string representation of the value of every form field on every page of
@@ -270,8 +273,10 @@ impl<'a> Drop for PdfForm<'a> {
     /// Closes this [PdfForm], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings()
-            .FPDFDOC_ExitFormFillEnvironment(self.form_handle);
+        unsafe {
+            self.bindings()
+                .FPDFDOC_ExitFormFillEnvironment(self.form_handle);
+        }
     }
 }
 

@@ -233,9 +233,10 @@ impl<'a> PdfPageAnnotation<'a> {
         form_handle: Option<FPDF_FORMHANDLE>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        let annotation_type =
-            PdfPageAnnotationType::from_pdfium(bindings.FPDFAnnot_GetSubtype(annotation_handle))
-                .unwrap_or(PdfPageAnnotationType::Unknown);
+        let annotation_type = PdfPageAnnotationType::from_pdfium(unsafe {
+            bindings.FPDFAnnot_GetSubtype(annotation_handle)
+        })
+        .unwrap_or(PdfPageAnnotationType::Unknown);
 
         match annotation_type {
             PdfPageAnnotationType::Circle => {
@@ -1337,7 +1338,9 @@ impl<'a> Drop for PdfPageAnnotation<'a> {
     /// Closes this [PdfPageAnnotation], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        self.bindings().FPDFPage_CloseAnnot(self.handle());
+        unsafe {
+            self.bindings().FPDFPage_CloseAnnot(self.handle());
+        }
     }
 }
 

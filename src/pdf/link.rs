@@ -58,7 +58,7 @@ impl<'a> PdfLink<'a> {
     /// of type [PdfActionType::GoToDestinationInSameDocument], but the PDF file format supports
     /// a variety of other actions.
     pub fn action(&self) -> Option<PdfAction<'a>> {
-        let handle = self.bindings().FPDFLink_GetAction(self.handle());
+        let handle = unsafe { self.bindings().FPDFLink_GetAction(self.handle()) };
 
         if handle.is_null() {
             None
@@ -76,9 +76,10 @@ impl<'a> PdfLink<'a> {
     /// The destination specifies the page and region, if any, that will be the target
     /// of any behaviour that will occur when the user interacts with the link in a PDF viewer.
     pub fn destination(&self) -> Option<PdfDestination<'a>> {
-        let handle = self
-            .bindings()
-            .FPDFLink_GetDest(self.document, self.handle());
+        let handle = unsafe {
+            self.bindings()
+                .FPDFLink_GetDest(self.document, self.handle())
+        };
 
         if handle.is_null() {
             None
@@ -102,8 +103,10 @@ impl<'a> PdfLink<'a> {
         };
 
         PdfRect::from_pdfium_as_result(
-            self.bindings()
-                .FPDFLink_GetAnnotRect(self.handle(), &mut rect),
+            unsafe {
+                self.bindings()
+                    .FPDFLink_GetAnnotRect(self.handle(), &mut rect)
+            },
             rect,
             self.bindings(),
         )

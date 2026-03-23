@@ -135,8 +135,10 @@ pub(crate) mod internal {
 
         /// Returns the [PdfPageAnnotationType] of this [PdfPageAnnotation].
         fn get_annotation_type(&self) -> PdfPageAnnotationType {
-            PdfPageAnnotationType::from_pdfium(self.bindings().FPDFAnnot_GetSubtype(self.handle()))
-                .unwrap_or(PdfPageAnnotationType::Unknown)
+            PdfPageAnnotationType::from_pdfium(unsafe {
+                self.bindings().FPDFAnnot_GetSubtype(self.handle())
+            })
+            .unwrap_or(PdfPageAnnotationType::Unknown)
         }
 
         /// Returns the string value associated with the given key in the annotation dictionary
@@ -144,14 +146,14 @@ pub(crate) mod internal {
         fn get_string_value(&self, key: &str) -> Option<String> {
             if !self
                 .bindings()
-                .is_true(self.bindings().FPDFAnnot_HasKey(self.handle(), key))
+                .is_true(unsafe { self.bindings().FPDFAnnot_HasKey(self.handle(), key) })
             {
                 // The key does not exist.
 
                 return None;
             }
 
-            if self.bindings().FPDFAnnot_GetValueType(self.handle(), key) as u32
+            if (unsafe { self.bindings().FPDFAnnot_GetValueType(self.handle(), key) }) as u32
                 != FPDF_OBJECT_STRING
             {
                 // The key exists, but the value associated with the key is not a string.
@@ -168,12 +170,14 @@ pub(crate) mod internal {
             // length and call FPDFAnot_GetStringValue() again with a pointer to the buffer;
             // this will write the string value into the buffer.
 
-            let buffer_length = self.bindings().FPDFAnnot_GetStringValue(
-                self.handle(),
-                key,
-                std::ptr::null_mut(),
-                0,
-            );
+            let buffer_length = unsafe {
+                self.bindings().FPDFAnnot_GetStringValue(
+                    self.handle(),
+                    key,
+                    std::ptr::null_mut(),
+                    0,
+                )
+            };
 
             if buffer_length <= 2 {
                 // A buffer length of 2 indicates that the string value for the given key is
@@ -184,12 +188,14 @@ pub(crate) mod internal {
 
             let mut buffer = create_byte_buffer(buffer_length as usize);
 
-            let result = self.bindings().FPDFAnnot_GetStringValue(
-                self.handle(),
-                key,
-                buffer.as_mut_ptr() as *mut FPDF_WCHAR,
-                buffer_length,
-            );
+            let result = unsafe {
+                self.bindings().FPDFAnnot_GetStringValue(
+                    self.handle(),
+                    key,
+                    buffer.as_mut_ptr() as *mut FPDF_WCHAR,
+                    buffer_length,
+                )
+            };
 
             assert_eq!(result, buffer_length);
 
@@ -213,13 +219,10 @@ pub(crate) mod internal {
             // With the modification date updated, we can now update the key and value
             // we were given.
 
-            if self
-                .bindings()
-                .is_true(
-                    self.bindings()
-                        .FPDFAnnot_SetStringValue_str(self.handle(), key, value),
-                )
-            {
+            if self.bindings().is_true(unsafe {
+                self.bindings()
+                    .FPDFAnnot_SetStringValue_str(self.handle(), key, value)
+            }) {
                 Ok(())
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
@@ -244,7 +247,7 @@ pub(crate) mod internal {
                 top: 0_f32,
             };
 
-            let result = self.bindings().FPDFAnnot_GetRect(self.handle(), &mut rect);
+            let result = unsafe { self.bindings().FPDFAnnot_GetRect(self.handle(), &mut rect) };
 
             PdfRect::from_pdfium_as_result(result, rect, self.bindings())
         }
@@ -252,10 +255,10 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::set_bounds()].
         #[inline]
         fn set_bounds_impl(&mut self, bounds: PdfRect) -> Result<(), PdfiumError> {
-            if self.bindings().is_true(
+            if self.bindings().is_true(unsafe {
                 self.bindings()
-                    .FPDFAnnot_SetRect(self.handle(), &bounds.as_pdfium()),
-            ) {
+                    .FPDFAnnot_SetRect(self.handle(), &bounds.as_pdfium())
+            }) {
                 self.set_string_value("M", &date_time_to_pdf_string(Utc::now()))
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
@@ -372,7 +375,7 @@ pub(crate) mod internal {
         #[inline]
         fn has_attachment_points_impl(&self) -> bool {
             self.bindings()
-                .is_true(self.bindings().FPDFAnnot_HasAttachmentPoints(self.handle()))
+                .is_true(unsafe { self.bindings().FPDFAnnot_HasAttachmentPoints(self.handle()) })
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::fill_color()].
@@ -386,14 +389,16 @@ pub(crate) mod internal {
 
             let mut a: c_uint = 0;
 
-            if self.bindings().is_true(self.bindings().FPDFAnnot_GetColor(
-                self.handle(),
-                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor,
-                &mut r,
-                &mut g,
-                &mut b,
-                &mut a,
-            )) {
+            if self.bindings().is_true(unsafe {
+                self.bindings().FPDFAnnot_GetColor(
+                    self.handle(),
+                    FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor,
+                    &mut r,
+                    &mut g,
+                    &mut b,
+                    &mut a,
+                )
+            }) {
                 Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
             } else {
                 // The FPDFAnnot_GetColor() function returns false if the annotation
@@ -401,16 +406,15 @@ pub(crate) mod internal {
                 // states that we must use FPDFPath_GetFillColor() instead; that function
                 // is deprecated, and says to use FPDFPageObj_GetFillColor().
 
-                if self
-                    .bindings()
-                    .is_true(self.bindings().FPDFPageObj_GetFillColor(
+                if self.bindings().is_true(unsafe {
+                    self.bindings().FPDFPageObj_GetFillColor(
                         self.handle() as FPDF_PAGEOBJECT,
                         &mut r,
                         &mut g,
                         &mut b,
                         &mut a,
-                    ))
-                {
+                    )
+                }) {
                     Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
                 } else {
                     Err(PdfiumError::PdfiumLibraryInternalError(
@@ -423,14 +427,16 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::set_fill_color()].
         #[inline]
         fn set_fill_color_impl(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
-            if self.bindings().is_true(self.bindings().FPDFAnnot_SetColor(
-                self.handle(),
-                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor,
-                fill_color.red() as c_uint,
-                fill_color.green() as c_uint,
-                fill_color.blue() as c_uint,
-                fill_color.alpha() as c_uint,
-            )) {
+            if self.bindings().is_true(unsafe {
+                self.bindings().FPDFAnnot_SetColor(
+                    self.handle(),
+                    FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_InteriorColor,
+                    fill_color.red() as c_uint,
+                    fill_color.green() as c_uint,
+                    fill_color.blue() as c_uint,
+                    fill_color.alpha() as c_uint,
+                )
+            }) {
                 Ok(())
             } else {
                 // The FPDFAnnot_SetColor() function returns false if the annotation
@@ -438,16 +444,15 @@ pub(crate) mod internal {
                 // states that we must use FPDFPath_SetFillColor() instead; that function
                 // is deprecated, and says to use FPDFPageObj_SetFillColor().
 
-                if self
-                    .bindings()
-                    .is_true(self.bindings().FPDFPageObj_SetFillColor(
+                if self.bindings().is_true(unsafe {
+                    self.bindings().FPDFPageObj_SetFillColor(
                         self.handle() as FPDF_PAGEOBJECT,
                         fill_color.red() as c_uint,
                         fill_color.green() as c_uint,
                         fill_color.blue() as c_uint,
                         fill_color.alpha() as c_uint,
-                    ))
-                {
+                    )
+                }) {
                     Ok(())
                 } else {
                     Err(PdfiumError::PdfiumLibraryInternalError(
@@ -468,14 +473,16 @@ pub(crate) mod internal {
 
             let mut a: c_uint = 0;
 
-            if self.bindings().is_true(self.bindings().FPDFAnnot_GetColor(
-                self.handle(),
-                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
-                &mut r,
-                &mut g,
-                &mut b,
-                &mut a,
-            )) {
+            if self.bindings().is_true(unsafe {
+                self.bindings().FPDFAnnot_GetColor(
+                    self.handle(),
+                    FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
+                    &mut r,
+                    &mut g,
+                    &mut b,
+                    &mut a,
+                )
+            }) {
                 Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
             } else {
                 // The FPDFAnnot_GetColor() function returns false if the annotation
@@ -483,16 +490,15 @@ pub(crate) mod internal {
                 // states that we must use FPDFPath_GetStrokeColor() instead; that function
                 // is deprecated, and says to use FPDFPageObj_GetStrokeColor().
 
-                if self
-                    .bindings()
-                    .is_true(self.bindings().FPDFPageObj_GetStrokeColor(
+                if self.bindings().is_true(unsafe {
+                    self.bindings().FPDFPageObj_GetStrokeColor(
                         self.handle() as FPDF_PAGEOBJECT,
                         &mut r,
                         &mut g,
                         &mut b,
                         &mut a,
-                    ))
-                {
+                    )
+                }) {
                     Ok(PdfColor::new(r as u8, g as u8, b as u8, a as u8))
                 } else {
                     Err(PdfiumError::PdfiumLibraryInternalError(
@@ -505,14 +511,16 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::set_stroke_color()].
         #[inline]
         fn set_stroke_color_impl(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
-            if self.bindings().is_true(self.bindings().FPDFAnnot_SetColor(
-                self.handle(),
-                FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
-                stroke_color.red() as c_uint,
-                stroke_color.green() as c_uint,
-                stroke_color.blue() as c_uint,
-                stroke_color.alpha() as c_uint,
-            )) {
+            if self.bindings().is_true(unsafe {
+                self.bindings().FPDFAnnot_SetColor(
+                    self.handle(),
+                    FPDFANNOT_COLORTYPE_FPDFANNOT_COLORTYPE_Color,
+                    stroke_color.red() as c_uint,
+                    stroke_color.green() as c_uint,
+                    stroke_color.blue() as c_uint,
+                    stroke_color.alpha() as c_uint,
+                )
+            }) {
                 Ok(())
             } else {
                 // The FPDFAnnot_SetColor() function returns false if the annotation
@@ -520,16 +528,15 @@ pub(crate) mod internal {
                 // states that we must use FPDFPath_SetStrokeColor() instead; that function
                 // is deprecated, and says to use FPDFPageObj_SetStrokeColor().
 
-                if self
-                    .bindings()
-                    .is_true(self.bindings().FPDFPageObj_SetStrokeColor(
+                if self.bindings().is_true(unsafe {
+                    self.bindings().FPDFPageObj_SetStrokeColor(
                         self.handle() as FPDF_PAGEOBJECT,
                         stroke_color.red() as c_uint,
                         stroke_color.green() as c_uint,
                         stroke_color.blue() as c_uint,
                         stroke_color.alpha() as c_uint,
-                    ))
-                {
+                    )
+                }) {
                     Ok(())
                 } else {
                     Err(PdfiumError::PdfiumLibraryInternalError(
@@ -543,17 +550,17 @@ pub(crate) mod internal {
         #[inline]
         fn get_flags_impl(&self) -> PdfAnnotationFlags {
             PdfAnnotationFlags::from_bits_truncate(
-                self.bindings().FPDFAnnot_GetFlags(self.handle()) as u32,
+                (unsafe { self.bindings().FPDFAnnot_GetFlags(self.handle()) }) as u32,
             )
         }
 
         /// Sets all the flags on this annotation.
         #[inline]
         fn set_flags_impl(&mut self, flags: PdfAnnotationFlags) -> bool {
-            self.bindings().is_true(
+            self.bindings().is_true(unsafe {
                 self.bindings()
-                    .FPDFAnnot_SetFlags(self.handle(), flags.bits() as c_int),
-            )
+                    .FPDFAnnot_SetFlags(self.handle(), flags.bits() as c_int)
+            })
         }
 
         /// Sets or clears a single flag on this annotation.

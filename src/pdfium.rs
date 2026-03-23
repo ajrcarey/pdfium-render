@@ -174,7 +174,9 @@ impl Pdfium {
     #[inline]
     pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
         assert!(BINDINGS.get().is_none());
-        bindings.FPDF_InitLibrary();
+        unsafe {
+            bindings.FPDF_InitLibrary();
+        }
         assert!(BINDINGS.set(bindings).is_ok());
 
         Self {}
@@ -189,7 +191,7 @@ impl Pdfium {
         password: Option<&str>,
     ) -> Result<PdfDocument<'a>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
-            self.bindings().FPDF_LoadMemDocument64(bytes, password),
+            unsafe { self.bindings().FPDF_LoadMemDocument64(bytes, password) },
             self.bindings(),
         )
     }
@@ -206,8 +208,10 @@ impl Pdfium {
         password: Option<&str>,
     ) -> Result<PdfDocument<'_>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
-            self.bindings()
-                .FPDF_LoadMemDocument64(bytes.as_slice(), password),
+            unsafe {
+                self.bindings()
+                    .FPDF_LoadMemDocument64(bytes.as_slice(), password)
+            },
             self.bindings(),
         )
         .map(|mut document| {
@@ -283,8 +287,10 @@ impl Pdfium {
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
         Pdfium::pdfium_document_handle_to_result(
-            self.bindings()
-                .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password),
+            unsafe {
+                self.bindings()
+                    .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password)
+            },
             self.bindings(),
         )
         .map(|mut document| {
@@ -365,7 +371,7 @@ impl Pdfium {
     /// Creates a new, empty [PdfDocument] in memory.
     pub fn create_new_pdf<'a>(&'a self) -> Result<PdfDocument<'a>, PdfiumError> {
         Self::pdfium_document_handle_to_result(
-            self.bindings().FPDF_CreateNewDocument(),
+            unsafe { self.bindings().FPDF_CreateNewDocument() },
             self.bindings(),
         )
         .map(|mut document| {
@@ -383,7 +389,7 @@ impl Pdfium {
         if handle.is_null() {
             // Retrieve the error code of the last error recorded by Pdfium.
 
-            if let Some(error) = match bindings.FPDF_GetLastError() as u32 {
+            if let Some(error) = match unsafe { bindings.FPDF_GetLastError() } as u32 {
                 FPDF_ERR_SUCCESS => None,
                 FPDF_ERR_UNKNOWN => Some(PdfiumInternalError::Unknown),
                 FPDF_ERR_FILE => Some(PdfiumInternalError::FileError),

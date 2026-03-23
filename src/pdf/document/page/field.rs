@@ -104,7 +104,7 @@ impl<'a> PdfFormField<'a> {
         annotation_handle: FPDF_ANNOTATION,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Option<Self> {
-        let result = bindings.FPDFAnnot_GetFormFieldType(form_handle, annotation_handle);
+        let result = unsafe { bindings.FPDFAnnot_GetFormFieldType(form_handle, annotation_handle) };
 
         if result == -1 {
             return None;

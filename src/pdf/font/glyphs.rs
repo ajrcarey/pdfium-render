@@ -57,18 +57,20 @@ impl<'a> PdfFontGlyphs<'a> {
     fn find_maximum_valid_glyph_index(&self, min: u16, max: u16) -> Option<u16> {
         // Exit immediately if the maximum valid glyph index lies outside the given index boundaries.
 
-        if !self
-            .bindings()
-            .FPDFFont_GetGlyphPath(self.handle, max as c_uint, 1.0)
-            .is_null()
+        if !(unsafe {
+            self.bindings()
+                .FPDFFont_GetGlyphPath(self.handle, max as c_uint, 1.0)
+        })
+        .is_null()
         {
             return Some(max);
         }
 
-        if self
-            .bindings()
-            .FPDFFont_GetGlyphPath(self.handle, min as c_uint, 1.0)
-            .is_null()
+        if (unsafe {
+            self.bindings()
+                .FPDFFont_GetGlyphPath(self.handle, min as c_uint, 1.0)
+        })
+        .is_null()
         {
             return None;
         }
@@ -77,10 +79,11 @@ impl<'a> PdfFontGlyphs<'a> {
 
         let mid = min + (max - min) / 2;
 
-        if self
-            .bindings()
-            .FPDFFont_GetGlyphPath(self.handle, mid as c_uint, 1.0)
-            .is_null()
+        if (unsafe {
+            self.bindings()
+                .FPDFFont_GetGlyphPath(self.handle, mid as c_uint, 1.0)
+        })
+        .is_null()
         {
             // The maximum valid glyph index must lie before the partition mid point.
 

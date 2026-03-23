@@ -216,7 +216,7 @@ impl<'a> PdfPagePathObject<'a> {
         stroke_width: Option<PdfPoints>,
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
-        let handle = bindings.FPDFPageObj_CreateNewPath(x.value, y.value);
+        let handle = unsafe { bindings.FPDFPageObj_CreateNewPath(x.value, y.value) };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -626,11 +626,10 @@ impl<'a> PdfPagePathObject<'a> {
     /// Begins a new sub-path in this [PdfPagePathObject] by moving the current point to the
     /// given coordinates, omitting any connecting line segment.
     pub fn move_to(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(self.bindings().FPDFPath_MoveTo(
-            self.object_handle(),
-            x.value,
-            y.value,
-        )) {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFPath_MoveTo(self.object_handle(), x.value, y.value)
+        }) {
             self.current_point_x = x;
             self.current_point_y = y;
 
@@ -645,11 +644,10 @@ impl<'a> PdfPagePathObject<'a> {
     /// Appends a straight line segment to this [PdfPagePathObject] from the current point to the
     /// given coordinates. The new current point is set to the given coordinates.
     pub fn line_to(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(self.bindings().FPDFPath_LineTo(
-            self.object_handle(),
-            x.value,
-            y.value,
-        )) {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFPath_LineTo(self.object_handle(), x.value, y.value)
+        }) {
             self.current_point_x = x;
             self.current_point_y = y;
 
@@ -673,15 +671,17 @@ impl<'a> PdfPagePathObject<'a> {
         control2_x: PdfPoints,
         control2_y: PdfPoints,
     ) -> Result<(), PdfiumError> {
-        if self.bindings().is_true(self.bindings().FPDFPath_BezierTo(
-            self.object_handle(),
-            control1_x.value,
-            control1_y.value,
-            control2_x.value,
-            control2_y.value,
-            x.value,
-            y.value,
-        )) {
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPath_BezierTo(
+                self.object_handle(),
+                control1_x.value,
+                control1_y.value,
+                control2_x.value,
+                control2_y.value,
+                x.value,
+                y.value,
+            )
+        }) {
             self.current_point_x = x;
             self.current_point_y = y;
 
@@ -750,11 +750,8 @@ impl<'a> PdfPagePathObject<'a> {
         const C: f32 = 0.551915;
 
         let x_c = x_radius * C;
-
         let y_c = y_radius * C;
-
         let orig_x = self.current_point_x;
-
         let orig_y = self.current_point_y;
 
         self.move_to(orig_x - x_radius, orig_y)?;
@@ -798,7 +795,7 @@ impl<'a> PdfPagePathObject<'a> {
     pub fn close_path(&mut self) -> Result<(), PdfiumError> {
         if self
             .bindings()
-            .is_true(self.bindings().FPDFPath_Close(self.object_handle))
+            .is_true(unsafe { self.bindings().FPDFPath_Close(self.object_handle) })
         {
             Ok(())
         } else {
@@ -815,14 +812,13 @@ impl<'a> PdfPagePathObject<'a> {
 
         let mut _raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPath_GetDrawMode(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPath_GetDrawMode(
                 self.object_handle(),
                 &mut raw_fill_mode,
                 &mut _raw_stroke,
-            ))
-        {
+            )
+        }) {
             PdfPathFillMode::from_pdfium(raw_fill_mode)
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -841,14 +837,13 @@ impl<'a> PdfPagePathObject<'a> {
 
         let mut raw_stroke: FPDF_BOOL = self.bindings().FALSE();
 
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPath_GetDrawMode(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPath_GetDrawMode(
                 self.object_handle(),
                 &mut _raw_fill_mode,
                 &mut raw_stroke,
-            ))
-        {
+            )
+        }) {
             Ok(self.bindings().is_true(raw_stroke))
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -867,14 +862,13 @@ impl<'a> PdfPagePathObject<'a> {
         fill_mode: PdfPathFillMode,
         do_stroke: bool,
     ) -> Result<(), PdfiumError> {
-        if self
-            .bindings()
-            .is_true(self.bindings().FPDFPath_SetDrawMode(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFPath_SetDrawMode(
                 self.object_handle(),
                 fill_mode.as_pdfium() as c_int,
                 self.bindings().bool_to_pdfium(do_stroke),
-            ))
-        {
+            )
+        }) {
             Ok(())
         } else {
             Err(PdfiumError::PdfiumLibraryInternalError(
@@ -990,16 +984,19 @@ impl<'a> PdfPagePathObjectSegments<'a> {
 impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
-        self.bindings()
-            .FPDFPath_CountSegments(self.handle)
-            .try_into()
-            .unwrap_or(0)
+        unsafe {
+            self.bindings()
+                .FPDFPath_CountSegments(self.handle)
+                .try_into()
+                .unwrap_or(0)
+        }
     }
 
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
-        let handle = self
-            .bindings()
-            .FPDFPath_GetPathSegment(self.handle, index as c_int);
+        let handle = unsafe {
+            self.bindings()
+                .FPDFPath_GetPathSegment(self.handle, index as c_int)
+        };
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(

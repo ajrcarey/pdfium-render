@@ -81,9 +81,10 @@ impl<'a> PdfSignature<'a> {
         // length and call FPDFSignatureObj_GetContents() again with a pointer to the buffer;
         // this will write the reason text to the buffer in UTF16-LE format.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings
-                .FPDFSignatureObj_GetContents(self.handle, std::ptr::null_mut(), 0);
+                .FPDFSignatureObj_GetContents(self.handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // The signature is empty.
@@ -93,11 +94,13 @@ impl<'a> PdfSignature<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings.FPDFSignatureObj_GetContents(
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings.FPDFSignatureObj_GetContents(
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -116,9 +119,10 @@ impl<'a> PdfSignature<'a> {
         // length and call FPDFSignatureObj_GetReason() again with a pointer to the buffer;
         // this will write the reason text to the buffer in UTF16-LE format.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings
-                .FPDFSignatureObj_GetReason(self.handle, std::ptr::null_mut(), 0);
+                .FPDFSignatureObj_GetReason(self.handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // There is no reason given for this signature.
@@ -128,11 +132,13 @@ impl<'a> PdfSignature<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings.FPDFSignatureObj_GetReason(
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_void,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings.FPDFSignatureObj_GetReason(
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_void,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -155,9 +161,10 @@ impl<'a> PdfSignature<'a> {
         // length and call FPDFSignatureObj_GetTime() again with a pointer to the buffer;
         // this will write the timestamp to the buffer as an array of 7-bit ASCII characters.
 
-        let buffer_length =
+        let buffer_length = unsafe {
             self.bindings
-                .FPDFSignatureObj_GetTime(self.handle, std::ptr::null_mut(), 0);
+                .FPDFSignatureObj_GetTime(self.handle, std::ptr::null_mut(), 0)
+        };
 
         if buffer_length == 0 {
             // There is no timestamp given for this signature.
@@ -167,11 +174,13 @@ impl<'a> PdfSignature<'a> {
 
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
-        let result = self.bindings.FPDFSignatureObj_GetTime(
-            self.handle,
-            buffer.as_mut_ptr() as *mut c_char,
-            buffer_length,
-        );
+        let result = unsafe {
+            self.bindings.FPDFSignatureObj_GetTime(
+                self.handle,
+                buffer.as_mut_ptr() as *mut c_char,
+                buffer_length,
+            )
+        };
 
         assert_eq!(result, buffer_length);
 
@@ -190,9 +199,9 @@ impl<'a> PdfSignature<'a> {
     pub fn modification_detection_permission(
         &self,
     ) -> Result<PdfSignatureModificationDetectionPermission, PdfiumError> {
-        PdfSignatureModificationDetectionPermission::from_pdfium(
+        PdfSignatureModificationDetectionPermission::from_pdfium(unsafe {
             self.bindings
-                .FPDFSignatureObj_GetDocMDPPermission(self.handle),
-        )
+                .FPDFSignatureObj_GetDocMDPPermission(self.handle)
+        })
     }
 }
