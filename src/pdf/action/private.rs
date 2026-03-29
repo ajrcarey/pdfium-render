@@ -8,16 +8,15 @@ pub(crate) mod internal {
     // inside this pub(crate) module in order to prevent it from being visible outside the crate.
 
     use crate::bindgen::FPDF_ACTION;
-    use crate::bindings::PdfiumLibraryBindings;
     use crate::pdf::action::PdfActionCommon;
+    use crate::pdfium::PdfiumLibraryBindingsAccessor;
 
     /// Internal crate-specific functionality common to all [PdfAction] actions.
-    pub(crate) trait PdfActionPrivate<'a>: PdfActionCommon<'a> {
+    pub(crate) trait PdfActionPrivate<'a>:
+        PdfActionCommon<'a> + PdfiumLibraryBindingsAccessor<'a>
+    {
         /// Returns the internal `FPDF_ACTION` handle for this [PdfAction].
-        #[allow(dead_code)] // TODO: AJRC - 13/6/24 - remove once handle() function is in use.
+        #[allow(dead_code)] // This function is not currently used, but we expect it to be in future
         fn handle(&self) -> &FPDF_ACTION;
-
-        /// Returns the [PdfiumLibraryBindings] used by this [PdfAction].
-        fn bindings(&self) -> &dyn PdfiumLibraryBindings;
     }
 }

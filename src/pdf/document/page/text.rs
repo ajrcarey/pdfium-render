@@ -20,12 +20,14 @@ use crate::pdf::document::page::text::segments::PdfPageTextSegments;
 use crate::pdf::document::page::PdfPage;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::{create_byte_buffer, create_sized_buffer};
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
 use bytemuck::cast_slice;
 use std::fmt::{Display, Formatter};
+use std::marker::PhantomData;
 use std::os::raw::{c_double, c_int};
 use std::ptr::null_mut;
 
@@ -45,19 +47,15 @@ use std::ptr::null_mut;
 pub struct PdfPageText<'a> {
     text_page_handle: FPDF_TEXTPAGE,
     page: &'a PdfPage<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_TEXTPAGE>,
 }
 
 impl<'a> PdfPageText<'a> {
-    pub(crate) fn from_pdfium(
-        text_page_handle: FPDF_TEXTPAGE,
-        page: &'a PdfPage<'a>,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(text_page_handle: FPDF_TEXTPAGE, page: &'a PdfPage<'a>) -> Self {
         PdfPageText {
             text_page_handle,
             page,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -67,19 +65,13 @@ impl<'a> PdfPageText<'a> {
         self.text_page_handle
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageText].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     /// Returns the total number of characters in all text segments in the containing [PdfPage].
     ///
     /// The character count includes whitespace and newlines, and so may differ slightly
     /// from the result of calling `PdfPageText::all().len()`.
     #[inline]
     pub fn len(&self) -> i32 {
-        unsafe { self.bindings.FPDFText_CountChars(self.text_page_handle()) }
+        unsafe { self.bindings().FPDFText_CountChars(self.text_page_handle()) }
     }
 
     /// Returns `true` if there are no characters in any text box collection in the containing [PdfPage].
@@ -113,7 +105,6 @@ impl<'a> PdfPageText<'a> {
             self.page.page_handle(),
             self.text_page_handle(),
             (0..self.len()).collect(),
-            self.bindings(),
         )
     }
 
@@ -145,13 +136,12 @@ impl<'a> PdfPageText<'a> {
                 .iter()
                 .filter(|char| {
                     (unsafe {
-                        self.bindings
+                        self.bindings()
                             .FPDFText_GetTextObject(self.text_page_handle(), char.index() as i32)
                     }) == object.object_handle()
                 })
                 .map(|char| char.index() as i32)
                 .collect(),
-            self.bindings(),
         ))
     }
 
@@ -199,21 +189,18 @@ impl<'a> PdfPageText<'a> {
                 self.page.page_handle(),
                 self.text_page_handle(),
                 (start as i32..=end as i32 + 1).collect(),
-                self.bindings,
             )),
             (Some(start), None) => Ok(PdfPageTextChars::new(
                 self.page.document_handle(),
                 self.page.page_handle(),
                 self.text_page_handle(),
                 (start as i32..=start as i32 + 1).collect(),
-                self.bindings,
             )),
             (None, Some(end)) => Ok(PdfPageTextChars::new(
                 self.page.document_handle(),
                 self.page.page_handle(),
                 self.text_page_handle(),
                 (end as i32..=end as i32 + 1).collect(),
-                self.bindings,
             )),
             _ => Err(PdfiumError::NoCharsInRect),
         }
@@ -408,7 +395,6 @@ impl<'a> PdfPageText<'a> {
                     )
                 },
                 self,
-                self.bindings(),
             ))
         }
     }
@@ -430,6 +416,14 @@ impl<'a> Drop for PdfPageText<'a> {
         }
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageText<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageText<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageText<'a> {}
 
 #[cfg(test)]
 mod tests {

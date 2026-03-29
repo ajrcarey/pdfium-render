@@ -2,11 +2,12 @@
 //! displayed in a combo box or list box form field.
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE, FPDF_WCHAR};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::field::option::PdfFormFieldOption;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
+use std::marker::PhantomData;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::c_int;
 
@@ -17,7 +18,7 @@ pub type PdfFormFieldOptionIndex = usize;
 pub struct PdfFormFieldOptions<'a> {
     form_handle: FPDF_FORMHANDLE,
     annotation_handle: FPDF_ANNOTATION,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfFormFieldOptions<'a> {
@@ -25,25 +26,18 @@ impl<'a> PdfFormFieldOptions<'a> {
     pub(crate) fn from_pdfium(
         form_handle: FPDF_FORMHANDLE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfFormFieldOptions {
             form_handle,
             annotation_handle,
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFormFieldOptions] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the number of options in this [PdfFormFieldOptions] collection.
     pub fn len(&self) -> PdfFormFieldOptionIndex {
         let result = unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFAnnot_GetOptionCount(self.form_handle, self.annotation_handle)
         };
 
@@ -123,8 +117,8 @@ impl<'a> PdfFormFieldOptions<'a> {
             get_string_from_pdfium_utf16le_bytes(buffer)
         };
 
-        let option_is_set = self.bindings.is_true(unsafe {
-            self.bindings.FPDFAnnot_IsOptionSelected(
+        let option_is_set = self.bindings().is_true(unsafe {
+            self.bindings().FPDFAnnot_IsOptionSelected(
                 self.form_handle,
                 self.annotation_handle,
                 index as c_int,
@@ -140,6 +134,14 @@ impl<'a> PdfFormFieldOptions<'a> {
         PdfFormFieldOptionsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFormFieldOptions<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFormFieldOptions<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFormFieldOptions<'a> {}
 
 /// An iterator over all the [PdfFormFieldOption] objects in a [PdfFormFieldOptions] collection.
 pub struct PdfFormFieldOptionsIterator<'a> {

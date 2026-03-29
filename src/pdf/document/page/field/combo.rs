@@ -1,8 +1,9 @@
 //! Defines the [PdfFormComboBoxField] struct, exposing functionality related to a single
 //! form field of type [PdfFormFieldType::ComboBox].
 
+use std::marker::PhantomData;
+
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::document::page::field::options::PdfFormFieldOptions;
 use crate::pdf::document::page::field::private::internal::{
     PdfFormFieldFlags, PdfFormFieldPrivate,
@@ -10,6 +11,7 @@ use crate::pdf::document::page::field::private::internal::{
 
 #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
 use crate::error::PdfiumError;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 
 #[cfg(doc)]
 use {
@@ -30,7 +32,7 @@ pub struct PdfFormComboBoxField<'a> {
     form_handle: FPDF_FORMHANDLE,
     annotation_handle: FPDF_ANNOTATION,
     options: PdfFormFieldOptions<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfFormComboBoxField<'a> {
@@ -38,20 +40,13 @@ impl<'a> PdfFormComboBoxField<'a> {
     pub(crate) fn from_pdfium(
         form_handle: FPDF_FORMHANDLE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfFormComboBoxField {
             form_handle,
             annotation_handle,
-            options: PdfFormFieldOptions::from_pdfium(form_handle, annotation_handle, bindings),
-            bindings,
+            options: PdfFormFieldOptions::from_pdfium(form_handle, annotation_handle),
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFormComboBoxField] object.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the collection of selectable options in this [PdfFormComboBoxField].
@@ -185,9 +180,12 @@ impl<'a> PdfFormFieldPrivate<'a> for PdfFormComboBoxField<'a> {
     fn annotation_handle(&self) -> FPDF_ANNOTATION {
         self.annotation_handle
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFormComboBoxField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFormComboBoxField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFormComboBoxField<'a> {}

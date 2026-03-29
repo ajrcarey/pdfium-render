@@ -14,10 +14,10 @@ pub(crate) mod internal {
         FPDF_FORMFLAG_TEXT_PASSWORD, FPDF_FORMHANDLE, FPDF_OBJECT_NAME, FPDF_OBJECT_STREAM,
         FPDF_OBJECT_STRING, FPDF_WCHAR,
     };
-    use crate::bindings::PdfiumLibraryBindings;
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::pdf::appearance_mode::PdfAppearanceMode;
     use crate::pdf::document::page::field::PdfFormFieldCommon;
+    use crate::pdfium::PdfiumLibraryBindingsAccessor;
     use crate::utils::dates::date_time_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
@@ -169,15 +169,14 @@ pub(crate) mod internal {
     }
 
     /// Internal crate-specific functionality common to all [PdfFormField] objects.
-    pub trait PdfFormFieldPrivate<'a>: PdfFormFieldCommon {
+    pub(crate) trait PdfFormFieldPrivate<'a>:
+        PdfFormFieldCommon + PdfiumLibraryBindingsAccessor<'a>
+    {
         /// Returns the internal `FPDF_FORMHANDLE` handle for this [PdfFormField].
         fn form_handle(&self) -> FPDF_FORMHANDLE;
 
         /// Returns the internal `FPDF_ANNOTATION` handle for this [PdfFormField].
         fn annotation_handle(&self) -> FPDF_ANNOTATION;
-
-        /// Returns the [PdfiumLibraryBindings] used by this [PdfFormField].
-        fn bindings(&self) -> &dyn PdfiumLibraryBindings;
 
         /// Internal implementation of [PdfFormFieldCommon::name()].
         fn name_impl(&self) -> Option<String> {
@@ -287,6 +286,7 @@ pub(crate) mod internal {
 
         /// Internal implementation of `export_value()` function shared by on/off form field widgets
         /// such as checkbox and radio button fields. Not exposed directly by [PdfFormFieldCommon].
+        #[allow(dead_code)] // TODO: AJRC - 30/3/26 - will be removed if not required by PdfFormRadioButtonField
         fn export_value_impl(&self) -> Option<String> {
             // Retrieving the export value from Pdfium is a two-step operation. First, we call
             // FPDFAnnot_GetFormFieldExportValue() with a null buffer; this will retrieve the length of

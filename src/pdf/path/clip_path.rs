@@ -187,7 +187,7 @@ impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfPathSegment::from_pdfium(handle, None, self.bindings()))
+            Ok(PdfPathSegment::from_pdfium(handle, None))
         }
     }
 

@@ -15,7 +15,6 @@ pub mod signature;
 pub mod signatures;
 
 use crate::bindgen::FPDF_DOCUMENT;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::error::PdfiumInternalError;
 use crate::pdf::document::attachments::PdfAttachments;
@@ -176,19 +175,15 @@ pub struct PdfDocument<'a> {
 
 impl<'a> PdfDocument<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_DOCUMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_DOCUMENT) -> Self {
         let form = PdfForm::from_pdfium(handle);
 
-        let pages =
-            PdfPages::from_pdfium(handle, form.as_ref().map(|form| form.handle()), bindings);
+        let pages = PdfPages::from_pdfium(handle, form.as_ref().map(|form| form.handle()));
 
         PdfDocument {
             handle,
             output_version: None,
-            attachments: PdfAttachments::from_pdfium(handle, bindings),
+            attachments: PdfAttachments::from_pdfium(handle),
             bookmarks: PdfBookmarks::from_pdfium(handle),
             form,
             fonts: PdfFonts::from_pdfium(handle),

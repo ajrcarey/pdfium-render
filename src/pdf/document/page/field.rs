@@ -32,6 +32,7 @@ use crate::pdf::document::page::field::radio::PdfFormRadioButtonField;
 use crate::pdf::document::page::field::signature::PdfFormSignatureField;
 use crate::pdf::document::page::field::text::PdfFormTextField;
 use crate::pdf::document::page::field::unknown::PdfFormUnknownField;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
@@ -115,34 +116,31 @@ impl<'a> PdfFormField<'a> {
 
         Some(match form_field_type {
             PdfFormFieldType::PushButton => PdfFormField::PushButton(
-                PdfFormPushButtonField::from_pdfium(form_handle, annotation_handle, bindings),
+                PdfFormPushButtonField::from_pdfium(form_handle, annotation_handle),
             ),
             PdfFormFieldType::Checkbox => PdfFormField::Checkbox(
-                PdfFormCheckboxField::from_pdfium(form_handle, annotation_handle, bindings),
+                PdfFormCheckboxField::from_pdfium(form_handle, annotation_handle),
             ),
             PdfFormFieldType::RadioButton => PdfFormField::RadioButton(
-                PdfFormRadioButtonField::from_pdfium(form_handle, annotation_handle, bindings),
+                PdfFormRadioButtonField::from_pdfium(form_handle, annotation_handle),
             ),
             PdfFormFieldType::ComboBox => PdfFormField::ComboBox(
-                PdfFormComboBoxField::from_pdfium(form_handle, annotation_handle, bindings),
+                PdfFormComboBoxField::from_pdfium(form_handle, annotation_handle),
             ),
             PdfFormFieldType::ListBox => PdfFormField::ListBox(PdfFormListBoxField::from_pdfium(
                 form_handle,
                 annotation_handle,
-                bindings,
             )),
             PdfFormFieldType::Text => PdfFormField::Text(PdfFormTextField::from_pdfium(
                 form_handle,
                 annotation_handle,
-                bindings,
             )),
             PdfFormFieldType::Signature => PdfFormField::Signature(
-                PdfFormSignatureField::from_pdfium(form_handle, annotation_handle, bindings),
+                PdfFormSignatureField::from_pdfium(form_handle, annotation_handle),
             ),
             _ => PdfFormField::Unknown(PdfFormUnknownField::from_pdfium(
                 form_handle,
                 annotation_handle,
-                bindings,
             )),
         })
     }
@@ -405,12 +403,15 @@ impl<'a> PdfFormFieldPrivate<'a> for PdfFormField<'a> {
     fn annotation_handle(&self) -> FPDF_ANNOTATION {
         self.unwrap_as_trait().annotation_handle()
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.unwrap_as_trait().bindings()
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFormField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFormField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFormField<'a> {}
 
 impl<'a> From<PdfFormPushButtonField<'a>> for PdfFormField<'a> {
     #[inline]

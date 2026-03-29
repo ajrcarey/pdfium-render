@@ -5,10 +5,11 @@ use crate::bindgen::{
     FPDF_PATHSEGMENT, FPDF_SEGMENT_BEZIERTO, FPDF_SEGMENT_LINETO, FPDF_SEGMENT_MOVETO,
     FPDF_SEGMENT_UNKNOWN,
 };
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::matrix::PdfMatrix;
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 use std::os::raw::c_float;
 
 /// The type of a single [PdfPathSegment].
@@ -40,20 +41,16 @@ impl PdfPathSegmentType {
 pub struct PdfPathSegment<'a> {
     handle: FPDF_PATHSEGMENT,
     matrix: Option<PdfMatrix>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_PATHSEGMENT>,
 }
 
 impl<'a> PdfPathSegment<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_PATHSEGMENT,
-        matrix: Option<PdfMatrix>,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_PATHSEGMENT, matrix: Option<PdfMatrix>) -> Self {
         Self {
             handle,
             matrix,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -61,12 +58,6 @@ impl<'a> PdfPathSegment<'a> {
     #[inline]
     pub(crate) fn handle(&self) -> FPDF_PATHSEGMENT {
         self.handle
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPathSegment].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the [PdfPathSegmentType] of this [PdfPathSegment].
@@ -120,6 +111,14 @@ impl<'a> PdfPathSegment<'a> {
         self.point().1
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPathSegment<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPathSegment<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPathSegment<'a> {}
 
 #[cfg(test)]
 mod tests {

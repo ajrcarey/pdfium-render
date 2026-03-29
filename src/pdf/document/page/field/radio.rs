@@ -2,11 +2,12 @@
 //! form field of type [PdfFormFieldType::RadioButton].
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::field::private::internal::{
     PdfFormFieldFlags, PdfFormFieldPrivate,
 };
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
 use {
@@ -25,7 +26,7 @@ use {
 pub struct PdfFormRadioButtonField<'a> {
     form_handle: FPDF_FORMHANDLE,
     annotation_handle: FPDF_ANNOTATION,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfFormRadioButtonField<'a> {
@@ -33,19 +34,12 @@ impl<'a> PdfFormRadioButtonField<'a> {
     pub(crate) fn from_pdfium(
         form_handle: FPDF_FORMHANDLE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfFormRadioButtonField {
             form_handle,
             annotation_handle,
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFormRadioButtonField] object.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the index of this [PdfFormRadioButtonField] in its control group.
@@ -91,9 +85,6 @@ impl<'a> PdfFormRadioButtonField<'a> {
     /// Selects the radio button of this [PdfFormRadioButtonField] object.
     #[inline]
     pub fn set_checked(&mut self) -> Result<(), PdfiumError> {
-        println!("*** [radio] set_checked()");
-        println!("??? ap: {:#?}", self.appearance_stream_impl());
-
         match self.appearance_stream_impl() {
             Some(appearance_stream) => self.set_value_impl(appearance_stream.as_str()),
             None => Err(PdfiumError::FormFieldAppearanceStreamUndefined),
@@ -164,9 +155,12 @@ impl<'a> PdfFormFieldPrivate<'a> for PdfFormRadioButtonField<'a> {
     fn annotation_handle(&self) -> FPDF_ANNOTATION {
         self.annotation_handle
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFormRadioButtonField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFormRadioButtonField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFormRadioButtonField<'a> {}

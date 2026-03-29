@@ -5,7 +5,6 @@ pub mod common;
 pub(crate) mod private; // Keep private so that the PdfPageObjectsPrivate trait is not exposed.
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::object::group::PdfPageGroupObject;
 use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
@@ -19,6 +18,7 @@ use crate::pdf::document::page::objects::private::internal::PdfPageObjectsPrivat
 use crate::pdf::document::page::PdfPageIndexCache;
 use crate::pdf::document::PdfDocument;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 use std::os::raw::c_int;
 
 #[cfg(doc)]
@@ -40,21 +40,17 @@ pub struct PdfPageObjects<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
     ownership: PdfPageObjectOwnership,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_PAGE>,
 }
 
 impl<'a> PdfPageObjects<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
-        page_handle: FPDF_PAGE,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT, page_handle: FPDF_PAGE) -> Self {
         Self {
             document_handle,
             page_handle,
             ownership: PdfPageObjectOwnership::owned_by_page(document_handle, page_handle),
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -162,12 +158,12 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        (unsafe { self.bindings.FPDFPage_CountObjects(self.page_handle) }) as PdfPageObjectIndex
+        (unsafe { self.bindings().FPDFPage_CountObjects(self.page_handle) }) as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object_handle = unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFPage_GetObject(self.page_handle, index as c_int)
         };
 

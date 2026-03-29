@@ -2,11 +2,12 @@
 //! digital signature in a `PdfSignatures` collection.
 
 use crate::bindgen::FPDF_SIGNATURE;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::ffi::{c_uint, CString};
+use std::marker::PhantomData;
 use std::os::raw::{c_char, c_void};
 
 /// The modification detection permission (MDP) applicable to a single digital signature
@@ -49,22 +50,16 @@ impl PdfSignatureModificationDetectionPermission {
 /// A single digital signature in a `PdfDocument`.
 pub struct PdfSignature<'a> {
     handle: FPDF_SIGNATURE,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_SIGNATURE>,
 }
 
 impl<'a> PdfSignature<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_SIGNATURE,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
-        PdfSignature { handle, bindings }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfSignature].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
+    pub(crate) fn from_pdfium(handle: FPDF_SIGNATURE) -> Self {
+        PdfSignature {
+            handle,
+            lifetime: PhantomData,
+        }
     }
 
     /// Returns the raw byte data for this [PdfSignature].
@@ -82,7 +77,7 @@ impl<'a> PdfSignature<'a> {
         // this will write the reason text to the buffer in UTF16-LE format.
 
         let buffer_length = unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFSignatureObj_GetContents(self.handle, std::ptr::null_mut(), 0)
         };
 
@@ -95,7 +90,7 @@ impl<'a> PdfSignature<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = unsafe {
-            self.bindings.FPDFSignatureObj_GetContents(
+            self.bindings().FPDFSignatureObj_GetContents(
                 self.handle,
                 buffer.as_mut_ptr() as *mut c_void,
                 buffer_length,
@@ -120,7 +115,7 @@ impl<'a> PdfSignature<'a> {
         // this will write the reason text to the buffer in UTF16-LE format.
 
         let buffer_length = unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFSignatureObj_GetReason(self.handle, std::ptr::null_mut(), 0)
         };
 
@@ -133,7 +128,7 @@ impl<'a> PdfSignature<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = unsafe {
-            self.bindings.FPDFSignatureObj_GetReason(
+            self.bindings().FPDFSignatureObj_GetReason(
                 self.handle,
                 buffer.as_mut_ptr() as *mut c_void,
                 buffer_length,
@@ -162,7 +157,7 @@ impl<'a> PdfSignature<'a> {
         // this will write the timestamp to the buffer as an array of 7-bit ASCII characters.
 
         let buffer_length = unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFSignatureObj_GetTime(self.handle, std::ptr::null_mut(), 0)
         };
 
@@ -175,7 +170,7 @@ impl<'a> PdfSignature<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = unsafe {
-            self.bindings.FPDFSignatureObj_GetTime(
+            self.bindings().FPDFSignatureObj_GetTime(
                 self.handle,
                 buffer.as_mut_ptr() as *mut c_char,
                 buffer_length,
@@ -200,8 +195,16 @@ impl<'a> PdfSignature<'a> {
         &self,
     ) -> Result<PdfSignatureModificationDetectionPermission, PdfiumError> {
         PdfSignatureModificationDetectionPermission::from_pdfium(unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFSignatureObj_GetDocMDPPermission(self.handle)
         })
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfSignature<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfSignature<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfSignature<'a> {}

@@ -65,11 +65,7 @@ impl<'a> PdfPageLinkAnnotation<'a> {
             };
 
             if let Some(document_handle) = document_handle {
-                Ok(PdfLink::from_pdfium(
-                    handle,
-                    document_handle,
-                    self.bindings(),
-                ))
+                Ok(PdfLink::from_pdfium(handle, document_handle))
             } else {
                 Err(PdfiumError::OwnershipNotAttachedToDocument)
             }

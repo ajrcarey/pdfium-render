@@ -1003,11 +1003,7 @@ impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfPathSegment::from_pdfium(
-                handle,
-                self.matrix,
-                self.bindings(),
-            ))
+            Ok(PdfPathSegment::from_pdfium(handle, self.matrix))
         }
     }
 

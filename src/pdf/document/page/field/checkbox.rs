@@ -1,10 +1,12 @@
 //! Defines the [PdfFormCheckboxField] struct, exposing functionality related to a single
 //! form field of type [PdfFormFieldType::Checkbox].
 
+use std::marker::PhantomData;
+
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::field::private::internal::PdfFormFieldPrivate;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 
 #[cfg(doc)]
 use {
@@ -23,7 +25,7 @@ use {
 pub struct PdfFormCheckboxField<'a> {
     form_handle: FPDF_FORMHANDLE,
     annotation_handle: FPDF_ANNOTATION,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfFormCheckboxField<'a> {
@@ -31,19 +33,12 @@ impl<'a> PdfFormCheckboxField<'a> {
     pub(crate) fn from_pdfium(
         form_handle: FPDF_FORMHANDLE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfFormCheckboxField {
             form_handle,
             annotation_handle,
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFormCheckboxField] object.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the index of this [PdfFormCheckboxField] in its control group.
@@ -134,9 +129,12 @@ impl<'a> PdfFormFieldPrivate<'a> for PdfFormCheckboxField<'a> {
     fn annotation_handle(&self) -> FPDF_ANNOTATION {
         self.annotation_handle
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFormCheckboxField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFormCheckboxField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFormCheckboxField<'a> {}

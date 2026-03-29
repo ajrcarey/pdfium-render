@@ -7,7 +7,9 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::render_config::PdfPageRenderSettings;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::pixels::{aligned_bgr_to_rgba, aligned_rgb_to_rgba, bgra_to_rgba};
+use std::marker::PhantomData;
 use std::os::raw::c_int;
 
 #[cfg(feature = "image_025")]
@@ -98,19 +100,16 @@ impl Default for PdfBitmapFormat {
 pub struct PdfBitmap<'a> {
     handle: FPDF_BITMAP,
     was_byte_order_reversed_during_rendering: bool,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_BITMAP>,
 }
 
 impl<'a> PdfBitmap<'a> {
     /// Wraps an existing `FPDF_BITMAP` handle inside a new [PdfBitmap].
-    pub(crate) fn from_pdfium(
-        handle: FPDF_BITMAP,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_BITMAP) -> Self {
         PdfBitmap {
             handle,
             was_byte_order_reversed_during_rendering: false,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -137,7 +136,7 @@ impl<'a> PdfBitmap<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(Self::from_pdfium(handle, bindings))
+            Ok(Self::from_pdfium(handle))
         }
     }
 
@@ -172,7 +171,7 @@ impl<'a> PdfBitmap<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(Self::from_pdfium(handle, bindings))
+            Ok(Self::from_pdfium(handle))
         }
     }
 
@@ -189,12 +188,6 @@ impl<'a> PdfBitmap<'a> {
     #[inline]
     pub(crate) fn set_byte_order_from_render_settings(&mut self, settings: &PdfPageRenderSettings) {
         self.was_byte_order_reversed_during_rendering = settings.is_reversed_byte_order_flag_set
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfBitmap].
-    #[inline]
-    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap].
@@ -347,6 +340,14 @@ impl<'a> Drop for PdfBitmap<'a> {
         }
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfBitmap<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfBitmap<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfBitmap<'a> {}
 
 #[cfg(test)]
 mod tests {

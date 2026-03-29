@@ -6,12 +6,13 @@ use crate::bindgen::{
     PDFDEST_VIEW_FITBV, PDFDEST_VIEW_FITH, PDFDEST_VIEW_FITR, PDFDEST_VIEW_FITV,
     PDFDEST_VIEW_UNKNOWN_MODE, PDFDEST_VIEW_XYZ,
 };
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::pages::PdfPageIndex;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_sized_buffer;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
 use crate::pdf::document::page::PdfPage;
@@ -87,11 +88,11 @@ impl PdfDestinationViewSettings {
         // FPDFDest_GetView() to account for all supported view settings
         // in a null-safe manner.
 
-        let mut has_x_value = destination.bindings.FALSE();
+        let mut has_x_value = destination.bindings().FALSE();
 
-        let mut has_y_value = destination.bindings.FALSE();
+        let mut has_y_value = destination.bindings().FALSE();
 
-        let mut has_zoom_value = destination.bindings.FALSE();
+        let mut has_zoom_value = destination.bindings().FALSE();
 
         let mut x_value: FS_FLOAT = 0.0;
 
@@ -99,8 +100,8 @@ impl PdfDestinationViewSettings {
 
         let mut zoom_value: FS_FLOAT = 0.0;
 
-        let (x, y, zoom) = if destination.bindings.is_true(unsafe {
-            destination.bindings.FPDFDest_GetLocationInPage(
+        let (x, y, zoom) = if destination.bindings().is_true(unsafe {
+            destination.bindings().FPDFDest_GetLocationInPage(
                 destination.destination_handle,
                 &mut has_x_value,
                 &mut has_y_value,
@@ -110,19 +111,19 @@ impl PdfDestinationViewSettings {
                 &mut zoom_value,
             )
         }) {
-            let x = if destination.bindings.is_true(has_x_value) {
+            let x = if destination.bindings().is_true(has_x_value) {
                 Some(PdfPoints::new(x_value))
             } else {
                 None
             };
 
-            let y = if destination.bindings.is_true(has_y_value) {
+            let y = if destination.bindings().is_true(has_y_value) {
                 Some(PdfPoints::new(y_value))
             } else {
                 None
             };
 
-            let zoom = if destination.bindings.is_true(has_zoom_value) {
+            let zoom = if destination.bindings().is_true(has_zoom_value) {
                 // The PDF specification states that a zoom value of 0 has the same meaning
                 // as a null value.
 
@@ -145,7 +146,7 @@ impl PdfDestinationViewSettings {
         let mut p_params: Vec<FS_FLOAT> = create_sized_buffer(4);
 
         let view = unsafe {
-            destination.bindings.FPDFDest_GetView(
+            destination.bindings().FPDFDest_GetView(
                 destination.destination_handle,
                 &mut p_num_params,
                 p_params.as_mut_ptr(),
@@ -238,7 +239,7 @@ impl PdfDestinationViewSettings {
 pub struct PdfDestination<'a> {
     document_handle: FPDF_DOCUMENT,
     destination_handle: FPDF_DEST,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_DEST>,
 }
 
 impl<'a> PdfDestination<'a> {
@@ -248,12 +249,11 @@ impl<'a> PdfDestination<'a> {
     pub(crate) fn from_pdfium(
         document_handle: FPDF_DOCUMENT,
         destination_handle: FPDF_DEST,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfDestination {
             document_handle,
             destination_handle,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -275,7 +275,7 @@ impl<'a> PdfDestination<'a> {
     #[inline]
     pub fn page_index(&self) -> Result<PdfPageIndex, PdfiumError> {
         match unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFDest_GetDestPageIndex(self.document_handle, self.destination_handle)
         } {
             -1 => Err(PdfiumError::DestinationPageIndexNotAvailable),
@@ -289,10 +289,12 @@ impl<'a> PdfDestination<'a> {
     pub fn view_settings(&self) -> Result<PdfDestinationViewSettings, PdfiumError> {
         PdfDestinationViewSettings::from_pdfium(self)
     }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfDestination].
-    #[inline]
-    pub fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfDestination<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfDestination<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfDestination<'a> {}

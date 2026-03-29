@@ -2,7 +2,6 @@
 //! in a [PdfPageTextChars] collection.
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_TEXTPAGE, FS_MATRIX, FS_RECTF};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::create_transform_getters;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
@@ -12,9 +11,11 @@ use crate::pdf::font::{FpdfFontDescriptorFlags, PdfFontWeight};
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use std::convert::TryInto;
 use std::ffi::c_void;
+use std::marker::PhantomData;
 
 #[cfg(any(
     feature = "pdfium_future",
@@ -41,7 +42,7 @@ pub struct PdfPageTextChar<'a> {
     page_handle: FPDF_PAGE,
     text_page_handle: FPDF_TEXTPAGE,
     index: i32,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_TEXTPAGE>,
 }
 
 impl<'a> PdfPageTextChar<'a> {
@@ -51,14 +52,13 @@ impl<'a> PdfPageTextChar<'a> {
         page_handle: FPDF_PAGE,
         text_page_handle: FPDF_TEXTPAGE,
         index: i32,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextChar {
             document_handle,
             page_handle,
             text_page_handle,
             index,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -80,12 +80,6 @@ impl<'a> PdfPageTextChar<'a> {
         self.text_page_handle
     }
 
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageTextChar].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
-    }
-
     #[inline]
     pub fn index(&self) -> PdfPageTextCharIndex {
         self.index as PdfPageTextCharIndex
@@ -99,7 +93,7 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn unicode_value(&self) -> u32 {
         unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFText_GetUnicode(self.text_page_handle, self.index)
         }
     }
@@ -146,7 +140,7 @@ impl<'a> PdfPageTextChar<'a> {
     pub fn unscaled_font_size(&self) -> PdfPoints {
         unsafe {
             PdfPoints::new(
-                self.bindings
+                self.bindings()
                     .FPDFText_GetFontSize(self.text_page_handle, self.index) as f32,
             )
         }
@@ -166,7 +160,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut flags = 0;
 
         let buffer_length = unsafe {
-            self.bindings.FPDFText_GetFontInfo(
+            self.bindings().FPDFText_GetFontInfo(
                 self.text_page_handle,
                 self.index,
                 std::ptr::null_mut(),
@@ -187,7 +181,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut buffer = create_byte_buffer(buffer_length as usize);
 
         let result = unsafe {
-            self.bindings.FPDFText_GetFontInfo(
+            self.bindings().FPDFText_GetFontInfo(
                 self.text_page_handle,
                 self.index,
                 buffer.as_mut_ptr() as *mut c_void,
@@ -220,7 +214,7 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn font_weight(&self) -> Option<PdfFontWeight> {
         PdfFontWeight::from_pdfium(unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFText_GetFontWeight(self.text_page_handle, self.index)
         })
     }
@@ -426,8 +420,8 @@ impl<'a> PdfPageTextChar<'a> {
         let mut b = 0;
         let mut a = 0;
 
-        if self.bindings.is_true(unsafe {
-            self.bindings.FPDFText_GetFillColor(
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFText_GetFillColor(
                 self.text_page_handle,
                 self.index,
                 &mut r,
@@ -459,7 +453,7 @@ impl<'a> PdfPageTextChar<'a> {
         let mut a = 0;
 
         if self.bindings().is_true(unsafe {
-            self.bindings.FPDFText_GetStrokeColor(
+            self.bindings().FPDFText_GetStrokeColor(
                 self.text_page_handle(),
                 self.index,
                 &mut r,
@@ -493,7 +487,7 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn angle_radians(&self) -> Result<f32, PdfiumError> {
         let result = unsafe {
-            self.bindings
+            self.bindings()
                 .FPDFText_GetCharAngle(self.text_page_handle, self.index)
         };
 
@@ -551,8 +545,11 @@ impl<'a> PdfPageTextChar<'a> {
         };
 
         let result = unsafe {
-            self.bindings
-                .FPDFText_GetLooseCharBox(self.text_page_handle(), self.index, &mut bounds)
+            self.bindings().FPDFText_GetLooseCharBox(
+                self.text_page_handle(),
+                self.index,
+                &mut bounds,
+            )
         };
 
         PdfRect::from_pdfium_as_result(result, bounds, self.bindings())
@@ -688,3 +685,11 @@ impl<'a> PdfPageTextChar<'a> {
         }
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageTextChar<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageTextChar<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageTextChar<'a> {}

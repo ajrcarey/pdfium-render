@@ -22,6 +22,7 @@ use crate::pdf::action::private::internal::PdfActionPrivate;
 use crate::pdf::action::remote_destination::PdfActionRemoteDestination;
 use crate::pdf::action::unsupported::PdfActionUnsupported;
 use crate::pdf::action::uri::PdfActionUri;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 
 /// The type of action associated with a clickable link or document bookmark.
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
@@ -68,27 +69,24 @@ impl<'a> PdfAction<'a> {
             .unwrap_or(PdfActionType::Unsupported)
         {
             PdfActionType::Unsupported => {
-                PdfAction::Unsupported(PdfActionUnsupported::from_pdfium(handle, bindings))
+                PdfAction::Unsupported(PdfActionUnsupported::from_pdfium(handle))
             }
             PdfActionType::GoToDestinationInSameDocument => PdfAction::LocalDestination(
-                PdfActionLocalDestination::from_pdfium(handle, document, bindings),
+                PdfActionLocalDestination::from_pdfium(handle, document),
             ),
-            PdfActionType::GoToDestinationInRemoteDocument => PdfAction::RemoteDestination(
-                PdfActionRemoteDestination::from_pdfium(handle, bindings),
-            ),
-            PdfActionType::GoToDestinationInEmbeddedDocument => PdfAction::EmbeddedDestination(
-                PdfActionEmbeddedDestination::from_pdfium(handle, bindings),
-            ),
-            PdfActionType::Launch => {
-                PdfAction::Launch(PdfActionLaunch::from_pdfium(handle, bindings))
+            PdfActionType::GoToDestinationInRemoteDocument => {
+                PdfAction::RemoteDestination(PdfActionRemoteDestination::from_pdfium(handle))
             }
-            PdfActionType::Uri => {
-                PdfAction::Uri(PdfActionUri::from_pdfium(handle, document, bindings))
+            PdfActionType::GoToDestinationInEmbeddedDocument => {
+                PdfAction::EmbeddedDestination(PdfActionEmbeddedDestination::from_pdfium(handle))
             }
+            PdfActionType::Launch => PdfAction::Launch(PdfActionLaunch::from_pdfium(handle)),
+            PdfActionType::Uri => PdfAction::Uri(PdfActionUri::from_pdfium(handle, document)),
         }
     }
 
     #[inline]
+    #[allow(dead_code)] // AJRC - 18/2/23 - We expect this function to be used in future.
     pub(crate) fn unwrap_as_trait(&self) -> &dyn PdfActionPrivate<'a> {
         match self {
             PdfAction::LocalDestination(action) => action,
@@ -272,12 +270,15 @@ impl<'a> PdfActionPrivate<'a> for PdfAction<'a> {
     fn handle(&self) -> &FPDF_ACTION {
         self.unwrap_as_trait().handle()
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.unwrap_as_trait().bindings()
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfAction<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfAction<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfAction<'a> {}
 
 impl<'a> From<PdfActionLocalDestination<'a>> for PdfAction<'a> {
     #[inline]

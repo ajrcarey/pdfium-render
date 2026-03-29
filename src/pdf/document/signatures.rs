@@ -72,7 +72,7 @@ impl<'a> PdfSignatures<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfSignature::from_pdfium(handle, self.bindings()))
+            Ok(PdfSignature::from_pdfium(handle))
         }
     }
 

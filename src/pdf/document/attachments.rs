@@ -2,10 +2,11 @@
 //! `PdfDocument`.
 
 use crate::bindgen::FPDF_DOCUMENT;
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::attachment::PdfAttachment;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::io::Read;
+use std::marker::PhantomData;
 use std::ops::{Range, RangeInclusive};
 use std::os::raw::{c_int, c_ulong, c_void};
 
@@ -36,25 +37,16 @@ pub type PdfAttachmentIndex = u16;
 /// The collection of [PdfAttachment] objects embedded in a [PdfDocument].
 pub struct PdfAttachments<'a> {
     document_handle: FPDF_DOCUMENT,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_DOCUMENT>,
 }
 
 impl<'a> PdfAttachments<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        document_handle: FPDF_DOCUMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT) -> Self {
         PdfAttachments {
             document_handle,
-            bindings,
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfAttachments] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the number of attachments in this [PdfAttachments] collection.
@@ -104,7 +96,7 @@ impl<'a> PdfAttachments<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
-            Ok(PdfAttachment::from_pdfium(handle, self.bindings()))
+            Ok(PdfAttachment::from_pdfium(handle))
         }
     }
 
@@ -139,7 +131,7 @@ impl<'a> PdfAttachments<'a> {
                     bytes.len() as c_ulong,
                 )
             }) {
-                Ok(PdfAttachment::from_pdfium(handle, self.bindings))
+                Ok(PdfAttachment::from_pdfium(handle))
             } else {
                 // The return value from FPDFAttachment_SetFile() indicates failure.
 
@@ -290,6 +282,14 @@ impl<'a> PdfAttachments<'a> {
         PdfAttachmentsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfAttachments<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfAttachments<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfAttachments<'a> {}
 
 /// An iterator over all the [PdfAttachment] objects in a [PdfAttachments] collection.
 pub struct PdfAttachmentsIterator<'a> {

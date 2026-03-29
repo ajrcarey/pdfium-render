@@ -2,11 +2,12 @@
 //! form field of type [PdfFormFieldType::ListBox].
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_FORMHANDLE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::pdf::document::page::field::options::PdfFormFieldOptions;
 use crate::pdf::document::page::field::private::internal::{
     PdfFormFieldFlags, PdfFormFieldPrivate,
 };
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
 use crate::error::PdfiumError;
@@ -30,7 +31,7 @@ pub struct PdfFormListBoxField<'a> {
     form_handle: FPDF_FORMHANDLE,
     annotation_handle: FPDF_ANNOTATION,
     options: PdfFormFieldOptions<'a>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ANNOTATION>,
 }
 
 impl<'a> PdfFormListBoxField<'a> {
@@ -38,20 +39,13 @@ impl<'a> PdfFormListBoxField<'a> {
     pub(crate) fn from_pdfium(
         form_handle: FPDF_FORMHANDLE,
         annotation_handle: FPDF_ANNOTATION,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfFormListBoxField {
             form_handle,
             annotation_handle,
-            options: PdfFormFieldOptions::from_pdfium(form_handle, annotation_handle, bindings),
-            bindings,
+            options: PdfFormFieldOptions::from_pdfium(form_handle, annotation_handle),
+            lifetime: PhantomData,
         }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfFormListBoxField] object.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the collection of selectable options in this [PdfFormListBoxField].
@@ -144,9 +138,12 @@ impl<'a> PdfFormFieldPrivate<'a> for PdfFormListBoxField<'a> {
     fn annotation_handle(&self) -> FPDF_ANNOTATION {
         self.annotation_handle
     }
-
-    #[inline]
-    fn bindings(&self) -> &dyn PdfiumLibraryBindings {
-        self.bindings
-    }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFormListBoxField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfFormListBoxField<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfFormListBoxField<'a> {}

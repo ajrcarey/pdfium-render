@@ -2,11 +2,12 @@
 //! attachment in a `PdfAttachments` collection.
 
 use crate::bindgen::{FPDF_ATTACHMENT, FPDF_WCHAR};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
 use std::io::Write;
+use std::marker::PhantomData;
 use std::os::raw::{c_ulong, c_void};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -32,22 +33,16 @@ use crate::pdf::document::PdfDocument;
 /// A single attached data file embedded in a [PdfDocument].
 pub struct PdfAttachment<'a> {
     handle: FPDF_ATTACHMENT,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_ATTACHMENT>,
 }
 
 impl<'a> PdfAttachment<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_ATTACHMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
-        PdfAttachment { handle, bindings }
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfAttachment].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
+    pub(crate) fn from_pdfium(handle: FPDF_ATTACHMENT) -> Self {
+        PdfAttachment {
+            handle,
+            lifetime: PhantomData,
+        }
     }
 
     /// Returns the name of this [PdfAttachment].
@@ -151,7 +146,7 @@ impl<'a> PdfAttachment<'a> {
                 )
             };
 
-            assert!(self.bindings.is_true(result));
+            assert!(self.bindings().is_true(result));
             assert_eq!(buffer_length, out_buflen);
 
             Ok(buffer)
@@ -200,3 +195,11 @@ impl<'a> PdfAttachment<'a> {
         Ok(blob)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfAttachment<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfAttachment<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfAttachment<'a> {}

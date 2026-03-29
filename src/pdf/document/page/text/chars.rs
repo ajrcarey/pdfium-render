@@ -2,11 +2,12 @@
 //! characters selected from a single [PdfPage].
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE, FPDF_TEXTPAGE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::document::page::text::char::PdfPageTextChar;
 use crate::pdf::document::page::PdfPageText;
 use crate::pdf::points::PdfPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
 use crate::pdf::document::page::PdfPage;
@@ -20,7 +21,7 @@ pub struct PdfPageTextChars<'a> {
     page_handle: FPDF_PAGE,
     text_page_handle: FPDF_TEXTPAGE,
     char_indices: Vec<i32>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_TEXTPAGE>,
 }
 
 impl<'a> PdfPageTextChars<'a> {
@@ -30,14 +31,13 @@ impl<'a> PdfPageTextChars<'a> {
         page_handle: FPDF_PAGE,
         text_page_handle: FPDF_TEXTPAGE,
         char_indices: Vec<i32>,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageTextChars {
             document_handle,
             page_handle,
             text_page_handle,
             char_indices,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -59,12 +59,6 @@ impl<'a> PdfPageTextChars<'a> {
     #[inline]
     pub(crate) fn text_page_handle(&self) -> FPDF_TEXTPAGE {
         self.text_page_handle
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageTextChars] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the index in the containing [PdfPage] of the first character in this
@@ -106,7 +100,6 @@ impl<'a> PdfPageTextChars<'a> {
                 self.page_handle(),
                 self.text_page_handle(),
                 *index,
-                self.bindings(),
             )),
             None => Err(PdfiumError::CharIndexOutOfBounds),
         }
@@ -148,6 +141,14 @@ impl<'a> PdfPageTextChars<'a> {
         PdfPageTextCharsIterator::new(self)
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageTextChars<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageTextChars<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageTextChars<'a> {}
 
 /// An iterator over all the [PdfPageTextChar] objects in a [PdfPageTextChars] collection.
 pub struct PdfPageTextCharsIterator<'a> {

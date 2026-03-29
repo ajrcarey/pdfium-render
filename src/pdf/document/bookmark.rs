@@ -155,11 +155,7 @@ impl<'a> PdfBookmark<'a> {
         if handle.is_null() {
             None
         } else {
-            Some(PdfDestination::from_pdfium(
-                self.document_handle,
-                handle,
-                self.bindings(),
-            ))
+            Some(PdfDestination::from_pdfium(self.document_handle, handle))
         }
     }
 

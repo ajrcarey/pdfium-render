@@ -2,7 +2,6 @@
 //! annotations that have been added to a single `PdfPage`.
 
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
 use crate::pdf::document::page::annotation::free_text::PdfPageFreeTextAnnotation;
@@ -23,7 +22,9 @@ use crate::pdf::document::page::annotation::{
 use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPageIndexCache};
 use crate::pdf::quad_points::PdfQuadPoints;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use chrono::prelude::*;
+use std::marker::PhantomData;
 use std::ops::Range;
 use std::os::raw::c_int;
 
@@ -36,7 +37,7 @@ pub struct PdfPageAnnotations<'a> {
     document_handle: FPDF_DOCUMENT,
     page_handle: FPDF_PAGE,
     form_handle: Option<FPDF_FORMHANDLE>,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_PAGE>,
 }
 
 impl<'a> PdfPageAnnotations<'a> {
@@ -45,13 +46,12 @@ impl<'a> PdfPageAnnotations<'a> {
         document_handle: FPDF_DOCUMENT,
         page_handle: FPDF_PAGE,
         form_handle: Option<FPDF_FORMHANDLE>,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
         PdfPageAnnotations {
             document_handle,
             page_handle,
             form_handle,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -67,12 +67,6 @@ impl<'a> PdfPageAnnotations<'a> {
     #[inline]
     pub(crate) fn page_handle(&self) -> FPDF_PAGE {
         self.page_handle
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfPageAnnotations] collection.
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the total number of annotations that have been added to the containing `PdfPage`.
@@ -115,7 +109,7 @@ impl<'a> PdfPageAnnotations<'a> {
                 self.page_handle,
                 annotation_handle,
                 self.form_handle,
-                self.bindings,
+                self.bindings(),
             ))
         }
     }
@@ -597,6 +591,14 @@ impl<'a> PdfPageAnnotations<'a> {
         }
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfPageAnnotations<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfPageAnnotations<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfPageAnnotations<'a> {}
 
 /// An iterator over all the [PdfPageAnnotation] objects in a [PdfPageAnnotations] collection.
 pub struct PdfPageAnnotationsIterator<'a> {

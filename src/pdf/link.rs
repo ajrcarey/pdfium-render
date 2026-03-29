@@ -2,11 +2,12 @@
 //! within a [PdfPage], a [PdfPageAnnotation], or a [PdfBookmark].
 
 use crate::bindgen::{FPDF_DOCUMENT, FPDF_LINK, FS_RECTF};
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::action::PdfAction;
 use crate::pdf::destination::PdfDestination;
 use crate::pdf::rect::PdfRect;
+use crate::pdfium::PdfiumLibraryBindingsAccessor;
+use std::marker::PhantomData;
 
 #[cfg(doc)]
 use {
@@ -22,20 +23,16 @@ use {
 pub struct PdfLink<'a> {
     handle: FPDF_LINK,
     document: FPDF_DOCUMENT,
-    bindings: &'a dyn PdfiumLibraryBindings,
+    lifetime: PhantomData<&'a FPDF_LINK>,
 }
 
 impl<'a> PdfLink<'a> {
     #[inline]
-    pub(crate) fn from_pdfium(
-        handle: FPDF_LINK,
-        document: FPDF_DOCUMENT,
-        bindings: &'a dyn PdfiumLibraryBindings,
-    ) -> Self {
+    pub(crate) fn from_pdfium(handle: FPDF_LINK, document: FPDF_DOCUMENT) -> Self {
         PdfLink {
             handle,
             document,
-            bindings,
+            lifetime: PhantomData,
         }
     }
 
@@ -43,12 +40,6 @@ impl<'a> PdfLink<'a> {
     #[inline]
     pub(crate) fn handle(&self) -> FPDF_LINK {
         self.handle
-    }
-
-    /// Returns the [PdfiumLibraryBindings] used by this [PdfLink].
-    #[inline]
-    pub fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        self.bindings
     }
 
     /// Returns the [PdfAction] associated with this [PdfLink], if any.
@@ -84,11 +75,7 @@ impl<'a> PdfLink<'a> {
         if handle.is_null() {
             None
         } else {
-            Some(PdfDestination::from_pdfium(
-                self.document,
-                handle,
-                self.bindings(),
-            ))
+            Some(PdfDestination::from_pdfium(self.document, handle))
         }
     }
 
@@ -112,6 +99,14 @@ impl<'a> PdfLink<'a> {
         )
     }
 }
+
+impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfLink<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Send for PdfLink<'a> {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl<'a> Sync for PdfLink<'a> {}
 
 #[cfg(test)]
 mod tests {

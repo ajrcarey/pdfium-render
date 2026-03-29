@@ -415,7 +415,7 @@ impl Pdfium {
                 ))
             }
         } else {
-            Ok(PdfDocument::from_pdfium(handle, bindings))
+            Ok(PdfDocument::from_pdfium(handle))
         }
     }
 }
