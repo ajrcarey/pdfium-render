@@ -65,13 +65,13 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 ## What's new
 
+Release 0.9.1 adds a new `console_log` crate feature to control initialization of `console_log`-based logging to the console browser in WASM builds, thanks to an excellent contribution from <https://github.com/tectin0>, and adds a new `PdfPageTextObject::is_visible()` utility function in response to an excellent suggestion by <https://github.com/cobnett3>.
+
 Release 0.9.0 fixes a bug in the `PdfClipPath::len()` function thanks to an excellent contribution from <https://github.com/rockyzhengwu>, adds compilation target support to the `PDFIUM_STATIC_LIB_PATH` environment variable when linking `pdfium-render` to a statically-compiled Pdfium library thanks to an excellent contribution from <https://github.com/richarddd>, removes all deprecated items, simplifies lifetime handling across all object instances, and implements the `Send` and `Sync` traits for all object instances, allowing documents, pages, and page objects to be more easily used in multi-threaded applications. Note that Pdfium itself makes no guarantees about thread safety and should be assumed _not_ to be thread safe; for more discussion on the limitations of multi-threading in Pdfium, see the "Multi-threading" section below. For a complete list of deprecated items that have been removed, see <https://github.com/ajrcarey/pdfium-render/issues/36>.
 
 Release 0.8.37 increments the `pdfium_latest` feature to `pdfium_7543` to match new Pdfium release 7543 at <https://github.com/bblanchon/pdfium-binaries>, adds new `PdfRenderConfig::set_fixed_size()`, `PdfRenderConfig::set_fixed_width()`, and `PdfRenderConfig::set_fixed_height()` functions for more finely-grained rendering control thanks to an excellent suggestion by <https://github.com/newinnovations>, adds new `PdfRenderConfig::set_fixed_size_to_bitmap()` and `PdfRenderConfig::scale_page_to_bitmap()` functions for conveniently setting target render sizes directly from a bitmap, adds a new `PdfPageObject::get_clip_path()` function thanks to an excellent contribution from <https://github.com/abdelkarim>, adds a new `PdfPageImageObject::get_raw_image_data()` function thanks to an excellent contribution from <https://github.com/zamf>, and adds new `PdfPageObject::is_active()`, `PdfPageObject::set_active()`, `PdfPageObject::is_inactive()`, and `PdfPageObject::set_inactive()` functions for setting and retrieving the object status on its containing page. Page objects marked as inactive are retained in the document but are not included in page rendering.
 
 Release 0.8.36 corrects a compatibility problem introduced in the latest version of the `libloading` crate, fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>, and resolves a memory leak that could occur when working with `PdfPageObject` instances not attached to pages or annotations thanks to an excellent investigation by <https://github.com/def-roth>.
-
-Release 0.8.35 increments the `pdfium_latest` feature to `pdfium_7350` to match new Pdfium release 7350 at <https://github.com/bblanchon/pdfium-binaries>, fixes a bug in the WASM implementation of bezier curves thanks to an excellent contribution from <https://github.com/marcosc90>, adds coordinate system ordering protection to the `PdfRect` struct initializers thanks to an excellent suggestion from <https://github.com/zecuria>, and fixes a bug in example `examples/image_extract.rs`.
 
 ## Binding to Pdfium
 
@@ -134,26 +134,26 @@ The `static` crate feature offers an alternative to dynamic linking if you prefe
 
 As a convenience, `pdfium-render` can instruct `cargo` to link to either a dynamically-built or a statically-built Pdfium library for you. To link to a dynamically-built library, set the `PDFIUM_DYNAMIC_LIB_PATH` environment variable when you run `cargo build`, like so:
 
-```rust
+```bash
     PDFIUM_DYNAMIC_LIB_PATH="/path/containing/your/dynamic/pdfium/library" cargo build
 ```
 
 `pdfium-render` will pass the following flags to `cargo`:
 
-```rust
+```bash
     cargo:rustc-link-lib=dylib=pdfium
     cargo:rustc-link-search=native=$PDFIUM_DYNAMIC_LIB_PATH
 ```
 
 To link to a statically-built library, set the path to the directory containing your library using the `PDFIUM_STATIC_LIB_PATH` environment variable when you run `cargo build`, like so:
 
-```rust
+```bash
     PDFIUM_STATIC_LIB_PATH="/path/containing/your/static/pdfium/library" cargo build
 ```
 
 `pdfium-render` will pass the following flags to `cargo`:
 
-```rust
+```bash
     cargo:rustc-link-lib=static=pdfium
     cargo:rustc-link-search=native=$PDFIUM_STATIC_LIB_PATH
 ```
@@ -162,7 +162,7 @@ These two environment variables save you writing a custom `build.rs` yourself. I
 
 `PDFIUM_STATIC_LIB_PATH` also supports per-target configuration by appending the target triple with underscores. For example, when cross-compiling for multiple targets:
 
-```rust
+```bash
     PDFIUM_STATIC_LIB_PATH_aarch64_apple_darwin="/path/to/arm64/pdfium" \
     PDFIUM_STATIC_LIB_PATH_x86_64_apple_darwin="/path/to/x64/pdfium" \
     cargo build --target aarch64-apple-darwin
@@ -174,13 +174,13 @@ Note that the path you set in either `PDFIUM_DYNAMIC_LIB_PATH` or `PDFIUM_STATIC
 
 Depending on how your Pdfium library was built, you may need to also link against a C++ standard library. To link against the GNU C++ standard library (`libstdc++`), use the optional `libstdc++` feature. `pdfium-render` will pass the following additional flag to `cargo`:
 
-```rust
+```bash
     cargo:rustc-link-lib=dylib=stdc++
 ```
 
 To link against the LLVM C++ standard library (`libc++`), use the optional `libc++` feature. `pdfium-render` will pass the following additional flag to `cargo`:
 
-```rust
+```bash
     cargo:rustc-link-lib=dylib=c++
 ```
 
@@ -188,7 +188,7 @@ Alternatively, use the `link-cplusplus` crate to link against a C++ standard lib
 
 On macOS systems, it may also be necessary to use the optional `core_graphics` feature to link against the CoreGraphics framework. `pdfium-render` will pass the following additional flag to `cargo`:
 
-```rust
+```bash
     cargo:rustc-link-lib=framework=CoreGraphics
 ```
 
@@ -303,6 +303,7 @@ Simultaneously using both the high-level interface provided by `pdfium-render` a
 
 ## Version history
 
+* 0.9.1 adds a new `console_log` crate feature to control initialization of `console_log`-based logging to the console browser in WASM builds, thanks to an excellent contribution from <https://github.com/tectin0>; adds a new `PdfPageTextObject::is_visible()` utility function in response to an excellent suggestion by <https://github.com/cobnett3>.
 * 0.9.0: fixes a bug in the `PdfClipPath::len()` function, thanks to an excellent contribution from <https://github.com/rockyzhengwu>; adds compilation target support to the `PDFIUM_STATIC_LIB_PATH` environment variable when linking `pdfium-render` to a statically-compiled Pdfium library, thanks to an excellent contribution from <https://github.com/richarddd>; removes all deprecated items; simplifies lifetime handling across all object instances; implements the `Send` and `Sync` traits for all object instances; changes the underlying data type for `PdfPageIndex` from `u16` to `c_int` to match Pdfium's internal page index data type definition; marks all Pdfium API functions as `unsafe` in `PdfLibraryBindings` in keeping with Rust safety best practices.
 * 0.8.37: increments the `pdfium_latest` feature to `pdfium_7543` to match new Pdfium release 7543 at <https://github.com/bblanchon/pdfium-binaries>; adds new `PdfRenderConfig::set_fixed_size()`, `PdfRenderConfig::set_fixed_width()`, and `PdfRenderConfig::set_fixed_height()` functions for more finely-grained rendering control thanks to an excellent suggestion by <https://github.com/newinnovations>; adds new `PdfRenderConfig::set_fixed_size_to_bitmap()` and `PdfRenderConfig::scale_page_to_bitmap()` functions; adds new `PdfPageObject::get_clip_path()` function thanks to an excellent contribution from <https://github.com/abdelkarim>; adds new `PdfPageImageObject::get_raw_image_data()` function thanks to an excellent contribution from <https://github.com/zamf>; adds new functions `PdfPageObject::is_active()`, `PdfPageObject::set_active()`, `PdfPageObject::is_inactive()`, and `PdfPageObject::set_inactive()` for setting and retrieving the object status on its containing page.
 * 0.8.36: ignores all fields in the `libloading::Error::DlOpen` enum variant in order to remain compatible with both old and new versions of the `libloading` crate; fixes a bug in the `PdfPageText::chars_for_object()` function thanks to an excellent investigation by <https://github.com/bikallem>; adds `Drop` trait implementations to all unowned `PdfPageObject` types thanks to an excellent investigation by <https://github.com/def-roth>.
