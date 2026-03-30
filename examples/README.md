@@ -48,13 +48,16 @@ Since `pdfium-render` does not include Pdfium itself, an external pre-packaged W
 
 You should see the sizes of each individual page in your sample file logged to the Javascript console, and the first page in the file will be rendered into an HTML canvas element.
 
-Comments in the `index.html` file explain how to instantiate both the compiled Pdfium and the example
-WASM modules and bind them together dynamically at run time. The basic recipe is simple:
+Comments in the `index.html` file explain how to instantiate both the compiled Pdfium and the example WASM modules and bind them together dynamically at run time. The basic recipe is simple:
 
 * Load and instantiate the Pdfium WASM module first.
 * Once Pdfium is instantiated, load and instantiate the WASM module for your compiled Rust application.
 * Once your WASM module is instantiated, call `pdfium-render`'s exported `initialize_pdfium_render()` function, passing it both instantiated WASM modules.
 * You can now call any Pdfium-related functions exported by your compiled Rust application.
+
+## Logging using `console_log`
+
+The `console_log` crate feature instructs `pdfium-render` to initialize logging using the `console_log` crate. This is necessary in order for debugging output to appear in the browser console. If you will be using `console_log` in your application, then disable this feature and initialize `console_log` in your application's initialization code before calling `pdfium-render`.
 
 ## Interface changes when compiling to WASM
 

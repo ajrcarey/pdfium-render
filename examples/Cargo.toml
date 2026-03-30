@@ -12,10 +12,7 @@ crate-type = ["cdylib", "rlib"]
 path = "wasm.rs"
 
 [dependencies]
-# The wasm_debug feature is used here to output internal debugging information
-# to the browser console. There is a performance impact to this, so it is recommended
-# not to use this feature in production.
-pdfium-render = { path = "../", features = ["image_latest", "wasm_debug"] }
+pdfium-render = { path = "../", features = ["pdfium_latest", "image_latest", "console_log"] }
 image = "^0"
 js-sys = "^0"
 log = "^0"

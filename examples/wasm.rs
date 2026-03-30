@@ -1,22 +1,19 @@
 #[cfg(target_arch = "wasm32")]
-use pdfium_render::prelude::*;
-
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
-
-#[cfg(target_arch = "wasm32")]
-use web_sys::ImageData;
+use {
+    once_cell::sync::OnceCell, pdfium_render::prelude::*, wasm_bindgen::prelude::*,
+    web_sys::ImageData,
+};
 
 // See https://github.com/ajrcarey/pdfium-render/tree/master/examples for information
 // on how to build and package this example alongside a WASM build of Pdfium, suitable
 // for running in a browser.
 
-/// Downloads the given URL, opens it as a PDF document, then logs the width and height of
-/// each page in the document, along with other document metrics, to the Javascript console.
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+/// Downloads the given URL, opens it as a PDF document, then logs the width and height of
+/// each page in the document, along with other document metrics, to the Javascript console.
 pub async fn log_page_metrics_to_console(url: String) {
-    let pdfium = Pdfium::default();
+    let pdfium = get_pdfium();
 
     let document = pdfium.load_pdf_from_fetch(url, None).await.unwrap();
 
@@ -111,17 +108,17 @@ pub async fn log_page_metrics_to_console(url: String) {
     });
 }
 
-/// Downloads the given URL, opens it as a PDF document, then returns the ImageData for
-/// the given page index using the given bitmap dimensions.
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+/// Downloads the given URL, opens it as a PDF document, then returns the ImageData for
+/// the given page index using the given bitmap dimensions.#[wasm_bindgen]
 pub async fn get_image_data_for_page(
     url: String,
     index: PdfPageIndex,
     width: Pixels,
     height: Pixels,
 ) -> ImageData {
-    Pdfium::default()
+    get_pdfium()
         .load_pdf_from_fetch(url, None)
         .await
         .unwrap()
@@ -140,7 +137,24 @@ pub async fn get_image_data_for_page(
         .unwrap()
 }
 
-// Source files in examples/ directory are expected to always have a main() entry-point.
+#[cfg(target_arch = "wasm32")]
+// A shared Pdfium instance used by all exported functions.
+static PDFIUM: OnceCell<Pdfium> = OnceCell::new();
+
+#[cfg(target_arch = "wasm32")]
+/// Returns a Pdfium instance. The first time this function is called, it will
+/// initialize the library. All subsequent calls will return the same Pdfium instance.
+fn get_pdfium() -> &'static Pdfium {
+    if PDFIUM.get().is_none() {
+        let pdfium = Pdfium::default();
+
+        assert!(PDFIUM.set(pdfium).is_ok());
+    }
+
+    PDFIUM.get().unwrap()
+}
+
+// Source files in the examples/ directory are expected to always have a main() entry-point.
 // Since we're compiling to WASM, we'll never actually use this.
 #[allow(dead_code)]
 fn main() {}

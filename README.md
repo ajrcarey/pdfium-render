@@ -217,6 +217,7 @@ An example of safely using `pdfium-render` as part of a multi-threaded parallel 
 This crate provides the following optional features:
 
 * `bindings`: uses `cbindgen` to generate Rust bindings to the Pdfium functions defined in the `include/*.h` files each time `cargo build` is run. If `cbindgen` or any of its dependencies are not available then the build will fail.
+* `console_log`: when compiling to WASM, instructs `pdfium-render` to initialize `console_log`-based logging to the browser console. This can be used if you do not initialize `console_log` in your application. See <https://github.com/ajrcarey/pdfium-render/tree/master/examples/README.md> for more details.
 * `libstdc++`: links against the GNU C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `libc++`: links against the LLVM C++ standard library when compiling. Requires the `static` feature. See the "Static linking" section above.
 * `core_graphics`: links against the CoreGraphics library on macOS systems when compiling. Requires the `static` feature. See the "Static linking" section above.
