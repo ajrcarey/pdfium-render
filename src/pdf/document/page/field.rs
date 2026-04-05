@@ -303,7 +303,12 @@ pub trait PdfFormFieldCommon {
     /// to mouse clicks or change their appearance in response to mouse motions.
     fn is_read_only(&self) -> bool;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not the value of this [PdfFormField] is read only.
     fn set_is_read_only(&mut self, is_read_only: bool) -> Result<(), PdfiumError>;
 
@@ -314,7 +319,12 @@ pub trait PdfFormFieldCommon {
     /// The PDF Reference (Sixth Edition, PDF Format 1.7), starting on page 702.
     fn is_required(&self) -> bool;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not this [PdfFormField] must have a value at the time it is
     /// exported by any "submit form" action.
     ///
@@ -329,7 +339,12 @@ pub trait PdfFormFieldCommon {
     /// The PDF Reference (Sixth Edition, PDF Format 1.7), starting on page 702.
     fn is_exported_on_submit(&self) -> bool;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not the value of this [PdfFormField] will be exported by any
     /// "submit form" action.
     ///
@@ -364,7 +379,12 @@ where
         self.get_flags_impl().contains(PdfFormFieldFlags::ReadOnly)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     #[inline]
     fn set_is_read_only(&mut self, is_read_only: bool) -> Result<(), PdfiumError> {
         self.update_one_flag_impl(PdfFormFieldFlags::ReadOnly, is_read_only)
@@ -375,7 +395,12 @@ where
         self.get_flags_impl().contains(PdfFormFieldFlags::Required)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     #[inline]
     fn set_is_required(&mut self, is_required: bool) -> Result<(), PdfiumError> {
         self.update_one_flag_impl(PdfFormFieldFlags::Required, is_required)
@@ -386,7 +411,12 @@ where
         !self.get_flags_impl().contains(PdfFormFieldFlags::NoExport)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     #[inline]
     fn set_is_exported_on_submit(&mut self, is_exported: bool) -> Result<(), PdfiumError> {
         self.update_one_flag_impl(PdfFormFieldFlags::NoExport, !is_exported)

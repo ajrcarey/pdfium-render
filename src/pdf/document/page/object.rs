@@ -41,11 +41,17 @@ use crate::{create_transform_getters, create_transform_setters};
 use std::convert::TryInto;
 use std::os::raw::{c_int, c_uint};
 
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_7763",
+    feature = "pdfium_7543",
+    feature = "pdfium_7350"
+))]
 use crate::pdf::document::page::objects::common::PdfPageObjectIndex;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7763",
     feature = "pdfium_7543",
     feature = "pdfium_7350",
     feature = "pdfium_7215",
@@ -537,6 +543,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -560,6 +567,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -584,6 +592,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -607,6 +616,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -1185,7 +1195,12 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
         self.unwrap_as_trait_mut().add_object_to_page(page_objects)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     #[inline]
     fn insert_object_on_page(
         &mut self,

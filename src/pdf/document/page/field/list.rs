@@ -9,7 +9,12 @@ use crate::pdf::document::page::field::private::internal::{
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::marker::PhantomData;
 
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_7763",
+    feature = "pdfium_7543",
+    feature = "pdfium_7350"
+))]
 use crate::error::PdfiumError;
 
 #[cfg(doc)]
@@ -72,7 +77,12 @@ impl<'a> PdfFormListBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceSort)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not the option items of this [PdfFormListBoxField] should be
     /// sorted alphabetically.
     ///
@@ -91,7 +101,12 @@ impl<'a> PdfFormListBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceMultiSelect)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether more than one of the option items in this [PdfFormListBoxField]
     /// may be selected simultaneously.
     ///
@@ -112,7 +127,12 @@ impl<'a> PdfFormListBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceCommitOnSelectionChange)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not any new value is committed to this [PdfFormListBoxField]
     /// as soon as a selection is made with the pointing device.
     ///

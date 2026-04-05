@@ -72,7 +72,7 @@ pub const __USE_ISOC99: u32 = 1;
 pub const __USE_ISOC95: u32 = 1;
 pub const __USE_POSIX_IMPLICITLY: u32 = 1;
 pub const _POSIX_SOURCE: u32 = 1;
-pub const _POSIX_C_SOURCE: u32 = 200809;
+pub const _POSIX_C_SOURCE: u32 = 202405;
 pub const __USE_POSIX: u32 = 1;
 pub const __USE_POSIX2: u32 = 1;
 pub const __USE_POSIX199309: u32 = 1;
@@ -80,6 +80,7 @@ pub const __USE_POSIX199506: u32 = 1;
 pub const __USE_XOPEN2K: u32 = 1;
 pub const __USE_XOPEN2K8: u32 = 1;
 pub const _ATFILE_SOURCE: u32 = 1;
+pub const __USE_XOPEN2K24: u32 = 1;
 pub const __WORDSIZE: u32 = 64;
 pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
 pub const __SYSCALL_WORDSIZE: u32 = 64;
@@ -99,7 +100,7 @@ pub const __STDC_IEC_60559_COMPLEX__: u32 = 201404;
 pub const __STDC_ISO_10646__: u32 = 201706;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 42;
+pub const __GLIBC_MINOR__: u32 = 43;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI: u32 = 0;
@@ -328,7 +329,9 @@ pub const FPDF_FORMFIELD_XFA_TEXTFIELD: u32 = 15;
 pub const FPDF_FORMFIELD_COUNT: u32 = 16;
 pub const FPDF_INCREMENTAL: u32 = 1;
 pub const FPDF_NO_INCREMENTAL: u32 = 2;
-pub const FPDF_REMOVE_SECURITY: u32 = 3;
+pub const FPDF_REMOVE_SECURITY_DEPRECATED: u32 = 3;
+pub const FPDF_REMOVE_SECURITY: u32 = 4;
+pub const FPDF_SUBSET_NEW_FONTS: u32 = 8;
 pub const FXFONT_ANSI_CHARSET: u32 = 0;
 pub const FXFONT_DEFAULT_CHARSET: u32 = 1;
 pub const FXFONT_SYMBOL_CHARSET: u32 = 2;
@@ -726,6 +729,12 @@ pub const FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_AGG: FPDF_RENDERER_TYPE = 0;
 pub const FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA: FPDF_RENDERER_TYPE = 1;
 #[doc = " PDF renderer types - Experimental.\n Selection of 2D graphics library to use for rendering to FPDF_BITMAPs."]
 pub type FPDF_RENDERER_TYPE = ::std::os::raw::c_uint;
+#[doc = " FreeType - https://freetype.org/"]
+pub const FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE: FPDF_FONT_BACKEND_TYPE = 0;
+#[doc = " Fontations - https://github.com/googlefonts/fontations/"]
+pub const FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FONTATIONS: FPDF_FONT_BACKEND_TYPE = 1;
+#[doc = " PDF font library types - Experimental.\n Selection of font backend library to use."]
+pub type FPDF_FONT_BACKEND_TYPE = ::std::os::raw::c_uint;
 #[doc = " Process-wide options for initializing the library."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -740,8 +749,10 @@ pub struct FPDF_LIBRARY_CONFIG_ {
     pub m_v8EmbedderSlot: ::std::os::raw::c_uint,
     #[doc = " Pointer to the V8::Platform to use."]
     pub m_pPlatform: *mut ::std::os::raw::c_void,
-    #[doc = " Explicit specification of core renderer to use. |m_RendererType| must be\n a valid value for |FPDF_LIBRARY_CONFIG| versions of this level or higher,\n or else the initialization will fail with an immediate crash.\n Note that use of a specified |FPDF_RENDERER_TYPE| value for which the\n corresponding render library is not included in the build will similarly\n fail with an immediate crash."]
+    #[doc = " Explicit specification of 2D graphics rendering library to use.\n |m_RendererType| must be a valid value for |FPDF_LIBRARY_CONFIG| versions\n of this level or higher, or else the initialization will fail with an\n immediate crash.\n Note that use of a specified |FPDF_RENDERER_TYPE| value for which the\n corresponding 2D graphics rendering library is not included in the build\n will similarly fail with an immediate crash."]
     pub m_RendererType: FPDF_RENDERER_TYPE,
+    #[doc = " Explicit specification of font library to use when |m_RendererType| is set\n to |FPDF_RENDERERTYPE_SKIA|.\n |m_FontLibraryType| must be a valid value for |FPDF_LIBRARY_CONFIG|\n versions of this level or higher, or else the initialization will fail with\n an immediate crash.\n Note that use of a specified |FPDF_FONT_BACKEND_TYPE| value for which the\n corresponding font library is not included in the build will similarly fail\n with an immediate crash."]
+    pub m_FontLibraryType: FPDF_FONT_BACKEND_TYPE,
 }
 #[doc = " Process-wide options for initializing the library."]
 pub type FPDF_LIBRARY_CONFIG = FPDF_LIBRARY_CONFIG_;
@@ -1843,8 +1854,16 @@ unsafe extern "C" {
     pub fn FPDFCatalog_IsTagged(document: FPDF_DOCUMENT) -> FPDF_BOOL;
 }
 unsafe extern "C" {
+    #[doc = " Experimental API.\n Gets the language of |document| from the catalog's /Lang entry.\n\n   document - handle to a document.\n   buffer   - a buffer for the language string. May be NULL.\n   buflen   - the length of the buffer, in bytes. May be 0.\n\n Returns the number of bytes in the language string, including the\n trailing NUL character. The number of bytes is returned regardless of the\n |buffer| and |buflen| parameters.\n\n Regardless of the platform, the |buffer| is always in UTF-16LE\n encoding. The string is terminated by a UTF16 NUL character. If\n |buflen| is less than the required length, or |buffer| is NULL,\n |buffer| will not be modified.\n\n If |document| has no /Lang entry, an empty string is written to |buffer| and\n 2 is returned. On error, nothing is written to |buffer| and 0 is returned."]
+    pub fn FPDFCatalog_GetLanguage(
+        document: FPDF_DOCUMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+unsafe extern "C" {
     #[doc = " Experimental API.\n Sets the language of |document| to |language|.\n\n document - handle to a document.\n language - the language to set to.\n\n Returns TRUE on success."]
-    pub fn FPDFCatalog_SetLanguage(document: FPDF_DOCUMENT, language: FPDF_BYTESTRING)
+    pub fn FPDFCatalog_SetLanguage(document: FPDF_DOCUMENT, language: FPDF_WIDESTRING)
     -> FPDF_BOOL;
 }
 #[doc = " Convenience types."]
@@ -3185,6 +3204,14 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_ulong;
 }
 unsafe extern "C" {
+    #[doc = " Experimental API.\n Function: FPDF_StructElement_GetExpansion\n          Get the expansion of an abbreviation or acronym for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          buffer         -   A buffer for output the expansion text. May be\n                             NULL.\n          buflen         -   The length of the buffer, in bytes. May be 0.\n Return value:\n          The number of bytes in the expansion text, including the terminating\n          NUL character. The number of bytes is returned regardless of the\n          |buffer| and |buflen| parameters.\n Comments:\n          Regardless of the platform, the |buffer| is always in UTF-16LE\n          encoding. The string is terminated by a UTF16 NUL character. If\n          |buflen| is less than the required length, or |buffer| is NULL,\n          |buffer| will not be modified."]
+    pub fn FPDF_StructElement_GetExpansion(
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut ::std::os::raw::c_void,
+        buflen: ::std::os::raw::c_ulong,
+    ) -> ::std::os::raw::c_ulong;
+}
+unsafe extern "C" {
     #[doc = " Function: FPDF_StructElement_GetID\n          Get the ID for a given element.\n Parameters:\n          struct_element -   Handle to the struct element.\n          buffer         -   A buffer for output the ID string. May be NULL.\n          buflen         -   The length of the buffer, in bytes. May be 0.\n Return value:\n          The number of bytes in the ID string, including the terminating NUL\n          character. The number of bytes is returned regardless of the\n          |buffer| and |buflen| parameters.\n Comments:\n          Regardless of the platform, the |buffer| is always in UTF-16LE\n          encoding. The string is terminated by a UTF16 NUL character. If\n          |buflen| is less than the required length, or |buffer| is NULL,\n          |buffer| will not be modified."]
     pub fn FPDF_StructElement_GetID(
         struct_element: FPDF_STRUCTELEMENT,
@@ -4269,11 +4296,11 @@ unsafe extern "C" {
 pub struct FPDF_FILEWRITE_ {
     #[doc = "\n Version number of the interface. Currently must be 1.\n"]
     pub version: ::std::os::raw::c_int,
-    #[doc = " Method: WriteBlock\n          Output a block of data in your custom way.\n Interface Version:\n          1\n Implementation Required:\n          Yes\n Comments:\n          Called by function FPDF_SaveDocument\n Parameters:\n          pThis       -   Pointer to the structure itself\n          pData       -   Pointer to a buffer to output\n          size        -   The size of the buffer.\n Return value:\n          Should be non-zero if successful, zero for error."]
+    #[doc = " Method: WriteBlock\n          Output a block of data in your custom way.\n Interface Version:\n          1\n Implementation Required:\n          Yes\n Comments:\n          Called by function FPDF_SaveDocument\n Parameters:\n          self        -   Pointer to the structure itself\n          data        -   Pointer to a buffer to output\n          size        -   The size of the buffer.\n Return value:\n          Should be non-zero if successful, zero for error."]
     pub WriteBlock: ::std::option::Option<
         unsafe extern "C" fn(
-            pThis: *mut FPDF_FILEWRITE_,
-            pData: *const ::std::os::raw::c_void,
+            self_: *mut FPDF_FILEWRITE_,
+            data: *const ::std::os::raw::c_void,
             size: ::std::os::raw::c_ulong,
         ) -> ::std::os::raw::c_int,
     >,
@@ -4281,20 +4308,20 @@ pub struct FPDF_FILEWRITE_ {
 #[doc = " Structure for custom file write"]
 pub type FPDF_FILEWRITE = FPDF_FILEWRITE_;
 unsafe extern "C" {
-    #[doc = " Function: FPDF_SaveAsCopy\n          Saves the copy of specified document in custom way.\n Parameters:\n          document        -   Handle to document, as returned by\n                              FPDF_LoadDocument() or FPDF_CreateNewDocument().\n          pFileWrite      -   A pointer to a custom file write structure.\n          flags           -   Flags above that affect how the PDF gets saved.\n                              Pass in 0 when there are no flags.\n Return value:\n          TRUE for succeed, FALSE for failed.\n"]
+    #[doc = " Function: FPDF_SaveAsCopy\n          Saves the copy of specified document in custom way.\n Parameters:\n          document        -   Handle to document, as returned by\n                              FPDF_LoadDocument() or FPDF_CreateNewDocument().\n          file_write      -   A pointer to a custom file write structure.\n          flags           -   Flags above that affect how the PDF gets saved.\n                              Pass in 0 when there are no flags.\n Return value:\n          TRUE for succeed, FALSE for failed.\n"]
     pub fn FPDF_SaveAsCopy(
         document: FPDF_DOCUMENT,
-        pFileWrite: *mut FPDF_FILEWRITE,
+        file_write: *mut FPDF_FILEWRITE,
         flags: FPDF_DWORD,
     ) -> FPDF_BOOL;
 }
 unsafe extern "C" {
-    #[doc = " Function: FPDF_SaveWithVersion\n          Same as FPDF_SaveAsCopy(), except the file version of the\n          saved document can be specified by the caller.\n Parameters:\n          document        -   Handle to document.\n          pFileWrite      -   A pointer to a custom file write structure.\n          flags           -   The creating flags.\n          fileVersion     -   The PDF file version. File version: 14 for 1.4,\n                              15 for 1.5, ...\n Return value:\n          TRUE if succeed, FALSE if failed.\n"]
+    #[doc = " Function: FPDF_SaveWithVersion\n          Same as FPDF_SaveAsCopy(), except the file version of the\n          saved document can be specified by the caller.\n Parameters:\n          document        -   Handle to document.\n          file_write      -   A pointer to a custom file write structure.\n          flags           -   The creating flags.\n          file_version    -   The PDF file version. File version: 14 for 1.4,\n                              15 for 1.5, ...\n Return value:\n          TRUE if succeed, FALSE if failed.\n"]
     pub fn FPDF_SaveWithVersion(
         document: FPDF_DOCUMENT,
-        pFileWrite: *mut FPDF_FILEWRITE,
+        file_write: *mut FPDF_FILEWRITE,
         flags: FPDF_DWORD,
-        fileVersion: ::std::os::raw::c_int,
+        file_version: ::std::os::raw::c_int,
     ) -> FPDF_BOOL;
 }
 #[doc = " Interface: FPDF_SYSFONTINFO\n          Interface for getting system font information and font mapping"]

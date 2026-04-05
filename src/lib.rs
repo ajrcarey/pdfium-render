@@ -11,6 +11,9 @@ mod bindgen {
     #[cfg(feature = "pdfium_future")]
     include!("bindgen/pdfium_future.rs");
 
+    #[cfg(feature = "pdfium_7763")]
+    include!("bindgen/pdfium_7763.rs");
+
     #[cfg(feature = "pdfium_7543")]
     include!("bindgen/pdfium_7543.rs");
 
@@ -93,9 +96,6 @@ mod utils;
 /// use pdfium_render::prelude::*;
 /// ```
 pub mod prelude {
-    #[allow(deprecated)]
-    // TODO: AJRC - 5-Aug-24 - deprecated items will be removed in release 0.9.0. Tracking issue:
-    // https://github.com/ajrcarey/pdfium-render/issues/36
     pub use crate::{
         bindings::*,
         error::*,

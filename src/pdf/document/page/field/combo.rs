@@ -8,10 +8,15 @@ use crate::pdf::document::page::field::options::PdfFormFieldOptions;
 use crate::pdf::document::page::field::private::internal::{
     PdfFormFieldFlags, PdfFormFieldPrivate,
 };
-
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
-use crate::error::PdfiumError;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
+
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_7763",
+    feature = "pdfium_7543",
+    feature = "pdfium_7350"
+))]
+use crate::error::PdfiumError;
 
 #[cfg(doc)]
 use {
@@ -71,7 +76,12 @@ impl<'a> PdfFormComboBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceEdit)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not this [PdfFormComboBoxField] includes an editable text box
     /// in addition to a drop-down list.
     #[inline]
@@ -92,7 +102,12 @@ impl<'a> PdfFormComboBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceSort)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not the option items of this [PdfFormComboBoxField] should be
     /// sorted alphabetically.
     ///
@@ -111,7 +126,12 @@ impl<'a> PdfFormComboBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceMultiSelect)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether more than one of the option items in this [PdfFormComboBoxField]
     /// may be selected simultaneously.
     ///
@@ -133,7 +153,12 @@ impl<'a> PdfFormComboBoxField<'a> {
             .contains(PdfFormFieldFlags::TextDoNotSpellCheck)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not text entered into the editable text box included in this
     /// [PdfFormComboBoxField] should be spell checked.
     ///
@@ -154,7 +179,12 @@ impl<'a> PdfFormComboBoxField<'a> {
             .contains(PdfFormFieldFlags::ChoiceCommitOnSelectionChange)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Controls whether or not any new value is committed to this [PdfFormComboBoxField]
     /// as soon as a selection is made with the pointing device.
     ///

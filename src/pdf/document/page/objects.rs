@@ -131,7 +131,12 @@ impl<'a> PdfPageObjects<'a> {
         }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7350"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350"
+    ))]
     /// Adds the given [PdfPageObject] to this page objects collection, inserting it into
     /// the collection at the given index. The object's memory ownership will be transferred
     /// to the [PdfPage] containing this page objects collection, and the updated page object

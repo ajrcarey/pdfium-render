@@ -12,7 +12,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  PDFIUM_RELEASE_TAG: 7543 # November 2025, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F7543
+  PDFIUM_RELEASE_TAG: 7763 # April 2026, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F7763
 
 jobs:
   build:
@@ -91,6 +91,8 @@ jobs:
       run: cargo check --no-default-features --features="image_latest, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7350"
     - name: Check backward compatibility with pdfium_7543 and dynamic bindings
       run: cargo check --no-default-features --features="image_latest, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7543"
+    - name: Check backward compatibility with pdfium_7763 and dynamic bindings
+      run: cargo check --no-default-features --features="image_latest, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7763"
 
     # Compatibility checks for static bindings
 
@@ -140,6 +142,8 @@ jobs:
       run: cargo check --no-default-features --features="image_latest, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7350"
     - name: Check backward compatibility with pdfium_7543 and static bindings
       run: cargo check --no-default-features --features="image_latest, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7543"
+    - name: Check backward compatibility with pdfium_7763 and static bindings
+      run: cargo check --no-default-features --features="image_latest, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7763"
 
     # Compatibility checks for WASM bindings
 
@@ -189,3 +193,5 @@ jobs:
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7350
     - name: Check backward compatibility with pdfium_7543 and WASM bindings
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7543
+    - name: Check backward compatibility with pdfium_7763 and WASM bindings
+      run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7763

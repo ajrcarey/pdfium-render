@@ -202,6 +202,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
     ))]
@@ -225,6 +226,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
 
     #[cfg(not(any(
         feature = "pdfium_future",
+        feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
     )))]
