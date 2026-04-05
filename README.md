@@ -240,8 +240,8 @@ Projects that do not require page or page object rendering can disable these fea
 Release 0.8.24 introduced new features to explicitly control the version of the Pdfium API used by `pdfium-render`:
 
 * `pdfium_future`: binds `PdfiumLibraryBindings` to the latest published Pdfium API at <https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public>, irrespective of whether those changes have been built into a release at <https://github.com/bblanchon/pdfium-binaries/releases>. Useful for testing unreleased changes.
-* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_7543`.
-* `pdfium_7543`, `pdfium_7350`, `pdfium_7215`, `pdfium_7123`, `pdfium_6996` (but see note below), `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
+* `pdfium_latest`: binds `PdfiumLibraryBindings` to the latest released build of Pdfium at <https://github.com/bblanchon/pdfium-binaries/releases> supported by `pdfium-render`. This is currently `pdfium_7763`.
+* `pdfium_7763`, `pdfium_7543`, `pdfium_7350`, `pdfium_7215`, `pdfium_7123`, `pdfium_6996` (but see note below), `pdfium_6721`, `pdfium_6666`, `pdfium_6611`, `pdfium_6569`, `pdfium_6555`, `pdfium_6490`, `pdfium_6406`, `pdfium_6337`, `pdfium_6295`, `pdfium_6259`, `pdfium_6164`, `pdfium_6124`, `pdfium_6110`, `pdfium_6084`, `pdfium_6043`, `pdfium_6015`, `pdfium_5961`: binds `PdfiumLibraryBindings` to the specified version of the Pdfium API.
 
 Note that Pdfium build 6996 contains a known bug affecting macOS systems. For more information and workarounds, see <https://github.com/ajrcarey/pdfium-render/issues/192>.
 
@@ -281,11 +281,13 @@ would translate to the following Rust code:
     let bindings = pdfium.bindings();
     let test_doc = "test.pdf";
 
-    bindings.FPDF_InitLibrary();
-    let doc = bindings.FPDF_LoadDocument(test_doc, None);
-    // ... do something with doc
-    bindings.FPDF_CloseDocument(doc);
-    bindings.FPDF_DestroyLibrary();
+    unsafe {
+        bindings.FPDF_InitLibrary();
+        let doc = bindings.FPDF_LoadDocument(test_doc, None);
+        // ... do something with doc
+        bindings.FPDF_CloseDocument(doc);
+        bindings.FPDF_DestroyLibrary();
+    }
 ```
 
 As at Pdfium release `pdfium_7763` there are 438 `FPDF_*` functions in the Pdfium API.
