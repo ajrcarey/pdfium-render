@@ -2,13 +2,16 @@
 
 use crate::bindgen::{
     FPDF_DOCUMENT, FPDF_ERR_FILE, FPDF_ERR_FORMAT, FPDF_ERR_PAGE, FPDF_ERR_PASSWORD,
-    FPDF_ERR_SECURITY, FPDF_ERR_SUCCESS, FPDF_ERR_UNKNOWN,
+    FPDF_ERR_SECURITY, FPDF_ERR_SUCCESS, FPDF_ERR_UNKNOWN, FPDF_LIBRARY_CONFIG,
 };
 use crate::bindings::PdfiumLibraryBindings;
+use crate::config::PdfiumLibraryConfig;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
 use once_cell::sync::OnceCell;
 use std::fmt::{Debug, Formatter};
+use std::ops::Deref;
+use std::pin::Pin;
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use {
@@ -65,7 +68,13 @@ pub(crate) trait PdfiumLibraryBindingsAccessor<'a> {
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
 #[derive(Clone)]
-pub struct Pdfium;
+pub struct Pdfium {
+    #[allow(dead_code)]
+    // The config field is included in this struct to ensure any Pdfium configuration
+    // we pass into a call to FPDF_InitLibraryWithConfig() lives as long as our use of
+    // the Pdfium library.
+    config: Option<Pin<Box<FPDF_LIBRARY_CONFIG>>>,
+}
 
 impl Pdfium {
     /// Binds to a Pdfium library that was statically linked into the currently running
@@ -179,7 +188,32 @@ impl Pdfium {
         }
         assert!(BINDINGS.set(bindings).is_ok());
 
-        Self {}
+        Self { config: None }
+    }
+
+    /// Creates a new [Pdfium] instance from the given external Pdfium library bindings,
+    /// using the custom library configuration in the given [PdfiumLibraryConfig].
+    #[inline]
+    pub fn new_with_config(
+        bindings: Box<dyn PdfiumLibraryBindings>,
+        config: PdfiumLibraryConfig,
+    ) -> Self {
+        // We allocate the FPDF_LIBRARY_CONFIG struct on the heap and pin its pointer location
+        // so Rust will not move it around. Pdfium retains the pointer location when we call
+        // FPDF_InitLibraryWithConfig() and expects the pointer location to remain valid
+        // until a call to FPDF_DestroyLibrary(); if we don't pin the struct's location
+        // it may move, and any attempt by Pdfium to consume the configuration will segfault.
+        let settings = Box::pin(config.to_pdfium());
+
+        assert!(BINDINGS.get().is_none());
+        unsafe {
+            bindings.FPDF_InitLibraryWithConfig(settings.deref());
+        }
+        assert!(BINDINGS.set(bindings).is_ok());
+
+        Self {
+            config: Some(settings),
+        }
     }
 
     /// Attempts to open a [PdfDocument] from the given static byte buffer.
@@ -443,7 +477,7 @@ impl Default for Pdfium {
 
         match Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")) {
             Ok(bindings) => Pdfium::new(bindings), // Create new bindings
-            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {}, // Re-use the existing bindings
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium { config: None }, // Re-use the existing bindings
             Err(PdfiumError::LoadLibraryError(err)) => {
                 match err {
                     libloading::Error::DlOpen { .. } => {

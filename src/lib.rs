@@ -84,6 +84,7 @@ mod bindgen {
 }
 
 mod bindings;
+mod config;
 mod error;
 mod pdf;
 mod pdfium;
@@ -98,6 +99,7 @@ mod utils;
 pub mod prelude {
     pub use crate::{
         bindings::*,
+        config::*,
         error::*,
         pdf::action::*,
         pdf::appearance_mode::*,

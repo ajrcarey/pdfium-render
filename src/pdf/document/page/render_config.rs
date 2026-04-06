@@ -70,7 +70,7 @@ pub struct PdfRenderConfig {
 }
 
 impl PdfRenderConfig {
-    /// Creates a new [PdfRenderConfig] object with all settings initialized with their default values.
+    /// Creates a new [PdfRenderConfig] object with all settings initialized to their default values.
     pub fn new() -> Self {
         PdfRenderConfig {
             use_auto_scaling: true,
