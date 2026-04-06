@@ -6,8 +6,9 @@ use crate::error::PdfiumError;
 use crate::pdf::action::private::internal::PdfActionPrivate;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
-use std::ffi::{c_void, CString};
+use std::ffi::CString;
 use std::marker::PhantomData;
+use std::os::raw::c_void;
 
 pub struct PdfActionUri<'a> {
     handle: FPDF_ACTION,

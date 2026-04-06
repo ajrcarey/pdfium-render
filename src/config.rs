@@ -3,11 +3,14 @@ use crate::bindgen::{
     FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
 };
 use crate::error::PdfiumError;
-use std::ffi::{c_char, c_uint, CString, NulError};
-use std::os::raw::c_void;
+use std::ffi::{CString, NulError};
+use std::os::raw::{c_char, c_uint};
 use std::pin::Pin;
 use std::ptr::null_mut;
 use std::str::FromStr;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::os::raw::c_void;
 
 #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
 use crate::bindgen::{
@@ -18,9 +21,14 @@ use crate::bindgen::{
 #[derive(Clone)]
 pub struct PdfiumLibraryConfig {
     user_font_paths: Pin<Box<Vec<CString>>>,
+
+    #[cfg(not(target_arch = "wasm32"))]
     v8_isolate_ptr: *mut c_void,
+    #[cfg(not(target_arch = "wasm32"))]
     v8_embedder_slot_idx: c_uint,
+    #[cfg(not(target_arch = "wasm32"))]
     v8_platform_ptr: *mut c_void,
+
     renderer_type: c_uint,
 
     #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
@@ -31,18 +39,21 @@ impl PdfiumLibraryConfig {
     /// Creates a new [PdfiumLibraryConfig] object with all settings initialized to
     /// their default values.
     pub fn new() -> Self {
-        let result = PdfiumLibraryConfig {
+        PdfiumLibraryConfig {
             user_font_paths: Box::pin(vec![]),
+
+            #[cfg(not(target_arch = "wasm32"))]
             v8_isolate_ptr: null_mut(),
+            #[cfg(not(target_arch = "wasm32"))]
             v8_embedder_slot_idx: 0,
+            #[cfg(not(target_arch = "wasm32"))]
             v8_platform_ptr: null_mut(),
+
             renderer_type: FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
 
             #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
             font_library_type: FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE,
-        };
-
-        result.clear_user_font_paths()
+        }
     }
 
     /// Clears any user-specified paths that should be interrogated by Pdfium when
@@ -107,6 +118,7 @@ impl PdfiumLibraryConfig {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// Sets the pointer to the `v8::Isolate` to use. If `NULL`, Pdfium will create one.
     #[inline]
     pub unsafe fn set_v8_isolate_ptr(mut self, ptr: *mut c_void) -> Self {
@@ -114,6 +126,7 @@ impl PdfiumLibraryConfig {
         self
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// Sets the embedder data slot to use in the `v8::Isolate` to store Pdfium's per-isolate
     /// data. The value needs to be in the range `[0, v8::Internals::kNumIsolateDataLots)`.
     /// Note that `0` is fine for most embedders.
@@ -123,6 +136,7 @@ impl PdfiumLibraryConfig {
         self
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// Sets the pointer to the `v8::Platform` to use.
     #[inline]
     pub unsafe fn set_v8_platform_ptr(mut self, ptr: &mut c_void) -> Self {
@@ -161,7 +175,7 @@ impl PdfiumLibraryConfig {
     }
 
     #[inline]
-    pub(crate) fn to_pdfium(&self) -> FPDF_LIBRARY_CONFIG {
+    pub(crate) fn as_pdfium(&self) -> FPDF_LIBRARY_CONFIG {
         FPDF_LIBRARY_CONFIG {
             version: 2,
             m_pUserFontPaths: self
@@ -171,9 +185,21 @@ impl PdfiumLibraryConfig {
                 .collect::<Vec<*const c_char>>()
                 .as_mut_slice()
                 .as_mut_ptr(),
+
+            #[cfg(not(target_arch = "wasm32"))]
             m_pIsolate: self.v8_isolate_ptr,
+            #[cfg(not(target_arch = "wasm32"))]
             m_v8EmbedderSlot: self.v8_embedder_slot_idx,
+            #[cfg(not(target_arch = "wasm32"))]
             m_pPlatform: self.v8_platform_ptr,
+
+            #[cfg(target_arch = "wasm32")]
+            m_pIsolate: null_mut(),
+            #[cfg(target_arch = "wasm32")]
+            m_v8EmbedderSlot: 0,
+            #[cfg(target_arch = "wasm32")]
+            m_pPlatform: null_mut(),
+
             m_RendererType: self.renderer_type,
 
             #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
@@ -181,3 +207,9 @@ impl PdfiumLibraryConfig {
         }
     }
 }
+
+#[cfg(feature = "thread_safe")]
+unsafe impl Sync for PdfiumLibraryConfig {}
+
+#[cfg(feature = "thread_safe")]
+unsafe impl Send for PdfiumLibraryConfig {}

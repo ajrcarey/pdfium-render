@@ -6,9 +6,9 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
-use std::ffi::{c_uint, CString};
+use std::ffi::CString;
 use std::marker::PhantomData;
-use std::os::raw::{c_char, c_void};
+use std::os::raw::{c_char, c_uint, c_void};
 
 /// The modification detection permission (MDP) applicable to a single digital signature
 /// in a `PdfDocument`.

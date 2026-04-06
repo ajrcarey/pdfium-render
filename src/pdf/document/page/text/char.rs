@@ -14,8 +14,8 @@ use crate::pdf::rect::PdfRect;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::utils::mem::create_byte_buffer;
 use std::convert::TryInto;
-use std::ffi::c_void;
 use std::marker::PhantomData;
+use std::os::raw::c_void;
 
 #[cfg(any(
     feature = "pdfium_future",

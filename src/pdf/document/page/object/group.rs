@@ -24,8 +24,8 @@ use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use crate::prelude::PdfPageXObjectFormObject;
-use std::ffi::c_double;
 use std::marker::PhantomData;
+use std::os::raw::c_double;
 
 #[cfg(doc)]
 use {

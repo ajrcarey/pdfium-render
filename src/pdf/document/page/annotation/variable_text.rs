@@ -2,7 +2,7 @@ use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::form::PdfForm;
 use crate::pdf::document::page::annotation::private::internal::PdfPageAnnotationPrivate;
 use crate::pdf::points::PdfPoints;
-use std::ffi::c_float;
+use std::os::raw::c_float;
 
 #[cfg(any(
     feature = "pdfium_future",
@@ -18,7 +18,7 @@ use std::ffi::c_float;
     feature = "pdfium_6569",
     feature = "pdfium_6555",
 ))]
-use {crate::pdf::color::PdfColor, std::ffi::c_uint};
+use {crate::pdf::color::PdfColor, std::os::raw::c_uint};
 
 #[cfg(doc)]
 use crate::pdf::document::page::annotation::PdfPageAnnotation;

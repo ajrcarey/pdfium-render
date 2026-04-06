@@ -5,6 +5,7 @@ use crate::bindgen::{
     FPDF_ERR_SECURITY, FPDF_ERR_SUCCESS, FPDF_ERR_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
+use crate::config::PdfiumLibraryConfig;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
 use once_cell::sync::OnceCell;
@@ -21,14 +22,10 @@ use crate::bindings::static_bindings::StaticPdfiumBindings;
 
 #[cfg(not(target_arch = "wasm32"))]
 use {
-    crate::bindgen::FPDF_LIBRARY_CONFIG,
-    crate::config::PdfiumLibraryConfig,
     crate::utils::files::get_pdfium_file_accessor_from_reader,
     std::fs::File,
     std::io::{Read, Seek},
-    std::ops::Deref,
     std::path::Path,
-    std::pin::Pin,
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -70,12 +67,8 @@ pub(crate) trait PdfiumLibraryBindingsAccessor<'a> {
 /// the Google Chromium project.
 #[derive(Clone)]
 pub struct Pdfium {
-    #[cfg(not(target_arch = "wasm32"))]
     #[allow(dead_code)]
-    // The config field is included in this struct to ensure any Pdfium configuration
-    // we pass into a call to FPDF_InitLibraryWithConfig() lives as long as our use of
-    // the Pdfium library.
-    pub(crate) config: Option<Pin<Box<FPDF_LIBRARY_CONFIG>>>,
+    pub(crate) config: Option<PdfiumLibraryConfig>,
 }
 
 impl Pdfium {
@@ -190,37 +183,24 @@ impl Pdfium {
         }
         assert!(BINDINGS.set(bindings).is_ok());
 
-        Self {
-            #[cfg(not(target_arch = "wasm32"))]
-            config: None,
-        }
+        Self { config: None }
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings,
     /// using the custom library configuration in the given [PdfiumLibraryConfig].
-    ///
-    /// This function is not available when compiling to WASM.
     #[inline]
     pub fn new_with_config(
         bindings: Box<dyn PdfiumLibraryBindings>,
         config: PdfiumLibraryConfig,
     ) -> Self {
-        // We allocate the FPDF_LIBRARY_CONFIG struct on the heap and pin its pointer location
-        // so Rust will not move it around. Pdfium retains the pointer location when we call
-        // FPDF_InitLibraryWithConfig() and expects the pointer location to remain valid
-        // until a call to FPDF_DestroyLibrary(); if we don't pin the struct's location
-        // it may move, and any attempt by Pdfium to consume the configuration will segfault.
-        let settings = Box::pin(config.to_pdfium());
-
         assert!(BINDINGS.get().is_none());
         unsafe {
-            bindings.FPDF_InitLibraryWithConfig(settings.deref());
+            bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
         }
         assert!(BINDINGS.set(bindings).is_ok());
 
         Self {
-            config: Some(settings),
+            config: Some(config),
         }
     }
 
