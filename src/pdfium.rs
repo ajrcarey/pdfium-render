@@ -2,16 +2,13 @@
 
 use crate::bindgen::{
     FPDF_DOCUMENT, FPDF_ERR_FILE, FPDF_ERR_FORMAT, FPDF_ERR_PAGE, FPDF_ERR_PASSWORD,
-    FPDF_ERR_SECURITY, FPDF_ERR_SUCCESS, FPDF_ERR_UNKNOWN, FPDF_LIBRARY_CONFIG,
+    FPDF_ERR_SECURITY, FPDF_ERR_SUCCESS, FPDF_ERR_UNKNOWN,
 };
 use crate::bindings::PdfiumLibraryBindings;
-use crate::config::PdfiumLibraryConfig;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
 use once_cell::sync::OnceCell;
 use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
-use std::pin::Pin;
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use {
@@ -24,10 +21,14 @@ use crate::bindings::static_bindings::StaticPdfiumBindings;
 
 #[cfg(not(target_arch = "wasm32"))]
 use {
+    crate::bindgen::FPDF_LIBRARY_CONFIG,
+    crate::config::PdfiumLibraryConfig,
     crate::utils::files::get_pdfium_file_accessor_from_reader,
     std::fs::File,
     std::io::{Read, Seek},
+    std::ops::Deref,
     std::path::Path,
+    std::pin::Pin,
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -69,22 +70,23 @@ pub(crate) trait PdfiumLibraryBindingsAccessor<'a> {
 /// the Google Chromium project.
 #[derive(Clone)]
 pub struct Pdfium {
+    #[cfg(not(target_arch = "wasm32"))]
     #[allow(dead_code)]
     // The config field is included in this struct to ensure any Pdfium configuration
     // we pass into a call to FPDF_InitLibraryWithConfig() lives as long as our use of
     // the Pdfium library.
-    config: Option<Pin<Box<FPDF_LIBRARY_CONFIG>>>,
+    pub(crate) config: Option<Pin<Box<FPDF_LIBRARY_CONFIG>>>,
 }
 
 impl Pdfium {
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(any(doc, feature = "static"))]
     /// Binds to a Pdfium library that was statically linked into the currently running
     /// executable, returning a new [PdfiumLibraryBindings] object that contains bindings to the
     /// functions exposed by the library. The application will immediately crash if Pdfium
     /// was not correctly statically linked into the executable at compile time.
     ///
     /// This function is only available when this crate's `static` feature is enabled.
-    #[cfg(not(target_arch = "wasm32"))]
-    #[cfg(any(doc, feature = "static"))]
     #[inline]
     pub fn bind_to_statically_linked_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError>
     {
@@ -97,11 +99,11 @@ impl Pdfium {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     /// Initializes the external Pdfium library, loading it from the system libraries.
     /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions exposed
     /// by the library, or an error if the library could not be loaded.
-    #[cfg(not(target_arch = "wasm32"))]
-    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         if BINDINGS.get().is_none() {
@@ -116,6 +118,7 @@ impl Pdfium {
         }
     }
 
+    #[cfg(target_arch = "wasm32")]
     /// Initializes the external Pdfium library, binding to an external WASM module.
     /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions exposed
     /// by the library, or an error if the library is not available.
@@ -123,7 +126,6 @@ impl Pdfium {
     /// It is essential that the exported `initialize_pdfium_render()` function be called
     /// from Javascript _before_ calling this function from within your Rust code. For an example, see:
     /// <https://github.com/ajrcarey/pdfium-render/blob/master/examples/index.html>
-    #[cfg(target_arch = "wasm32")]
     #[inline]
     pub fn bind_to_system_library() -> Result<Box<dyn PdfiumLibraryBindings>, PdfiumError> {
         if BINDINGS.get().is_none() {
@@ -139,11 +141,11 @@ impl Pdfium {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     /// Initializes the external pdfium library, loading it from the given path.
     /// Returns a new [PdfiumLibraryBindings] object that contains bindings to the functions
     /// exposed by the library, or an error if the library could not be loaded.
-    #[cfg(not(target_arch = "wasm32"))]
-    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn bind_to_library(
         path: impl AsRef<Path>,
@@ -160,20 +162,20 @@ impl Pdfium {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "static"))]
     /// Returns the name of the external Pdfium library on the currently running platform.
     /// On Linux and Android, this will be `libpdfium.so` or similar; on Windows, this will
     /// be `pdfium.dll` or similar; on MacOS, this will be `libpdfium.dylib` or similar.
-    #[cfg(not(target_arch = "wasm32"))]
-    #[cfg(not(feature = "static"))]
     #[inline]
     pub fn pdfium_platform_library_name() -> OsString {
         libloading::library_filename("pdfium")
     }
 
-    /// Returns the name of the external Pdfium library on the currently running platform,
-    /// prefixed with the given path string.
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(not(feature = "static"))]
+    /// Returns the name of the external Pdfium library on the currently running platform,
+    /// prefixed with the given path string.
     #[inline]
     pub fn pdfium_platform_library_name_at_path(path: &(impl AsRef<Path> + ?Sized)) -> PathBuf {
         path.as_ref().join(Pdfium::pdfium_platform_library_name())
@@ -188,11 +190,17 @@ impl Pdfium {
         }
         assert!(BINDINGS.set(bindings).is_ok());
 
-        Self { config: None }
+        Self {
+            #[cfg(not(target_arch = "wasm32"))]
+            config: None,
+        }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings,
     /// using the custom library configuration in the given [PdfiumLibraryConfig].
+    ///
+    /// This function is not available when compiling to WASM.
     #[inline]
     pub fn new_with_config(
         bindings: Box<dyn PdfiumLibraryBindings>,
@@ -258,6 +266,7 @@ impl Pdfium {
         })
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// Attempts to open a [PdfDocument] from the given file path.
     ///
     /// If the document is password protected, the given password will be used
@@ -276,7 +285,6 @@ impl Pdfium {
     ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     ///   using the `include_bytes!` macro.
-    #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_file<'a>(
         &'a self,
         path: &(impl AsRef<Path> + ?Sized),
@@ -285,6 +293,7 @@ impl Pdfium {
         self.load_pdf_from_reader(File::open(path).map_err(PdfiumError::IoError)?, password)
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     /// Attempts to open a [PdfDocument] from the given reader.
     ///
     /// Pdfium will only load the portions of the document it actually needs into memory.
@@ -312,7 +321,6 @@ impl Pdfium {
     ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     ///   using the `include_bytes!` macro.
-    #[cfg(not(target_arch = "wasm32"))]
     pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
         &'a self,
         reader: R,
@@ -337,13 +345,13 @@ impl Pdfium {
         })
     }
 
+    #[cfg(any(doc, target_arch = "wasm32"))]
     /// Attempts to open a [PdfDocument] by loading document data from the given URL.
     /// The Javascript `fetch` API is used to download data over the network.
     ///
     /// If the document is password protected, the given password will be used to unlock it.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_pdf_from_fetch<'a>(
         &'a self,
         url: impl ToString,
@@ -372,6 +380,7 @@ impl Pdfium {
         }
     }
 
+    #[cfg(any(doc, target_arch = "wasm32"))]
     /// Attempts to open a [PdfDocument] by loading document data from the given `Blob`.
     /// A `File` object returned from a `FileList` is a suitable `Blob`:
     ///
@@ -384,7 +393,6 @@ impl Pdfium {
     /// If the document is password protected, the given password will be used to unlock it.
     ///
     /// This function is only available when compiling to WASM.
-    #[cfg(any(doc, target_arch = "wasm32"))]
     pub async fn load_pdf_from_blob<'a>(
         &'a self,
         blob: Blob,
@@ -455,22 +463,22 @@ impl Pdfium {
 }
 
 impl Default for Pdfium {
+    #[cfg(feature = "static")]
     /// Binds to a Pdfium library that was statically linked into the currently running
     /// executable by calling [Pdfium::bind_to_statically_linked_library]. This function
     /// will panic if no statically linked Pdfium functions can be located.
-    #[cfg(feature = "static")]
     #[inline]
     fn default() -> Self {
         Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap())
     }
 
+    #[cfg(not(feature = "static"))]
+    #[cfg(not(target_arch = "wasm32"))]
     /// Binds to an external Pdfium library by first attempting to bind to a Pdfium library
     /// in the current working directory; if that fails, then a system-provided library
     /// will be used as a fall back.
     ///
     /// This function will panic if no suitable Pdfium library can be loaded.
-    #[cfg(not(feature = "static"))]
-    #[cfg(not(target_arch = "wasm32"))]
     #[inline]
     fn default() -> Self {
         // Attempt to bind to a Pdfium library in the current working directory.
@@ -494,10 +502,10 @@ impl Default for Pdfium {
         }
     }
 
+    #[cfg(target_arch = "wasm32")]
     /// Binds to an external Pdfium library by attempting to a system-provided library.
     ///
     /// This function will panic if no suitable Pdfium library can be loaded.
-    #[cfg(target_arch = "wasm32")]
     fn default() -> Self {
         Pdfium::new(Pdfium::bind_to_system_library().unwrap())
     }

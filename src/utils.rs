@@ -473,8 +473,11 @@ pub(crate) mod test {
             .or_else(|_| Pdfium::bind_to_system_library())
         {
             Ok(bindings) => Pdfium::new(bindings), // Create new bindings
-            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {}, // Re-use existing bindings
-            Err(e) => Err(e).unwrap(), // Explicitly re-throw the error
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {
+                #[cfg(not(target_arch = "wasm32"))]
+                config: None,
+            }, // Re-use existing bindings
+            Err(e) => Err(e).unwrap(),             // Explicitly re-throw the error
         }
     }
 }

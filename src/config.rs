@@ -1,7 +1,6 @@
 use crate::bindgen::{
-    FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FONTATIONS,
-    FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE, FPDF_LIBRARY_CONFIG,
-    FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_AGG, FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
+    FPDF_LIBRARY_CONFIG, FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_AGG,
+    FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
 };
 use crate::error::PdfiumError;
 use std::ffi::{c_char, c_uint, CString, NulError};
@@ -10,6 +9,12 @@ use std::pin::Pin;
 use std::ptr::null_mut;
 use std::str::FromStr;
 
+#[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+use crate::bindgen::{
+    FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FONTATIONS,
+    FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE,
+};
+
 #[derive(Clone)]
 pub struct PdfiumLibraryConfig {
     user_font_paths: Pin<Box<Vec<CString>>>,
@@ -17,6 +22,8 @@ pub struct PdfiumLibraryConfig {
     v8_embedder_slot_idx: c_uint,
     v8_platform_ptr: *mut c_void,
     renderer_type: c_uint,
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
     font_library_type: c_uint,
 }
 
@@ -30,6 +37,8 @@ impl PdfiumLibraryConfig {
             v8_embedder_slot_idx: 0,
             v8_platform_ptr: null_mut(),
             renderer_type: FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
+
+            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
             font_library_type: FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE,
         };
 
@@ -121,28 +130,30 @@ impl PdfiumLibraryConfig {
         self
     }
 
-    /// Sets Pdfium's graphics renderer to the Anti-Grain Geometry library, https://sourceforge.net/projects/agg/.
+    /// Sets Pdfium's graphics renderer to the Anti-Grain Geometry library, <https://sourceforge.net/projects/agg/>.
     #[inline]
     pub fn set_renderer_anti_grain_geometry(mut self) -> Self {
         self.renderer_type = FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_AGG;
         self
     }
 
-    /// Sets Pdfium's graphics renderer to Skia, https://skia.org/.
+    /// Sets Pdfium's graphics renderer to Skia, <https://skia.org/>.
     #[inline]
     pub fn set_renderer_skia(mut self) -> Self {
         self.renderer_type = FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA;
         self
     }
 
-    /// Sets Pdfium's font handler to FreeType, https://freetype.org/.
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+    /// Sets Pdfium's font handler to FreeType, <https://freetype.org/>.
     #[inline]
     pub fn set_font_backend_freetype(mut self) -> Self {
         self.font_library_type = FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE;
         self
     }
 
-    /// Sets Pdfium's font handler to Fontations, https://github.com/googlefonts/fontations/.
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+    /// Sets Pdfium's font handler to Fontations, <https://github.com/googlefonts/fontations/>.
     #[inline]
     pub fn set_font_backend_fontations(mut self) -> Self {
         self.font_library_type = FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FONTATIONS;
@@ -164,13 +175,9 @@ impl PdfiumLibraryConfig {
             m_v8EmbedderSlot: self.v8_embedder_slot_idx,
             m_pPlatform: self.v8_platform_ptr,
             m_RendererType: self.renderer_type,
+
+            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
             m_FontLibraryType: self.font_library_type,
         }
     }
 }
-
-#[cfg(feature = "thread_safe")]
-unsafe impl Sync for PdfiumLibraryConfig {}
-
-#[cfg(feature = "thread_safe")]
-unsafe impl Send for PdfiumLibraryConfig {}
