@@ -93,7 +93,10 @@ impl<'a> PdfPageTextChars<'a> {
 
     /// Returns a single [PdfPageTextChar] from this [PdfPageTextChars] collection.
     #[inline]
-    pub fn get<'b>(&'b self, index: PdfPageTextCharIndex) -> Result<PdfPageTextChar<'a>, PdfiumError> {
+    pub fn get<'b>(
+        &'b self,
+        index: PdfPageTextCharIndex,
+    ) -> Result<PdfPageTextChar<'a>, PdfiumError> {
         match self.char_indices.get(index) {
             Some(index) => Ok(PdfPageTextChar::from_pdfium(
                 self.document_handle(),

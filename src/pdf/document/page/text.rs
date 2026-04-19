@@ -162,7 +162,10 @@ impl<'a> PdfPageText<'a> {
     /// Returns a collection of all the `PdfPageTextChar` characters that lie within the bounds of
     /// the given [PdfRect] in the containing [PdfPage].
     #[inline]
-    pub fn chars_inside_rect(&self, rect: PdfRect) -> Result<PdfPageTextChars<'_>, PdfiumError> {
+    pub fn chars_inside_rect<'b>(
+        &'b self,
+        rect: PdfRect,
+    ) -> Result<PdfPageTextChars<'a>, PdfiumError> {
         let tolerance_x = rect.width() / 2.0;
         let tolerance_y = rect.height() / 2.0;
         let center_height = rect.bottom() + tolerance_y;
