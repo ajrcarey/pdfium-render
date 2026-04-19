@@ -78,7 +78,7 @@ impl<'a> PdfPageTextSegment<'a> {
     /// and the order in which they appear visually during rendering (and thus the order in
     /// which they are read by a user) may not necessarily match.
     #[inline]
-    pub fn chars(&self) -> Result<PdfPageTextChars<'_>, PdfiumError> {
+    pub fn chars<'b>(&'b self) -> Result<PdfPageTextChars<'a>, PdfiumError> {
         self.text.chars_inside_rect(self.bounds)
     }
 }

@@ -93,7 +93,7 @@ impl<'a> PdfPageTextChars<'a> {
 
     /// Returns a single [PdfPageTextChar] from this [PdfPageTextChars] collection.
     #[inline]
-    pub fn get(&self, index: PdfPageTextCharIndex) -> Result<PdfPageTextChar<'_>, PdfiumError> {
+    pub fn get<'b>(&'b self, index: PdfPageTextCharIndex) -> Result<PdfPageTextChar<'a>, PdfiumError> {
         match self.char_indices.get(index) {
             Some(index) => Ok(PdfPageTextChar::from_pdfium(
                 self.document_handle(),
@@ -102,6 +102,26 @@ impl<'a> PdfPageTextChars<'a> {
                 *index,
             )),
             None => Err(PdfiumError::CharIndexOutOfBounds),
+        }
+    }
+
+    /// Returns the first [PdfPageTextChar] in this [PdfPageTextChars] collection.
+    #[inline]
+    pub fn first(&self) -> Result<PdfPageTextChar<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(0)
+        } else {
+            Err(PdfiumError::NoCharsInPageTextChars)
+        }
+    }
+
+    /// Returns the last [PdfPageTextSPdfPageTextCharegment] in this [PdfPageTextChars] collection.
+    #[inline]
+    pub fn last(&self) -> Result<PdfPageTextChar<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(self.len() - 1)
+        } else {
+            Err(PdfiumError::NoCharsInPageTextChars)
         }
     }
 

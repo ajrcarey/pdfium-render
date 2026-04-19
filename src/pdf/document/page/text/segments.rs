@@ -91,10 +91,10 @@ impl<'a> PdfPageTextSegments<'a> {
 
     /// Returns a single [PdfPageTextSegment] from this [PdfPageTextSegments] collection.
     #[inline]
-    pub fn get(
-        &self,
+    pub fn get<'b>(
+        &'b self,
         index: PdfPageTextSegmentIndex,
-    ) -> Result<PdfPageTextSegment<'_>, PdfiumError> {
+    ) -> Result<PdfPageTextSegment<'a>, PdfiumError> {
         if index >= self.len() {
             return Err(PdfiumError::TextSegmentIndexOutOfBounds);
         }
@@ -126,6 +126,26 @@ impl<'a> PdfPageTextSegments<'a> {
             self.bindings,
         )
         .map(|rect| PdfPageTextSegment::from_pdfium(self.text, rect))
+    }
+
+    /// Returns the first [PdfPageTextSegment] in this [PdfPageTextSegments] collection.
+    #[inline]
+    pub fn first(&self) -> Result<PdfPageTextSegment<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(0)
+        } else {
+            Err(PdfiumError::NoTextSegmentsInPageText)
+        }
+    }
+
+    /// Returns the last [PdfPageTextSegment] in this [PdfPageTextSegments] collection.
+    #[inline]
+    pub fn last(&self) -> Result<PdfPageTextSegment<'a>, PdfiumError> {
+        if !self.is_empty() {
+            self.get(self.len() - 1)
+        } else {
+            Err(PdfiumError::NoTextSegmentsInPageText)
+        }
     }
 
     /// Returns an iterator over all the text segments in this [PdfPageTextSegments] collection.

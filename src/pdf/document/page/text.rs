@@ -556,4 +556,28 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_text_segment_chars_char_lifetimes() -> Result<(), PdfiumError> {
+        // Lifetimes of segments, text chars, and text char should be bound to the
+        // lifetime of page text, but not necessarily to one another. See:
+        // https://github.com/ajrcarey/pdfium-render/pull/248
+
+        let pdfium = test_bind_to_pdfium();
+        let document = pdfium.load_pdf_from_file("./test/export-test.pdf", None)?;
+        let page = document.pages().first()?;
+        let text = page.text()?;
+
+        let _char = {
+            let chars = {
+                let segment = text.segments().first()?;
+
+                segment.chars()?
+            }; // PdfPageTextSegment object is dropped here
+
+            chars.first()?
+        }; // PdfPageTextChars object is dropped here
+
+        Ok(())
+    }
 }
