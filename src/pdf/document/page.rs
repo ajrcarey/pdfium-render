@@ -89,8 +89,10 @@ impl PdfPageRenderRotation {
         }
     }
 
+    /// Returns the numeric value pdfium uses for this rotation on its
+    /// C API boundary (`FPDF_RenderPageBitmap`'s `rotate` parameter, etc.).
     #[inline]
-    pub(crate) fn as_pdfium(&self) -> i32 {
+    pub fn as_pdfium(&self) -> i32 {
         match self {
             PdfPageRenderRotation::None => 0,
             PdfPageRenderRotation::Degrees90 => 1,
@@ -623,6 +625,74 @@ impl<'a> PdfPage<'a> {
         config: &PdfRenderConfig,
     ) -> Result<(), PdfiumError> {
         self.render_into_bitmap_with_settings(bitmap, config.apply_to_page(self))
+    }
+
+    /// Renders a windowed region of this [PdfPage] into the given [PdfBitmap]
+    /// by dispatching directly to `FPDF_RenderPageBitmap`.
+    ///
+    /// `start_x` and `start_y` are in bitmap coordinates — **pass a negative
+    /// value** to shift the page up/left so that only a sub-region of it
+    /// lands in the destination bitmap. `size_x` and `size_y` are the
+    /// *full* page dimensions in pixels at the desired render scale
+    /// (not the window size); pdfium clips the rendering to the bitmap's
+    /// own `width × height`, so the caller picks the window by choosing
+    /// the bitmap size and the start offsets together.
+    ///
+    /// This path is equivalent to the `do_render_form_data = true` branch of
+    /// [`render_into_bitmap_with_config`](PdfPage::render_into_bitmap_with_config)
+    /// but with the caller controlling `start_x`/`start_y`/`size_x`/`size_y`
+    /// instead of them being derived from a [`PdfRenderConfig`]. The page's
+    /// intrinsic `/Rotate` value is applied automatically by pdfium, matching
+    /// the behavior of the form-data render path; pass
+    /// [`PdfPageRenderRotation::None`] for `rotation` to use only the page's
+    /// intrinsic rotation, or another variant to apply an additional
+    /// caller-requested clockwise rotation on top.
+    ///
+    /// Form-field overlays are not rendered on this path — it is intended for
+    /// memory-bounded tiled rendering where rendering the page in strips is
+    /// the whole point. If you need form fields, use
+    /// [`render_into_bitmap_with_config`](PdfPage::render_into_bitmap_with_config)
+    /// or call `FPDF_FFLDraw` yourself after this method returns.
+    ///
+    /// # Arguments
+    ///
+    /// * `bitmap` — destination bitmap. Its `width × height` define the
+    ///   window that actually gets rendered into; anything outside that
+    ///   rectangle is clipped by pdfium.
+    /// * `start_x` — `x` coordinate of the top-left of the *full* page
+    ///   within the bitmap. Pass `-window_x` to select the column offset.
+    /// * `start_y` — `y` coordinate of the top-left of the *full* page
+    ///   within the bitmap. Pass `-window_y` to select the row offset
+    ///   (this is how you render horizontal strips cheaply).
+    /// * `size_x` — full page width in pixels at the desired render scale.
+    /// * `size_y` — full page height in pixels at the desired render scale.
+    /// * `rotation` — *additional* caller-requested clockwise rotation
+    ///   applied on top of the page's intrinsic `/Rotate`. Pass
+    ///   [`PdfPageRenderRotation::None`] to use only the intrinsic rotation.
+    /// * `render_flags` — `FPDF_*` render flags passed straight through
+    ///   (e.g. `FPDF_LCD_TEXT`, `FPDF_ANNOT`). Pass `0` for pdfium defaults.
+    #[allow(clippy::too_many_arguments)]
+    pub fn render_window_into_bitmap(
+        &self,
+        bitmap: &mut PdfBitmap,
+        start_x: c_int,
+        start_y: c_int,
+        size_x: c_int,
+        size_y: c_int,
+        rotation: PdfPageRenderRotation,
+        render_flags: c_int,
+    ) -> Result<(), PdfiumError> {
+        self.bindings.FPDF_RenderPageBitmap(
+            bitmap.handle(),
+            self.page_handle,
+            start_x,
+            start_y,
+            size_x,
+            size_y,
+            rotation.as_pdfium(),
+            render_flags,
+        );
+        Ok(())
     }
 
     /// Renders this [PdfPage] into the given [PdfBitmap] using the given [PdfRenderSettings].
