@@ -52,6 +52,16 @@ pub struct PdfRenderConfig {
     form_field_highlight: Option<Vec<(PdfFormFieldType, PdfColor)>>,
     transformation_matrix: PdfMatrix,
     clip_rect: Option<(Pixels, Pixels, Pixels, Pixels)>,
+    /// When `true`, the matrix render path composes the page's intrinsic
+    /// `/Rotate` with [`Self::transformation_matrix`] before passing the
+    /// result to `FPDF_RenderPageBitmapWithMatrix`. Lets matrix-path
+    /// callers write their transform in display-oriented coordinates
+    /// (the same coordinate system the form-data path speaks) instead
+    /// of hand-deriving a per-`/Rotate` matrix. Default `false` —
+    /// existing callers supply a matrix in pre-rotation page coordinates
+    /// and changing that under their feet would silently flip output for
+    /// every rotated PDF.
+    auto_apply_intrinsic_rotation: bool,
 
     // The fields below set Pdfium's page rendering flags. Coverage for the
     // FPDF_DEBUG_INFO and FPDF_NO_CATCH flags is omitted since they are obsolete.
@@ -93,6 +103,7 @@ impl PdfRenderConfig {
             form_field_highlight: None,
             transformation_matrix: PdfMatrix::IDENTITY,
             clip_rect: None,
+            auto_apply_intrinsic_rotation: false,
             do_set_flag_render_annotations: true,
             do_set_flag_use_lcd_text_rendering: false,
             do_set_flag_no_native_text: false,
@@ -652,6 +663,33 @@ impl PdfRenderConfig {
         self
     }
 
+    /// Controls whether the matrix render path composes the page's intrinsic
+    /// `/Rotate` with any matrix supplied via [`Self::transform()`] /
+    /// [`Self::reset_matrix()`] before passing the result to
+    /// `FPDF_RenderPageBitmapWithMatrix`.
+    ///
+    /// The form-data render path (`FPDF_RenderPageBitmap`) always honours
+    /// the page's `/Rotate` automatically. The matrix render path does
+    /// not — every caller using a custom transformation on a page with a
+    /// non-zero `/Rotate` has to hand-derive a per-`/Rotate` matrix that
+    /// bakes the rotation into the transform itself. Setting this flag
+    /// to `true` lets callers write their transform in **display-oriented**
+    /// page coordinates (the same coordinate system the form-data path
+    /// speaks) and have the rotation applied for them.
+    ///
+    /// Default is `false` to preserve existing matrix-path semantics —
+    /// every existing user supplies a matrix in pre-rotation page
+    /// coordinates, and changing that under their feet would silently
+    /// flip output for every rotated PDF in the wild.
+    ///
+    /// Has no effect when the form-data path is in use.
+    #[inline]
+    pub fn set_auto_apply_intrinsic_rotation(mut self, yes: bool) -> Self {
+        self.auto_apply_intrinsic_rotation = yes;
+
+        self
+    }
+
     /// Computes the pixel dimensions and rotation settings for the given [PdfPage]
     /// based on the configuration of this [PdfRenderConfig].
     #[inline]
@@ -839,6 +877,36 @@ impl PdfRenderConfig {
         // 90-degree rotation need to be applied to the transformation matrix now.
 
         let transformation_matrix = if !self.do_render_form_data {
+            // If `auto_apply_intrinsic_rotation` is set, pre-compose the page's
+            // `/Rotate` mapping with the user-supplied matrix. The user's matrix
+            // is then interpreted as operating on display-oriented coordinates
+            // — the same coordinate system the form-data path speaks — rather
+            // than pre-rotation page coordinates that the matrix render path
+            // would otherwise expect.
+            let starting_matrix = if self.auto_apply_intrinsic_rotation {
+                let intrinsic = page.rotation().unwrap_or(PdfPageRenderRotation::None);
+
+                if intrinsic != PdfPageRenderRotation::None {
+                    // `source_width` / `source_height` come from `page.width()` /
+                    // `page.height()` which return display-oriented dims (already
+                    // swapped for `/Rotate 90/270`). Recover the pre-rotation dims
+                    // for the `R` matrix.
+                    let (pre_w, pre_h) = match intrinsic {
+                        PdfPageRenderRotation::Degrees90 | PdfPageRenderRotation::Degrees270 => {
+                            (source_height.value, source_width.value)
+                        }
+                        _ => (source_width.value, source_height.value),
+                    };
+
+                    intrinsic_rotation_matrix(intrinsic, pre_w, pre_h)
+                        .multiply(self.transformation_matrix)
+                } else {
+                    self.transformation_matrix
+                }
+            } else {
+                self.transformation_matrix
+            };
+
             let result = if target_rotation != PdfPageRenderRotation::None {
                 // Translate the origin to the center of the page before rotating.
 
@@ -849,13 +917,13 @@ impl PdfRenderConfig {
                     PdfPageRenderRotation::Degrees270 => (-source_height, PdfPoints::ZERO),
                 };
 
-                self.transformation_matrix
+                starting_matrix
                     .translate(delta_x, delta_y)
                     .and_then(|result| {
                         result.rotate_clockwise_degrees(target_rotation.as_degrees())
                     })
             } else {
-                Ok(self.transformation_matrix)
+                Ok(starting_matrix)
             };
 
             result.and_then(|result| result.scale(width_scale, height_scale))
@@ -918,6 +986,32 @@ impl Default for PdfRenderConfig {
     #[inline]
     fn default() -> Self {
         PdfRenderConfig::new()
+    }
+}
+
+/// Returns the PDF transformation matrix mapping pre-rotation page coordinates
+/// (PDF user space, y-up, origin bottom-left) to display-oriented page
+/// coordinates (still PDF user space, y-up, but with the page rotated to
+/// match its `/Rotate` value). `pre_w` / `pre_h` are pre-rotation page
+/// dimensions in PDF points.
+///
+/// Composing this matrix with a display-oriented user matrix via
+/// [`PdfMatrix::multiply`] produces the full pre-rotation → bitmap matrix
+/// that `FPDF_RenderPageBitmapWithMatrix` expects, so callers don't have to
+/// hand-derive a per-`/Rotate` matrix.
+fn intrinsic_rotation_matrix(
+    rotation: PdfPageRenderRotation,
+    pre_w: PdfMatrixValue,
+    pre_h: PdfMatrixValue,
+) -> PdfMatrix {
+    match rotation {
+        PdfPageRenderRotation::None => PdfMatrix::IDENTITY,
+        // /Rotate 90 cw: pre-rotation (x, y) -> display (y, w_pre - x).
+        PdfPageRenderRotation::Degrees90 => PdfMatrix::new(0.0, -1.0, 1.0, 0.0, 0.0, pre_w),
+        // /Rotate 180: pre-rotation (x, y) -> display (w_pre - x, h_pre - y).
+        PdfPageRenderRotation::Degrees180 => PdfMatrix::new(-1.0, 0.0, 0.0, -1.0, pre_w, pre_h),
+        // /Rotate 270 cw (== 90 ccw): pre-rotation (x, y) -> display (h_pre - y, x).
+        PdfPageRenderRotation::Degrees270 => PdfMatrix::new(0.0, 1.0, -1.0, 0.0, pre_h, 0.0),
     }
 }
 
@@ -1000,5 +1094,175 @@ mod tests {
             .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
 
         Ok(config.apply_to_page(&page))
+    }
+
+    // ---------------------------------------------------------------------
+    // auto_apply_intrinsic_rotation tests.
+    //
+    // The flag is a one-bool switch on the matrix render path that pre-
+    // composes the page's intrinsic `/Rotate` with any caller-supplied
+    // matrix, so callers don't have to hand-derive a per-`/Rotate` matrix.
+    // The tests below pin:
+    //
+    //   1. Default-off: emits the identical matrix as before.
+    //   2. On a /Rotate 0 page: composing identity changes nothing.
+    //   3. On a /Rotate 90/180/270 page: produces the matrix that maps
+    //      pre-rotation page coords → display-oriented coords, composed
+    //      with the user matrix in the right order.
+    //
+    // Tests (1)–(3) live below. Render-level integration coverage
+    // (matrix-path-with-auto-rotate ≡ form-data-path baseline) is left to
+    // downstream consumers like libviprs's `pdfium_streaming_rotation_matrix`
+    // cross-product test, which already pins it for the four /Rotate values
+    // against pdfium's own form-data rasterizer.
+    // ---------------------------------------------------------------------
+
+    /// Builds a matrix-path config (form data disabled) so apply_to_page
+    /// runs through the auto-rotate branch.
+    fn matrix_path_config_with(matrix: PdfMatrix) -> PdfRenderConfig {
+        PdfRenderConfig::new()
+            .render_form_data(false)
+            .reset_matrix(matrix)
+            .unwrap()
+    }
+
+    #[test]
+    fn test_auto_apply_intrinsic_rotation_default_false() -> Result<(), PdfiumError> {
+        // The default must be off. Flipping it under existing callers'
+        // feet would silently change the bytes their matrix-path renders
+        // produce on every rotated PDF in the wild.
+        assert!(!PdfRenderConfig::new().auto_apply_intrinsic_rotation);
+        Ok(())
+    }
+
+    #[test]
+    fn test_auto_apply_intrinsic_rotation_on_zero_rotate_page_is_identity(
+    ) -> Result<(), PdfiumError> {
+        // Composing identity must change nothing. Same input, same output.
+        let pdfium = test_bind_to_pdfium();
+        let mut document = pdfium.create_new_pdf()?;
+        let page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
+        assert_eq!(page.rotation()?, PdfPageRenderRotation::None);
+
+        let user = PdfMatrix::IDENTITY.scale(2.0, 3.0)?;
+        let m_off = matrix_path_config_with(user).apply_to_page(&page).matrix;
+        let m_on = matrix_path_config_with(user)
+            .set_auto_apply_intrinsic_rotation(true)
+            .apply_to_page(&page)
+            .matrix;
+        assert_eq!(
+            (m_off.a, m_off.b, m_off.c, m_off.d, m_off.e, m_off.f),
+            (m_on.a, m_on.b, m_on.c, m_on.d, m_on.e, m_on.f)
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_auto_apply_intrinsic_rotation_composes_for_each_rotate_value() -> Result<(), PdfiumError>
+    {
+        // For each /Rotate ∈ {90, 180, 270}, set the page's rotation
+        // and assert apply_to_page emits the expected pre-composed
+        // matrix. This is the bug-pinning anchor for the rotation
+        // matrix derivation.
+        //
+        // The user matrix is identity so apply_to_page emits exactly
+        // `R` (the intrinsic rotation matrix) — easy to read off.
+        let pdfium = test_bind_to_pdfium();
+        let mut document = pdfium.create_new_pdf()?;
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
+
+        // Pre-rotation A4 dims in pt.
+        let pre_w = page.width().value;
+        let pre_h = page.height().value;
+
+        let cases = [
+            // (rotation, expected R = [a, b, c, d, e, f])
+            (
+                PdfPageRenderRotation::Degrees90,
+                [0.0, -1.0, 1.0, 0.0, 0.0, pre_w],
+            ),
+            (
+                PdfPageRenderRotation::Degrees180,
+                [-1.0, 0.0, 0.0, -1.0, pre_w, pre_h],
+            ),
+            (
+                PdfPageRenderRotation::Degrees270,
+                [0.0, 1.0, -1.0, 0.0, pre_h, 0.0],
+            ),
+        ];
+
+        for (rotation, expected) in cases {
+            page.set_rotation(rotation);
+            assert_eq!(page.rotation()?, rotation);
+
+            let m = matrix_path_config_with(PdfMatrix::IDENTITY)
+                .set_auto_apply_intrinsic_rotation(true)
+                .apply_to_page(&page)
+                .matrix;
+
+            let actual = [m.a, m.b, m.c, m.d, m.e, m.f];
+            for (i, (a, e)) in actual.iter().zip(expected.iter()).enumerate() {
+                assert!(
+                    (a - e).abs() < 1e-3,
+                    "/Rotate {:?}: matrix component {} diverged: {} vs expected {}",
+                    rotation,
+                    i,
+                    a,
+                    e,
+                );
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn test_auto_apply_intrinsic_rotation_composes_user_matrix_after_rotation(
+    ) -> Result<(), PdfiumError> {
+        // User matrix ∘ R ordering: R applied first (pre-rotation -> display),
+        // user matrix applied second (display -> bitmap). For /Rotate 90 the
+        // libviprs strip-matrix derivation gives, with user = display->pixel
+        // [s, 0, 0, -s, 0, s·display_h_pt - y_off]:
+        //   composed = [0, s, s, 0, 0, -y_off]
+        // We pin one such composition here.
+        let pdfium = test_bind_to_pdfium();
+        let mut document = pdfium.create_new_pdf()?;
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
+        page.set_rotation(PdfPageRenderRotation::Degrees90);
+
+        // Pre-rotation height is the configured PdfPage height (we set
+        // /Rotate 90 *after* page creation, so width()/height() now
+        // return display-oriented = swapped dims). Pre-rotation w == display h.
+        // Pre-rotation A4: 595 × 842 pt. Display under /Rotate 90: 842 × 595.
+        let display_h_pt = page.height().value; // 595
+        let s: f32 = 2.0;
+        let y_off: f32 = 100.0;
+
+        // user matrix: display-oriented (y-up) -> bitmap pixel (y-down) with strip offset.
+        let user = PdfMatrix::new(s, 0.0, 0.0, -s, 0.0, s * display_h_pt - y_off);
+
+        let m = matrix_path_config_with(user)
+            .set_auto_apply_intrinsic_rotation(true)
+            .apply_to_page(&page)
+            .matrix;
+
+        // Expected per libviprs derivation: [0, s, s, 0, 0, -y_off].
+        let expected = [0.0, s, s, 0.0, 0.0, -y_off];
+        let actual = [m.a, m.b, m.c, m.d, m.e, m.f];
+        for (i, (a, e)) in actual.iter().zip(expected.iter()).enumerate() {
+            assert!(
+                (a - e).abs() < 1e-3,
+                "matrix component {} diverged: {} vs expected {}",
+                i,
+                a,
+                e,
+            );
+        }
+        Ok(())
     }
 }
