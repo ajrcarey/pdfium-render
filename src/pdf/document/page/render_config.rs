@@ -1265,4 +1265,68 @@ mod tests {
         }
         Ok(())
     }
+
+    #[test]
+    fn test_auto_apply_intrinsic_rotation_composes_with_target_rotation() -> Result<(), PdfiumError>
+    {
+        // When the flag is on AND `.rotate(...)` also asks for additional
+        // rotation, the composed matrix must equal the matrix you'd get
+        // by manually pre-composing R into the user matrix yourself and
+        // letting the existing `target_rotation` translate+rotate path
+        // run on top. Pins the order: R first, user_matrix second,
+        // `target_rotation` translate+rotate third, scale fourth.
+        //
+        // Equivalence-via-manual-precomposition is the cleanest way to
+        // pin this — it doesn't depend on guessing the final matrix
+        // arithmetic, only on "the flag is exactly the manual step."
+        let pdfium = test_bind_to_pdfium();
+        let mut document = pdfium.create_new_pdf()?;
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
+        page.set_rotation(PdfPageRenderRotation::Degrees90);
+
+        // Non-trivial user matrix so the test isn't trivially satisfied
+        // by R alone.
+        let user = PdfMatrix::IDENTITY.scale(2.0, 3.0)?;
+
+        // Manual pre-composition: R for /Rotate 90 with pre_w = display_h.
+        let pre_w = page.height().value;
+        let r = PdfMatrix::new(0.0, -1.0, 1.0, 0.0, 0.0, pre_w);
+        let pre_composed = r.multiply(user);
+
+        // Both configs add `.rotate(Degrees90, false)` for additional
+        // caller rotation — a deliberately different value from the
+        // page's intrinsic /Rotate so we can tell they're composing
+        // independently rather than collapsing.
+        let m_manual = PdfRenderConfig::new()
+            .render_form_data(false)
+            .reset_matrix(pre_composed)?
+            .rotate(PdfPageRenderRotation::Degrees90, false)
+            .apply_to_page(&page)
+            .matrix;
+
+        let m_flag = PdfRenderConfig::new()
+            .render_form_data(false)
+            .reset_matrix(user)?
+            .rotate(PdfPageRenderRotation::Degrees90, false)
+            .set_auto_apply_intrinsic_rotation(true)
+            .apply_to_page(&page)
+            .matrix;
+
+        let actual = [m_flag.a, m_flag.b, m_flag.c, m_flag.d, m_flag.e, m_flag.f];
+        let expected = [
+            m_manual.a, m_manual.b, m_manual.c, m_manual.d, m_manual.e, m_manual.f,
+        ];
+        for (i, (a, e)) in actual.iter().zip(expected.iter()).enumerate() {
+            assert!(
+                (a - e).abs() < 1e-3,
+                "matrix component {} diverged: flag={}, manual={}",
+                i,
+                a,
+                e,
+            );
+        }
+        Ok(())
+    }
 }
