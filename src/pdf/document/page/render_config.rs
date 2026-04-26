@@ -1162,7 +1162,7 @@ mod tests {
 
         let mut stitched: Vec<u8> = Vec::with_capacity(full_bytes.len());
         for i in 0..N {
-            let y_offset = (i * STRIP_H as i32) as Pixels;
+            let y_offset = i * STRIP_H;
             let mut strip_bitmap =
                 PdfBitmap::empty(FULL_W, STRIP_H, full_bitmap.format()?, page.bindings())?;
             page.render_into_bitmap_with_config(
