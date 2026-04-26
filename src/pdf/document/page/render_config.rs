@@ -1309,8 +1309,8 @@ mod tests {
         let m_flag = PdfRenderConfig::new()
             .render_form_data(false)
             .reset_matrix(user)?
-            .rotate(PdfPageRenderRotation::Degrees90, false)
             .set_auto_apply_intrinsic_rotation(true)
+            .rotate(PdfPageRenderRotation::Degrees90, false)
             .apply_to_page(&page)
             .matrix;
 
