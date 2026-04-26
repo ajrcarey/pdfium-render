@@ -52,6 +52,7 @@ pub struct PdfRenderConfig {
     form_field_highlight: Option<Vec<(PdfFormFieldType, PdfColor)>>,
     transformation_matrix: PdfMatrix,
     clip_rect: Option<(Pixels, Pixels, Pixels, Pixels)>,
+    window_origin: Option<(Pixels, Pixels)>,
 
     // The fields below set Pdfium's page rendering flags. Coverage for the
     // FPDF_DEBUG_INFO and FPDF_NO_CATCH flags is omitted since they are obsolete.
@@ -93,6 +94,7 @@ impl PdfRenderConfig {
             form_field_highlight: None,
             transformation_matrix: PdfMatrix::IDENTITY,
             clip_rect: None,
+            window_origin: None,
             do_set_flag_render_annotations: true,
             do_set_flag_use_lcd_text_rendering: false,
             do_set_flag_no_native_text: false,
@@ -652,6 +654,37 @@ impl PdfRenderConfig {
         self
     }
 
+    /// Sets the position of the page's top-left corner within the destination
+    /// [PdfBitmap], in bitmap pixel coordinates.
+    ///
+    /// The default is `(0, 0)`, which renders the page's top-left corner at the
+    /// bitmap's top-left corner — the existing behaviour. Negative offsets push
+    /// the page off the bitmap's top/left edges; positive offsets push it down/
+    /// right. Pdfium clips the rendered page to the destination bitmap's own
+    /// `width × height`, so a strip-sized destination bitmap combined with a
+    /// negative `y` offset is the natural way to render a horizontal strip from
+    /// a large page through the form-data render path with pdfium's automatic
+    /// `/Rotate` handling intact, without first materialising the full-page
+    /// raster.
+    ///
+    /// To render rows `[y_offset, y_offset + strip_height)` of a page rendered
+    /// at full size into a strip-sized destination bitmap, call
+    /// `set_window_origin(0, -y_offset)` and pass a destination bitmap whose
+    /// height is `strip_height`.
+    ///
+    /// This setting affects only the form-data render path
+    /// (`FPDF_RenderPageBitmap`); the matrix render path
+    /// (`FPDF_RenderPageBitmapWithMatrix`) honours the page origin through the
+    /// supplied transformation matrix instead, so callers using
+    /// [`PdfRenderConfig::apply_matrix`] can express the same window without
+    /// this method.
+    #[inline]
+    pub fn set_window_origin(mut self, x: Pixels, y: Pixels) -> Self {
+        self.window_origin = Some((x, y));
+
+        self
+    }
+
     /// Computes the pixel dimensions and rotation settings for the given [PdfPage]
     /// based on the configuration of this [PdfRenderConfig].
     #[inline]
@@ -910,6 +943,8 @@ impl PdfRenderConfig {
             },
             render_flags: render_flags as c_int,
             is_reversed_byte_order_flag_set: self.do_set_flag_reverse_byte_order,
+            start_x: self.window_origin.map(|(x, _)| x as c_int).unwrap_or(0),
+            start_y: self.window_origin.map(|(_, y)| y as c_int).unwrap_or(0),
         }
     }
 }
@@ -937,6 +972,13 @@ pub(crate) struct PdfPageRenderSettings {
     pub(crate) clipping: FS_RECTF,
     pub(crate) render_flags: c_int,
     pub(crate) is_reversed_byte_order_flag_set: bool,
+    /// Bitmap pixel coordinates of the page's top-left corner within the
+    /// destination bitmap. Default `(0, 0)` matches the long-standing
+    /// hardcoded behaviour; non-zero values come from
+    /// [`PdfRenderConfig::set_window_origin`] and enable windowed
+    /// rendering on the form-data path.
+    pub(crate) start_x: c_int,
+    pub(crate) start_y: c_int,
 }
 
 #[cfg(test)]
@@ -1000,5 +1042,159 @@ mod tests {
             .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
 
         Ok(config.apply_to_page(&page))
+    }
+
+    // -----------------------------------------------------------------
+    // Tests for `PdfRenderConfig::set_window_origin`. Settings-level
+    // checks (verifying the field reaches `PdfPageRenderSettings`)
+    // mirror the existing pattern; they run anywhere `test_bind_to_pdfium`
+    // succeeds and don't require any rendering. The render-level tests
+    // below need a real pdfium binary at runtime — same as the rest of
+    // the integration-shaped tests in the crate.
+    // -----------------------------------------------------------------
+
+    /// `window_origin` defaults to `None`, which `apply_to_page` translates
+    /// to `start_x = 0, start_y = 0` — matching the long-standing
+    /// hardcoded `0, 0` arguments to `FPDF_RenderPageBitmap` so existing
+    /// callers see no behavioural change.
+    #[test]
+    fn test_window_origin_default_settings_zero() -> Result<(), PdfiumError> {
+        let render_settings = get_render_settings_from_config(PdfRenderConfig::new())?;
+
+        assert_eq!(render_settings.start_x, 0);
+        assert_eq!(render_settings.start_y, 0);
+
+        Ok(())
+    }
+
+    /// `set_window_origin(x, y)` plumbs both coordinates through to the
+    /// finalised settings. Negative offsets — the canonical "shift the
+    /// page off the bitmap's top/left edge to render a strip from
+    /// further down the page" usage — round-trip without sign changes.
+    #[test]
+    fn test_window_origin_negative_offsets_pass_through() -> Result<(), PdfiumError> {
+        let render_settings =
+            get_render_settings_from_config(PdfRenderConfig::new().set_window_origin(-50, -400))?;
+
+        assert_eq!(render_settings.start_x, -50);
+        assert_eq!(render_settings.start_y, -400);
+
+        Ok(())
+    }
+
+    /// Positive offsets are equally well-formed; the API does not
+    /// special-case signs and the user can position the page anywhere
+    /// inside the destination bitmap.
+    #[test]
+    fn test_window_origin_positive_offsets_pass_through() -> Result<(), PdfiumError> {
+        let render_settings =
+            get_render_settings_from_config(PdfRenderConfig::new().set_window_origin(75, 125))?;
+
+        assert_eq!(render_settings.start_x, 75);
+        assert_eq!(render_settings.start_y, 125);
+
+        Ok(())
+    }
+
+    /// Explicit `set_window_origin(0, 0)` produces the same finalised
+    /// settings as not calling the method at all — the bitwise
+    /// regression barrier for the default path.
+    #[test]
+    fn test_window_origin_explicit_zero_matches_default() -> Result<(), PdfiumError> {
+        let default = get_render_settings_from_config(PdfRenderConfig::new())?;
+        let explicit =
+            get_render_settings_from_config(PdfRenderConfig::new().set_window_origin(0, 0))?;
+
+        assert_eq!(default.start_x, explicit.start_x);
+        assert_eq!(default.start_y, explicit.start_y);
+
+        Ok(())
+    }
+
+    /// End-to-end render-level check on a real fixture: stitching N
+    /// strips, each rendered with its own `set_window_origin(0,
+    /// -i*strip_h)`, reproduces a full-page render of the same source
+    /// within a small per-channel mean tolerance.
+    ///
+    /// Strip rendering uses [`PdfPage::render_into_bitmap_with_config`]
+    /// with a caller-allocated strip-sized destination bitmap; the
+    /// config's `set_target_size` declares the page's full render
+    /// dimensions and `set_window_origin` shifts the page so the
+    /// requested rows fall inside the destination.
+    ///
+    /// # Why per-channel mean rather than byte-exact
+    ///
+    /// Pdfium's form-data rasteriser is bitmap-size-dependent in its
+    /// anti-aliasing: rendering the same source content into a
+    /// `595 × 842` destination versus into a `595 × 421` destination
+    /// produces slightly different pixels along anti-aliased edges
+    /// even when the underlying page region is identical. That's a
+    /// property of the C library, not a defect in the windowing
+    /// composition; observed drift on `image-test.pdf` is well under
+    /// 5/255 per channel. A per-channel mean comparison with a
+    /// generous tolerance still catches gross matrix or coordinate
+    /// errors (a wrong-region strip drifts in the tens) while
+    /// accepting pdfium's actual behaviour.
+    #[test]
+    fn test_window_origin_strips_stitch_to_full_page() -> Result<(), PdfiumError> {
+        use crate::pdf::bitmap::PdfBitmap;
+
+        const SAMPLE_PDF: &[u8] = include_bytes!("../../../../test/image-test.pdf");
+
+        let pdfium = test_bind_to_pdfium();
+        let document = pdfium.load_pdf_from_byte_slice(SAMPLE_PDF, None)?;
+        let page = document.pages().first()?;
+
+        // image-test.pdf is single-page A4: 595 × 842 pt at 72 DPI →
+        // 595 × 842 px when rendered with `set_target_size(595, 842)`.
+        // Pick a strip count that divides 842 exactly to keep the
+        // arithmetic clean.
+        const FULL_W: Pixels = 595;
+        const FULL_H: Pixels = 842;
+        const N: i32 = 2;
+        const STRIP_H: Pixels = FULL_H / N as Pixels;
+
+        let full_bitmap =
+            page.render_with_config(&PdfRenderConfig::new().set_target_size(FULL_W, FULL_H))?;
+        let full_bytes = full_bitmap.as_image()?.to_rgba8().into_raw();
+        let row_bytes = (FULL_W as usize) * 4;
+        assert_eq!(full_bytes.len(), row_bytes * (FULL_H as usize));
+
+        let mut stitched: Vec<u8> = Vec::with_capacity(full_bytes.len());
+        for i in 0..N {
+            let y_offset = (i * STRIP_H as i32) as Pixels;
+            let mut strip_bitmap =
+                PdfBitmap::empty(FULL_W, STRIP_H, full_bitmap.format()?, page.bindings())?;
+            page.render_into_bitmap_with_config(
+                &mut strip_bitmap,
+                &PdfRenderConfig::new()
+                    .set_target_size(FULL_W, FULL_H)
+                    .set_window_origin(0, -y_offset),
+            )?;
+            stitched.extend_from_slice(strip_bitmap.as_image()?.to_rgba8().as_raw());
+        }
+
+        assert_eq!(stitched.len(), full_bytes.len());
+
+        // Per-channel mean drift between stitched and full-page renders.
+        // `image-test.pdf` is RGBA8; we sum each channel separately.
+        let mut sums = [0u64; 4];
+        let pixel_count = full_bytes.len() / 4;
+        for px in 0..pixel_count {
+            for ch in 0..4 {
+                let a = stitched[px * 4 + ch] as i32;
+                let b = full_bytes[px * 4 + ch] as i32;
+                sums[ch] += (a - b).unsigned_abs() as u64;
+            }
+        }
+        let n = pixel_count as f64;
+        let max_drift = (0..4).map(|ch| sums[ch] as f64 / n).fold(0.0_f64, f64::max);
+        assert!(
+            max_drift < 5.0,
+            "stitched-vs-full per-channel mean drift {:.3}/255 exceeds tolerance",
+            max_drift
+        );
+
+        Ok(())
     }
 }

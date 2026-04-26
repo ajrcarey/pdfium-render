@@ -646,13 +646,18 @@ impl<'a> PdfPage<'a> {
         if settings.do_render_form_data {
             // Render the PDF page into the bitmap buffer, ignoring any custom transformation matrix.
             // (Custom transforms cannot be applied to the rendering of form fields.)
+            //
+            // `start_x`/`start_y` come from [`PdfRenderConfig::set_window_origin`] (default
+            // `(0, 0)`) and let callers position the page within a destination bitmap that is
+            // smaller than the page itself, enabling memory-bounded tiled rendering on the
+            // form-data path with pdfium's automatic `/Rotate` handling intact.
 
             unsafe {
                 self.bindings().FPDF_RenderPageBitmap(
                     bitmap_handle,
                     self.page_handle,
-                    0,
-                    0,
+                    settings.start_x,
+                    settings.start_y,
                     settings.width,
                     settings.height,
                     settings.rotate,
@@ -662,6 +667,8 @@ impl<'a> PdfPage<'a> {
 
             if let Some(form_handle) = self.form_handle {
                 // Render user-supplied form data, if any, as an overlay on top of the page.
+                // Pass the same window origin so the overlay aligns with the (possibly
+                // shifted) underlying page.
 
                 if let Some(form_field_highlight) = settings.form_field_highlight.as_ref() {
                     for (form_field_type, (color, alpha)) in form_field_highlight.iter() {
@@ -683,8 +690,8 @@ impl<'a> PdfPage<'a> {
                         form_handle,
                         bitmap_handle,
                         self.page_handle,
-                        0,
-                        0,
+                        settings.start_x,
+                        settings.start_y,
                         settings.width,
                         settings.height,
                         settings.rotate,
