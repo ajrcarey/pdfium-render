@@ -694,7 +694,7 @@ impl<'a> PdfPageImageObject<'a> {
             .try_into()
             .map_err(|_| PdfiumError::ImageSizeOutOfBounds)?;
 
-        let bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::BGRA, self.bindings())?;
+        let bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::BGRA)?;
 
         let buffer = if let Some(image) = image.as_rgba8() {
             // The given image is already in RGBA format.

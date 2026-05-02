@@ -535,8 +535,7 @@ impl<'a> PdfPage<'a> {
         height: Pixels,
         rotation: Option<PdfPageRenderRotation>,
     ) -> Result<PdfBitmap<'_>, PdfiumError> {
-        let mut bitmap =
-            PdfBitmap::empty(width, height, PdfBitmapFormat::default(), self.bindings())?;
+        let mut bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::default())?;
 
         let mut config = PdfRenderConfig::new()
             .set_target_width(width)
@@ -569,7 +568,6 @@ impl<'a> PdfPage<'a> {
             settings.height as Pixels,
             PdfBitmapFormat::from_pdfium(settings.format as u32)
                 .unwrap_or_else(|_| PdfBitmapFormat::default()),
-            self.bindings(),
         )?;
 
         self.render_into_bitmap_with_settings(&mut bitmap, settings)?;
@@ -1042,8 +1040,7 @@ mod tests {
             .set_maximum_height(2000)
             .rotate_if_landscape(PdfPageRenderRotation::Degrees90, true);
 
-        let mut bitmap =
-            PdfBitmap::empty(2500, 2500, PdfBitmapFormat::default(), pdfium.bindings())?;
+        let mut bitmap = PdfBitmap::empty(2500, 2500, PdfBitmapFormat::default())?;
 
         for (index, page) in document.pages().iter().enumerate() {
             page.render_into_bitmap_with_config(&mut bitmap, &render_config)?; // Re-uses the same bitmap for rendering each page.

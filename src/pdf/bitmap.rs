@@ -119,16 +119,17 @@ impl<'a> PdfBitmap<'a> {
         width: Pixels,
         height: Pixels,
         format: PdfBitmapFormat,
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
         let handle = unsafe {
-            bindings.FPDFBitmap_CreateEx(
-                width as c_int,
-                height as c_int,
-                format.as_pdfium() as c_int,
-                std::ptr::null_mut(),
-                0, // Not relevant because Pdfium will create the buffer itself.
-            )
+            Self::from_pdfium(0 as FPDF_BITMAP)
+                .bindings()
+                .FPDFBitmap_CreateEx(
+                    width as c_int,
+                    height as c_int,
+                    format.as_pdfium() as c_int,
+                    std::ptr::null_mut(),
+                    0, // Not relevant because Pdfium will create the buffer itself.
+                )
         };
 
         if handle.is_null() {
