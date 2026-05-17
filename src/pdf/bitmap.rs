@@ -84,6 +84,17 @@ impl PdfBitmapFormat {
             PdfBitmapFormat::BGRA => FPDFBitmap_BGRA,
         }
     }
+
+    #[inline]
+    pub(crate) fn bytes_per_pixel(&self) -> i32 {
+        // source: fpdfview.h
+        match self {
+            PdfBitmapFormat::Gray => 1,
+            PdfBitmapFormat::BGR => 3,
+            PdfBitmapFormat::BGRx => 4,
+            PdfBitmapFormat::BGRA => 4,
+        }
+    }
 }
 
 // Deriving Default for enums is experimental. We implement the trait ourselves
@@ -146,13 +157,64 @@ impl<'a> PdfBitmap<'a> {
     /// otherwise a buffer overflow may occur during rendering.
     ///
     /// This function is not available when compiling to WASM.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn from_bytes(
+        width: Pixels,
+        height: Pixels,
+        format: PdfBitmapFormat,
+        buffer: &'a mut [u8],
+        bindings: &'a dyn PdfiumLibraryBindings,
+    ) -> Result<PdfBitmap<'a>, PdfiumError> {
+        // Compute stride explicitly, because it may be greater than width * bytes_per_pixel
+        let stride =
+            Self::preferred_stride_bytes(width, format).ok_or(PdfiumError::ImageSizeOutOfBounds)?;
+
+        // SAFETY: must have at least stride * height pixels available in the
+        // buffer. Otherwise, a buffer overflow may occur during rendering.
+        let minimum_buffer_size = stride
+            .checked_mul(height)
+            .ok_or(PdfiumError::ImageSizeOutOfBounds)?;
+        // SAFETY: if the requested dimensions are negative, then comparing them to a buffer
+        // length doesn't make sense.
+        if minimum_buffer_size < 0 {
+            return Err(PdfiumError::ImageSizeOutOfBounds);
+        }
+        // SAFETY: Check that the buffer is big enough to store the image.
+        if minimum_buffer_size as usize > buffer.len() {
+            return Err(PdfiumError::ImageBufferTooSmall);
+        }
+
+        let handle = unsafe {
+            bindings.FPDFBitmap_CreateEx(
+                width as c_int,
+                height as c_int,
+                format.as_pdfium() as c_int,
+                buffer.as_mut_ptr() as *mut c_void,
+                stride,
+            )
+        };
+
+        if handle.is_null() {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        } else {
+            Ok(Self::from_pdfium(handle))
+        }
+    }
+
+    /// Creates a new [PdfBitmap] that wraps the given byte buffer. The buffer must be capable
+    /// of storing an image of the given pixel width and height in the given pixel format,
+    /// otherwise a buffer overflow may occur during rendering.
+    ///
+    /// This function is not available when compiling to WASM.
     ///
     /// # Safety
     ///
     /// This function is unsafe because a buffer overflow may occur during rendering if the buffer
     /// is too small to store a rendered image of the given pixel dimensions.
     #[cfg(not(target_arch = "wasm32"))]
-    pub unsafe fn from_bytes(
+    pub unsafe fn from_bytes_unchecked(
         width: Pixels,
         height: Pixels,
         format: PdfBitmapFormat,
@@ -330,6 +392,32 @@ impl<'a> PdfBitmap<'a> {
     pub fn bytes_required_for_size(width: Pixels, height: Pixels) -> usize {
         4 * width as usize * height as usize
     }
+
+    /// Estimates the maximum memory buffer size required for a [PdfBitmap] of the given dimensions
+    /// and format. Providing the format allows a more precise estimate than
+    /// [PdfBitmap::bytes_required_for_size]
+    ///
+    /// Certain platforms, architectures, and operating systems may limit the maximum size of a
+    /// bitmap buffer that can be created by Pdfium.
+    #[inline]
+    pub fn bytes_required_for_size_and_format(
+        width: Pixels,
+        height: Pixels,
+        format: PdfBitmapFormat,
+    ) -> usize {
+        Self::preferred_stride_bytes(width, format).unwrap_or(4) as usize * height as usize
+    }
+
+    /// Get the preferred stride for a given width & format.
+    ///
+    /// Mirrors the logic in core/fxge/calculate_pitch.cpp:CalculatePitch32Safely
+    #[inline]
+    pub(crate) fn preferred_stride_bytes(width: Pixels, format: PdfBitmapFormat) -> Option<i32> {
+        let min_stride_bytes = width.checked_mul(format.bytes_per_pixel())?;
+        // round up to nearest multiple of 4 bytes
+        let rounded = (min_stride_bytes.checked_add(3)? / 4) * 4;
+        Some(rounded)
+    }
 }
 
 impl<'a> Drop for PdfBitmap<'a> {
@@ -360,6 +448,84 @@ mod tests {
     fn test_from_bytes() -> Result<(), PdfiumError> {
         let pdfium = test_bind_to_pdfium();
 
+        let test_width = 157;
+        let test_height = 300;
+
+        let mut buffer = create_sized_buffer(PdfBitmap::bytes_required_for_size_and_format(
+            test_width,
+            test_height,
+            PdfBitmapFormat::BGR,
+        ) as usize);
+
+        let buffer_ptr = buffer.as_ptr();
+        let buffer_len = buffer.len();
+
+        let bitmap = PdfBitmap::from_bytes(
+            test_width,
+            test_height,
+            PdfBitmapFormat::BGR,
+            buffer.as_mut_slice(),
+            pdfium.bindings(),
+        )?;
+
+        assert_eq!(bitmap.width(), test_width);
+        assert_eq!(bitmap.height(), test_height);
+        assert_eq!(
+            unsafe { pdfium.bindings().FPDFBitmap_GetBuffer(bitmap.handle) } as usize,
+            buffer_ptr as usize
+        );
+
+        // Check that we can copy out of the buffer without a segfault
+        let raw_bytes = bitmap.as_raw_bytes();
+        assert_eq!(raw_bytes.len(), buffer_len);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_bytes_errors() {
+        let pdfium = test_bind_to_pdfium();
+
+        let mut buffer = create_sized_buffer(10);
+
+        // error: stride is too large
+        let result = PdfBitmap::from_bytes(
+            1 << 30,
+            10,
+            PdfBitmapFormat::BGR,
+            buffer.as_mut_slice(),
+            pdfium.bindings(),
+        );
+        assert!(result.is_err());
+        drop(result);
+
+        // error: required buffer is too large
+        let result = PdfBitmap::from_bytes(
+            10,
+            1 << 30,
+            PdfBitmapFormat::BGR,
+            buffer.as_mut_slice(),
+            pdfium.bindings(),
+        );
+        assert!(result.is_err());
+        drop(result);
+
+        // error: provided buffer is too small
+        let result = PdfBitmap::from_bytes(
+            1000,
+            2000,
+            PdfBitmapFormat::BGR,
+            buffer.as_mut_slice(),
+            pdfium.bindings(),
+        );
+        assert!(result.is_err());
+        drop(result);
+    }
+
+    #[test]
+    fn test_from_bytes_unchecked() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
         let test_width = 2000;
         let test_height = 4000;
 
@@ -369,7 +535,7 @@ mod tests {
         let buffer_ptr = buffer.as_ptr();
 
         let bitmap = unsafe {
-            PdfBitmap::from_bytes(
+            PdfBitmap::from_bytes_unchecked(
                 test_width,
                 test_height,
                 PdfBitmapFormat::BGRx,
@@ -395,5 +561,115 @@ mod tests {
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn test_preferred_stride_bytes() -> () {
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(0, PdfBitmapFormat::Gray),
+            Some(0)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(0, PdfBitmapFormat::BGR),
+            Some(0)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(0, PdfBitmapFormat::BGRx),
+            Some(0)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(0, PdfBitmapFormat::BGRA),
+            Some(0)
+        );
+
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(1, PdfBitmapFormat::Gray),
+            Some(4)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(1, PdfBitmapFormat::BGR),
+            Some(4)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(1, PdfBitmapFormat::BGRx),
+            Some(4)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(1, PdfBitmapFormat::BGRA),
+            Some(4)
+        );
+
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(2, PdfBitmapFormat::Gray),
+            Some(4)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(2, PdfBitmapFormat::BGR),
+            Some(8)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(2, PdfBitmapFormat::BGRx),
+            Some(8)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(2, PdfBitmapFormat::BGRA),
+            Some(8)
+        );
+
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(3, PdfBitmapFormat::Gray),
+            Some(4)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(3, PdfBitmapFormat::BGR),
+            Some(12)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(3, PdfBitmapFormat::BGRx),
+            Some(12)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(3, PdfBitmapFormat::BGRA),
+            Some(12)
+        );
+
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(4, PdfBitmapFormat::Gray),
+            Some(4)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(4, PdfBitmapFormat::BGR),
+            Some(12)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(4, PdfBitmapFormat::BGRx),
+            Some(16)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(4, PdfBitmapFormat::BGRA),
+            Some(16)
+        );
+
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(5, PdfBitmapFormat::Gray),
+            Some(8)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(5, PdfBitmapFormat::BGR),
+            Some(16)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(5, PdfBitmapFormat::BGRx),
+            Some(20)
+        );
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(5, PdfBitmapFormat::BGRA),
+            Some(20)
+        );
+
+        assert_eq!(
+            PdfBitmap::preferred_stride_bytes(1 << 30, PdfBitmapFormat::BGRA),
+            None
+        );
     }
 }
