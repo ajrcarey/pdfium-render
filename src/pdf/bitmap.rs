@@ -4,7 +4,6 @@ use crate::bindgen::{
     FPDFBitmap_BGR, FPDFBitmap_BGRA, FPDFBitmap_BGRx, FPDFBitmap_Gray, FPDFBitmap_Unknown,
     FPDF_BITMAP,
 };
-use crate::bindings::PdfiumLibraryBindings;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::page::render_config::PdfPageRenderSettings;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
@@ -163,35 +162,37 @@ impl<'a> PdfBitmap<'a> {
         height: Pixels,
         format: PdfBitmapFormat,
         buffer: &'a mut [u8],
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
-        // Compute stride explicitly, because it may be greater than width * bytes_per_pixel
+        // We compute the stride explicitly, because it may be greater than width * bytes_per_pixel.
+
         let stride =
             Self::preferred_stride_bytes(width, format).ok_or(PdfiumError::ImageSizeOutOfBounds)?;
 
-        // SAFETY: must have at least stride * height pixels available in the
-        // buffer. Otherwise, a buffer overflow may occur during rendering.
+        // Avoid a buffer overflowing during rendering by confirming that the given buffer
+        // is large enough to contain the rendered image.
+
         let minimum_buffer_size = stride
             .checked_mul(height)
             .ok_or(PdfiumError::ImageSizeOutOfBounds)?;
-        // SAFETY: if the requested dimensions are negative, then comparing them to a buffer
-        // length doesn't make sense.
+
         if minimum_buffer_size < 0 {
             return Err(PdfiumError::ImageSizeOutOfBounds);
         }
-        // SAFETY: Check that the buffer is big enough to store the image.
+
         if minimum_buffer_size as usize > buffer.len() {
             return Err(PdfiumError::ImageBufferTooSmall);
         }
 
         let handle = unsafe {
-            bindings.FPDFBitmap_CreateEx(
-                width as c_int,
-                height as c_int,
-                format.as_pdfium() as c_int,
-                buffer.as_mut_ptr() as *mut c_void,
-                stride,
-            )
+            Self::from_pdfium(0 as FPDF_BITMAP)
+                .bindings()
+                .FPDFBitmap_CreateEx(
+                    width as c_int,
+                    height as c_int,
+                    format.as_pdfium() as c_int,
+                    buffer.as_mut_ptr() as *mut c_void,
+                    stride,
+                )
         };
 
         if handle.is_null() {
@@ -219,15 +220,16 @@ impl<'a> PdfBitmap<'a> {
         height: Pixels,
         format: PdfBitmapFormat,
         buffer: &'a mut [u8],
-        bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
-        let handle = bindings.FPDFBitmap_CreateEx(
-            width as c_int,
-            height as c_int,
-            format.as_pdfium() as c_int,
-            buffer.as_mut_ptr() as *mut c_void,
-            0, // Not relevant because Pdfium will compute the stride value itself.
-        );
+        let handle = Self::from_pdfium(0 as FPDF_BITMAP)
+            .bindings()
+            .FPDFBitmap_CreateEx(
+                width as c_int,
+                height as c_int,
+                format.as_pdfium() as c_int,
+                buffer.as_mut_ptr() as *mut c_void,
+                0, // Not relevant because Pdfium will compute the stride value itself.
+            );
 
         if handle.is_null() {
             Err(PdfiumError::PdfiumLibraryInternalError(
