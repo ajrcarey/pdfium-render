@@ -235,7 +235,7 @@ pub enum PdfiumError {
     /// When constructing a [crate::pdf::bitmap::PdfBitmap] from a raw buffer, the buffer
     /// must be large enough to contain the bitmap's pixels.
     ///
-    /// This method which returns this error is not available on WASM.
+    /// The method which returns this error is not available on WASM.
     ImageBufferTooSmall,
 
     /// An I/O error occurred during a Pdfium file operation.
