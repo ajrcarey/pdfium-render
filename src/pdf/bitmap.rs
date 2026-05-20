@@ -408,7 +408,9 @@ impl<'a> PdfBitmap<'a> {
         height: Pixels,
         format: PdfBitmapFormat,
     ) -> usize {
-        Self::preferred_stride_bytes(width, format).unwrap_or(4) as usize * height as usize
+        Self::preferred_stride_bytes(width, format)
+            .map(|s| s as usize * height as usize)
+            .unwrap_or_else(|| Self::bytes_required_for_size(width, height))
     }
 
     /// Returns the preferred stride for a [PdfBitmap] of the given width and format.
@@ -655,6 +657,29 @@ mod tests {
         assert_eq!(
             PdfBitmap::preferred_stride_bytes(1 << 30, PdfBitmapFormat::BGRA),
             None
+        );
+    }
+
+    #[test]
+    fn test_bytes_required_for_size_and_format() {
+        // simple case: stride * height
+        assert_eq!(
+            PdfBitmap::bytes_required_for_size_and_format(1, 100, PdfBitmapFormat::Gray),
+            400
+        );
+        assert_eq!(
+            PdfBitmap::bytes_required_for_size_and_format(4, 100, PdfBitmapFormat::Gray),
+            400
+        );
+        assert_eq!(
+            PdfBitmap::bytes_required_for_size_and_format(256, 256, PdfBitmapFormat::BGR),
+            256 * 256 * 3
+        );
+
+        // if stride estimation fails, fall back to 4 bytes per pixel
+        assert_eq!(
+            PdfBitmap::bytes_required_for_size_and_format(1 << 30, 50, PdfBitmapFormat::BGRA),
+            (1 << 30 as usize) * 50 * 4,
         );
     }
 }
