@@ -1,16 +1,16 @@
+//! Defines the [PdfiumLibraryConfig] struct, used to pass custom initialization configuration
+//! to a new Pdfium library instance.
+
 use crate::bindgen::{
     FPDF_LIBRARY_CONFIG, FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_AGG,
     FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
 };
 use crate::error::PdfiumError;
 use std::ffi::{CString, NulError};
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::{c_char, c_uint, c_void};
 use std::pin::Pin;
 use std::ptr::null_mut;
 use std::str::FromStr;
-
-#[cfg(not(target_arch = "wasm32"))]
-use std::os::raw::c_void;
 
 #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
 use crate::bindgen::{
@@ -57,7 +57,7 @@ impl PdfiumLibraryConfig {
     }
 
     /// Clears any user-specified paths that should be interrogated by Pdfium when
-    /// attempting to load custom fonts.
+    /// attempting to load any custom fonts referenced in a PDF document.
     #[inline]
     pub fn clear_user_font_paths(self) -> Self {
         self.set_user_font_paths(&[]).unwrap()
@@ -65,8 +65,10 @@ impl PdfiumLibraryConfig {
 
     #[cfg(target_arch = "wasm32")]
     /// Sets the list of user-specified paths that should be interrogated by Pdfium when
-    /// attempting to load custom fonts. Since the browser does not provide a font loading
-    /// mechanism, this list of font paths is empty when compiling to WASM.
+    /// attempting to load any custom fonts referenced in a PDF document.
+    ///
+    /// Since the browser does not provide a font loading mechanism, this list of font paths
+    /// is empty when compiling to WASM.
     #[inline]
     pub fn set_platform_default_user_font_paths(self) -> Self {
         self.clear_user_font_paths()
@@ -75,7 +77,10 @@ impl PdfiumLibraryConfig {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(target_os = "linux")]
     /// Sets the list of user-specified paths that should be interrogated by Pdfium when
-    /// attempting to load custom fonts to the Linux system defaults.
+    /// attempting to load any custom fonts referenced in a PDF document.
+    ///
+    /// On Linux systems, the platform default font paths are `/usr/share/fonts/truetype/`
+    /// and `/usr/local/share/fonts/`.
     #[inline]
     pub fn set_platform_default_user_font_paths(self) -> Self {
         self.set_user_font_paths(&["/usr/share/fonts/truetype/", "/usr/local/share/fonts/"])
@@ -85,7 +90,10 @@ impl PdfiumLibraryConfig {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(target_os = "macos")]
     /// Sets the list of user-specified paths that should be interrogated by Pdfium when
-    /// attempting to load custom fonts to the macOS system defaults.
+    /// attempting to load any custom fonts referenced in a PDF document.
+    ///
+    /// On macOS systems, the platform default font paths are `/Library/Fonts/` and
+    /// `/System/Library/Fonts/`.
     #[inline]
     pub fn set_platform_default_user_font_paths(self) -> Self {
         self.set_user_font_paths(&["/Library/Fonts/", "/System/Library/Fonts/"])
@@ -95,14 +103,16 @@ impl PdfiumLibraryConfig {
     #[cfg(not(target_arch = "wasm32"))]
     #[cfg(target_os = "windows")]
     /// Sets the list of user-specified paths that should be interrogated by Pdfium when
-    /// attempting to load custom fonts to the Windows system defaults.
+    /// attempting to load any custom fonts referenced in a PDF document.
+    ///
+    /// On Windows systems, the platform default font path is `C:\Windows\Fonts\`.
     #[inline]
     pub fn set_platform_default_user_font_paths(self) -> Self {
         self.set_user_font_paths(&["C:\\Windows\\Fonts\\"]).unwrap()
     }
 
-    /// Sets the user-specified paths that should be interrogated by Pdfium when attempting
-    /// to load custom fonts.
+    /// Sets the list of user-specified paths that should be interrogated by Pdfium when
+    /// attempting to load any custom fonts referenced in a PDF document.
     pub fn set_user_font_paths(mut self, paths: &[&str]) -> Result<Self, PdfiumError> {
         let cstr_paths = paths
             .iter()
@@ -174,17 +184,21 @@ impl PdfiumLibraryConfig {
         self
     }
 
-    #[inline]
+    /// Returns a `FPDF_LIBRARY_CONFIG` instance from this [PdfiumLibraryConfig] instance
+    /// that can be passed to Pdfium's `FPDF_FPDF_InitLibraryWithConfig()` function.
     pub(crate) fn as_pdfium(&self) -> FPDF_LIBRARY_CONFIG {
         FPDF_LIBRARY_CONFIG {
             version: 2,
-            m_pUserFontPaths: self
-                .user_font_paths
-                .iter()
-                .map(|path| path.as_ptr())
-                .collect::<Vec<*const c_char>>()
-                .as_mut_slice()
-                .as_mut_ptr(),
+            m_pUserFontPaths: if self.user_font_paths.is_empty() {
+                std::ptr::null_mut()
+            } else {
+                self.user_font_paths
+                    .iter()
+                    .map(|path| path.as_ptr())
+                    .collect::<Vec<*const c_char>>()
+                    .as_mut_slice()
+                    .as_mut_ptr()
+            },
 
             #[cfg(not(target_arch = "wasm32"))]
             m_pIsolate: self.v8_isolate_ptr,

@@ -8,6 +8,7 @@ use crate::bindings::PdfiumLibraryBindings;
 use crate::config::PdfiumLibraryConfig;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
+use crate::pdf::font::provider::{PdfiumCustomFontProvider, PdfiumCustomFontProviderExt};
 use once_cell::sync::OnceCell;
 use std::fmt::{Debug, Formatter};
 
@@ -65,10 +66,10 @@ pub trait PdfiumLibraryBindingsAccessor<'a> {
 
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
-#[derive(Clone)]
 pub struct Pdfium {
     #[allow(dead_code)]
     pub(crate) config: Option<PdfiumLibraryConfig>,
+    pub(crate) custom_font_provider: Option<PdfiumCustomFontProviderExt>,
 }
 
 impl Pdfium {
@@ -183,7 +184,10 @@ impl Pdfium {
         }
         assert!(BINDINGS.set(bindings).is_ok());
 
-        Self { config: None }
+        Self {
+            config: None,
+            custom_font_provider: None,
+        }
     }
 
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings,
@@ -201,7 +205,28 @@ impl Pdfium {
 
         Self {
             config: Some(config),
+            custom_font_provider: None,
         }
+    }
+
+    /// Applies the given custom font provider to this [Pdfium] instance.
+    pub fn set_custom_font_provider(&mut self, provider: Box<dyn PdfiumCustomFontProvider>) {
+        let mut wrapper = PdfiumCustomFontProviderExt::new(provider);
+
+        unsafe {
+            self.bindings()
+                .FPDF_SetSystemFontInfo(wrapper.as_fpdf_sys_font_info_mut_ptr());
+        }
+
+        self.custom_font_provider = Some(wrapper);
+    }
+
+    pub fn clear_custom_font_provider(&mut self) {
+        unsafe {
+            self.bindings().FPDF_SetSystemFontInfo(std::ptr::null_mut());
+        }
+
+        self.custom_font_provider = None;
     }
 
     /// Attempts to open a [PdfDocument] from the given static byte buffer.
@@ -465,7 +490,10 @@ impl Default for Pdfium {
 
         match Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")) {
             Ok(bindings) => Pdfium::new(bindings), // Create new bindings
-            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium { config: None }, // Re-use the existing bindings
+            Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {
+                config: None,
+                custom_font_provider: None,
+            }, // Re-use the existing bindings
             Err(PdfiumError::LoadLibraryError(err)) => {
                 match err {
                     libloading::Error::DlOpen { .. } => {

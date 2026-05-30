@@ -252,7 +252,7 @@ impl<'a> PdfFonts<'a> {
     /// Attempts to load a Type 1 font file from the given file path, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -283,7 +283,7 @@ impl<'a> PdfFonts<'a> {
     /// Attempts to load a Type 1 font file from the given reader, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -306,7 +306,7 @@ impl<'a> PdfFonts<'a> {
     ///
     /// The Javascript `fetch()` API is used to download data over the network.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -352,7 +352,7 @@ impl<'a> PdfFonts<'a> {
     /// const file = document.getElementById('filePicker').files[0];
     /// ```
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -379,7 +379,7 @@ impl<'a> PdfFonts<'a> {
     /// Attempts to load the given byte data as a Type 1 font file, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -394,7 +394,7 @@ impl<'a> PdfFonts<'a> {
     /// Attempts to load a TrueType font file from the given file path, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -428,7 +428,7 @@ impl<'a> PdfFonts<'a> {
     /// Attempts to load a TrueType font file from the given reader, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -451,7 +451,7 @@ impl<'a> PdfFonts<'a> {
     ///
     /// The Javascript `fetch()` API is used to download data over the network.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -497,7 +497,7 @@ impl<'a> PdfFonts<'a> {
     /// const file = document.getElementById('filePicker').files[0];
     /// ```
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.
@@ -524,7 +524,7 @@ impl<'a> PdfFonts<'a> {
     /// Attempts to load the given byte data as a TrueType font file, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
-    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by
+    /// Set the `is_cid_font` parameter to `true` if the given font is keyed by a
     /// 16-bit character ID (CID), indicating that it supports an extended glyphset of
     /// 65,535 glyphs. This is typically the case with fonts that support Asian character sets
     /// or right-to-left languages.

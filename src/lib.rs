@@ -181,6 +181,7 @@ pub mod prelude {
         pdf::document::{PdfDocument, PdfDocumentVersion},
         pdf::font::glyph::*,
         pdf::font::glyphs::*,
+        pdf::font::provider::*,
         pdf::font::*,
         pdf::link::*,
         pdf::matrix::*,

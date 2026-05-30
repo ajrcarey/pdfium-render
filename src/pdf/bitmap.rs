@@ -30,6 +30,9 @@ use {
     web_sys::ImageData,
 };
 
+#[cfg(doc)]
+use crate::bindings::PdfiumLibraryBindings;
+
 // The following dummy declarations are used only when running cargo doc.
 // They allow documentation of WASM-specific functionality to be included
 // in documentation generated on non-WASM targets.
@@ -488,7 +491,7 @@ mod tests {
 
     #[test]
     fn test_from_bytes_errors() {
-        let pdfium = test_bind_to_pdfium();
+        test_bind_to_pdfium();
 
         let mut buffer = create_sized_buffer(10);
 

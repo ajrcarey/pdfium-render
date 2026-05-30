@@ -3,8 +3,14 @@
 
 pub mod glyph;
 pub mod glyphs;
+pub mod provider;
 
-use crate::bindgen::FPDF_FONT;
+use crate::bindgen::{
+    FPDF_FONT, FXFONT_ANSI_CHARSET, FXFONT_ARABIC_CHARSET, FXFONT_CHINESEBIG5_CHARSET,
+    FXFONT_CYRILLIC_CHARSET, FXFONT_DEFAULT_CHARSET, FXFONT_EASTERNEUROPEAN_CHARSET,
+    FXFONT_GB2312_CHARSET, FXFONT_GREEK_CHARSET, FXFONT_HANGEUL_CHARSET, FXFONT_HEBREW_CHARSET,
+    FXFONT_SHIFTJIS_CHARSET, FXFONT_SYMBOL_CHARSET, FXFONT_THAI_CHARSET, FXFONT_VIETNAMESE_CHARSET,
+};
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::fonts::PdfFontBuiltin;
 use crate::pdf::font::glyphs::PdfFontGlyphs;
@@ -71,6 +77,65 @@ impl PdfFontWeight {
             900 => Some(PdfFontWeight::Weight900),
             other => Some(PdfFontWeight::Custom(other as u32)),
         }
+    }
+}
+
+/// The character set of a [PdfFont].
+pub enum PdfFontCharacterSet {
+    Ansi,
+    Default,
+    Symbol,
+    JapaneseShiftJis,
+    KoreanHangul,
+    ChineseGb2312,
+    ChineseBig5,
+    Greek,
+    Vietnamese,
+    Hebrew,
+    Arabic,
+    Cyrillic,
+    Thai,
+    EasternEuropean,
+}
+
+impl PdfFontCharacterSet {
+    pub(crate) fn from_pdfium(value: c_int) -> Option<PdfFontCharacterSet> {
+        match value as u32 {
+            FXFONT_ANSI_CHARSET => Some(PdfFontCharacterSet::Ansi),
+            FXFONT_DEFAULT_CHARSET => Some(PdfFontCharacterSet::Default),
+            FXFONT_SYMBOL_CHARSET => Some(PdfFontCharacterSet::Symbol),
+            FXFONT_SHIFTJIS_CHARSET => Some(PdfFontCharacterSet::JapaneseShiftJis),
+            FXFONT_HANGEUL_CHARSET => Some(PdfFontCharacterSet::KoreanHangul),
+            FXFONT_GB2312_CHARSET => Some(PdfFontCharacterSet::ChineseGb2312),
+            FXFONT_CHINESEBIG5_CHARSET => Some(PdfFontCharacterSet::ChineseBig5),
+            FXFONT_GREEK_CHARSET => Some(PdfFontCharacterSet::Greek),
+            FXFONT_VIETNAMESE_CHARSET => Some(PdfFontCharacterSet::Vietnamese),
+            FXFONT_HEBREW_CHARSET => Some(PdfFontCharacterSet::Hebrew),
+            FXFONT_ARABIC_CHARSET => Some(PdfFontCharacterSet::Arabic),
+            FXFONT_CYRILLIC_CHARSET => Some(PdfFontCharacterSet::Cyrillic),
+            FXFONT_THAI_CHARSET => Some(PdfFontCharacterSet::Thai),
+            FXFONT_EASTERNEUROPEAN_CHARSET => Some(PdfFontCharacterSet::EasternEuropean),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn as_pdfium(&self) -> c_int {
+        (match self {
+            PdfFontCharacterSet::Ansi => FXFONT_ANSI_CHARSET,
+            PdfFontCharacterSet::Default => FXFONT_DEFAULT_CHARSET,
+            PdfFontCharacterSet::Symbol => FXFONT_SYMBOL_CHARSET,
+            PdfFontCharacterSet::JapaneseShiftJis => FXFONT_SHIFTJIS_CHARSET,
+            PdfFontCharacterSet::KoreanHangul => FXFONT_HANGEUL_CHARSET,
+            PdfFontCharacterSet::ChineseGb2312 => FXFONT_GB2312_CHARSET,
+            PdfFontCharacterSet::ChineseBig5 => FXFONT_CHINESEBIG5_CHARSET,
+            PdfFontCharacterSet::Greek => FXFONT_GREEK_CHARSET,
+            PdfFontCharacterSet::Vietnamese => FXFONT_VIETNAMESE_CHARSET,
+            PdfFontCharacterSet::Hebrew => FXFONT_HEBREW_CHARSET,
+            PdfFontCharacterSet::Arabic => FXFONT_ARABIC_CHARSET,
+            PdfFontCharacterSet::Cyrillic => FXFONT_CYRILLIC_CHARSET,
+            PdfFontCharacterSet::Thai => FXFONT_THAI_CHARSET,
+            PdfFontCharacterSet::EasternEuropean => FXFONT_EASTERNEUROPEAN_CHARSET,
+        }) as c_int
     }
 }
 
