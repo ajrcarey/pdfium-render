@@ -244,6 +244,9 @@ pub enum PdfiumError {
     /// An error occurred during conversion of a given user font path to a CString.
     InvalidUserFontPath(NulError),
 
+    /// Pdfium does not include a default font provider implementation for the current platform.
+    NoPlatformDefaultFontProvider,
+
     /// A wrapped internal library error from Pdfium's `FPDF_ERR_*` constant values.
     PdfiumLibraryInternalError(PdfiumInternalError),
 }

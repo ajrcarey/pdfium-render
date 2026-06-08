@@ -118,7 +118,7 @@ impl<'a> PdfPageTextChars<'a> {
         }
     }
 
-    /// Returns the last [PdfPageTextSPdfPageTextCharegment] in this [PdfPageTextChars] collection.
+    /// Returns the last [PdfPageTextChar] in this [PdfPageTextChars] collection.
     #[inline]
     pub fn last(&self) -> Result<PdfPageTextChar<'a>, PdfiumError> {
         if !self.is_empty() {

@@ -7,10 +7,13 @@ use crate::bindgen::{
 };
 use crate::error::PdfiumError;
 use std::ffi::{CString, NulError};
-use std::os::raw::{c_char, c_uint, c_void};
+use std::os::raw::{c_char, c_uint};
 use std::pin::Pin;
 use std::ptr::null_mut;
 use std::str::FromStr;
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::os::raw::c_void;
 
 #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
 use crate::bindgen::{

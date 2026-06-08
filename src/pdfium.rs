@@ -11,6 +11,7 @@ use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
 use crate::pdf::font::provider::{PdfiumCustomFontProvider, PdfiumCustomFontProviderExt};
 use once_cell::sync::OnceCell;
 use std::fmt::{Debug, Formatter};
+use std::pin::Pin;
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use {
@@ -23,6 +24,7 @@ use crate::bindings::static_bindings::StaticPdfiumBindings;
 
 #[cfg(not(target_arch = "wasm32"))]
 use {
+    crate::bindgen::FPDF_SYSFONTINFO,
     crate::utils::files::get_pdfium_file_accessor_from_reader,
     std::fs::File,
     std::io::{Read, Seek},
@@ -67,9 +69,10 @@ pub trait PdfiumLibraryBindingsAccessor<'a> {
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
 pub struct Pdfium {
-    #[allow(dead_code)]
-    pub(crate) config: Option<PdfiumLibraryConfig>,
-    pub(crate) custom_font_provider: Option<PdfiumCustomFontProviderExt>,
+    pub(crate) custom_font_provider: Option<Pin<Box<PdfiumCustomFontProviderExt>>>,
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) platform_default_font_provider: Option<*mut FPDF_SYSFONTINFO>,
 }
 
 impl Pdfium {
@@ -185,8 +188,10 @@ impl Pdfium {
         assert!(BINDINGS.set(bindings).is_ok());
 
         Self {
-            config: None,
             custom_font_provider: None,
+
+            #[cfg(not(target_arch = "wasm32"))]
+            platform_default_font_provider: None,
         }
     }
 
@@ -204,14 +209,16 @@ impl Pdfium {
         assert!(BINDINGS.set(bindings).is_ok());
 
         Self {
-            config: Some(config),
             custom_font_provider: None,
+
+            #[cfg(not(target_arch = "wasm32"))]
+            platform_default_font_provider: None,
         }
     }
 
     /// Applies the given custom font provider to this [Pdfium] instance.
     pub fn set_custom_font_provider(&mut self, provider: Box<dyn PdfiumCustomFontProvider>) {
-        let mut wrapper = PdfiumCustomFontProviderExt::new(provider);
+        let mut wrapper = Box::pin(PdfiumCustomFontProviderExt::new(provider));
 
         unsafe {
             self.bindings()
@@ -221,12 +228,47 @@ impl Pdfium {
         self.custom_font_provider = Some(wrapper);
     }
 
+    /// Clears the currently set font provider, including Pdfium's platform default font provider.
     pub fn clear_custom_font_provider(&mut self) {
         unsafe {
             self.bindings().FPDF_SetSystemFontInfo(std::ptr::null_mut());
         }
 
         self.custom_font_provider = None;
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    /// Applies Pdfium's included default font provider for the current platform, if any,
+    /// to this [Pdfium] instance.
+    pub fn use_platform_default_font_provider(&mut self) -> Result<(), PdfiumError> {
+        self.clear_custom_font_provider();
+
+        let platform_default_font_provider =
+            unsafe { self.bindings().FPDF_GetDefaultSystemFontInfo() };
+
+        if !platform_default_font_provider.is_null() {
+            unsafe {
+                self.bindings()
+                    .FPDF_SetSystemFontInfo(platform_default_font_provider);
+            }
+
+            self.platform_default_font_provider = Some(platform_default_font_provider);
+
+            Ok(())
+        } else {
+            Err(PdfiumError::NoPlatformDefaultFontProvider)
+        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    /// Applies Pdfium's included default font provider for the current platform, if any,
+    /// to this [Pdfium] instance.
+    ///
+    /// This function will always return a `PdfiumError::NoPlatformDefaultFontProvider` error
+    /// when compiling to WASM, because Pdfium does not include a default platform provider
+    /// implementation for WASM.
+    pub fn use_platform_default_font_provider(&mut self) -> Result<(), PdfiumError> {
+        Err(PdfiumError::NoPlatformDefaultFontProvider)
     }
 
     /// Attempts to open a [PdfDocument] from the given static byte buffer.
@@ -491,8 +533,8 @@ impl Default for Pdfium {
         match Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")) {
             Ok(bindings) => Pdfium::new(bindings), // Create new bindings
             Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {
-                config: None,
                 custom_font_provider: None,
+                platform_default_font_provider: None,
             }, // Re-use the existing bindings
             Err(PdfiumError::LoadLibraryError(err)) => {
                 match err {
@@ -523,6 +565,17 @@ impl Debug for Pdfium {
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Pdfium").finish()
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl Drop for Pdfium {
+    fn drop(&mut self) {
+        if let Some(ptr) = self.platform_default_font_provider {
+            unsafe {
+                self.bindings().FPDF_FreeDefaultSystemFontInfo(ptr);
+            }
+        }
     }
 }
 

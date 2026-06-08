@@ -13,6 +13,7 @@ Each example can run via `cargo run --example <example_name>`.
 * `concat.rs`: generates a new document by concatenating pages from `test/export-test.pdf`, `test/form-test.pdf`, and `test/text-test.pdf` together, saving the new document to `test/concat-test.pdf`
 * `copy_objects.rs`: moves a selection of page objects from one page to another using the object copying functions in `PdfPageGroupObject`, saving the new document to `test/copy-test.pdf`.
 * `create.rs`: generates a new document by placing text objects onto a blank page, saving the new document to `test/create-test.pdf`.
+* `custom_font_provider.rs`: demonstrates using a simple `PdfiumCustomFontProvider` trait implementation to customize Pdfium's font loading and substitution behaviour.
 * `descenders.rs`: iterates over the individual characters in a text object, measuring which have glyph shapes that descend beneath the text object's font baseline.
 * `export.rs`: exports the individual pages in `test/export-test.pdf` to JPGs in the working directory. The example will attempt to bind to a copy of Pdfium in the working directory, falling back to the system-bundled library if local loading fails.
 * `export_clip_crop.rs`: exports just a portion of the page in `test/export-clip-crop-test.pdf` to a JPG file, clipping and cropping the rendering output based on object properties in the file.

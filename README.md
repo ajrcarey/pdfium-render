@@ -57,6 +57,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 * Page link introspection.
 * Creation of new documents and new pages.
 * Creation of page objects for text, paths, and bitmaps.
+* Custom font management.
 * Page object transformation.
 * Multi-page tiled rendering.
 * Watermarking.
@@ -65,7 +66,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 ## What's new
 
-Release 0.9.2 changes the visibility of the `PdfiumLibraryBindingsAccessor` trait from `pub(crate)` to `pub`, easing use of the raw `FPDF_*` API by crate consumers thanks to an excellent observation by <https://github.com/martin-kolarik>, and changes the signature of the `PdfBitmap::empty()` and `PdfBitmap::from_bytes()` functions to remove the `bindings` argument which is no longer required, reworks `PdfBitmap::from_bytes()` as a safe function, and adds a new unsafe `PdfBitmap::from_bytes_unchecked()` function, both thanks to excellent contributions from <https://github.com/alecbarber>.
+Release 0.9.2 changes the visibility of the `PdfiumLibraryBindingsAccessor` trait from `pub(crate)` to `pub`, easing use of the raw `FPDF_*` API by crate consumers thanks to an excellent observation by <https://github.com/martin-kolarik>, changes the signature of the `PdfBitmap::empty()` and `PdfBitmap::from_bytes()` functions to remove the `bindings` argument which is no longer required, reworks `PdfBitmap::from_bytes()` as a safe function and adds a new unsafe `PdfBitmap::from_bytes_unchecked()` function, both thanks to excellent contributions from <https://github.com/alecbarber>, and adds a new `PdfiumCustomFontProvider` trait that can be used to override Pdfium's default platform font provider by passing a trait implementation to the new `Pdfium::set_custom_font_provider()` function. The font provider is called each time Pdfium needs to perform font substitution, allowing fine-grained control over font matching, loading, and caching. A new `examples/custom_font_provider.rs` example demonstrates the new functionality.
 
 Release 0.9.1 increments the `pdfium_latest` feature to `pdfium_7763` to match new Pdfium release 7763 at <https://github.com/bblanchon/pdfium-binaries>, relaxes lifetime restrictions on `PdfPageTextSegment` and `PdfPageTextChars` thanks to an excellent contribution from <https://github.com/owl-from-hogvarts>, adds a new `console_log` crate feature to control initialization of `console_log`-based logging to the console browser in WASM builds thanks to an excellent contribution from <https://github.com/tectin0>, and adds a new `PdfPageTextObject::is_visible()` utility function in response to an excellent suggestion by <https://github.com/cobnett3>.
 

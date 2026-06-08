@@ -474,9 +474,10 @@ pub(crate) mod test {
         {
             Ok(bindings) => Pdfium::new(bindings), // Create new bindings
             Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium {
-                #[cfg(not(target_arch = "wasm32"))]
-                config: None,
                 custom_font_provider: None,
+
+                #[cfg(not(target_arch = "wasm32"))]
+                platform_default_font_provider: None,
             }, // Re-use existing bindings
             Err(e) => Err(e).unwrap(),             // Explicitly re-throw the error
         }

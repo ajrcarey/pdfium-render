@@ -248,9 +248,9 @@ unsafe extern "C" fn fpdf_sys_font_info_get_font_data(
 
         font_data.len() as c_ulong
     } else {
-        // Pdfium called us with an opaque font handle that doesn't correspond to any
-        // cached response. This should never happen; we cannot directly communicate the
-        // failure to Pdfium, but we can at least safely return no data.
+        // Undefined behaviour: Pdfium called us with an opaque font handle that doesn't
+        // correspond to any cached response. This should never happen; we cannot directly
+        // communicate the failure to Pdfium, but we can at least safely return no data.
 
         0
     }
