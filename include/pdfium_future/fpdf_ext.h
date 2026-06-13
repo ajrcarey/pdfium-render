@@ -1,21 +1,15 @@
 // Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
-
 #ifndef PUBLIC_FPDF_EXT_H_
 #define PUBLIC_FPDF_EXT_H_
-
 #include <time.h>
-
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
 // Unsupported XFA form.
 #define FPDF_UNSP_DOC_XFAFORM 1
 // Unsupported portable collection.
@@ -46,12 +40,10 @@ extern "C" {
 #define FPDF_UNSP_ANNOT_ATTACHMENT 16
 // Unsupported signature annotation.
 #define FPDF_UNSP_ANNOT_SIG 17
-
 // Interface for unsupported feature notifications.
 typedef struct _UNSUPPORT_INFO {
   // Version number of the interface. Must be 1.
   int version;
-
   // Unsupported object notification function.
   // Interface Version: 1
   // Implementation Required: Yes
@@ -60,7 +52,6 @@ typedef struct _UNSUPPORT_INFO {
   //   nType - the type of unsupported object. One of the |FPDF_UNSP_*| entries.
   void (*FSDK_UnSupport_Handler)(struct _UNSUPPORT_INFO* pThis, int nType);
 } UNSUPPORT_INFO;
-
 // Setup an unsupported object handler.
 //
 //   unsp_info - Pointer to an UNSUPPORT_INFO structure.
@@ -68,7 +59,6 @@ typedef struct _UNSUPPORT_INFO {
 // Returns TRUE on success.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FSDK_SetUnSpObjProcessHandler(UNSUPPORT_INFO* unsp_info);
-
 // Set replacement function for calls to time().
 //
 // This API is intended to be used only for testing, thus may cause PDFium to
@@ -77,7 +67,6 @@ FSDK_SetUnSpObjProcessHandler(UNSUPPORT_INFO* unsp_info);
 //   func - Function pointer to alternate implementation of time(), or
 //          NULL to restore to actual time() call itself.
 FPDF_EXPORT void FPDF_CALLCONV FSDK_SetTimeFunction(time_t (*func)());
-
 // Set replacement function for calls to localtime().
 //
 // This API is intended to be used only for testing, thus may cause PDFium to
@@ -87,7 +76,6 @@ FPDF_EXPORT void FPDF_CALLCONV FSDK_SetTimeFunction(time_t (*func)());
 //          NULL to restore to actual localtime() call itself.
 FPDF_EXPORT void FPDF_CALLCONV
 FSDK_SetLocaltimeFunction(struct tm* (*func)(const time_t*));
-
 // Unknown page mode.
 #define PAGEMODE_UNKNOWN -1
 // Document outline, and thumbnails hidden.
@@ -102,7 +90,6 @@ FSDK_SetLocaltimeFunction(struct tm* (*func)(const time_t*));
 #define PAGEMODE_USEOC 4
 // Attachments panel visible.
 #define PAGEMODE_USEATTACHMENTS 5
-
 // Get the document's PageMode.
 //
 //   doc - Handle to document.
@@ -111,9 +98,7 @@ FSDK_SetLocaltimeFunction(struct tm* (*func)(const time_t*));
 //
 // The page mode defines how the document should be initially displayed.
 FPDF_EXPORT int FPDF_CALLCONV FPDFDoc_GetPageMode(FPDF_DOCUMENT document);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
-
 #endif  // PUBLIC_FPDF_EXT_H_

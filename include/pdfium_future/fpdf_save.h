@@ -1,27 +1,21 @@
 // Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
-
 #ifndef PUBLIC_FPDF_SAVE_H_
 #define PUBLIC_FPDF_SAVE_H_
-
 // clang-format off
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 // Structure for custom file write
 typedef struct FPDF_FILEWRITE_ {
   //
   // Version number of the interface. Currently must be 1.
   //
   int version;
-
   // Method: WriteBlock
   //          Output a block of data in your custom way.
   // Interface Version:
@@ -40,7 +34,6 @@ typedef struct FPDF_FILEWRITE_ {
                     const void* data,
                     unsigned long size);
 } FPDF_FILEWRITE;
-
 // Flags for FPDF_SaveAsCopy().
 // FPDF_INCREMENTAL and FPDF_NO_INCREMENTAL cannot be used together.
 #define FPDF_INCREMENTAL (1 << 0)
@@ -52,7 +45,6 @@ typedef struct FPDF_FILEWRITE_ {
 // Experimental. Subsets any embedded font files for new text objects added to
 // the document.
 #define FPDF_SUBSET_NEW_FONTS (1 << 3)
-
 // Function: FPDF_SaveAsCopy
 //          Saves the copy of specified document in custom way.
 // Parameters:
@@ -67,7 +59,6 @@ typedef struct FPDF_FILEWRITE_ {
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SaveAsCopy(FPDF_DOCUMENT document,
                                                     FPDF_FILEWRITE* file_write,
                                                     FPDF_DWORD flags);
-
 // Function: FPDF_SaveWithVersion
 //          Same as FPDF_SaveAsCopy(), except the file version of the
 //          saved document can be specified by the caller.
@@ -85,9 +76,7 @@ FPDF_SaveWithVersion(FPDF_DOCUMENT document,
                      FPDF_FILEWRITE* file_write,
                      FPDF_DWORD flags,
                      int file_version);
-
 #ifdef __cplusplus
 }
 #endif
-
 #endif  // PUBLIC_FPDF_SAVE_H_

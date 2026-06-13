@@ -1,19 +1,14 @@
 // Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
-
 #ifndef PUBLIC_FPDF_TRANSFORMPAGE_H_
 #define PUBLIC_FPDF_TRANSFORMPAGE_H_
-
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 // Set "MediaBox" entry to the page dictionary.
 //
 // page   - Handle to a page.
@@ -26,7 +21,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_SetMediaBox(FPDF_PAGE page,
                                                     float bottom,
                                                     float right,
                                                     float top);
-
 // Set "CropBox" entry to the page dictionary.
 //
 // page   - Handle to a page.
@@ -39,7 +33,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_SetCropBox(FPDF_PAGE page,
                                                    float bottom,
                                                    float right,
                                                    float top);
-
 // Set "BleedBox" entry to the page dictionary.
 //
 // page   - Handle to a page.
@@ -52,7 +45,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_SetBleedBox(FPDF_PAGE page,
                                                     float bottom,
                                                     float right,
                                                     float top);
-
 // Set "TrimBox" entry to the page dictionary.
 //
 // page   - Handle to a page.
@@ -65,7 +57,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_SetTrimBox(FPDF_PAGE page,
                                                    float bottom,
                                                    float right,
                                                    float top);
-
 // Set "ArtBox" entry to the page dictionary.
 //
 // page   - Handle to a page.
@@ -78,7 +69,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_SetArtBox(FPDF_PAGE page,
                                                   float bottom,
                                                   float right,
                                                   float top);
-
 // Get "MediaBox" entry from the page dictionary.
 //
 // page   - Handle to a page.
@@ -94,7 +84,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_GetMediaBox(FPDF_PAGE page,
                                                          float* bottom,
                                                          float* right,
                                                          float* top);
-
 // Get "CropBox" entry from the page dictionary.
 //
 // page   - Handle to a page.
@@ -110,7 +99,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_GetCropBox(FPDF_PAGE page,
                                                         float* bottom,
                                                         float* right,
                                                         float* top);
-
 // Get "BleedBox" entry from the page dictionary.
 //
 // page   - Handle to a page.
@@ -126,7 +114,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_GetBleedBox(FPDF_PAGE page,
                                                          float* bottom,
                                                          float* right,
                                                          float* top);
-
 // Get "TrimBox" entry from the page dictionary.
 //
 // page   - Handle to a page.
@@ -142,7 +129,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_GetTrimBox(FPDF_PAGE page,
                                                         float* bottom,
                                                         float* right,
                                                         float* top);
-
 // Get "ArtBox" entry from the page dictionary.
 //
 // page   - Handle to a page.
@@ -158,7 +144,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_GetArtBox(FPDF_PAGE page,
                                                        float* bottom,
                                                        float* right,
                                                        float* top);
-
 // Apply transforms to |page|.
 //
 // If |matrix| is provided it will be applied to transform the page.
@@ -176,7 +161,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFPage_TransFormWithClip(FPDF_PAGE page,
                            const FS_MATRIX* matrix,
                            const FS_RECTF* clipRect);
-
 // Transform (scale, rotate, shear, move) the clip path of page object.
 // page_object - Handle to a page object. Returned by
 // FPDFPageObj_NewImageObj().
@@ -195,7 +179,6 @@ FPDFPageObj_TransformClipPath(FPDF_PAGEOBJECT page_object,
                               double d,
                               double e,
                               double f);
-
 // Experimental API.
 // Get the clip path of the page object.
 //
@@ -207,7 +190,6 @@ FPDFPageObj_TransformClipPath(FPDF_PAGEOBJECT page_object,
 // FPDF_ClosePage() is called for the page containing |page_object|.
 FPDF_EXPORT FPDF_CLIPPATH FPDF_CALLCONV
 FPDFPageObj_GetClipPath(FPDF_PAGEOBJECT page_object);
-
 // Experimental API.
 // Get number of paths inside |clip_path|.
 //
@@ -215,7 +197,6 @@ FPDFPageObj_GetClipPath(FPDF_PAGEOBJECT page_object);
 //
 // Returns the number of objects in |clip_path| or -1 on failure.
 FPDF_EXPORT int FPDF_CALLCONV FPDFClipPath_CountPaths(FPDF_CLIPPATH clip_path);
-
 // Experimental API.
 // Get number of segments inside one path of |clip_path|.
 //
@@ -225,7 +206,6 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFClipPath_CountPaths(FPDF_CLIPPATH clip_path);
 // Returns the number of segments or -1 on failure.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDFClipPath_CountPathSegments(FPDF_CLIPPATH clip_path, int path_index);
-
 // Experimental API.
 // Get segment in one specific path of |clip_path| at index.
 //
@@ -240,7 +220,6 @@ FPDF_EXPORT FPDF_PATHSEGMENT FPDF_CALLCONV
 FPDFClipPath_GetPathSegment(FPDF_CLIPPATH clip_path,
                             int path_index,
                             int segment_index);
-
 // Create a new clip path, with a rectangle inserted.
 //
 // Caller takes ownership of the returned FPDF_CLIPPATH. It should be freed with
@@ -254,12 +233,10 @@ FPDF_EXPORT FPDF_CLIPPATH FPDF_CALLCONV FPDF_CreateClipPath(float left,
                                                             float bottom,
                                                             float right,
                                                             float top);
-
 // Destroy the clip path.
 //
 // clipPath - A handle to the clip path. It will be invalid after this call.
 FPDF_EXPORT void FPDF_CALLCONV FPDF_DestroyClipPath(FPDF_CLIPPATH clipPath);
-
 // Clip the page content, the page content that outside the clipping region
 // become invisible.
 //
@@ -270,9 +247,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_DestroyClipPath(FPDF_CLIPPATH clipPath);
 // clipPath    - A handle to the clip path. (Does not take ownership.)
 FPDF_EXPORT void FPDF_CALLCONV FPDFPage_InsertClipPath(FPDF_PAGE page,
                                                        FPDF_CLIPPATH clipPath);
-
 #ifdef __cplusplus
 }
 #endif
-
 #endif  // PUBLIC_FPDF_TRANSFORMPAGE_H_

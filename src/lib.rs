@@ -11,6 +11,9 @@ mod bindgen {
     #[cfg(feature = "pdfium_future")]
     include!("bindgen/pdfium_future.rs");
 
+    #[cfg(feature = "pdfium_7881")]
+    include!("bindgen/pdfium_7881.rs");
+
     #[cfg(feature = "pdfium_7763")]
     include!("bindgen/pdfium_7763.rs");
 

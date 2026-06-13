@@ -1,19 +1,14 @@
 // Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
-
 #ifndef PUBLIC_FPDF_FWLEVENT_H_
 #define PUBLIC_FPDF_FWLEVENT_H_
-
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
 // Key flags.
 typedef enum {
   FWL_EVENTFLAG_ShiftKey = 1 << 0,
@@ -26,7 +21,6 @@ typedef enum {
   FWL_EVENTFLAG_MiddleButtonDown = 1 << 7,
   FWL_EVENTFLAG_RightButtonDown = 1 << 8,
 } FWL_EVENTFLAG;
-
 // Virtual keycodes.
 typedef enum {
   FWL_VKEY_Back = 0x08,
@@ -199,9 +193,7 @@ typedef enum {
   FWL_VKEY_OEM_Clear = 0xFE,
   FWL_VKEY_Unknown = 0,
 } FWL_VKEYCODE;
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
-
 #endif  // PUBLIC_FPDF_FWLEVENT_H_

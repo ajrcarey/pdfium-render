@@ -29,6 +29,7 @@ use std::marker::PhantomData;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
     feature = "pdfium_7350",
@@ -278,7 +279,7 @@ impl<'a> PdfPageTextObject<'a> {
 
         if self.bindings().is_true(unsafe {
             self.bindings()
-                .FPDFTextObj_GetFontSize(self.object_handle, &mut result)
+                .FPDFTextObj_GetFontSize(self.object_handle(), &mut result)
         }) {
             PdfPoints::new(result)
         } else {
@@ -286,7 +287,24 @@ impl<'a> PdfPageTextObject<'a> {
         }
     }
 
+    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_7881"))]
+    /// Sets the font size of the text specified in this [PdfPageTextObject].
+    ///
+    /// Note that the effective size of the text when rendered may differ from the font size
+    /// if a scaling factor has been applied to this text object's transformation matrix.
+    pub fn set_unscaled_font_size(&self, points: PdfPoints) -> Result<(), PdfiumError> {
+        if self.bindings().is_true(unsafe {
+            self.bindings()
+                .FPDFTextObj_SetFontSize(self.object_handle(), points.value)
+        }) {
+            Ok(())
+        } else {
+            Err(PdfiumError::InvalidFontSize)
+        }
+    }
+
     /// Returns the [PdfFont] used to render the text contained within this [PdfPageTextObject].
+    #[inline]
     pub fn font(&self) -> PdfFont<'_> {
         PdfFont::from_pdfium(
             unsafe { self.bindings().FPDFTextObj_GetFont(self.object_handle) },
@@ -421,6 +439,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -440,6 +459,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -462,6 +482,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",

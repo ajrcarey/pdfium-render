@@ -1,19 +1,14 @@
 // Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
-
 #ifndef PUBLIC_FPDF_PPO_H_
 #define PUBLIC_FPDF_PPO_H_
-
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 // Experimental API.
 // Import pages to a FPDF_DOCUMENT.
 //
@@ -34,7 +29,6 @@ FPDF_ImportPagesByIndex(FPDF_DOCUMENT dest_doc,
                         const int* page_indices,
                         unsigned long length,
                         int index);
-
 // Import pages to a FPDF_DOCUMENT.
 //
 //   dest_doc  - The destination document for the pages.
@@ -50,7 +44,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_ImportPages(FPDF_DOCUMENT dest_doc,
                                                      FPDF_DOCUMENT src_doc,
                                                      FPDF_BYTESTRING pagerange,
                                                      int index);
-
 // Experimental API.
 // Create a new document from |src_doc|.  The pages of |src_doc| will be
 // combined to provide |num_pages_on_x_axis x num_pages_on_y_axis| pages per
@@ -74,23 +67,21 @@ FPDF_ImportNPagesToOne(FPDF_DOCUMENT src_doc,
                        float output_height,
                        size_t num_pages_on_x_axis,
                        size_t num_pages_on_y_axis);
-
 // Experimental API.
 // Create a template to generate form xobjects from |src_doc|'s page at
 // |src_page_index|, for use in |dest_doc|.
 //
 // Returns a handle on success, or NULL on failure. Caller owns the newly
-// created object.
+// created object. The returned handle's lifetime is tied to |dest_doc| and not
+// |src_doc|. It must be closed before |dest_doc|.
 FPDF_EXPORT FPDF_XOBJECT FPDF_CALLCONV
 FPDF_NewXObjectFromPage(FPDF_DOCUMENT dest_doc,
                         FPDF_DOCUMENT src_doc,
                         int src_page_index);
-
 // Experimental API.
 // Close an FPDF_XOBJECT handle created by FPDF_NewXObjectFromPage().
 // FPDF_PAGEOBJECTs created from the FPDF_XOBJECT handle are not affected.
 FPDF_EXPORT void FPDF_CALLCONV FPDF_CloseXObject(FPDF_XOBJECT xobject);
-
 // Experimental API.
 // Create a new form object from an FPDF_XOBJECT object.
 //
@@ -98,7 +89,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_CloseXObject(FPDF_XOBJECT xobject);
 // newly created object.
 FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV
 FPDF_NewFormObjectFromXObject(FPDF_XOBJECT xobject);
-
 // Copy the viewer preferences from |src_doc| into |dest_doc|.
 //
 //   dest_doc - Document to write the viewer preferences into.
@@ -107,9 +97,7 @@ FPDF_NewFormObjectFromXObject(FPDF_XOBJECT xobject);
 // Returns TRUE on success.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDF_CopyViewerPreferences(FPDF_DOCUMENT dest_doc, FPDF_DOCUMENT src_doc);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
-
 #endif  // PUBLIC_FPDF_PPO_H_

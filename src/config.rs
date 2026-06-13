@@ -15,7 +15,11 @@ use std::str::FromStr;
 #[cfg(not(target_arch = "wasm32"))]
 use std::os::raw::c_void;
 
-#[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+#[cfg(any(
+    feature = "pdfium_future",
+    feature = "pdfium_7881",
+    feature = "pdfium_7763",
+))]
 use crate::bindgen::{
     FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FONTATIONS,
     FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE,
@@ -34,7 +38,11 @@ pub struct PdfiumLibraryConfig {
 
     renderer_type: c_uint,
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+    ))]
     font_library_type: c_uint,
 }
 
@@ -54,7 +62,11 @@ impl PdfiumLibraryConfig {
 
             renderer_type: FPDF_RENDERER_TYPE_FPDF_RENDERERTYPE_SKIA,
 
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+            #[cfg(any(
+                feature = "pdfium_future",
+                feature = "pdfium_7881",
+                feature = "pdfium_7763",
+            ))]
             font_library_type: FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE,
         }
     }
@@ -171,7 +183,11 @@ impl PdfiumLibraryConfig {
         self
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+    ))]
     /// Sets Pdfium's font handler to FreeType, <https://freetype.org/>.
     #[inline]
     pub fn set_font_backend_freetype(mut self) -> Self {
@@ -179,7 +195,11 @@ impl PdfiumLibraryConfig {
         self
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+    ))]
     /// Sets Pdfium's font handler to Fontations, <https://github.com/googlefonts/fontations/>.
     #[inline]
     pub fn set_font_backend_fontations(mut self) -> Self {
@@ -219,7 +239,11 @@ impl PdfiumLibraryConfig {
 
             m_RendererType: self.renderer_type,
 
-            #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763",))]
+            #[cfg(any(
+                feature = "pdfium_future",
+                feature = "pdfium_7881",
+                feature = "pdfium_7763",
+            ))]
             m_FontLibraryType: self.font_library_type,
         }
     }

@@ -58,6 +58,7 @@ pub use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
     feature = "pdfium_7350",
@@ -883,6 +884,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -1523,7 +1525,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763"
+    ))]
     /// Gets the expansion of an abbreviation or acronym for a given element.
     ///
     ///    `struct_element` -   Handle to the struct element.
@@ -1731,6 +1737,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -1860,6 +1867,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -1919,6 +1927,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -1979,6 +1988,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2039,11 +2049,12 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
-        out_value: *mut f32,
+        out_value: *mut c_float,
     ) -> FPDF_BOOL;
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2071,7 +2082,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
-        out_value: *mut f32,
+        out_value: *mut c_float,
     ) -> FPDF_BOOL;
 
     #[cfg(any(
@@ -2120,6 +2131,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2204,6 +2216,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2243,6 +2256,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2269,6 +2283,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2364,6 +2379,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -2843,10 +2859,10 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     #[allow(non_snake_case)]
     unsafe fn FPDF_CreateClipPath(
         &self,
-        left: f32,
-        bottom: f32,
-        right: f32,
-        top: f32,
+        left: c_float,
+        bottom: c_float,
+        right: c_float,
+        top: c_float,
     ) -> FPDF_CLIPPATH;
 
     /// Destroys a clip path.
@@ -3053,6 +3069,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -4277,6 +4294,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
@@ -4474,6 +4492,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
@@ -4508,6 +4527,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -4703,6 +4723,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns the handle to the attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -4733,6 +4754,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// See [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment_str].
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -4766,6 +4788,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     /// Returns a handle to the new attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -5695,6 +5718,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -5712,6 +5736,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -6453,6 +6478,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -6494,6 +6520,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7250,6 +7277,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7357,7 +7385,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         document: FPDF_DOCUMENT,
         page: FPDF_PAGE,
         text_object: FPDF_PAGEOBJECT,
-        scale: f32,
+        scale: c_float,
     ) -> FPDF_BITMAP;
 
     /// Gets the font of a text object.
@@ -7382,6 +7410,20 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         text: FPDF_PAGEOBJECT,
         size: *mut c_float,
     ) -> FPDF_BOOL;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    /// Sets the font size of a text object.
+    ///
+    ///    `text` - handle to a text page object.
+    ///
+    ///    `size` - the new font size, measured in points (1/72 inch). Must be
+    ///             non-negative; zero is permitted to mirror
+    ///             `FPDFPageObj_NewTextObj()` with size 0.
+    ///
+    /// Returns `true` on success. Returns `false` when `text` is not a text page object,
+    /// or when `size` is negative.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFTextObj_SetFontSize(&self, text: FPDF_PAGEOBJECT, size: c_float) -> FPDF_BOOL;
 
     /// Closes a loaded PDF font.
     ///
@@ -7557,6 +7599,32 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         count: size_t,
     ) -> FPDF_BOOL;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    /// Sets the character positions for a text object.
+    ///
+    ///    `text_object`  - handle to the text object.
+    ///
+    ///    `positions`    - pointer to an array of character positions to be set.
+    ///
+    ///    `count`        - number of elements in `positions`.
+    ///
+    /// The `positions` array specifies the position in points for each character
+    /// _except_ the first one. The first character has an implied position value of 0.
+    /// All positions are relative to the origin of the text object. The direction is
+    /// either horizontal or vertical, depending on the direction of text in `text_object`.
+    ///
+    /// For a text object with `N` characters, `count` must be `N - 1`. Therefore this
+    /// function fails when `N <= 1`.
+    ///
+    /// Returns `true` on success, `false` otherwise."]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFText_SetPositions(
+        &self,
+        text_object: FPDF_PAGEOBJECT,
+        positions: *const c_float,
+        count: usize,
+    ) -> FPDF_BOOL;
+
     /// Returns a font object loaded from a stream of data. The font is loaded into the
     /// document. Various font data structures, such as the ToUnicode data, are auto-generated
     /// based on the inputs.
@@ -7598,6 +7666,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7645,6 +7714,46 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         cid_to_gid_map_data_size: u32,
     ) -> FPDF_FONT;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    /// Inserts `page_object` into `page`.
+    ///
+    ///    `page`        - handle to a page
+    ///
+    ///    `page_object` - handle to a page object. `FPDFPage_InsertObject()` takes
+    ///                    ownership. Ownership of `page_object` transfers to `page` on
+    ///                    success. `page_object` is freed on failure. Null `page_object`
+    ///                    causes a failure.
+    ///
+    /// Returns `true` if successful, `false` otherwise.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT)
+        -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+        feature = "pdfium_6259",
+        feature = "pdfium_6164",
+        feature = "pdfium_6124",
+        feature = "pdfium_6110",
+        feature = "pdfium_6084",
+        feature = "pdfium_6043",
+        feature = "pdfium_6015",
+        feature = "pdfium_5961",
+    ))]
     /// Inserts `page_object` into `page`.
     ///
     ///    `page`        - handle to a page
@@ -7656,6 +7765,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
@@ -7748,6 +7858,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7777,6 +7888,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7842,6 +7954,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7928,6 +8041,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -7988,6 +8102,25 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         name: &str,
     ) -> FPDF_PAGEOBJECTMARK;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    /// Adds an existing content mark to a `page_object`. If consecutive page objects
+    /// have the same `mark`, the generated PDF will contain a single mark that spans
+    /// all of them. If the page objects are not consecutive, multiple copies of the
+    /// `mark` are inserted into the PDF.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///    `mark`        - handle to a mark object.
+    ///
+    /// Returns `true` on success, `false` otherwise. The handles are all owned by
+    /// the library. The `page_object` and `mark` params must be associated with the
+    /// same document.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_AddExistingMark(
+        &self,
+        page_object: FPDF_PAGEOBJECT,
+        mark: FPDF_PAGEOBJECTMARK,
+    ) -> FPDF_BOOL;
+
     /// Removes a content `mark` from a `page_object`. The mark handle will be invalid
     /// after the removal.
     ///
@@ -8005,6 +8138,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -8089,6 +8223,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -8204,6 +8339,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543"
     ))]
@@ -8224,11 +8360,12 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         &self,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
-        out_value: *mut f32,
+        out_value: *mut c_float,
     ) -> FPDF_BOOL;
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -8310,6 +8447,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -8416,6 +8554,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543"
     ))]
@@ -8441,7 +8580,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         page_object: FPDF_PAGEOBJECT,
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
-        value: f32,
+        value: c_float,
     ) -> FPDF_BOOL;
 
     /// Sets the value of a string property in a content mark by key. If a parameter
@@ -8471,6 +8610,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -8829,6 +8969,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -9262,6 +9403,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -9296,6 +9438,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",
@@ -9939,6 +10082,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
@@ -9974,7 +10118,11 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7763"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763"
+    ))]
     /// Gets the language of `document` from the catalog's `Lang` entry.
     ///
     ///    `document` - handle to a document.
@@ -10002,6 +10150,7 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350",

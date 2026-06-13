@@ -1,20 +1,15 @@
 // Copyright 2016 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
-
 #ifndef PUBLIC_FPDF_STRUCTTREE_H_
 #define PUBLIC_FPDF_STRUCTTREE_H_
-
 // clang-format off
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 // Function: FPDF_StructTree_GetForPage
 //          Get the structure tree for a page.
 // Parameters:
@@ -25,7 +20,6 @@ extern "C" {
 //          The handle should be released before |page| gets released.
 FPDF_EXPORT FPDF_STRUCTTREE FPDF_CALLCONV
 FPDF_StructTree_GetForPage(FPDF_PAGE page);
-
 // Function: FPDF_StructTree_Close
 //          Release a resource allocated by FPDF_StructTree_GetForPage().
 // Parameters:
@@ -35,7 +29,6 @@ FPDF_StructTree_GetForPage(FPDF_PAGE page);
 //          None.
 FPDF_EXPORT void FPDF_CALLCONV
 FPDF_StructTree_Close(FPDF_STRUCTTREE struct_tree);
-
 // Function: FPDF_StructTree_CountChildren
 //          Count the number of children for the structure tree.
 // Parameters:
@@ -45,7 +38,6 @@ FPDF_StructTree_Close(FPDF_STRUCTTREE struct_tree);
 //          The number of children, or -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructTree_CountChildren(FPDF_STRUCTTREE struct_tree);
-
 // Function: FPDF_StructTree_GetChildAtIndex
 //          Get a child in the structure tree.
 // Parameters:
@@ -61,7 +53,6 @@ FPDF_StructTree_CountChildren(FPDF_STRUCTTREE struct_tree);
 //          return value.
 FPDF_EXPORT FPDF_STRUCTELEMENT FPDF_CALLCONV
 FPDF_StructTree_GetChildAtIndex(FPDF_STRUCTTREE struct_tree, int index);
-
 // Function: FPDF_StructElement_GetAltText
 //          Get the alt text for a given element.
 // Parameters:
@@ -81,7 +72,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetAltText(FPDF_STRUCTELEMENT struct_element,
                               void* buffer,
                               unsigned long buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetActualText
 //          Get the actual text for a given element.
@@ -102,7 +92,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetActualText(FPDF_STRUCTELEMENT struct_element,
                                  void* buffer,
                                  unsigned long buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetExpansion
 //          Get the expansion of an abbreviation or acronym for a given element.
@@ -124,7 +113,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetExpansion(FPDF_STRUCTELEMENT struct_element,
                                 void* buffer,
                                 unsigned long buflen);
-
 // Function: FPDF_StructElement_GetID
 //          Get the ID for a given element.
 // Parameters:
@@ -144,7 +132,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetID(FPDF_STRUCTELEMENT struct_element,
                          void* buffer,
                          unsigned long buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetLang
 //          Get the case-insensitive IETF BCP 47 language code for an element.
@@ -165,7 +152,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetLang(FPDF_STRUCTELEMENT struct_element,
                            void* buffer,
                            unsigned long buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetStringAttribute
 //          Get a struct element attribute of type "name" or "string".
@@ -188,7 +174,6 @@ FPDF_StructElement_GetStringAttribute(FPDF_STRUCTELEMENT struct_element,
                                       FPDF_BYTESTRING attr_name,
                                       void* buffer,
                                       unsigned long buflen);
-
 // Function: FPDF_StructElement_GetMarkedContentID
 //          Get the marked content ID for a given element.
 // Parameters:
@@ -202,7 +187,6 @@ FPDF_StructElement_GetStringAttribute(FPDF_STRUCTELEMENT struct_element,
 //          may be deprecated in the future.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_GetMarkedContentID(FPDF_STRUCTELEMENT struct_element);
-
 // Function: FPDF_StructElement_GetType
 //           Get the type (/S) for a given element.
 // Parameters:
@@ -222,7 +206,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetType(FPDF_STRUCTELEMENT struct_element,
                            void* buffer,
                            unsigned long buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetObjType
 //           Get the object type (/Type) for a given element.
@@ -243,7 +226,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetObjType(FPDF_STRUCTELEMENT struct_element,
                               void* buffer,
                               unsigned long buflen);
-
 // Function: FPDF_StructElement_GetTitle
 //           Get the title (/T) for a given element.
 // Parameters:
@@ -263,7 +245,6 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetTitle(FPDF_STRUCTELEMENT struct_element,
                             void* buffer,
                             unsigned long buflen);
-
 // Function: FPDF_StructElement_CountChildren
 //          Count the number of children for the structure element.
 // Parameters:
@@ -272,7 +253,6 @@ FPDF_StructElement_GetTitle(FPDF_STRUCTELEMENT struct_element,
 //          The number of children, or -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_CountChildren(FPDF_STRUCTELEMENT struct_element);
-
 // Function: FPDF_StructElement_GetChildAtIndex
 //          Get a child in the structure element.
 // Parameters:
@@ -288,7 +268,6 @@ FPDF_StructElement_CountChildren(FPDF_STRUCTELEMENT struct_element);
 FPDF_EXPORT FPDF_STRUCTELEMENT FPDF_CALLCONV
 FPDF_StructElement_GetChildAtIndex(FPDF_STRUCTELEMENT struct_element,
                                    int index);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetChildMarkedContentID
 //          Get the child's content id
@@ -307,7 +286,6 @@ FPDF_StructElement_GetChildAtIndex(FPDF_STRUCTELEMENT struct_element,
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_GetChildMarkedContentID(FPDF_STRUCTELEMENT struct_element,
                                            int index);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetParent
 //          Get the parent of the structure element.
@@ -320,7 +298,6 @@ FPDF_StructElement_GetChildMarkedContentID(FPDF_STRUCTELEMENT struct_element,
 //          return NULL.
 FPDF_EXPORT FPDF_STRUCTELEMENT FPDF_CALLCONV
 FPDF_StructElement_GetParent(FPDF_STRUCTELEMENT struct_element);
-
 // Function: FPDF_StructElement_GetAttributeCount
 //          Count the number of attributes for the structure element.
 // Parameters:
@@ -329,7 +306,6 @@ FPDF_StructElement_GetParent(FPDF_STRUCTELEMENT struct_element);
 //          The number of attributes, or -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_GetAttributeCount(FPDF_STRUCTELEMENT struct_element);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetAttributeAtIndex
 //          Get an attribute object in the structure element.
@@ -347,7 +323,6 @@ FPDF_StructElement_GetAttributeCount(FPDF_STRUCTELEMENT struct_element);
 //          FPDF_StructElement_GetAttributeCount() return value.
 FPDF_EXPORT FPDF_STRUCTELEMENT_ATTR FPDF_CALLCONV
 FPDF_StructElement_GetAttributeAtIndex(FPDF_STRUCTELEMENT struct_element, int index);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetCount
 //          Count the number of attributes in a structure element attribute map.
@@ -357,8 +332,6 @@ FPDF_StructElement_GetAttributeAtIndex(FPDF_STRUCTELEMENT struct_element, int in
 //          The number of attributes, or -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_Attr_GetCount(FPDF_STRUCTELEMENT_ATTR struct_attribute);
-
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetName
 //          Get the name of an attribute in a structure element attribute map.
@@ -396,7 +369,6 @@ FPDF_StructElement_Attr_GetName(FPDF_STRUCTELEMENT_ATTR struct_attribute,
 FPDF_EXPORT FPDF_STRUCTELEMENT_ATTR_VALUE FPDF_CALLCONV
 FPDF_StructElement_Attr_GetValue(FPDF_STRUCTELEMENT_ATTR struct_attribute,
                                  FPDF_BYTESTRING name);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetType
 //           Get the type of an attribute in a structure element attribute map.
@@ -408,7 +380,6 @@ FPDF_StructElement_Attr_GetValue(FPDF_STRUCTELEMENT_ATTR struct_attribute,
 //           references are always dereferenced.
 FPDF_EXPORT FPDF_OBJECT_TYPE FPDF_CALLCONV
 FPDF_StructElement_Attr_GetType(FPDF_STRUCTELEMENT_ATTR_VALUE value);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetBooleanValue
 //           Get the value of a boolean attribute in an attribute map as
@@ -424,7 +395,6 @@ FPDF_StructElement_Attr_GetType(FPDF_STRUCTELEMENT_ATTR_VALUE value);
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDF_StructElement_Attr_GetBooleanValue(FPDF_STRUCTELEMENT_ATTR_VALUE value,
                                         FPDF_BOOL* out_value);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetNumberValue
 //           Get the value of a number attribute in an attribute map as float.
@@ -440,7 +410,6 @@ FPDF_StructElement_Attr_GetBooleanValue(FPDF_STRUCTELEMENT_ATTR_VALUE value,
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDF_StructElement_Attr_GetNumberValue(FPDF_STRUCTELEMENT_ATTR_VALUE value,
                                        float* out_value);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetStringValue
 //           Get the value of a string attribute in an attribute map as string.
@@ -464,7 +433,6 @@ FPDF_StructElement_Attr_GetStringValue(FPDF_STRUCTELEMENT_ATTR_VALUE value,
                                        void* buffer,
                                        unsigned long buflen,
                                        unsigned long* out_buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetBlobValue
 //           Get the value of a blob attribute in an attribute map as string.
@@ -486,7 +454,6 @@ FPDF_StructElement_Attr_GetBlobValue(FPDF_STRUCTELEMENT_ATTR_VALUE value,
                                      void* buffer,
                                      unsigned long buflen,
                                      unsigned long* out_buflen);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_CountChildren
 //           Count the number of children values in an attribute.
@@ -496,7 +463,6 @@ FPDF_StructElement_Attr_GetBlobValue(FPDF_STRUCTELEMENT_ATTR_VALUE value,
 //           The number of children, or -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_Attr_CountChildren(FPDF_STRUCTELEMENT_ATTR_VALUE value);
-
 // Experimental API.
 // Function: FPDF_StructElement_Attr_GetChildAtIndex
 //           Get a child from an attribute.
@@ -511,7 +477,6 @@ FPDF_StructElement_Attr_CountChildren(FPDF_STRUCTELEMENT_ATTR_VALUE value);
 FPDF_EXPORT FPDF_STRUCTELEMENT_ATTR_VALUE FPDF_CALLCONV
 FPDF_StructElement_Attr_GetChildAtIndex(FPDF_STRUCTELEMENT_ATTR_VALUE value,
                                         int index);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetMarkedContentIdCount
 //          Get the count of marked content ids for a given element.
@@ -521,7 +486,6 @@ FPDF_StructElement_Attr_GetChildAtIndex(FPDF_STRUCTELEMENT_ATTR_VALUE value,
 //          The count of marked content ids or -1 if none exists.
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_GetMarkedContentIdCount(FPDF_STRUCTELEMENT struct_element);
-
 // Experimental API.
 // Function: FPDF_StructElement_GetMarkedContentIdAtIndex
 //          Get the marked content id at a given index for a given element.
@@ -538,9 +502,7 @@ FPDF_StructElement_GetMarkedContentIdCount(FPDF_STRUCTELEMENT struct_element);
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_StructElement_GetMarkedContentIdAtIndex(FPDF_STRUCTELEMENT struct_element,
                                              int index);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-
 #endif  // PUBLIC_FPDF_STRUCTTREE_H_

@@ -105,6 +105,7 @@ impl<'a> PdfFormRadioButtonField<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
@@ -136,6 +137,7 @@ impl<'a> PdfFormRadioButtonField<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
         feature = "pdfium_7350"
