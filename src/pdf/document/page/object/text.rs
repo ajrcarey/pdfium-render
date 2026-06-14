@@ -287,7 +287,7 @@ impl<'a> PdfPageTextObject<'a> {
         }
     }
 
-    #[cfg(any(feature = "pdfium_latest", feature = "pdfium_7881"))]
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
     /// Sets the font size of the text specified in this [PdfPageTextObject].
     ///
     /// Note that the effective size of the text when rendered may differ from the font size
