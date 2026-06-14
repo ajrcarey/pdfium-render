@@ -30,6 +30,17 @@ use crate::bindgen::{
 ))]
 use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 
+#[cfg(any(
+    feature = "pdfium_7543",
+    feature = "pdfium_7350",
+    feature = "pdfium_7215",
+    feature = "pdfium_7123",
+    feature = "pdfium_6996",
+    feature = "pdfium_6721",
+    feature = "pdfium_6666"
+))]
+use crate::bindgen::FPDF_BYTESTRING;
+
 #[cfg(feature = "pdfium_use_skia")]
 use crate::bindgen::FPDF_SKIA_CANVAS;
 
@@ -5581,6 +5592,18 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
         feature = "pdfium_future",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
+        crate::bindgen::FPDFCatalog_SetLanguage(document, language)
+    }
+
+    #[cfg(any(
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -5591,29 +5614,12 @@ impl PdfiumLibraryBindings for StaticPdfiumBindings {
     ))]
     #[inline]
     #[allow(non_snake_case)]
-    unsafe fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
-        let c_language = CString::new(language).unwrap();
-
-        // The pointer width changed from i8 (c_char) to u16 in Pdfium release 7763.
-        #[cfg(any(
-            feature = "pdfium_future",
-            feature = "pdfium_7881",
-            feature = "pdfium_7763"
-        ))]
-        let c_language_ptr = c_language.as_ptr() as *const u16;
-
-        #[cfg(any(
-            feature = "pdfium_7543",
-            feature = "pdfium_7350",
-            feature = "pdfium_7215",
-            feature = "pdfium_7123",
-            feature = "pdfium_6996",
-            feature = "pdfium_6721",
-            feature = "pdfium_6666"
-        ))]
-        let c_language_ptr: *const c_char = c_language.as_ptr();
-
-        crate::bindgen::FPDFCatalog_SetLanguage(document, c_language_ptr)
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: FPDF_BYTESTRING,
+    ) -> FPDF_BOOL {
+        crate::bindgen::FPDFCatalog_SetLanguage(document, language)
     }
 }
 

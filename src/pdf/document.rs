@@ -5,6 +5,7 @@ pub mod attachment;
 pub mod attachments;
 pub mod bookmark;
 pub mod bookmarks;
+pub mod catalog;
 pub mod fonts;
 pub mod form;
 pub mod metadata;
@@ -19,6 +20,7 @@ use crate::error::PdfiumError;
 use crate::error::PdfiumInternalError;
 use crate::pdf::document::attachments::PdfAttachments;
 use crate::pdf::document::bookmarks::PdfBookmarks;
+use crate::pdf::document::catalog::PdfCatalog;
 use crate::pdf::document::fonts::PdfFonts;
 use crate::pdf::document::form::PdfForm;
 use crate::pdf::document::metadata::PdfMetadata;
@@ -158,6 +160,7 @@ pub struct PdfDocument<'a> {
     output_version: Option<PdfDocumentVersion>,
     attachments: PdfAttachments<'a>,
     bookmarks: PdfBookmarks<'a>,
+    catalog: PdfCatalog<'a>,
     form: Option<PdfForm<'a>>,
     fonts: PdfFonts<'a>,
     metadata: PdfMetadata<'a>,
@@ -185,6 +188,7 @@ impl<'a> PdfDocument<'a> {
             output_version: None,
             attachments: PdfAttachments::from_pdfium(handle),
             bookmarks: PdfBookmarks::from_pdfium(handle),
+            catalog: PdfCatalog::from_pdfium(handle),
             form,
             fonts: PdfFonts::from_pdfium(handle),
             metadata: PdfMetadata::from_pdfium(handle),
@@ -255,6 +259,18 @@ impl<'a> PdfDocument<'a> {
     #[inline]
     pub fn bookmarks(&self) -> &PdfBookmarks<'_> {
         &self.bookmarks
+    }
+
+    /// Returns an immutable reference to the [PdfCatalog] properties for this [PdfDocument].
+    #[inline]
+    pub fn catalog(&self) -> &PdfCatalog<'_> {
+        &self.catalog
+    }
+
+    /// Returns a mutable reference to the [PdfCatalog] properties for this [PdfDocument].
+    #[inline]
+    pub fn catalog_mut(&mut self) -> &mut PdfCatalog<'a> {
+        &mut self.catalog
     }
 
     /// Returns an immutable reference to the [PdfForm] embedded in this [PdfDocument], if any.

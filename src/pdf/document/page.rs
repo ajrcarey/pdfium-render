@@ -11,6 +11,7 @@ pub mod object;
 pub mod objects;
 pub mod render_config;
 pub mod size;
+pub mod structure_tree;
 pub mod text;
 
 #[cfg(feature = "paragraph")]
@@ -37,6 +38,7 @@ use crate::pdf::document::page::objects::common::PdfPageObjectsCommon;
 use crate::pdf::document::page::objects::PdfPageObjects;
 use crate::pdf::document::page::render_config::{PdfPageRenderSettings, PdfRenderConfig};
 use crate::pdf::document::page::size::PdfPagePaperSize;
+use crate::pdf::document::page::structure_tree::PdfPageStructureTree;
 use crate::pdf::document::page::text::PdfPageText;
 use crate::pdf::font::PdfFont;
 use crate::pdf::matrix::{PdfMatrix, PdfMatrixValue};
@@ -183,6 +185,7 @@ pub struct PdfPage<'a> {
     boundaries: PdfPageBoundaries<'a>,
     links: PdfPageLinks<'a>,
     objects: PdfPageObjects<'a>,
+    structure_tree: PdfPageStructureTree<'a>,
     lifetime: PhantomData<&'a FPDF_PAGE>,
 }
 
@@ -210,6 +213,7 @@ impl<'a> PdfPage<'a> {
             boundaries: PdfPageBoundaries::from_pdfium(page_handle),
             links: PdfPageLinks::from_pdfium(page_handle, document_handle),
             objects: PdfPageObjects::from_pdfium(document_handle, page_handle),
+            structure_tree: PdfPageStructureTree::from_pdfium(page_handle),
             lifetime: PhantomData,
         };
 
@@ -383,7 +387,7 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Returns an immutable collection of the annotations that have been added to this [PdfPage].
-    pub fn annotations(&self) -> &PdfPageAnnotations<'a> {
+    pub fn annotations(&self) -> &PdfPageAnnotations<'_> {
         &self.annotations
     }
 
@@ -394,7 +398,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns an immutable collection of the bounding boxes defining the extents of this [PdfPage].
     #[inline]
-    pub fn boundaries(&self) -> &PdfPageBoundaries<'a> {
+    pub fn boundaries(&self) -> &PdfPageBoundaries<'_> {
         &self.boundaries
     }
 
@@ -406,7 +410,7 @@ impl<'a> PdfPage<'a> {
 
     /// Returns an immutable collection of the links on this [PdfPage].
     #[inline]
-    pub fn links(&self) -> &PdfPageLinks<'a> {
+    pub fn links(&self) -> &PdfPageLinks<'_> {
         &self.links
     }
 
@@ -417,13 +421,18 @@ impl<'a> PdfPage<'a> {
     }
 
     /// Returns an immutable collection of all the page objects on this [PdfPage].
-    pub fn objects(&self) -> &PdfPageObjects<'a> {
+    pub fn objects(&self) -> &PdfPageObjects<'_> {
         &self.objects
     }
 
     /// Returns a mutable collection of all the page objects on this [PdfPage].
     pub fn objects_mut(&mut self) -> &mut PdfPageObjects<'a> {
         &mut self.objects
+    }
+
+    /// Returns an immutable reference to the structure tree of this [PdfPage].
+    pub fn structure_tree(&self) -> &PdfPageStructureTree<'_> {
+        &self.structure_tree
     }
 
     /// Returns a list of all the distinct [PdfFont] instances used by the page text objects

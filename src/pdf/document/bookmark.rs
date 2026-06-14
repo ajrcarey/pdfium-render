@@ -45,7 +45,7 @@ impl<'a> PartialEq for PdfBookmark<'a> {
         // - The structure is allocated and retained by Pdfium for as long as the document is open,
         //   so the same bookmark will always give the same handle.
 
-        self.bookmark_handle == other.bookmark_handle
+        self.bookmark_handle() == other.bookmark_handle()
     }
 }
 
@@ -56,7 +56,7 @@ impl<'a> Hash for PdfBookmark<'a> {
     where
         H: Hasher,
     {
-        self.bookmark_handle.hash(state);
+        self.bookmark_handle().hash(state);
     }
 }
 
@@ -98,7 +98,7 @@ impl<'a> PdfBookmark<'a> {
 
         let buffer_length = unsafe {
             self.bindings()
-                .FPDFBookmark_GetTitle(self.bookmark_handle, std::ptr::null_mut(), 0)
+                .FPDFBookmark_GetTitle(self.bookmark_handle(), std::ptr::null_mut(), 0)
         };
 
         if buffer_length == 0 {
@@ -111,7 +111,7 @@ impl<'a> PdfBookmark<'a> {
 
         let result = unsafe {
             self.bindings().FPDFBookmark_GetTitle(
-                self.bookmark_handle,
+                self.bookmark_handle(),
                 buffer.as_mut_ptr() as *mut c_void,
                 buffer_length,
             )
@@ -136,7 +136,7 @@ impl<'a> PdfBookmark<'a> {
         } else {
             Some(PdfAction::from_pdfium(
                 handle,
-                self.document_handle,
+                self.document_handle(),
                 self.bindings(),
             ))
         }
@@ -149,13 +149,13 @@ impl<'a> PdfBookmark<'a> {
     pub fn destination(&self) -> Option<PdfDestination<'a>> {
         let handle = unsafe {
             self.bindings()
-                .FPDFBookmark_GetDest(self.document_handle, self.bookmark_handle)
+                .FPDFBookmark_GetDest(self.document_handle(), self.bookmark_handle())
         };
 
         if handle.is_null() {
             None
         } else {
-            Some(PdfDestination::from_pdfium(self.document_handle, handle))
+            Some(PdfDestination::from_pdfium(self.document_handle(), handle))
         }
     }
 
@@ -163,7 +163,7 @@ impl<'a> PdfBookmark<'a> {
     #[inline]
     pub fn parent(&self) -> Option<PdfBookmark<'a>> {
         self.parent.map(|parent_handle| {
-            PdfBookmark::from_pdfium(parent_handle, None, self.document_handle)
+            PdfBookmark::from_pdfium(parent_handle, None, self.document_handle())
         })
     }
 
@@ -175,7 +175,7 @@ impl<'a> PdfBookmark<'a> {
         // the child tree should be displayed closed by deafult.
         (unsafe {
             self.bindings()
-                .FPDFBookmark_GetCount(self.bookmark_handle)
+                .FPDFBookmark_GetCount(self.bookmark_handle())
                 .unsigned_abs()
         }) as usize
     }
@@ -184,7 +184,7 @@ impl<'a> PdfBookmark<'a> {
     pub fn first_child(&self) -> Option<PdfBookmark<'a>> {
         let handle = unsafe {
             self.bindings()
-                .FPDFBookmark_GetFirstChild(self.document_handle, self.bookmark_handle)
+                .FPDFBookmark_GetFirstChild(self.document_handle(), self.bookmark_handle())
         };
 
         if handle.is_null() {
@@ -192,7 +192,7 @@ impl<'a> PdfBookmark<'a> {
         } else {
             Some(PdfBookmark::from_pdfium(
                 handle,
-                Some(self.bookmark_handle),
+                Some(self.bookmark_handle()),
                 self.document_handle,
             ))
         }
@@ -202,7 +202,7 @@ impl<'a> PdfBookmark<'a> {
     pub fn next_sibling(&self) -> Option<PdfBookmark<'a>> {
         let handle = unsafe {
             self.bindings()
-                .FPDFBookmark_GetNextSibling(self.document_handle, self.bookmark_handle)
+                .FPDFBookmark_GetNextSibling(self.document_handle(), self.bookmark_handle())
         };
 
         if handle.is_null() {
@@ -211,7 +211,7 @@ impl<'a> PdfBookmark<'a> {
             Some(PdfBookmark::from_pdfium(
                 handle,
                 self.parent,
-                self.document_handle,
+                self.document_handle(),
             ))
         }
     }

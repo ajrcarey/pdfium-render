@@ -74,6 +74,17 @@ pub use crate::bindgen::{
 ))]
 pub use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
 
+#[cfg(any(
+    feature = "pdfium_7543",
+    feature = "pdfium_7350",
+    feature = "pdfium_7215",
+    feature = "pdfium_7123",
+    feature = "pdfium_6996",
+    feature = "pdfium_6721",
+    feature = "pdfium_6666"
+))]
+use crate::bindgen::FPDF_BYTESTRING;
+
 #[cfg(feature = "pdfium_use_skia")]
 pub use crate::bindgen::FPDF_SKIA_CANVAS;
 
@@ -98,9 +109,20 @@ use crate::utils::pixels::{
 use crate::utils::utf16le::{
     get_pdfium_utf16le_bytes_from_str, get_string_from_pdfium_utf16le_bytes,
 };
-use std::os::raw::{
+use std::ffi::{
     c_char, c_double, c_float, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort, c_void,
 };
+
+#[cfg(any(
+    feature = "pdfium_7543",
+    feature = "pdfium_7350",
+    feature = "pdfium_7215",
+    feature = "pdfium_7123",
+    feature = "pdfium_6996",
+    feature = "pdfium_6721",
+    feature = "pdfium_6666"
+))]
+use std::ffi::CString;
 
 /// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
@@ -10152,6 +10174,22 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
         feature = "pdfium_future",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
+    ))]
+    /// Sets the language of `document` to `language`.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    ///    `language` - the language to set to.
+    ///
+    /// Returns `true` on success.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -10168,7 +10206,55 @@ pub trait PdfiumLibraryBindings: Send + Sync + Drop {
     ///
     /// Returns `true` on success.
     #[allow(non_snake_case)]
-    unsafe fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL;
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: FPDF_BYTESTRING,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+    ))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFCatalog_SetLanguage_str(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: &str,
+    ) -> FPDF_BOOL {
+        self.FPDFCatalog_SetLanguage(
+            document,
+            get_pdfium_utf16le_bytes_from_str(language).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
+    #[cfg(any(
+        feature = "pdfium_7543",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666"
+    ))]
+    /// Sets the language of `document` to `language`.
+    ///
+    ///    `document` - handle to a document.
+    ///
+    ///    `language` - the language to set to.
+    ///
+    /// Returns `true` on success.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFCatalog_SetLanguage_str(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: &str,
+    ) -> FPDF_BOOL {
+        let c_language = CString::new(language).unwrap();
+
+        self.FPDFCatalog_SetLanguage(document, c_language.as_ptr())
+    }
 }
 
 #[cfg(test)]

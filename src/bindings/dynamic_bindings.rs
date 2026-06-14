@@ -2571,6 +2571,10 @@ pub(crate) struct DynamicPdfiumBindings {
         feature = "pdfium_future",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
+    ))]
+    extern_FPDFCatalog_SetLanguage:
+        unsafe extern "C" fn(document: FPDF_DOCUMENT, language: FPDF_WIDESTRING) -> FPDF_BOOL,
+    #[cfg(any(
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -9484,6 +9488,18 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
         feature = "pdfium_future",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
+    ))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
+        (self.extern_FPDFCatalog_SetLanguage)(document, language)
+    }
+
+    #[cfg(any(
         feature = "pdfium_7543",
         feature = "pdfium_7350",
         feature = "pdfium_7215",
@@ -9494,10 +9510,12 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
     ))]
     #[inline]
     #[allow(non_snake_case)]
-    unsafe fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
-        let c_language = CString::new(language).unwrap();
-
-        (self.extern_FPDFCatalog_SetLanguage)(document, c_language.as_ptr())
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        language: FPDF_BYTESTRING,
+    ) -> FPDF_BOOL {
+        (self.extern_FPDFCatalog_SetLanguage)(document, language)
     }
 }
 

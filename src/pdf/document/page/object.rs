@@ -1,14 +1,15 @@
 //! Defines the [PdfPageObject] enum, exposing functionality related to a single renderable page object.
 
-pub(crate) mod group;
-pub(crate) mod image;
-pub(crate) mod ownership;
-pub(crate) mod path;
+pub mod content_mark;
+pub mod group;
+pub mod image;
+pub mod ownership;
+pub mod path;
 pub(crate) mod private; // Keep private so that the PdfPageObjectPrivate trait is not exposed.
-pub(crate) mod shading;
-pub(crate) mod text;
-pub(crate) mod unsupported;
-pub(crate) mod x_object_form;
+pub mod shading;
+pub mod text;
+pub mod unsupported;
+pub mod x_object_form;
 
 use crate::bindgen::{
     FPDF_LINECAP_BUTT, FPDF_LINECAP_PROJECTING_SQUARE, FPDF_LINECAP_ROUND, FPDF_LINEJOIN_BEVEL,

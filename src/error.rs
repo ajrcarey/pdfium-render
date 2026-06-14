@@ -131,6 +131,7 @@ pub enum PdfiumError {
     NoAttachmentPointsInPageAnnotation,
     CoordinateConversionFunctionIndicatedError,
     InvalidFontSize,
+    NoLanguageSetInDocumentCatalog,
 
     /// Pdfium does not safely support moving page object ownership from one document to another.
     CannotMoveObjectAcrossDocuments,

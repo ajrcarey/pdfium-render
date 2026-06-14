@@ -1,5 +1,5 @@
 //! Defines the [PdfBookmarks] struct, exposing functionality related to the
-//! bookmarks contained within a single `PdfDocument`.
+//! bookmarks contained within a single [PdfDocument].
 
 use crate::bindgen::{FPDF_BOOKMARK, FPDF_DOCUMENT};
 use crate::error::{PdfiumError, PdfiumInternalError};
@@ -8,10 +8,13 @@ use crate::pdfium::PdfiumLibraryBindingsAccessor;
 use std::collections::HashSet;
 use std::marker::PhantomData;
 
-/// The bookmarks contained within a single `PdfDocument`.
+#[cfg(doc)]
+use crate::pdf::document::PdfDocument;
+
+/// The bookmarks contained within a single [PdfDocument].
 ///
 /// Bookmarks in PDF files form a tree structure, branching out from a top-level root bookmark.
-/// The [PdfBookmarks::root()] returns the root bookmark in the containing `PdfDocument`, if any;
+/// The [PdfBookmarks::root()] returns the root bookmark in the containing [PdfDocument], if any;
 /// use the root's [PdfBookmark::first_child()] and [PdfBookmark::next_sibling()] functions to
 /// traverse the bookmark tree.
 ///
@@ -32,14 +35,14 @@ impl<'a> PdfBookmarks<'a> {
         }
     }
 
-    /// Returns the internal `FPDF_DOCUMENT` handle of the `PdfDocument` containing
+    /// Returns the internal `FPDF_DOCUMENT` handle of the [PdfDocument] containing
     /// this [PdfBookmarks] collection.
     #[inline]
     pub(crate) fn document_handle(&self) -> FPDF_DOCUMENT {
         self.document_handle
     }
 
-    /// Returns the root [PdfBookmark] in the containing `PdfDocument`, if any.
+    /// Returns the root [PdfBookmark] in the containing [PdfDocument], if any.
     pub fn root(&self) -> Option<PdfBookmark<'_>> {
         let bookmark_handle = unsafe {
             self.bindings()
@@ -57,7 +60,7 @@ impl<'a> PdfBookmarks<'a> {
         }
     }
 
-    /// Returns the first [PdfBookmark] in the containing `PdfDocument` that has a title matching
+    /// Returns the first [PdfBookmark] in the containing [PdfDocument] that has a title matching
     /// the given string.
     ///
     /// Note that bookmarks are not required to have unique titles, so in theory any number of
@@ -78,7 +81,7 @@ impl<'a> PdfBookmarks<'a> {
         }
     }
 
-    /// Returns all [PdfBookmark] objects in the containing `PdfDocument` that have a title
+    /// Returns all [PdfBookmark] objects in the containing [PdfDocument] that have a title
     /// matching the given string.
     ///
     /// Note that bookmarks are not required to have unique titles, so in theory any number of
@@ -95,7 +98,7 @@ impl<'a> PdfBookmarks<'a> {
     }
 
     /// Returns a depth-first prefix-order iterator over all the [PdfBookmark]
-    /// objects in the containing `PdfDocument`, starting from the top-level
+    /// objects in the containing [PdfDocument], starting from the top-level
     /// root bookmark.
     #[inline]
     pub fn iter(&self) -> PdfBookmarksIterator<'_> {
@@ -174,7 +177,7 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         // A straightforward tail-recursive function to walk the bookmarks might
-        // look about like this:
+        // look like this:
         //
         // pub fn walk(node: Option<PdfBookmark<'a>>) {
         //     if let Some(node) = node) {

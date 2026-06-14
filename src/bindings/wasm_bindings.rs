@@ -1,9 +1,9 @@
 use crate::bindgen::{
     size_t, FPDF_CharsetFontMap, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION,
     FPDF_ANNOTATION_SUBTYPE, FPDF_ANNOT_APPEARANCEMODE, FPDF_ATTACHMENT, FPDF_AVAIL, FPDF_BITMAP,
-    FPDF_BOOKMARK, FPDF_BOOL, FPDF_CLIPPATH, FPDF_COLORSCHEME, FPDF_DEST, FPDF_DOCUMENT,
-    FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE, FPDF_FONT,
-    FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
+    FPDF_BOOKMARK, FPDF_BOOL, FPDF_BYTESTRING, FPDF_CLIPPATH, FPDF_COLORSCHEME, FPDF_DEST,
+    FPDF_DOCUMENT, FPDF_DUPLEXTYPE, FPDF_DWORD, FPDF_FILEACCESS, FPDF_FILEIDTYPE, FPDF_FILEWRITE,
+    FPDF_FONT, FPDF_FORMFILLINFO, FPDF_FORMHANDLE, FPDF_GLYPHPATH, FPDF_IMAGEOBJ_METADATA,
     FPDF_JAVASCRIPT_ACTION, FPDF_LIBRARY_CONFIG, FPDF_LINK, FPDF_OBJECT_TYPE, FPDF_PAGE,
     FPDF_PAGELINK, FPDF_PAGEOBJECT, FPDF_PAGEOBJECTMARK, FPDF_PAGERANGE, FPDF_PATHSEGMENT,
     FPDF_SCHHANDLE, FPDF_SIGNATURE, FPDF_STRUCTELEMENT, FPDF_STRUCTELEMENT_ATTR, FPDF_STRUCTTREE,
@@ -616,6 +616,51 @@ impl PdfiumRenderWasmState {
         self.copy_struct_to_pdfium(ptr as *const T)
     }
 
+    /// Copies the raw bytes of the given `FPDF_BYTESTRING` into Pdfium's WASM memory heap,
+    /// returning a pointer to the copied string at the destination location.
+    ///
+    /// The source `FPDF_BYTESTRING` must be terminated by one null byte.
+    ///
+    /// WASM modules are isolated from one another and cannot directly share memory. We must
+    /// therefore copy buffers from our own memory heap across into Pdfium's memory heap, and vice versa.
+    fn copy_byte_string_to_pdfium(&self, str: FPDF_BYTESTRING) -> usize {
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_byte_string_to_pdfium(): entering");
+
+        // Copying the FPDF_WIDESTRING using copy_struct_to_pdfium() will only copy the
+        // two-byte pointer, not the string data itself. We must scan the source memory
+        // location for the terminating null byte to find the correct data length.
+
+        let mut len = 0;
+
+        log::debug!(
+            "pdfium-render::PdfiumRenderWasmState::copy_byte_string_to_pdfium(): FPDF_WIDESTRING is at heap offset {}",
+            str as usize as u32,
+        );
+
+        loop {
+            let byte = unsafe { Uint8Array::view_mut_raw((str as *mut u8).add(len), 1) };
+
+            len += 1;
+
+            if byte.get_index(0) == 0 {
+                // This is the end of the string.
+
+                break;
+            }
+        }
+
+        log::debug!(
+            "pdfium-render::PdfiumRenderWasmState::copy_byte_string_to_pdfium(): FPDF_BYTESTRING has data length {} bytes",
+            len,
+        );
+
+        let result = self.copy_ptr_with_len_to_pdfium(str, len);
+
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_byte_string_to_pdfium(): leaving");
+
+        result
+    }
+
     /// Copies the raw bytes of the given `FPDF_WIDESTRING` into Pdfium's WASM memory heap,
     /// returning a pointer to the copied string at the destination location.
     ///
@@ -623,9 +668,8 @@ impl PdfiumRenderWasmState {
     ///
     /// WASM modules are isolated from one another and cannot directly share memory. We must
     /// therefore copy buffers from our own memory heap across into Pdfium's memory heap, and vice versa.
-    #[inline]
-    fn copy_string_to_pdfium(&self, str: FPDF_WIDESTRING) -> usize {
-        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): entering");
+    fn copy_wide_string_to_pdfium(&self, str: FPDF_WIDESTRING) -> usize {
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_wide_string_to_pdfium(): entering");
 
         // Copying the FPDF_WIDESTRING using copy_struct_to_pdfium() will only copy the
         // two-byte pointer, not the string data itself. We must scan the source memory
@@ -642,7 +686,7 @@ impl PdfiumRenderWasmState {
         let mut len = 0;
 
         log::debug!(
-            "pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): FPDF_WIDESTRING is at heap offset {}",
+            "pdfium-render::PdfiumRenderWasmState::copy_wide_string_to_pdfium(): FPDF_WIDESTRING is at heap offset {}",
             str as usize as u32,
         );
 
@@ -659,13 +703,13 @@ impl PdfiumRenderWasmState {
         }
 
         log::debug!(
-            "pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): FPDF_WIDESTRING has data length {} bytes",
+            "pdfium-render::PdfiumRenderWasmState::copy_wide_string_to_pdfium(): FPDF_WIDESTRING has data length {} bytes",
             len,
         );
 
         let result = self.copy_ptr_with_len_to_pdfium(str, len);
 
-        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_string_to_pdfium(): leaving");
+        log::debug!("pdfium-render::PdfiumRenderWasmState::copy_wide_string_to_pdfium(): leaving");
 
         result
     }
@@ -7877,7 +7921,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let key_ptr = state.copy_bytes_to_pdfium(&c_key.into_bytes_with_nul());
 
-        let value_ptr = state.copy_string_to_pdfium(value);
+        let value_ptr = state.copy_wide_string_to_pdfium(value);
 
         let result = state
             .call(
@@ -8032,7 +8076,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let value_ptr = state.copy_string_to_pdfium(value);
+        let value_ptr = state.copy_wide_string_to_pdfium(value);
 
         let result = state
             .call(
@@ -9086,7 +9130,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let name_ptr = state.copy_string_to_pdfium(name);
+        let name_ptr = state.copy_wide_string_to_pdfium(name);
 
         let result = state
             .call(
@@ -9662,7 +9706,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let wsText_ptr = state.copy_string_to_pdfium(wsText);
+        let wsText_ptr = state.copy_wide_string_to_pdfium(wsText);
 
         state.call(
             "FORM_ReplaceAndKeepSelection",
@@ -9693,7 +9737,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let wsText_ptr = state.copy_string_to_pdfium(wsText);
+        let wsText_ptr = state.copy_wide_string_to_pdfium(wsText);
 
         state.call(
             "FORM_ReplaceSelection",
@@ -10720,7 +10764,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let title_ptr = state.copy_string_to_pdfium(title);
+        let title_ptr = state.copy_wide_string_to_pdfium(title);
 
         let result = state
             .call(
@@ -12380,7 +12424,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let findwhat_ptr = state.copy_string_to_pdfium(findwhat);
+        let findwhat_ptr = state.copy_wide_string_to_pdfium(findwhat);
 
         let result = state
             .call(
@@ -13555,7 +13599,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let text_ptr = state.copy_string_to_pdfium(text);
+        let text_ptr = state.copy_wide_string_to_pdfium(text);
 
         let result = state
             .call(
@@ -17989,7 +18033,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let state = PdfiumRenderWasmState::lock();
 
-        let name_ptr = state.copy_string_to_pdfium(name);
+        let name_ptr = state.copy_wide_string_to_pdfium(name);
 
         let result = state
             .call(
@@ -18196,7 +18240,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         let key_ptr = state.copy_bytes_to_pdfium(&c_key.into_bytes_with_nul());
 
-        let value_ptr = state.copy_string_to_pdfium(value);
+        let value_ptr = state.copy_wide_string_to_pdfium(value);
 
         let result = state
             .call(
@@ -18556,14 +18600,47 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         feature = "pdfium_6666"
     ))]
     #[allow(non_snake_case)]
-    unsafe fn FPDFCatalog_SetLanguage(&self, document: FPDF_DOCUMENT, language: &str) -> FPDF_BOOL {
+    unsafe fn FPDFCatalog_SetLanguage(
+        &self,
+        document: FPDF_DOCUMENT,
+        #[cfg(any(
+            feature = "pdfium_future",
+            feature = "pdfium_7881",
+            feature = "pdfium_7763",
+        ))]
+        language: FPDF_WIDESTRING,
+        #[cfg(any(
+            feature = "pdfium_7543",
+            feature = "pdfium_7350",
+            feature = "pdfium_7215",
+            feature = "pdfium_7123",
+            feature = "pdfium_6996",
+            feature = "pdfium_6721",
+            feature = "pdfium_6666"
+        ))]
+        language: FPDF_BYTESTRING,
+    ) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFCatalog_SetLanguage()");
 
         let state = PdfiumRenderWasmState::lock();
 
-        let c_language = CString::new(language).unwrap();
+        #[cfg(any(
+            feature = "pdfium_future",
+            feature = "pdfium_7881",
+            feature = "pdfium_7763",
+        ))]
+        let language_ptr = state.copy_wide_string_to_pdfium(language);
 
-        let language_ptr = state.copy_bytes_to_pdfium(&c_language.into_bytes_with_nul());
+        #[cfg(any(
+            feature = "pdfium_7543",
+            feature = "pdfium_7350",
+            feature = "pdfium_7215",
+            feature = "pdfium_7123",
+            feature = "pdfium_6996",
+            feature = "pdfium_6721",
+            feature = "pdfium_6666"
+        ))]
+        let language_ptr = state.copy_byte_string_to_pdfium(language);
 
         let result = state
             .call(
