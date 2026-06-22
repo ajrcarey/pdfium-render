@@ -506,8 +506,9 @@ impl PdfiumRenderWasmState {
             "pdfium-render::PdfiumRenderWasmState::copy_bytes_to_pdfium_address(): entering"
         );
 
-        self.heap_u8()
-            .set(unsafe { &Uint8Array::view(bytes) }, remote_ptr as u32);
+        let source = Uint8Array::new_with_length(bytes.len() as u32);
+        source.copy_from(bytes);
+        self.heap_u8().set(&source, remote_ptr as u32);
 
         log::debug!(
             "pdfium-render::PdfiumRenderWasmState::copy_bytes_to_pdfium_address(): copied {} bytes into WASM heap at address {}",
