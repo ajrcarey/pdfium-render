@@ -272,7 +272,7 @@ unsafe extern "C" fn fpdf_sys_font_info_get_face_name(
             let chars = face_name.as_bytes_with_nul();
 
             if !buffer.is_null() && buf_size as usize >= chars.len() {
-                buffer.copy_from_nonoverlapping(chars.as_ptr() as *const i8, chars.len());
+                buffer.copy_from_nonoverlapping(chars.as_ptr() as *const c_char, chars.len());
             }
 
             chars.len() as c_ulong
