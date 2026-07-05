@@ -641,8 +641,8 @@ impl<'a> PdfPage<'a> {
             unsafe {
                 self.bindings().FPDFBitmap_FillRect(
                     bitmap_handle,
-                    0,
-                    0,
+                    settings.start_x,
+                    settings.start_y,
                     settings.width,
                     settings.height,
                     settings.clear_color,
@@ -658,8 +658,8 @@ impl<'a> PdfPage<'a> {
                 self.bindings().FPDF_RenderPageBitmap(
                     bitmap_handle,
                     self.page_handle,
-                    0,
-                    0,
+                    settings.start_x,
+                    settings.start_y,
                     settings.width,
                     settings.height,
                     settings.rotate,
@@ -690,8 +690,8 @@ impl<'a> PdfPage<'a> {
                         form_handle,
                         bitmap_handle,
                         self.page_handle,
-                        0,
-                        0,
+                        settings.start_x,
+                        settings.start_y,
                         settings.width,
                         settings.height,
                         settings.rotate,
