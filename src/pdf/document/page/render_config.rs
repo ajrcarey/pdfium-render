@@ -1471,4 +1471,125 @@ mod tests {
         }
         Ok(())
     }
+
+    #[test]
+    fn test_auto_apply_intrinsic_rotation_maps_corners_by_geometric_oracle(
+    ) -> Result<(), PdfiumError> {
+        // Independent geometric oracle for the intrinsic-`/Rotate` matrix.
+        //
+        // The other tests in this module assert the emitted matrix equals a
+        // hand-written `R = [a, b, c, d, e, f]` literal. For /Rotate 180 and
+        // 270 those literals are simply copied from the source, so a sign
+        // flip, an axis/dimension swap, or a wrong translation term baked
+        // into `R` would be copied into the expectation too and the test
+        // would still pass. This test never references `R`. It derives where
+        // the page corners must land from first principles — rotate each
+        // pre-rotation corner clockwise by the `/Rotate` angle, translate the
+        // rotated page back into the positive quadrant (its displayed
+        // position in y-up user space), then apply the caller's
+        // display-oriented matrix — and checks that the matrix
+        // `apply_to_page` actually emits maps the same corners to the same
+        // places. A wrong `R_180`/`R_270` moves at least one corner by
+        // hundreds of points, far outside the epsilon.
+
+        let pdfium = test_bind_to_pdfium();
+        let mut document = pdfium.create_new_pdf()?;
+        let mut page = document
+            .pages_mut()
+            .create_page_at_start(PdfPagePaperSize::Portrait(PdfPagePaperStandardSize::A4))?;
+
+        // Pre-rotation A4 dims in points. Read them now, before any `/Rotate`
+        // is set: once a 90/270 rotation is applied, `width()`/`height()`
+        // return display-oriented (swapped) dims. A4 is non-square (595 x
+        // 842), so a width/height swap in `R` cannot hide.
+        let pre_w = page.width().value;
+        let pre_h = page.height().value;
+        assert!(
+            (pre_w - pre_h).abs() > 1.0,
+            "oracle needs a non-square page to expose axis swaps",
+        );
+
+        // A deliberately non-identity, non-symmetric caller matrix: distinct
+        // x/y scale plus a translation. Row-vector apply per the PDF
+        // convention: (x, y) -> (a*x + c*y + e, b*x + d*y + f).
+        let (ua, ub, uc, ud, ue, uf) = (2.0_f32, 0.0_f32, 0.0_f32, 3.0_f32, 17.0_f32, 29.0_f32);
+        let user = PdfMatrix::new(ua, ub, uc, ud, ue, uf);
+
+        // The four pre-rotation page corners, in points.
+        let corners = [
+            (0.0_f32, 0.0_f32),
+            (pre_w, 0.0),
+            (pre_w, pre_h),
+            (0.0, pre_h),
+        ];
+
+        // Generic clockwise rotation of a point about the origin in a y-up
+        // plane, derived independently of `R`: CW by theta maps (x, y) to
+        // (x*cos(theta) + y*sin(theta), -x*sin(theta) + y*cos(theta)).
+        fn rotate_cw(x: f32, y: f32, degrees: i32) -> (f32, f32) {
+            let (sin, cos) = (degrees as f64).to_radians().sin_cos();
+            let (x, y) = (x as f64, y as f64);
+            ((x * cos + y * sin) as f32, (-x * sin + y * cos) as f32)
+        }
+
+        for degrees in [90, 180, 270] {
+            let rotation = match degrees {
+                90 => PdfPageRenderRotation::Degrees90,
+                180 => PdfPageRenderRotation::Degrees180,
+                _ => PdfPageRenderRotation::Degrees270,
+            };
+            page.set_rotation(rotation);
+            assert_eq!(page.rotation()?, rotation);
+
+            // --- Oracle: where each corner MUST land, from first principles. ---
+
+            // 1. Rotate every corner clockwise about the origin.
+            let rotated: Vec<(f32, f32)> = corners
+                .iter()
+                .map(|&(x, y)| rotate_cw(x, y, degrees))
+                .collect();
+
+            // 2. Translate the rotated page back into the positive quadrant so
+            //    its bottom-left corner sits at the origin — this is what the
+            //    intrinsic `/Rotate` does: the displayed page occupies
+            //    [0, w] x [0, h] in y-up user space.
+            let min_x = rotated.iter().map(|p| p.0).fold(f32::INFINITY, f32::min);
+            let min_y = rotated.iter().map(|p| p.1).fold(f32::INFINITY, f32::min);
+
+            // 3. Apply the caller's display-oriented matrix to obtain the
+            //    expected bitmap coords.
+            let expected: Vec<(f32, f32)> = rotated
+                .iter()
+                .map(|&(rx, ry)| {
+                    let (dx, dy) = (rx - min_x, ry - min_y);
+                    (ua * dx + uc * dy + ue, ub * dx + ud * dy + uf)
+                })
+                .collect();
+
+            // --- Actual: apply the emitted matrix to the same corners. ---
+            let m = matrix_path_config_with(user)
+                .set_auto_apply_intrinsic_rotation(true)
+                .apply_to_page(&page)
+                .matrix;
+
+            let actual: Vec<(f32, f32)> = corners
+                .iter()
+                .map(|&(x, y)| (m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f))
+                .collect();
+
+            for (i, (exp, act)) in expected.iter().zip(actual.iter()).enumerate() {
+                assert!(
+                    (exp.0 - act.0).abs() < 1e-2 && (exp.1 - act.1).abs() < 1e-2,
+                    "/Rotate {}: corner {} {:?} maps to {:?}, expected {:?}",
+                    degrees,
+                    i,
+                    corners[i],
+                    act,
+                    exp,
+                );
+            }
+        }
+
+        Ok(())
+    }
 }
