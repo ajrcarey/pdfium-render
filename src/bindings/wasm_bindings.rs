@@ -506,8 +506,18 @@ impl PdfiumRenderWasmState {
             "pdfium-render::PdfiumRenderWasmState::copy_bytes_to_pdfium_address(): entering"
         );
 
-        self.heap_u8()
-            .set(unsafe { &Uint8Array::view(bytes) }, remote_ptr as u32);
+        let mut source = unsafe { Uint8Array::view(bytes) };
+
+        if source.buffer().detached() {
+            // When the WASM linear memory heap grows, the existing ArrayBuffer that backs
+            // the WASM memory is detached and a new, larger ArrayBuffer is created. Avoid
+            // referencing a detached buffer. See: https://github.com/ajrcarey/pdfium-render/pull/261
+
+            source = Uint8Array::new_with_length(bytes.len() as u32);
+            source.copy_from(bytes);
+        }
+
+        self.heap_u8().set(&source, remote_ptr as u32);
 
         log::debug!(
             "pdfium-render::PdfiumRenderWasmState::copy_bytes_to_pdfium_address(): copied {} bytes into WASM heap at address {}",
@@ -626,7 +636,7 @@ impl PdfiumRenderWasmState {
     fn copy_byte_string_to_pdfium(&self, str: FPDF_BYTESTRING) -> usize {
         log::debug!("pdfium-render::PdfiumRenderWasmState::copy_byte_string_to_pdfium(): entering");
 
-        // Copying the FPDF_WIDESTRING using copy_struct_to_pdfium() will only copy the
+        // Copying the FPDF_BYTESTRING using copy_struct_to_pdfium() will only copy the
         // two-byte pointer, not the string data itself. We must scan the source memory
         // location for the terminating null byte to find the correct data length.
 
