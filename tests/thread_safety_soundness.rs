@@ -26,9 +26,16 @@
 //! * `concurrent_form_render_with_highlight` renders form field data with
 //!   highlighting, exercising the multi-call set-highlight-then-`FPDF_FFLDraw`
 //!   sequence that touches pdfium's process-global form state.
+//! * `thread_local_pdfium_object_drops_cleanly_at_teardown` stores a document in
+//!   a `thread_local!` and lets it drop while the thread is being torn down, so
+//!   its Drop acquires the FFI lock during teardown. The lock keeps only a
+//!   destructor-free depth counter in thread-local storage (the mutex guard lives
+//!   in the lock value), so this must not trip a "TLS accessed during/after
+//!   destruction" panic.
 
 use once_cell::sync::OnceCell;
 use pdfium_render::prelude::*;
+use std::cell::RefCell;
 use std::sync::Arc;
 use std::thread;
 
@@ -423,4 +430,43 @@ fn concurrent_form_highlight_color_race() {
             });
         }
     });
+}
+
+thread_local! {
+    // A Pdfium object held in thread-local storage, dropped at thread teardown.
+    static THREAD_LOCAL_DOC: RefCell<Option<PdfDocument<'static>>> =
+        const { RefCell::new(None) };
+}
+
+/// Drops a `thread_local!`-held [PdfDocument] during thread teardown.
+///
+/// The document's Drop calls `FPDF_CloseDocument` while holding the FFI lock, so
+/// the lock is acquired *during* thread teardown. If the lock kept its outermost
+/// mutex guard in a thread-local (a destructor-bearing slot), that acquisition
+/// could run after the slot's own destructor and panic with "cannot access a
+/// Thread Local Storage value during or after destruction" — an abort inside a
+/// Drop. Keeping only a destructor-free depth counter in thread-local storage, and
+/// the guard in the lock value, avoids that. Every spawned thread must join
+/// cleanly.
+#[test]
+fn thread_local_pdfium_object_drops_cleanly_at_teardown() {
+    let bytes = Arc::new(std::fs::read("test/export-test.pdf").expect("read fixture"));
+
+    for _ in 0..64 {
+        let bytes = Arc::clone(&bytes);
+        thread::spawn(move || {
+            THREAD_LOCAL_DOC.with(|slot| {
+                let doc = pdfium()
+                    .load_pdf_from_byte_vec((*bytes).clone(), None)
+                    .expect("load document");
+
+                // Touch the document under the lock so its handle is live, then
+                // leave it in thread-local storage to be dropped during teardown.
+                let _ = doc.pages().len();
+                *slot.borrow_mut() = Some(doc);
+            });
+        })
+        .join()
+        .expect("thread panicked while tearing down a thread_local Pdfium object");
+    }
 }

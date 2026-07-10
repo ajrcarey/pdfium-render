@@ -58,14 +58,23 @@ static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 // every call that reaches into the bindings must be serialized process-wide.
 //
 // Serialization is provided by a reentrant, process-wide lock. Every method that
-// calls into the bindings acquires an FfiLock as its first statement and holds
-// it for the whole operation, so a logical operation made of several FFI calls
-// runs atomically. Because the lock is reentrant, a method never has to reason
-// about whether its callers already hold it: the first acquisition on a thread
-// takes the global mutex, and nested acquisitions on the same thread observe a
-// non-zero recursion depth and do not re-lock, so composing locked methods
-// cannot deadlock. Threads other than the current owner block until the depth on
-// the owning thread returns to zero and the mutex is released.
+// calls into the bindings acquires an FfiLock as its first statement and holds it
+// for the whole operation, so a logical operation made of several FFI calls runs
+// atomically. Because the lock is reentrant, a method never has to reason about
+// whether its callers already hold it: the first acquisition on a thread takes
+// the global mutex, and nested acquisitions on the same thread do not re-lock, so
+// composing locked methods cannot deadlock. Threads other than the current owner
+// block until the owning thread releases its outermost acquisition.
+//
+// A `std::sync::Mutex` backs the lock. It is deliberately NOT a fairer/reentrant
+// third-party mutex: full serialization is inherent (pdfium is not thread-safe at
+// all, so there is no cross-thread parallelism to be had regardless), and under
+// equal demand `std::sync::Mutex` is already fair on the platforms measured while
+// keeping noticeably higher throughput than a reentrant mutex. The apparent
+// "starvation" of one thread by another arises only when a thread genuinely wants
+// the lock ~100% of the time via back-to-back acquisitions (e.g. a tight render
+// loop); no mutex can help that, and it is an application-level concern.
+//
 // `Lazy` rather than a `const`-initialized `Mutex`: `Mutex::new` only became a
 // `const fn` in Rust 1.63, and this crate's MSRV is 1.61.
 #[cfg(feature = "thread_safe")]
@@ -73,15 +82,16 @@ static FFI_MUTEX: Lazy<std::sync::Mutex<()>> = Lazy::new(|| std::sync::Mutex::ne
 
 #[cfg(feature = "thread_safe")]
 thread_local! {
-    // The current thread's reentrancy depth, and the mutex guard held for the
-    // outermost acquisition. The guard lives in thread-local storage rather than
-    // inside the FfiLock value so that the mutex is released strictly when the
-    // depth returns to zero, regardless of the order in which FfiLock values are
-    // dropped. Tying release to a particular guard's Drop would release the mutex
-    // early if guards were dropped out of order.
+    // The current thread's reentrancy depth ONLY. This is a `Cell<usize>`, which
+    // has no destructor, so it registers no thread-local destructor and stays
+    // accessible for the entire life of the thread — including while the thread is
+    // being torn down. The outermost mutex guard is NOT kept here; it lives in the
+    // FfiLock value (see below). A guard stored in a thread-local would register a
+    // destructor, and a Pdfium object held in a user `thread_local!` and dropped
+    // during thread teardown could then call the lock after that destructor had
+    // run, tripping a "TLS accessed during/after destruction" panic (an abort in a
+    // Drop). Keeping only the depth here avoids that hazard entirely.
     static FFI_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
-    static FFI_GUARD: std::cell::RefCell<Option<std::sync::MutexGuard<'static, ()>>> =
-        const { std::cell::RefCell::new(None) };
 }
 
 /// A reentrant, process-wide lock serializing calls into Pdfium's non-reentrant
@@ -106,10 +116,22 @@ thread_local! {
 /// thread is dropped, that is, when the recursion depth returns to zero.
 #[cfg(feature = "thread_safe")]
 pub(crate) struct FfiLock {
-    // A raw-pointer marker makes FfiLock neither Send nor Sync, so a lock cannot
-    // be moved to another thread or held across an await point on a multi-threaded
-    // executor. The lock carries no data of its own; the mutex guard lives in
-    // thread-local storage.
+    // The outermost acquisition on a thread holds Some(guard); nested acquisitions
+    // hold None. Keeping the guard in the FfiLock value — rather than in a
+    // thread-local with a destructor — is what avoids the thread-teardown hazard
+    // described on FFI_DEPTH.
+    //
+    // Correctness rests on FfiLock values dropping in reverse acquisition order
+    // (LIFO) on any given thread, so the outermost — the guard holder — drops last,
+    // exactly when the depth returns to zero. That holds because FfiLock is
+    // crate-private and only ever bound to a local (`let _ffi = ...`); it is never
+    // stored in a field or moved into a longer-lived place, so nested acquisitions
+    // always drop before their enclosing one.
+    _guard: Option<std::sync::MutexGuard<'static, ()>>,
+
+    // Keeps FfiLock neither Send nor Sync even when `_guard` is None, so a lock
+    // cannot be moved to another thread or held across an await point on a
+    // multi-threaded executor.
     _not_send: std::marker::PhantomData<*const ()>,
 }
 
@@ -117,24 +139,29 @@ pub(crate) struct FfiLock {
 impl FfiLock {
     #[inline]
     pub(crate) fn acquire() -> Self {
-        FFI_DEPTH.with(|depth| {
-            if depth.get() == 0 {
-                // Outermost acquisition on this thread: take the global mutex. A
-                // poisoned mutex still yields its guard; recovering here keeps one
-                // panicking thread from wedging every other thread on a
-                // permanently poisoned lock, and the lock protects only Pdfium's
-                // own state, not any Rust invariant that a panic could break.
-                let guard = FFI_MUTEX
+        let outermost = FFI_DEPTH.with(|depth| depth.get() == 0);
+
+        let guard = if outermost {
+            // Outermost acquisition on this thread: take the global mutex. A
+            // poisoned mutex still yields its guard; recovering here keeps one
+            // panicking thread from wedging every other thread on a permanently
+            // poisoned lock, and the lock protects only Pdfium's own state, not
+            // any Rust invariant that a panic could break. (Locking may block; the
+            // depth is only bumped afterwards, but no nested acquisition can run on
+            // this thread while it is parked here anyway.)
+            Some(
+                Lazy::force(&FFI_MUTEX)
                     .lock()
-                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                    .unwrap_or_else(std::sync::PoisonError::into_inner),
+            )
+        } else {
+            None
+        };
 
-                FFI_GUARD.with(|slot| *slot.borrow_mut() = Some(guard));
-            }
-
-            depth.set(depth.get() + 1);
-        });
+        FFI_DEPTH.with(|depth| depth.set(depth.get() + 1));
 
         Self {
+            _guard: guard,
             _not_send: std::marker::PhantomData,
         }
     }
@@ -144,27 +171,15 @@ impl FfiLock {
 impl Drop for FfiLock {
     #[inline]
     fn drop(&mut self) {
-        FFI_DEPTH.with(|depth| {
-            let current = depth.get();
+        // saturating_sub rather than `current - 1`: an underflow (impossible, since
+        // FfiLock is !Send so acquire and drop are balanced per thread) would
+        // otherwise wrap to usize::MAX in release and never release the mutex.
+        FFI_DEPTH.with(|depth| depth.set(depth.get().saturating_sub(1)));
 
-            debug_assert!(current > 0, "FfiLock dropped with zero recursion depth");
-
-            // saturating_sub rather than `current - 1`: an underflow (impossible,
-            // since FfiLock is !Send so acquire and drop are balanced per thread)
-            // would otherwise wrap to usize::MAX in release and never release the
-            // mutex. Saturating releases the guard instead of wedging every thread.
-            let next = current.saturating_sub(1);
-            depth.set(next);
-
-            if next == 0 {
-                // Outermost acquisition released: drop the stored mutex guard,
-                // releasing the global mutex. Release is driven by the depth
-                // reaching zero, not by this particular FfiLock value dropping.
-                FFI_GUARD.with(|slot| {
-                    slot.borrow_mut().take();
-                });
-            }
-        });
+        // `_guard` is dropped immediately after this body: for the outermost
+        // FfiLock it holds Some(guard) and releases the mutex; for nested ones it
+        // is None. Because FfiLock values drop LIFO, the guard holder drops last,
+        // i.e. exactly when the depth has returned to zero.
     }
 }
 
