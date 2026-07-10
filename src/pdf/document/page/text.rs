@@ -83,7 +83,7 @@ impl<'a> PdfPageText<'a> {
     /// Returns a collection of all the `PdfPageTextSegment` text segments in the containing [PdfPage].
     #[inline]
     pub fn segments(&self) -> PdfPageTextSegments<'_> {
-        PdfPageTextSegments::new(self, 0, self.len(), self.bindings())
+        PdfPageTextSegments::new(self, 0, self.len(), self.bindings_static())
     }
 
     /// Returns a subset of the `PdfPageTextSegment` text segments in the containing [PdfPage].
@@ -94,7 +94,7 @@ impl<'a> PdfPageText<'a> {
         start: PdfPageTextCharIndex,
         count: PdfPageTextCharIndex,
     ) -> PdfPageTextSegments<'_> {
-        PdfPageTextSegments::new(self, start as i32, count as i32, self.bindings())
+        PdfPageTextSegments::new(self, start as i32, count as i32, self.bindings_static())
     }
 
     /// Returns a collection of all the `PdfPageTextChar` characters in the containing [PdfPage].
@@ -178,7 +178,7 @@ impl<'a> PdfPageText<'a> {
                 tolerance_x,
                 center_height,
                 tolerance_y,
-                self.bindings(),
+                &*self.bindings(),
             ),
             Self::get_char_index_near_point(
                 self.text_page_handle(),
@@ -186,7 +186,7 @@ impl<'a> PdfPageText<'a> {
                 tolerance_x,
                 center_height,
                 tolerance_y,
-                self.bindings(),
+                &*self.bindings(),
             ),
         ) {
             (Some(start), Some(end)) => Ok(PdfPageTextChars::new(
@@ -222,6 +222,9 @@ impl<'a> PdfPageText<'a> {
         tolerance_y: PdfPoints,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Option<PdfPageTextCharIndex> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         match unsafe {
             bindings.FPDFText_GetCharIndexAtPos(
                 text_page_handle,

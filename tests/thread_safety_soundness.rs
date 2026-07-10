@@ -2,7 +2,7 @@
 //!
 //! With `thread_safe` (a default feature) `Pdfium` is `unsafe impl Send + Sync`,
 //! yet there is no serialization of pdfium's non-reentrant C API. This test is
-//! 100% safe Rust — no `unsafe` block — but shares one `Pdfium` across threads
+//! 100% safe Rust (no `unsafe` block) but shares one `Pdfium` across threads
 //! and renders concurrently, which the `Send + Sync` bounds permit. On a sound
 //! implementation it completes; on current master it races pdfium's C state and
 //! crashes (SIGSEGV / heap corruption / abort).

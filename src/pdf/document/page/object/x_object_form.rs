@@ -181,7 +181,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
                 *PdfPageObjectPrivate::ownership(self),
-                PdfiumLibraryBindingsAccessor::bindings(self),
+                PdfiumLibraryBindingsAccessor::bindings_static(self),
             ))
         }
     }

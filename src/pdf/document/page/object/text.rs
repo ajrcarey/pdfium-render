@@ -205,7 +205,7 @@ impl<'a> PdfPageTextObject<'a> {
             text,
             font.token().handle(),
             font_size,
-            document.bindings(),
+            document.bindings_static(),
         )
     }
 
@@ -218,6 +218,9 @@ impl<'a> PdfPageTextObject<'a> {
         font_size: PdfPoints,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe { bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value) };
 
         if handle.is_null() {

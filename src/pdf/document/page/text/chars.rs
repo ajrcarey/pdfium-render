@@ -151,7 +151,7 @@ impl<'a> PdfPageTextChars<'a> {
             tolerance_x,
             y,
             tolerance_y,
-            self.bindings(),
+            &*self.bindings(),
         )
         .ok_or(PdfiumError::CharIndexOutOfBounds)
         .and_then(|index| self.get(index))

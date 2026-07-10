@@ -339,6 +339,9 @@ impl<'a> PdfPageObject<'a> {
         ownership: PdfPageObjectOwnership,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         match PdfPageObjectType::from_pdfium(
             unsafe { bindings.FPDFPageObj_GetType(object_handle) } as u32
         )

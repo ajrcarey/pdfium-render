@@ -105,7 +105,7 @@ impl<'a> PdfPageImageObject<'a> {
     #[cfg(feature = "image_api")]
     #[inline]
     pub fn new(document: &PdfDocument<'a>, image: &DynamicImage) -> Result<Self, PdfiumError> {
-        let mut result = Self::new_from_handle(document.handle(), document.bindings());
+        let mut result = Self::new_from_handle(document.handle(), document.bindings_static());
 
         if let Ok(result) = result.as_mut() {
             result.set_image(image)?;
@@ -126,7 +126,7 @@ impl<'a> PdfPageImageObject<'a> {
     /// to the object after it is created.
     #[cfg(not(feature = "image_api"))]
     pub fn new(document: &PdfDocument<'a>) -> Result<Self, PdfiumError> {
-        Self::new_from_handle(document.handle(), document.bindings())
+        Self::new_from_handle(document.handle(), document.bindings_static())
     }
 
     /// Creates a new [PdfPageImageObject] containing JPEG image data loaded from the
@@ -168,7 +168,7 @@ impl<'a> PdfPageImageObject<'a> {
         document: &PdfDocument<'a>,
         reader: R,
     ) -> Result<Self, PdfiumError> {
-        let object = Self::new_from_handle(document.handle(), document.bindings())?;
+        let object = Self::new_from_handle(document.handle(), document.bindings_static())?;
 
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
@@ -196,6 +196,9 @@ impl<'a> PdfPageImageObject<'a> {
         document: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe { bindings.FPDFPageObj_NewImageObj(document) };
 
         if handle.is_null() {
@@ -569,6 +572,12 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         bitmap: &PdfBitmap,
     ) -> Result<DynamicImage, PdfiumError> {
+        // Hold the FFI lock for the whole conversion: the buffer obtained below
+        // borrows Pdfium's internal bitmap memory, and it must not be mutated by
+        // another thread while we read from it.
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = bitmap.handle();
         let width = unsafe { self.bindings().FPDFBitmap_GetWidth(handle) };
         let height = unsafe { self.bindings().FPDFBitmap_GetHeight(handle) };
@@ -579,7 +588,7 @@ impl<'a> PdfPageImageObject<'a> {
             )?;
 
         #[cfg(not(target_arch = "wasm32"))]
-        let buffer = unsafe { self.bindings().FPDFBitmap_GetBuffer_as_slice(handle) };
+        let buffer = unsafe { self.bindings_static().FPDFBitmap_GetBuffer_as_slice(handle) };
 
         #[cfg(target_arch = "wasm32")]
         let buffer_vec = unsafe { self.bindings().FPDFBitmap_GetBuffer_as_vec(handle) };

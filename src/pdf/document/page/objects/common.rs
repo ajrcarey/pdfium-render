@@ -423,7 +423,7 @@ where
                 text,
                 font.token().handle(),
                 font_size,
-                self.bindings(),
+                self.bindings_static(),
             )?;
 
             object.translate(x, y)?;
@@ -445,7 +445,7 @@ where
         stroke_width: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_line_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             x1,
             y1,
             x2,
@@ -472,7 +472,7 @@ where
         stroke_width: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_bezier_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             x1,
             y1,
             x2,
@@ -497,7 +497,7 @@ where
         fill_color: Option<PdfColor>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_rect_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             rect,
             stroke_color,
             stroke_width,
@@ -516,7 +516,7 @@ where
         fill_color: Option<PdfColor>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_circle_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             rect,
             stroke_color,
             stroke_width,
@@ -537,7 +537,7 @@ where
         fill_color: Option<PdfColor>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_circle_at_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             center_x,
             center_y,
             radius,
@@ -558,7 +558,7 @@ where
         fill_color: Option<PdfColor>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_ellipse_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             rect,
             stroke_color,
             stroke_width,
@@ -580,7 +580,7 @@ where
         fill_color: Option<PdfColor>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
         let object = PdfPagePathObject::new_ellipse_at_from_bindings(
-            self.bindings(),
+            self.bindings_static(),
             center_x,
             center_y,
             x_radius,
@@ -618,7 +618,8 @@ where
 
             let image_height = image.height();
 
-            let mut object = PdfPageImageObject::new_from_handle(document_handle, self.bindings())?;
+            let mut object =
+                PdfPageImageObject::new_from_handle(document_handle, self.bindings_static())?;
 
             object.set_image(image)?;
 

@@ -92,7 +92,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
                 *self.ownership(),
-                self.bindings(),
+                self.bindings_static(),
             ))
         }
     }

@@ -290,7 +290,7 @@ impl<'a> PdfPages<'a> {
             pages,
             self.document_handle,
             destination_page_index,
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 
@@ -304,6 +304,9 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let destination_page_count_before_import =
             unsafe { bindings.FPDF_GetPageCount(destination) };
 
@@ -343,7 +346,7 @@ impl<'a> PdfPages<'a> {
             source_page_range,
             self.document_handle,
             destination_page_index,
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 
@@ -356,6 +359,9 @@ impl<'a> PdfPages<'a> {
         destination_page_index: PdfPageIndex,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let no_of_pages_to_import =
             (source_page_range.end() - source_page_range.start() + 1) as PdfPageIndex;
 

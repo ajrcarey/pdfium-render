@@ -258,7 +258,7 @@ impl<'a> PdfPageBoundaries<'a> {
                 .FPDF_GetPageBoundingBox(self.page_handle, &mut rect)
         };
 
-        PdfRect::from_pdfium_as_result(result, rect, self.bindings())
+        PdfRect::from_pdfium_as_result(result, rect, &*self.bindings())
             .map(|rect| PdfPageBoundaryBox::new(PdfPageBoundaryBoxType::Bounding, rect))
     }
 
@@ -289,7 +289,7 @@ impl<'a> PdfPageBoundaries<'a> {
                 right,
                 bottom,
             },
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 

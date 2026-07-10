@@ -161,7 +161,7 @@ pub(crate) mod internal {
                             | None => {
                                 PdfPage::regenerate_content_immut_for_handle(
                                     ownership.page_handle(),
-                                    self.bindings(),
+                                    &*self.bindings(),
                                 )?;
                             }
                             _ => {}
@@ -249,7 +249,7 @@ pub(crate) mod internal {
                                 | None => {
                                     PdfPage::regenerate_content_immut_for_handle(
                                         ownership.page_handle(),
-                                        self.bindings(),
+                                        &*self.bindings(),
                                     )?;
                                 }
                                 _ => {}
@@ -334,7 +334,7 @@ pub(crate) mod internal {
                             .FPDFPageObj_GetRotatedBounds(self.object_handle(), &mut points)
                     };
 
-                    PdfQuadPoints::from_pdfium_as_result(result, points, self.bindings())
+                    PdfQuadPoints::from_pdfium_as_result(result, points, &*self.bindings())
                 }
                 _ => {
                     // All other page objects support the FPDFPageObj_GetBounds() function.
@@ -362,7 +362,7 @@ pub(crate) mod internal {
                             right,
                             bottom,
                         },
-                        self.bindings(),
+                        &*self.bindings(),
                     )
                     .map(|r| r.to_quad_points())
                 }
@@ -459,7 +459,7 @@ pub(crate) mod internal {
                     if content_regeneration_strategy
                         == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
                     {
-                        PdfPage::regenerate_content_immut_for_handle(page_handle, self.bindings())
+                        PdfPage::regenerate_content_immut_for_handle(page_handle, &*self.bindings())
                     } else {
                         Ok(())
                     }
@@ -481,7 +481,7 @@ pub(crate) mod internal {
             let mut object = PdfPageObject::from_pdfium(
                 self.object_handle(),
                 *self.ownership(),
-                page.bindings(),
+                page.bindings_static(),
             );
 
             let (document_handle, page_handle) = match object.ownership() {

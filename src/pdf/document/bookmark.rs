@@ -137,7 +137,7 @@ impl<'a> PdfBookmark<'a> {
             Some(PdfAction::from_pdfium(
                 handle,
                 self.document_handle(),
-                self.bindings(),
+                self.bindings_static(),
             ))
         }
     }

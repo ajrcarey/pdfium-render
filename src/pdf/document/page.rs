@@ -949,7 +949,7 @@ impl<'a> PdfPage<'a> {
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     #[inline]
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
-        Self::regenerate_content_immut_for_handle(self.page_handle, self.bindings())
+        Self::regenerate_content_immut_for_handle(self.page_handle, &*self.bindings())
     }
 
     /// Commits any staged but unsaved changes to the page identified by the given internal
@@ -961,6 +961,9 @@ impl<'a> PdfPage<'a> {
         page: FPDF_PAGE,
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if bindings.is_true(unsafe { bindings.FPDFPage_GenerateContent(page) }) {
             Ok(())
         } else {
