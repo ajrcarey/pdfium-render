@@ -971,4 +971,120 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn global_cache_assertions_are_not_isolated_across_documents() -> Result<(), PdfiumError> {
+        // This test encodes the buggy global assumption that the existing cache tests rely on:
+        // that the process-global PAGE_INDEX_CACHE holds entries only for the document currently
+        // under test. I set up two live documents at once so that assumption is provably false,
+        // then run the exact global-style length assertion the existing suite uses.
+        //
+        // It is RED on this commit because document A's entries are still present when I assert
+        // that only document B's entries exist. That is the isolation flaw: any test that asserts
+        // on `pages_by_index.len()` or `pages_by_index.is_empty()` is really asserting on state
+        // owned by every other test that happens to be touching the shared cache. Under the
+        // default multi-threaded `cargo test`, a concurrent test supplies that foreign state and
+        // the assertion fails; here I supply it deterministically from a single thread.
+        //
+        // This should turn GREEN once the assertions become document-scoped (counting only the
+        // entries whose document handle matches the document under test), as proposed in the
+        // linked issue.
+        //
+        // I deliberately read the cache length into a local BEFORE asserting, so the temporary
+        // MutexGuard from lock() is released before assert_eq! can panic. That keeps the failure
+        // a clean unwinding assertion the harness reports as FAIL. If I asserted while still
+        // holding the guard, the panic would poison the mutex and the subsequent page drops would
+        // re-panic inside their destructors, aborting the whole test binary (signal 6), which is
+        // exactly the real-world symptom described in the issue.
+
+        let pdfium = test_bind_to_pdfium();
+
+        // Document A: create two pages and hold live references to both, so A's two entries
+        // persist in the shared cache for the remainder of this test.
+
+        let mut document_a = pdfium.create_new_pdf()?;
+
+        for _ in 1..=2 {
+            document_a
+                .pages_mut()
+                .create_page_at_end(PdfPagePaperSize::a4())?;
+        }
+
+        let _a_page_0 = document_a.pages().get(0)?;
+        let _a_page_1 = document_a.pages().get(1)?;
+
+        // Document B: create three pages and hold live references to all three, so B contributes
+        // exactly three entries to the shared cache.
+
+        let mut document_b = pdfium.create_new_pdf()?;
+
+        for _ in 1..=3 {
+            document_b
+                .pages_mut()
+                .create_page_at_end(PdfPagePaperSize::a4())?;
+        }
+
+        let _b_page_0 = document_b.pages().get(0)?;
+        let _b_page_1 = document_b.pages().get(1)?;
+        let _b_page_2 = document_b.pages().get(2)?;
+
+        // The buggy global assertion: the existing suite would expect the shared cache to hold
+        // only the three pages of the document it just created. It actually holds five (A's two
+        // plus B's three), so this fails on the current commit.
+
+        let cached_len = PdfPageIndexCache::lock().pages_by_index.len();
+
+        assert_eq!(
+            cached_len, 3,
+            "global pages_by_index length is not isolated to document B: \
+             the shared cache still holds document A's entries"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    #[ignore = "reproduces the real parallel SIGABRT; run in isolation, it aborts the test binary"]
+    fn parallel_global_cache_assertions_abort_the_process() {
+        // This is the real-world trigger that the default multi-threaded `cargo test` hits. Each
+        // thread runs the same global-assertion pattern the existing cache tests use: create a
+        // document, take a live page reference, then assert on the PROCESS-GLOBAL cache length.
+        // Because the cache is shared, the threads observe each other's entries and the global
+        // assertions fail. A failing assertion panics while the temporary lock guard is still
+        // held, poisoning the mutex; the following page drop then re-panics on lock().unwrap()
+        // inside its destructor, and Rust escalates that destructor panic to a non-unwinding
+        // abort of the whole binary (signal 6). It is #[ignore]d so it never aborts the normal
+        // run; invoke it deliberately with `cargo test -- --ignored` to observe the abort.
+
+        use std::thread;
+
+        let handles: Vec<_> = (0..8)
+            .map(|_| {
+                thread::spawn(|| -> Result<(), PdfiumError> {
+                    let pdfium = test_bind_to_pdfium();
+
+                    let mut document = pdfium.create_new_pdf()?;
+
+                    let _page = document
+                        .pages_mut()
+                        .create_page_at_start(PdfPagePaperSize::a4())?;
+
+                    // Take a live reference so this thread contributes an entry to the shared cache.
+
+                    let _page_ref = document.pages().get(0)?;
+
+                    // The buggy global assertion, made while holding the lock guard exactly as the
+                    // existing suite does, so a failure poisons the mutex.
+
+                    assert_eq!(PdfPageIndexCache::lock().pages_by_index.len(), 1);
+
+                    Ok(())
+                })
+            })
+            .collect();
+
+        for handle in handles {
+            let _ = handle.join();
+        }
+    }
 }
