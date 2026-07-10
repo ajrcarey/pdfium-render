@@ -9,7 +9,7 @@ use crate::config::PdfiumLibraryConfig;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::document::{PdfDocument, PdfDocumentVersion};
 use crate::pdf::font::provider::{PdfiumCustomFontProvider, PdfiumCustomFontProviderExt};
-use once_cell::sync::OnceCell;
+use once_cell::sync::{Lazy, OnceCell};
 use std::fmt::{Debug, Formatter};
 use std::pin::Pin;
 
@@ -66,8 +66,10 @@ static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 // non-zero recursion depth and do not re-lock, so composing locked methods
 // cannot deadlock. Threads other than the current owner block until the depth on
 // the owning thread returns to zero and the mutex is released.
+// `Lazy` rather than a `const`-initialized `Mutex`: `Mutex::new` only became a
+// `const fn` in Rust 1.63, and this crate's MSRV is 1.61.
 #[cfg(feature = "thread_safe")]
-static FFI_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static FFI_MUTEX: Lazy<std::sync::Mutex<()>> = Lazy::new(|| std::sync::Mutex::new(()));
 
 #[cfg(feature = "thread_safe")]
 thread_local! {
@@ -92,6 +94,11 @@ thread_local! {
 /// #[cfg(feature = "thread_safe")]
 /// let _ffi = crate::pdfium::FfiLock::acquire();
 /// ```
+///
+/// Bind the guard to a named variable (`_ffi`) as shown, so it is held to the end
+/// of the scope. A `let _ = ...` binding would drop it immediately, unlocking
+/// before the FFI call it is meant to protect; the ffi_lock_gate test rejects
+/// that form.
 ///
 /// The first acquisition on a thread takes the global mutex; nested acquisitions
 /// on the same thread do not re-lock, so composing locked methods cannot
@@ -142,7 +149,11 @@ impl Drop for FfiLock {
 
             debug_assert!(current > 0, "FfiLock dropped with zero recursion depth");
 
-            let next = current - 1;
+            // saturating_sub rather than `current - 1`: an underflow (impossible,
+            // since FfiLock is !Send so acquire and drop are balanced per thread)
+            // would otherwise wrap to usize::MAX in release and never release the
+            // mutex. Saturating releases the guard instead of wedging every thread.
+            let next = current.saturating_sub(1);
             depth.set(next);
 
             if next == 0 {
@@ -179,6 +190,23 @@ pub trait PdfiumLibraryBindingsAccessor<'a> {
         BINDINGS.get().unwrap().as_ref()
     }
 }
+
+/// The trait bound for a reader passed to [Pdfium::load_pdf_from_reader].
+///
+/// Under the `thread_safe` feature the resulting [PdfDocument] is `Send` and
+/// Pdfium may invoke the reader's callback from whichever thread later triggers a
+/// lazy read, so the reader must also be `Send`. Without `thread_safe`, only
+/// [Read] and [Seek] are required. This is a blanket trait implemented for every
+/// type that satisfies the underlying bounds; you never name it directly.
+#[cfg(all(not(target_arch = "wasm32"), feature = "thread_safe"))]
+pub trait PdfiumReader: Read + Seek + Send {}
+#[cfg(all(not(target_arch = "wasm32"), feature = "thread_safe"))]
+impl<R: Read + Seek + Send> PdfiumReader for R {}
+
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+pub trait PdfiumReader: Read + Seek {}
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+impl<R: Read + Seek> PdfiumReader for R {}
 
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
@@ -298,11 +326,20 @@ impl Pdfium {
         #[cfg(feature = "thread_safe")]
         let _ffi = crate::pdfium::FfiLock::acquire();
 
-        assert!(BINDINGS.get().is_none());
-        unsafe {
-            bindings.FPDF_InitLibrary();
-        }
-        assert!(BINDINGS.set(bindings).is_ok());
+        // Initialize the library and promote the bindings into the process-global
+        // BINDINGS exactly once, even if several threads construct a Pdfium
+        // concurrently. get_or_init runs its closure on the first caller and blocks
+        // the rest until it completes; a losing thread reuses the installed
+        // bindings and its own box is dropped without effect (the bindings Drop no
+        // longer calls FPDF_DestroyLibrary, so it cannot tear down the shared
+        // library the winner just initialized).
+        BINDINGS.get_or_init(move || {
+            unsafe {
+                bindings.FPDF_InitLibrary();
+            }
+
+            bindings
+        });
 
         Self {
             custom_font_provider: None,
@@ -322,11 +359,15 @@ impl Pdfium {
         #[cfg(feature = "thread_safe")]
         let _ffi = crate::pdfium::FfiLock::acquire();
 
-        assert!(BINDINGS.get().is_none());
-        unsafe {
-            bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
-        }
-        assert!(BINDINGS.set(bindings).is_ok());
+        // See Pdfium::new for why this initializes exactly once and why a losing
+        // thread's bindings box is safe to drop.
+        BINDINGS.get_or_init(move || {
+            unsafe {
+                bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
+            }
+
+            bindings
+        });
 
         Self {
             custom_font_provider: None,
@@ -334,6 +375,38 @@ impl Pdfium {
             #[cfg(not(target_arch = "wasm32"))]
             platform_default_font_provider: None,
         }
+    }
+
+    /// Runs the given closure while holding the process-wide Pdfium FFI lock,
+    /// giving it serialized access to the raw [PdfiumLibraryBindings].
+    ///
+    /// Use this when calling Pdfium's C API directly through the reference returned
+    /// by [PdfiumLibraryBindingsAccessor::bindings]: Pdfium is not reentrant, so
+    /// every direct FFI call must happen inside this closure to be serialized
+    /// against pdfium-render's own calls. The lock is reentrant, so pdfium-render
+    /// methods called from within the closure do not deadlock.
+    ///
+    /// The closure must not block on another thread that also uses Pdfium: it runs
+    /// while the global lock is held, so a thread it waits on can never acquire the
+    /// lock.
+    ///
+    /// When the `thread_safe` feature is disabled there is no lock and the closure
+    /// simply runs with the bindings.
+    #[cfg(feature = "thread_safe")]
+    #[inline]
+    pub fn with_ffi_lock<R>(&self, f: impl FnOnce(&dyn PdfiumLibraryBindings) -> R) -> R {
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
+        f(self.bindings())
+    }
+
+    /// Runs the given closure with serialized access to the raw
+    /// [PdfiumLibraryBindings]. See the `thread_safe` variant for details; without
+    /// that feature there is no lock and the closure simply runs with the bindings.
+    #[cfg(not(feature = "thread_safe"))]
+    #[inline]
+    pub fn with_ffi_lock<R>(&self, f: impl FnOnce(&dyn PdfiumLibraryBindings) -> R) -> R {
+        f(self.bindings())
     }
 
     /// Applies the given custom font provider to this [Pdfium] instance.
@@ -490,6 +563,14 @@ impl Pdfium {
     /// If the document is password protected, the given password will be used
     /// to unlock it.
     ///
+    /// Pdfium reads from the given reader lazily, calling back into it while the
+    /// process-wide Pdfium lock is held. When the `thread_safe` feature is enabled,
+    /// the reader's `Read`/`Seek` methods must therefore not block on another thread
+    /// that also uses Pdfium, or the two threads will deadlock; and the reader must
+    /// be `Send`, because Pdfium may invoke it from whichever thread later triggers
+    /// a lazy read. For a reader that cannot meet these constraints, read the whole
+    /// document into memory first and use [Pdfium::load_pdf_from_byte_vec] instead.
+    ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading your PDF document data in WASM:
     /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
@@ -503,7 +584,7 @@ impl Pdfium {
     ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     ///   using the `include_bytes!` macro.
-    pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
+    pub fn load_pdf_from_reader<'a, R: PdfiumReader + 'a>(
         &'a self,
         reader: R,
         password: Option<&str>,

@@ -11,14 +11,22 @@
 //! ```
 //!
 //! This test scans the crate source and fails if any function performs an FFI
-//! call (through the `bindings()` accessor or a stored `bindings` field) without
-//! acquiring the lock. A function that legitimately does not need the lock, or
-//! that is guaranteed to run under a caller-held lock, can opt out with an
-//! explicit `// ffi-lock-exempt: <reason>` marker in its body.
+//! call (`<ref>.FPDF_x(...)` or `<ref>.FORM_x(...)`, however the bindings
+//! reference is obtained) without acquiring the lock. A function that
+//! legitimately does not need the lock, or that is guaranteed to run under a
+//! caller-held lock, can opt out with an explicit `// ffi-lock-exempt: <reason>`
+//! marker in its body.
 //!
-//! The check is a mechanical, greppable safety net: it cannot be silently
-//! defeated by adding an unlocked FFI call, the way per-statement locking hidden
-//! inside a smart pointer could be.
+//! This is a mechanical net, not a proof. It reliably catches the common failure
+//! (a function that calls into Pdfium with no lock at all) and rejects the known
+//! footguns (a `let _ = acquire()` that drops the guard immediately; a file with
+//! a raw string literal that its lexer cannot analyze). It does not, and a text
+//! scan cannot, prove ordering: it does not verify the acquire lexically precedes
+//! the call, sits at function scope rather than in an inner block, or that a
+//! closure holding the lock is not returned and run later. It also does not see
+//! FFI made by fully-qualified path (`PdfiumLibraryBindings::FPDF_x(b)`). Those
+//! shapes do not occur in the source today; the runtime tests in
+//! `thread_safety_soundness.rs` are the backstop that would catch them.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -323,7 +331,54 @@ fn performs_ffi_call(body: &str) -> bool {
 }
 
 fn holds_lock(body: &str) -> bool {
-    body.contains("FfiLock::acquire")
+    body.contains("FfiLock::acquire") && !has_bare_underscore_acquire(body)
+}
+
+/// Detects `let _ = FfiLock::acquire();`, which binds the guard to `_` and so
+/// drops it immediately, leaving the FFI call it was meant to protect unlocked.
+/// The correct form binds a named `let _ffi = ...` held to the end of the scope.
+fn has_bare_underscore_acquire(body: &str) -> bool {
+    let mut rest = body;
+    while let Some(pos) = rest.find("let _ =") {
+        let after = &rest[pos + "let _ =".len()..];
+        let stmt = &after[..after.find(';').unwrap_or(after.len())];
+        if stmt.contains("FfiLock::acquire") {
+            return true;
+        }
+        rest = after;
+    }
+    false
+}
+
+/// Raw string literals (`r"..."`, `r#"..."#`, `br"..."`, ...) are not understood
+/// by `strip_noise`, whose simple string state machine would desynchronize on the
+/// inner quotes and silently stop analyzing the rest of the file. There are none
+/// in the source today; rather than analyze a file we cannot lex correctly, the
+/// gate fails loudly so the lexer is extended before a raw string is introduced.
+fn contains_raw_string(raw: &str) -> bool {
+    let bytes = raw.as_bytes();
+    for i in 0..bytes.len() {
+        // A raw string opens with `r` or `br` at a token boundary (the preceding
+        // character is not part of an identifier), then zero or more `#`, then `"`.
+        let boundary = i == 0 || !is_ident_char(bytes[i - 1]);
+        let r = if bytes[i] == b'r' && boundary {
+            Some(i)
+        } else if bytes[i] == b'b' && bytes.get(i + 1) == Some(&b'r') && boundary {
+            Some(i + 1)
+        } else {
+            None
+        };
+        if let Some(r) = r {
+            let mut j = r + 1;
+            while bytes.get(j) == Some(&b'#') {
+                j += 1;
+            }
+            if bytes.get(j) == Some(&b'"') {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 fn is_exempt(body: &str) -> bool {
@@ -341,18 +396,32 @@ fn every_ffi_call_holds_the_ffi_lock() {
     let mut violations = Vec::new();
 
     for file in &files {
-        // Skip the bindings implementation layer (the trait, its dynamic /
-        // static / wasm impls, and generated bindgen). Those forward into the C
-        // API and run under the high-level caller's lock; they do not self-lock.
-        let path_str = file.to_string_lossy();
-        if path_str.ends_with("bindings.rs")
-            || path_str.contains("/bindings/")
-            || path_str.contains("bindgen")
+        let rel = file.strip_prefix(&src).unwrap_or(file);
+        let rel_str = rel.to_string_lossy().replace('\\', "/");
+
+        // Skip the bindings implementation layer (the trait, its dynamic / static
+        // / wasm impls, and generated bindgen). Those forward into the C API and
+        // run under the high-level caller's lock; they do not self-lock. Match
+        // exact paths, not substrings, so an unrelated future file such as
+        // `pdf/appearance_bindings.rs` is not silently exempted.
+        if rel_str == "bindings.rs"
+            || rel_str.starts_with("bindings/")
+            || rel_str == "bindgen.rs"
+            || rel_str.starts_with("bindgen/")
         {
             continue;
         }
 
         let raw = fs::read_to_string(file).unwrap();
+
+        if contains_raw_string(&raw) {
+            violations.push(format!(
+                "  src/{rel_str}: contains a raw string literal, which strip_noise \
+                 cannot lex; extend the lexer before adding one"
+            ));
+            continue;
+        }
+
         let stripped = remove_test_blocks(&strip_noise(&raw));
 
         // Map exemption markers back onto the stripped body by keeping the marker

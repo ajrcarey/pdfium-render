@@ -574,6 +574,11 @@ impl<'a> PdfPage<'a> {
         height: Pixels,
         rotation: Option<PdfPageRenderRotation>,
     ) -> Result<PdfBitmap<'_>, PdfiumError> {
+        // Hold the lock across the whole render so the bitmap allocation and the
+        // render run as one atomic operation rather than several separate holds.
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::default())?;
 
         let mut config = PdfRenderConfig::new()
@@ -600,6 +605,13 @@ impl<'a> PdfPage<'a> {
         &self,
         config: &PdfRenderConfig,
     ) -> Result<PdfBitmap<'_>, PdfiumError> {
+        // Hold the lock across the whole render so reading the page dimensions
+        // (via apply_to_page), allocating the bitmap, and rendering run as one
+        // atomic operation. Without this, another thread could, for example,
+        // rotate the page between the size calculation and the render.
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let settings = config.apply_to_page(self);
 
         let mut bitmap = PdfBitmap::empty(
@@ -652,6 +664,11 @@ impl<'a> PdfPage<'a> {
         bitmap: &mut PdfBitmap,
         config: &PdfRenderConfig,
     ) -> Result<(), PdfiumError> {
+        // Hold the lock across reading the page dimensions (apply_to_page) and the
+        // render so they form one atomic operation.
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.render_into_bitmap_with_settings(bitmap, config.apply_to_page(self))
     }
 

@@ -253,6 +253,11 @@ impl<'a> PdfPageText<'a> {
     /// and the order in which they appear visually during rendering (and thus the order in
     /// which they are read by a user) may not necessarily match.
     pub fn all(&self) -> String {
+        // Hold the lock across reading the page size and extracting the text so
+        // they form one atomic operation.
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.inside_rect(self.page.page_size())
     }
 
