@@ -71,6 +71,9 @@ impl<'a> PdfPermissions<'a> {
     /// Returns the raw permissions bitflags for the containing [PdfDocument].
     #[inline]
     fn get_permissions_bits(&self) -> FpdfPermissions {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         FpdfPermissions::from_bits_truncate(unsafe {
             self.bindings().FPDF_GetDocPermissions(self.document_handle)
         } as u32)
@@ -79,6 +82,9 @@ impl<'a> PdfPermissions<'a> {
     /// Returns the revision of the standard security handler used by the containing [PdfDocument].
     /// As of PDF version 1.7, possible revision numbers are 2, 3, or 4.
     pub fn security_handler_revision(&self) -> Result<PdfSecurityHandlerRevision, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         PdfSecurityHandlerRevision::from_pdfium(unsafe {
             self.bindings()
                 .FPDF_GetSecurityHandlerRevision(self.document_handle)

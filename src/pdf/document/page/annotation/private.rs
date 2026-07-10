@@ -135,6 +135,9 @@ pub(crate) mod internal {
 
         /// Returns the [PdfPageAnnotationType] of this [PdfPageAnnotation].
         fn get_annotation_type(&self) -> PdfPageAnnotationType {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             PdfPageAnnotationType::from_pdfium(unsafe {
                 self.bindings().FPDFAnnot_GetSubtype(self.handle())
             })
@@ -144,6 +147,9 @@ pub(crate) mod internal {
         /// Returns the string value associated with the given key in the annotation dictionary
         /// of this [PdfPageAnnotation], if any.
         fn get_string_value(&self, key: &str) -> Option<String> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             if !self
                 .bindings()
                 .is_true(unsafe { self.bindings().FPDFAnnot_HasKey(self.handle(), key) })
@@ -205,6 +211,9 @@ pub(crate) mod internal {
         /// Sets the string value associated with the given key in the annotation dictionary
         /// of this [PdfPageAnnotation].
         fn set_string_value(&mut self, key: &str, value: &str) -> Result<(), PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             // Attempt to update the modification date first, before we apply the given value update.
             // That way, if updating the date fails, we can fail early.
 
@@ -240,6 +249,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::bounds()].
         #[inline]
         fn bounds_impl(&self) -> Result<PdfRect, PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             let mut rect = FS_RECTF {
                 left: 0_f32,
                 bottom: 0_f32,
@@ -255,6 +267,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::set_bounds()].
         #[inline]
         fn set_bounds_impl(&mut self, bounds: PdfRect) -> Result<(), PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             if self.bindings().is_true(unsafe {
                 self.bindings()
                     .FPDFAnnot_SetRect(self.handle(), &bounds.as_pdfium())
@@ -374,6 +389,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::has_attachment_points()].
         #[inline]
         fn has_attachment_points_impl(&self) -> bool {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             self.bindings()
                 .is_true(unsafe { self.bindings().FPDFAnnot_HasAttachmentPoints(self.handle()) })
         }
@@ -381,6 +399,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::fill_color()].
         #[inline]
         fn fill_color_impl(&self) -> Result<PdfColor, PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             let mut r: c_uint = 0;
 
             let mut g: c_uint = 0;
@@ -427,6 +448,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::set_fill_color()].
         #[inline]
         fn set_fill_color_impl(&mut self, fill_color: PdfColor) -> Result<(), PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             if self.bindings().is_true(unsafe {
                 self.bindings().FPDFAnnot_SetColor(
                     self.handle(),
@@ -465,6 +489,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::stroke_color()].
         #[inline]
         fn stroke_color_impl(&self) -> Result<PdfColor, PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             let mut r: c_uint = 0;
 
             let mut g: c_uint = 0;
@@ -511,6 +538,9 @@ pub(crate) mod internal {
         /// Internal implementation of [PdfPageAnnotationCommon::set_stroke_color()].
         #[inline]
         fn set_stroke_color_impl(&mut self, stroke_color: PdfColor) -> Result<(), PdfiumError> {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             if self.bindings().is_true(unsafe {
                 self.bindings().FPDFAnnot_SetColor(
                     self.handle(),
@@ -549,6 +579,9 @@ pub(crate) mod internal {
         /// Returns all the flags currently set on this annotation.
         #[inline]
         fn get_flags_impl(&self) -> PdfAnnotationFlags {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             PdfAnnotationFlags::from_bits_truncate(
                 (unsafe { self.bindings().FPDFAnnot_GetFlags(self.handle()) }) as u32,
             )
@@ -557,6 +590,9 @@ pub(crate) mod internal {
         /// Sets all the flags on this annotation.
         #[inline]
         fn set_flags_impl(&mut self, flags: PdfAnnotationFlags) -> bool {
+            #[cfg(feature = "thread_safe")]
+            let _ffi = crate::pdfium::FfiLock::acquire();
+
             self.bindings().is_true(unsafe {
                 self.bindings()
                     .FPDFAnnot_SetFlags(self.handle(), flags.bits() as c_int)

@@ -46,6 +46,9 @@ impl<'a> PdfPageLinkAnnotation<'a> {
 
     /// Returns the [PdfLink] associated with this [PdfPageLinkAnnotation], if any.
     pub fn link(&self) -> Result<PdfLink<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe { self.bindings().FPDFAnnot_GetLink(self.handle) };
 
         if handle.is_null() {
@@ -74,6 +77,9 @@ impl<'a> PdfPageLinkAnnotation<'a> {
 
     /// Sets the [PdfLink] associated with this [PdfPageLinkAnnotation] to the given URI.
     pub fn set_link(&mut self, uri: &str) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if self
             .bindings()
             .is_true(unsafe { self.bindings().FPDFAnnot_SetURI(self.handle(), uri) })

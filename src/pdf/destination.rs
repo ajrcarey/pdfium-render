@@ -84,6 +84,9 @@ impl PdfDestinationViewSettings {
     pub(crate) fn from_pdfium(
         destination: &PdfDestination,
     ) -> Result<PdfDestinationViewSettings, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // We use a combination of calls to FPDFDest_GetLocationInPage() and
         // FPDFDest_GetView() to account for all supported view settings
         // in a null-safe manner.
@@ -274,6 +277,9 @@ impl<'a> PdfDestination<'a> {
     /// Returns the zero-based index of the `PdfPage` containing this [PdfDestination].
     #[inline]
     pub fn page_index(&self) -> Result<PdfPageIndex, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         match unsafe {
             self.bindings()
                 .FPDFDest_GetDestPageIndex(self.document_handle, self.destination_handle)

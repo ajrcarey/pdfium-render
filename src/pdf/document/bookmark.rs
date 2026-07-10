@@ -88,6 +88,9 @@ impl<'a> PdfBookmark<'a> {
 
     /// Returns the title of this [PdfBookmark], if any.
     pub fn title(&self) -> Option<String> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // Retrieving the bookmark title from Pdfium is a two-step operation. First, we call
         // FPDFBookmark_GetTitle() with a null buffer; this will retrieve the length of
         // the bookmark title in bytes. If the length is zero, then there is no title.
@@ -129,6 +132,9 @@ impl<'a> PdfBookmark<'a> {
     /// of type [PdfActionType::GoToDestinationInSameDocument], but the PDF file format supports
     /// a variety of other actions.
     pub fn action(&self) -> Option<PdfAction<'a>> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe { self.bindings().FPDFBookmark_GetAction(self.bookmark_handle) };
 
         if handle.is_null() {
@@ -137,7 +143,7 @@ impl<'a> PdfBookmark<'a> {
             Some(PdfAction::from_pdfium(
                 handle,
                 self.document_handle(),
-                self.bindings_static(),
+                self.bindings(),
             ))
         }
     }
@@ -147,6 +153,9 @@ impl<'a> PdfBookmark<'a> {
     /// The destination specifies the page and region, if any, that will be the target
     /// of the action behaviour specified by [PdfBookmark::action()].
     pub fn destination(&self) -> Option<PdfDestination<'a>> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings()
                 .FPDFBookmark_GetDest(self.document_handle(), self.bookmark_handle())
@@ -170,6 +179,9 @@ impl<'a> PdfBookmark<'a> {
     /// Returns the number of direct children of this [PdfBookmark].
     #[inline]
     pub fn children_len(&self) -> usize {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // If there are N child bookmarks, then FPDFBookmark_GetCount returns a
         // N if the bookmark tree should be displayed open by default, and -N if
         // the child tree should be displayed closed by deafult.
@@ -182,6 +194,9 @@ impl<'a> PdfBookmark<'a> {
 
     /// Returns the first child [PdfBookmark] of this [PdfBookmark], if any.
     pub fn first_child(&self) -> Option<PdfBookmark<'a>> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings()
                 .FPDFBookmark_GetFirstChild(self.document_handle(), self.bookmark_handle())
@@ -200,6 +215,9 @@ impl<'a> PdfBookmark<'a> {
 
     /// Returns the next [PdfBookmark] at the same tree level as this [PdfBookmark], if any.
     pub fn next_sibling(&self) -> Option<PdfBookmark<'a>> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings()
                 .FPDFBookmark_GetNextSibling(self.document_handle(), self.bookmark_handle())

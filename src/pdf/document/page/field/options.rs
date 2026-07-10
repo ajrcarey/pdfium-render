@@ -36,6 +36,9 @@ impl<'a> PdfFormFieldOptions<'a> {
 
     /// Returns the number of options in this [PdfFormFieldOptions] collection.
     pub fn len(&self) -> PdfFormFieldOptionIndex {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let result = unsafe {
             self.bindings()
                 .FPDFAnnot_GetOptionCount(self.form_handle, self.annotation_handle)
@@ -73,6 +76,9 @@ impl<'a> PdfFormFieldOptions<'a> {
 
     /// Returns a single [PdfFormFieldOption] from this [PdfFormFieldOptions] collection.
     pub fn get(&self, index: PdfFormFieldOptionIndex) -> Result<PdfFormFieldOption, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if index >= self.len() {
             return Err(PdfiumError::FormFieldOptionIndexOutOfBounds);
         }

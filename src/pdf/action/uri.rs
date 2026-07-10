@@ -28,6 +28,9 @@ impl<'a> PdfActionUri<'a> {
 
     /// Returns the URI path associated with this [PdfActionUri], if any.
     pub fn uri(&self) -> Result<String, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // Retrieving the URI path from Pdfium is a two-step operation. First, we call
         // FPDFAction_GetURIPath() with a null buffer; this will retrieve the length of
         // the path in bytes. If the length is zero, then there is no path associated

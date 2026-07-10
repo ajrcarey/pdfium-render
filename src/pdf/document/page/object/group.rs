@@ -246,6 +246,9 @@ impl<'a> PdfPageGroupObject<'a> {
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     pub fn remove_objects_from_page(mut self) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // Hold off regenerating page content until all objects have been processed.
 
         let content_regeneration_strategy =
@@ -286,7 +289,7 @@ impl<'a> PdfPageGroupObject<'a> {
                         .FPDFPage_GetObject(self.page_handle(), index)
                 },
                 *self.ownership(),
-                self.bindings_static(),
+                self.bindings(),
             );
 
             // Undo the reflection effect.
@@ -418,6 +421,9 @@ impl<'a> PdfPageGroupObject<'a> {
         &mut self,
         destination: &mut PdfDocument<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.copy_into_x_object_form_object_from_handles(
             destination.handle(),
             PdfPoints::new(unsafe { self.bindings().FPDF_GetPageWidthF(self.page_handle()) }),
@@ -431,6 +437,9 @@ impl<'a> PdfPageGroupObject<'a> {
         destination_page_width: PdfPoints,
         destination_page_height: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // Since the PdfPageXObjectForm can only create a form from an entire page, we first
         // prepare a temporary page containing just the items in this group. Once we have
         // prepared that page, then we can create the form object.
@@ -718,7 +727,7 @@ impl<'a> PdfPageGroupObject<'a> {
     /// Inflates an internal `FPDF_PAGEOBJECT` handle into a [PdfPageObject].
     #[inline]
     pub(crate) fn get_object_from_handle(&self, handle: &FPDF_PAGEOBJECT) -> PdfPageObject<'a> {
-        PdfPageObject::from_pdfium(*handle, *self.ownership(), self.bindings_static())
+        PdfPageObject::from_pdfium(*handle, *self.ownership(), self.bindings())
     }
 
     create_transform_setters!(

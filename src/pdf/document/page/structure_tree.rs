@@ -20,6 +20,9 @@ pub struct PdfPageStructureTree<'a> {
 
 impl<'a> PdfPageStructureTree<'a> {
     pub(crate) fn from_pdfium(page_handle: FPDF_PAGE) -> Self {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             PdfPageStructureTree {
                 handle: 0 as FPDF_STRUCTTREE,
@@ -45,6 +48,9 @@ impl<'a> PdfPageStructureTree<'a> {
 impl<'a> Drop for PdfPageStructureTree<'a> {
     #[inline]
     fn drop(&mut self) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDF_StructTree_Close(self.handle());
         }

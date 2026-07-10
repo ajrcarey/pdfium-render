@@ -68,6 +68,9 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         (unsafe {
             self.bindings()
                 .FPDFAnnot_GetObjectCount(self.annotation_handle())
@@ -75,6 +78,9 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let object_handle = unsafe {
             self.bindings()
                 .FPDFAnnot_GetObject(self.annotation_handle(), index as c_int)
@@ -92,7 +98,7 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageAnnotationObjects<'a> {
             Ok(PdfPageObject::from_pdfium(
                 object_handle,
                 *self.ownership(),
-                self.bindings_static(),
+                self.bindings(),
             ))
         }
     }

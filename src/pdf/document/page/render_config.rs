@@ -1032,8 +1032,9 @@ mod tests {
 
         // First, create a full page render of the target page.
 
-        let full_bitmap =
-            page.render_with_config(&PdfRenderConfig::new().set_fixed_size(target_width, target_height))?;
+        let full_bitmap = page.render_with_config(
+            &PdfRenderConfig::new().set_fixed_size(target_width, target_height),
+        )?;
         let full_bytes = full_bitmap.as_image()?.to_rgba8().into_raw();
         let row_bytes = (target_width as usize) * 4;
 
@@ -1044,7 +1045,8 @@ mod tests {
         let mut stitched: Vec<u8> = Vec::with_capacity(full_bytes.len());
 
         for i in 0..strips {
-            let mut strip_bitmap = PdfBitmap::empty(target_width, strip_height, full_bitmap.format()?)?;
+            let mut strip_bitmap =
+                PdfBitmap::empty(target_width, strip_height, full_bitmap.format()?)?;
 
             page.render_into_bitmap_with_config(
                 &mut strip_bitmap,
@@ -1060,7 +1062,13 @@ mod tests {
 
         // The render output assembled from the strips should exactly match the full page render.
 
-        println!("{}, {}, {}, {}", strip_height, strip_height * strips, target_height, row_bytes);
+        println!(
+            "{}, {}, {}, {}",
+            strip_height,
+            strip_height * strips,
+            target_height,
+            row_bytes
+        );
         assert_eq!(stitched.len(), full_bytes.len());
 
         let mut sums = [0u64; 4]; // Track per-channel mean drift between stitched and full-page renders.

@@ -63,6 +63,9 @@ impl<'a> PdfPathSegment<'a> {
     /// Returns the [PdfPathSegmentType] of this [PdfPathSegment].
     #[inline]
     pub fn segment_type(&self) -> PdfPathSegmentType {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         PdfPathSegmentType::from_pdfium(unsafe {
             self.bindings().FPDFPathSegment_GetType(self.handle)
         })
@@ -72,12 +75,18 @@ impl<'a> PdfPathSegment<'a> {
     /// Returns `true` if this [PdfPathSegment] closes the current sub-path.
     #[inline]
     pub fn is_close(&self) -> bool {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.bindings()
             .is_true(unsafe { self.bindings().FPDFPathSegment_GetClose(self.handle()) })
     }
 
     /// Returns the horizontal and vertical destination positions of this [PdfPathSegment].
     pub fn point(&self) -> (PdfPoints, PdfPoints) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut x: c_float = 0.0;
 
         let mut y: c_float = 0.0;

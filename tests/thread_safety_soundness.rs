@@ -27,17 +27,18 @@
 //!   highlighting, exercising the multi-call set-highlight-then-`FPDF_FFLDraw`
 //!   sequence that touches pdfium's process-global form state.
 
+use once_cell::sync::OnceCell;
 use pdfium_render::prelude::*;
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 use std::thread;
 
 /// Returns the single process-wide [Pdfium] instance shared by every test.
 ///
 /// `Pdfium::new` asserts that the global bindings have not yet been set, so it
 /// can only be called once per process. Integration tests in the same file
-/// share a process, so all tests here bind through this `OnceLock`.
+/// share a process, so all tests here bind through this `OnceCell`.
 fn pdfium() -> &'static Pdfium {
-    static PDFIUM: OnceLock<Pdfium> = OnceLock::new();
+    static PDFIUM: OnceCell<Pdfium> = OnceCell::new();
 
     PDFIUM.get_or_init(|| {
         Pdfium::new(
@@ -187,7 +188,10 @@ fn concurrent_text_extraction() {
         let page = doc.pages().get(0).expect("first page");
         let text = page.text().expect("load text page").all();
 
-        assert!(!text.is_empty(), "fixture page must contain extractable text");
+        assert!(
+            !text.is_empty(),
+            "fixture page must contain extractable text"
+        );
 
         text
     };
@@ -241,7 +245,12 @@ fn concurrent_same_page_shared_across_threads() {
 
     let render_baseline = {
         let config = PdfRenderConfig::new().set_target_width(300);
-        checksum(&page.render_with_config(&config).expect("render page").as_raw_bytes())
+        checksum(
+            &page
+                .render_with_config(&config)
+                .expect("render page")
+                .as_raw_bytes(),
+        )
     };
     let text_baseline = page.text().expect("load text page").all();
 

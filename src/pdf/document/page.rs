@@ -246,6 +246,9 @@ impl<'a> PdfPage<'a> {
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn width(&self) -> PdfPoints {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         PdfPoints::new(unsafe { self.bindings().FPDF_GetPageWidthF(self.page_handle) })
     }
 
@@ -253,6 +256,9 @@ impl<'a> PdfPage<'a> {
     /// One point is 1/72 inches, roughly 0.358 mm.
     #[inline]
     pub fn height(&self) -> PdfPoints {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         PdfPoints::new(unsafe { self.bindings().FPDF_GetPageHeightF(self.page_handle) })
     }
 
@@ -290,6 +296,9 @@ impl<'a> PdfPage<'a> {
     /// should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn rotation(&self) -> Result<PdfPageRenderRotation, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         PdfPageRenderRotation::from_pdfium(unsafe {
             self.bindings().FPDFPage_GetRotation(self.page_handle)
         })
@@ -298,6 +307,9 @@ impl<'a> PdfPage<'a> {
     /// Sets the intrinsic rotation that should be applied to this [PdfPage] during rendering.
     #[inline]
     pub fn set_rotation(&mut self, rotation: PdfPageRenderRotation) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings()
                 .FPDFPage_SetRotation(self.page_handle, rotation.as_pdfium());
@@ -307,6 +319,9 @@ impl<'a> PdfPage<'a> {
     /// Returns `true` if any object on the page contains transparency.
     #[inline]
     pub fn has_transparency(&self) -> bool {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings()
                 .is_true(self.bindings().FPDFPage_HasTransparency(self.page_handle))
@@ -335,6 +350,9 @@ impl<'a> PdfPage<'a> {
     /// ```
     #[inline]
     pub fn has_embedded_thumbnail(&self) -> bool {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // To determine whether the page includes a thumbnail, we ask Pdfium to return the
         // size of the thumbnail data. A non-zero value indicates a thumbnail exists.
 
@@ -359,6 +377,9 @@ impl<'a> PdfPage<'a> {
     ///     )?; // Renders a 128 x 128 thumbnail of the page
     /// ```
     pub fn embedded_thumbnail(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let thumbnail_handle = unsafe {
             self.bindings()
                 .FPDFPage_GetThumbnailAsBitmap(self.page_handle)
@@ -375,6 +396,9 @@ impl<'a> PdfPage<'a> {
 
     /// Returns the collection of text boxes contained within this [PdfPage].
     pub fn text(&self) -> Result<PdfPageText<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let text_handle = unsafe { self.bindings().FPDFText_LoadPage(self.page_handle) };
 
         if text_handle.is_null() {
@@ -468,6 +492,9 @@ impl<'a> PdfPage<'a> {
         y: Pixels,
         config: &PdfRenderConfig,
     ) -> Result<(PdfPoints, PdfPoints), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut page_x: c_double = 0.0;
         let mut page_y: c_double = 0.0;
 
@@ -502,6 +529,9 @@ impl<'a> PdfPage<'a> {
         y: PdfPoints,
         config: &PdfRenderConfig,
     ) -> Result<(Pixels, Pixels), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut device_x: c_int = 0;
         let mut device_y: c_int = 0;
 
@@ -633,6 +663,9 @@ impl<'a> PdfPage<'a> {
         bitmap: &mut PdfBitmap,
         settings: PdfPageRenderSettings,
     ) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let bitmap_handle = bitmap.handle();
 
         if settings.do_clear_bitmap_before_rendering {
@@ -766,6 +799,9 @@ impl<'a> PdfPage<'a> {
         matrix: PdfMatrix,
         clip: PdfRect,
     ) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFPage_TransFormWithClip(
                 self.page_handle,
@@ -831,6 +867,9 @@ impl<'a> PdfPage<'a> {
     // Use Pdfium's built-in flatten. This has some problems; see:
     // https://github.com/ajrcarey/pdfium-render/issues/140
     pub fn flatten(&mut self) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // TODO: AJRC - 28/5/22 - consider allowing the caller to set the FLAT_NORMALDISPLAY or FLAT_PRINT flag.
         let flag = FLAT_PRINT;
 
@@ -859,6 +898,9 @@ impl<'a> PdfPage<'a> {
 
     /// Deletes this [PdfPage] from its containing `PdfPages` collection, consuming this [PdfPage].
     pub fn delete(self) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let index = PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
             .ok_or(PdfiumError::SourcePageIndexNotInCache)?;
 
@@ -976,6 +1018,9 @@ impl<'a> PdfPage<'a> {
     /// Reloads the page transparently to any caller, forcing a refresh of all page data structures.
     /// This will replace this page's `FPDF_PAGE` handle. The page index cache will be updated.
     fn reload_in_place(&mut self) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if let Some(page_index) =
             PdfPageIndexCache::get_index_for_page(self.document_handle, self.page_handle)
         {
@@ -998,6 +1043,9 @@ impl<'a> PdfPage<'a> {
     /// Drops the page by calling `FPDF_ClosePage()`, freeing held memory. This will invalidate
     /// this page's `FPDF_PAGE` handle. The page index cache will be updated.
     fn drop_impl(&mut self) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if self.regeneration_strategy != PdfPageContentRegenerationStrategy::Manual
             && self.is_content_regeneration_required
         {

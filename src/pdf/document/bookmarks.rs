@@ -44,6 +44,9 @@ impl<'a> PdfBookmarks<'a> {
 
     /// Returns the root [PdfBookmark] in the containing [PdfDocument], if any.
     pub fn root(&self) -> Option<PdfBookmark<'_>> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let bookmark_handle = unsafe {
             self.bindings()
                 .FPDFBookmark_GetFirstChild(self.document_handle, std::ptr::null_mut())
@@ -67,6 +70,9 @@ impl<'a> PdfBookmarks<'a> {
     /// bookmarks could match a given title. This function only ever returns the first. To return
     /// all matches, use [PdfBookmarks::find_all_by_title()].
     pub fn find_first_by_title(&self, title: &str) -> Result<PdfBookmark<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings()
                 .FPDFBookmark_Find_str(self.document_handle, title)
@@ -176,6 +182,9 @@ impl<'a> Iterator for PdfBookmarksIterator<'a> {
     type Item = PdfBookmark<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         // A straightforward tail-recursive function to walk the bookmarks might
         // look like this:
         //

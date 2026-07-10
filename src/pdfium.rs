@@ -57,62 +57,79 @@ static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 // enabled a `Pdfium` may be shared across threads (it is marked Send + Sync), so
 // every call that reaches into the bindings must be serialized process-wide.
 //
-// The serialization is provided by a reentrant lock. The first call on a given
-// thread locks a global mutex and holds the resulting guard for as long as the
-// lock guard lives; nested calls on the same thread observe a non-zero recursion
-// depth and skip re-locking. Reentrancy is required because high-level methods
-// compose several bindings() calls, and some hold one guard live across a call
-// that reaches for another; a plain mutex would deadlock. Threads other than the
-// current owner block until the outermost guard on the owning thread is dropped
-// and the mutex is released.
+// Serialization is provided by a reentrant, process-wide lock. Every method that
+// calls into the bindings acquires an FfiLock as its first statement and holds
+// it for the whole operation, so a logical operation made of several FFI calls
+// runs atomically. Because the lock is reentrant, a method never has to reason
+// about whether its callers already hold it: the first acquisition on a thread
+// takes the global mutex, and nested acquisitions on the same thread observe a
+// non-zero recursion depth and do not re-lock, so composing locked methods
+// cannot deadlock. Threads other than the current owner block until the depth on
+// the owning thread returns to zero and the mutex is released.
 #[cfg(feature = "thread_safe")]
 static FFI_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 #[cfg(feature = "thread_safe")]
 thread_local! {
+    // The current thread's reentrancy depth, and the mutex guard held for the
+    // outermost acquisition. The guard lives in thread-local storage rather than
+    // inside the FfiLock value so that the mutex is released strictly when the
+    // depth returns to zero, regardless of the order in which FfiLock values are
+    // dropped. Tying release to a particular guard's Drop would release the mutex
+    // early if guards were dropped out of order.
     static FFI_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    static FFI_GUARD: std::cell::RefCell<Option<std::sync::MutexGuard<'static, ()>>> =
+        const { std::cell::RefCell::new(None) };
 }
 
-/// A reentrant, process-wide lock guard serializing calls into Pdfium's
-/// non-reentrant C API. The first acquisition on a thread takes the global
-/// mutex; nested acquisitions on the same thread do not re-lock (they observe a
-/// non-zero recursion depth), so composing calls that each grab the lock cannot
-/// deadlock. The mutex is released only when the outermost guard on the thread
-/// is dropped.
+/// A reentrant, process-wide lock serializing calls into Pdfium's non-reentrant
+/// C API.
+///
+/// Acquire one as the first statement of any method that calls into the bindings
+/// and hold it for the whole operation:
+///
+/// ```ignore
+/// #[cfg(feature = "thread_safe")]
+/// let _ffi = crate::pdfium::FfiLock::acquire();
+/// ```
+///
+/// The first acquisition on a thread takes the global mutex; nested acquisitions
+/// on the same thread do not re-lock, so composing locked methods cannot
+/// deadlock. The mutex is released only when the outermost acquisition on the
+/// thread is dropped, that is, when the recursion depth returns to zero.
 #[cfg(feature = "thread_safe")]
 pub(crate) struct FfiLock {
-    // Some(..) for the outermost acquisition on the current thread (holds the
-    // global mutex); None for reentrant, nested acquisitions on the same thread.
-    _lock: Option<std::sync::MutexGuard<'static, ()>>,
+    // A raw-pointer marker makes FfiLock neither Send nor Sync, so a lock cannot
+    // be moved to another thread or held across an await point on a multi-threaded
+    // executor. The lock carries no data of its own; the mutex guard lives in
+    // thread-local storage.
+    _not_send: std::marker::PhantomData<*const ()>,
 }
 
 #[cfg(feature = "thread_safe")]
 impl FfiLock {
     #[inline]
     pub(crate) fn acquire() -> Self {
-        let lock = FFI_DEPTH.with(|depth| {
-            let current = depth.get();
-
-            let lock = if current == 0 {
+        FFI_DEPTH.with(|depth| {
+            if depth.get() == 0 {
                 // Outermost acquisition on this thread: take the global mutex. A
-                // poisoned mutex still yields its guard; a Rust panic between FFI
-                // calls does not corrupt Pdfium's own state, so recovering the
-                // guard here is safe.
-                Some(
-                    FFI_MUTEX
-                        .lock()
-                        .unwrap_or_else(std::sync::PoisonError::into_inner),
-                )
-            } else {
-                None
-            };
+                // poisoned mutex still yields its guard; recovering here keeps one
+                // panicking thread from wedging every other thread on a
+                // permanently poisoned lock, and the lock protects only Pdfium's
+                // own state, not any Rust invariant that a panic could break.
+                let guard = FFI_MUTEX
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
 
-            depth.set(current + 1);
+                FFI_GUARD.with(|slot| *slot.borrow_mut() = Some(guard));
+            }
 
-            lock
+            depth.set(depth.get() + 1);
         });
 
-        Self { _lock: lock }
+        Self {
+            _not_send: std::marker::PhantomData,
+        }
     }
 }
 
@@ -120,61 +137,38 @@ impl FfiLock {
 impl Drop for FfiLock {
     #[inline]
     fn drop(&mut self) {
-        FFI_DEPTH.with(|depth| depth.set(depth.get() - 1));
-        // _lock, when Some, releases the global mutex as it is dropped here;
-        // that only happens for the outermost guard on this thread.
+        FFI_DEPTH.with(|depth| {
+            let current = depth.get();
+
+            debug_assert!(current > 0, "FfiLock dropped with zero recursion depth");
+
+            let next = current - 1;
+            depth.set(next);
+
+            if next == 0 {
+                // Outermost acquisition released: drop the stored mutex guard,
+                // releasing the global mutex. Release is driven by the depth
+                // reaching zero, not by this particular FfiLock value dropping.
+                FFI_GUARD.with(|slot| {
+                    slot.borrow_mut().take();
+                });
+            }
+        });
     }
 }
 
-/// A process-wide, reentrant guard that serializes calls into Pdfium's
-/// non-reentrant C API while dereferencing to the underlying
-/// [PdfiumLibraryBindings] for the duration of a single FFI call.
+/// A trait implemented by every high-level type, giving lifetime-free access to
+/// the process-wide [PdfiumLibraryBindings] promoted into a global on the first
+/// [Pdfium] instantiation.
 ///
-/// This type is returned by the `bindings()` accessor when the `thread_safe`
-/// feature is enabled. Callers use it transparently: an expression such as
-/// `self.bindings().FPDF_x(...)` holds the lock for the whole statement and
-/// releases it once the temporary guard is dropped.
-#[cfg(feature = "thread_safe")]
-pub struct PdfiumFfiGuard {
-    _lock: FfiLock,
-    bindings: &'static dyn PdfiumLibraryBindings,
-}
-
-#[cfg(feature = "thread_safe")]
-impl PdfiumFfiGuard {
-    #[inline]
-    fn new(bindings: &'static dyn PdfiumLibraryBindings) -> Self {
-        Self {
-            _lock: FfiLock::acquire(),
-            bindings,
-        }
-    }
-}
-
-#[cfg(feature = "thread_safe")]
-impl std::ops::Deref for PdfiumFfiGuard {
-    type Target = dyn PdfiumLibraryBindings;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        self.bindings
-    }
-}
-
+/// When the `thread_safe` feature is enabled, any FFI call made through the
+/// reference returned by [PdfiumLibraryBindingsAccessor::bindings] must be
+/// serialized: acquire an [FfiLock] as the first statement of the enclosing
+/// method and hold it for the whole operation. The lock is reentrant, so a
+/// method never has to know whether its callers already hold it.
 #[cfg(feature = "thread_safe")]
 pub trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
-    /// Returns a guard that holds the process-wide FFI lock for the duration of
-    /// the enclosing statement and dereferences to the [PdfiumLibraryBindings].
-    fn bindings(&self) -> PdfiumFfiGuard {
-        PdfiumFfiGuard::new(BINDINGS.wait().as_ref())
-    }
-
-    /// Returns a long-lived reference to the [PdfiumLibraryBindings] without
-    /// taking the FFI lock. This is used only to thread the bindings into child
-    /// objects whose lifetime is tied to them; it must not be used to make FFI
-    /// calls directly (those go through `bindings()` or an [FfiLock]).
-    #[doc(hidden)]
-    fn bindings_static(&self) -> &'static dyn PdfiumLibraryBindings {
+    fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.wait().as_ref()
     }
 }
@@ -182,11 +176,6 @@ pub trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
 #[cfg(not(feature = "thread_safe"))]
 pub trait PdfiumLibraryBindingsAccessor<'a> {
     fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
-        BINDINGS.get().unwrap().as_ref()
-    }
-
-    #[doc(hidden)]
-    fn bindings_static(&self) -> &'static dyn PdfiumLibraryBindings {
         BINDINGS.get().unwrap().as_ref()
     }
 }
@@ -306,6 +295,9 @@ impl Pdfium {
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
     #[inline]
     pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         assert!(BINDINGS.get().is_none());
         unsafe {
             bindings.FPDF_InitLibrary();
@@ -327,6 +319,9 @@ impl Pdfium {
         bindings: Box<dyn PdfiumLibraryBindings>,
         config: PdfiumLibraryConfig,
     ) -> Self {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         assert!(BINDINGS.get().is_none());
         unsafe {
             bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
@@ -343,6 +338,9 @@ impl Pdfium {
 
     /// Applies the given custom font provider to this [Pdfium] instance.
     pub fn set_custom_font_provider(&mut self, provider: Box<dyn PdfiumCustomFontProvider>) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut wrapper = Box::pin(PdfiumCustomFontProviderExt::new(provider));
 
         unsafe {
@@ -355,6 +353,9 @@ impl Pdfium {
 
     /// Clears the currently set font provider, including Pdfium's platform default font provider.
     pub fn clear_custom_font_provider(&mut self) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDF_SetSystemFontInfo(std::ptr::null_mut());
         }
@@ -366,6 +367,9 @@ impl Pdfium {
     /// Applies Pdfium's included default font provider for the current platform, if any,
     /// to this [Pdfium] instance.
     pub fn use_platform_default_font_provider(&mut self) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.clear_custom_font_provider();
 
         let platform_default_font_provider =
@@ -404,9 +408,12 @@ impl Pdfium {
         bytes: &'a [u8],
         password: Option<&str>,
     ) -> Result<PdfDocument<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         Self::pdfium_document_handle_to_result(
             unsafe { self.bindings().FPDF_LoadMemDocument64(bytes, password) },
-            self.bindings_static(),
+            self.bindings(),
         )
     }
 
@@ -421,12 +428,15 @@ impl Pdfium {
         bytes: Vec<u8>,
         password: Option<&str>,
     ) -> Result<PdfDocument<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         Self::pdfium_document_handle_to_result(
             unsafe {
                 self.bindings()
                     .FPDF_LoadMemDocument64(bytes.as_slice(), password)
             },
-            self.bindings_static(),
+            self.bindings(),
         )
         .map(|mut document| {
             // Give the newly-created document ownership of the byte buffer, so that Pdfium can continue
@@ -498,6 +508,9 @@ impl Pdfium {
         reader: R,
         password: Option<&str>,
     ) -> Result<PdfDocument<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
 
         Pdfium::pdfium_document_handle_to_result(
@@ -505,7 +518,7 @@ impl Pdfium {
                 self.bindings()
                     .FPDF_LoadCustomDocument(reader.as_fpdf_file_access_mut_ptr(), password)
             },
-            self.bindings_static(),
+            self.bindings(),
         )
         .map(|mut document| {
             // Give the newly-created document ownership of the reader, so that Pdfium can continue
@@ -584,9 +597,12 @@ impl Pdfium {
 
     /// Creates a new, empty [PdfDocument] in memory.
     pub fn create_new_pdf<'a>(&'a self) -> Result<PdfDocument<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         Self::pdfium_document_handle_to_result(
             unsafe { self.bindings().FPDF_CreateNewDocument() },
-            self.bindings_static(),
+            self.bindings(),
         )
         .map(|mut document| {
             document.set_version(PdfDocumentVersion::DEFAULT_VERSION);
@@ -700,6 +716,9 @@ impl Debug for Pdfium {
 #[cfg(not(target_arch = "wasm32"))]
 impl Drop for Pdfium {
     fn drop(&mut self) {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         if let Some(ptr) = self.platform_default_font_provider {
             unsafe {
                 self.bindings().FPDF_FreeDefaultSystemFontInfo(ptr);

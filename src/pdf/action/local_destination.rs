@@ -26,6 +26,9 @@ impl<'a> PdfActionLocalDestination<'a> {
 
     /// Returns the target [PdfDestination] for this [PdfActionLocalDestination].
     pub fn destination(&self) -> Result<PdfDestination<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings()
                 .FPDFAction_GetDest(self.document, self.handle)

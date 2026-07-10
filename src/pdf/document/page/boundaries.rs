@@ -111,6 +111,9 @@ impl<'a> PdfPageBoundaries<'a> {
     /// is printed.
     #[inline]
     pub fn media(&self) -> Result<PdfPageBoundaryBox, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.get_bounding_box_rect(|page, left, bottom, right, top| unsafe {
             self.bindings()
                 .FPDFPage_GetMediaBox(page, left, bottom, right, top)
@@ -120,6 +123,9 @@ impl<'a> PdfPageBoundaries<'a> {
 
     /// Sets the Media boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_media(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDFPage_SetMediaBox(
                 self.page_handle,
@@ -138,6 +144,9 @@ impl<'a> PdfPageBoundaries<'a> {
     /// It is typically cropped out when viewing the document on-screen.
     #[inline]
     pub fn art(&self) -> Result<PdfPageBoundaryBox, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.get_bounding_box_rect(|page, left, bottom, right, top| unsafe {
             self.bindings()
                 .FPDFPage_GetArtBox(page, left, bottom, right, top)
@@ -147,6 +156,9 @@ impl<'a> PdfPageBoundaries<'a> {
 
     /// Sets the Art boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_art(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDFPage_SetArtBox(
                 self.page_handle,
@@ -165,6 +177,9 @@ impl<'a> PdfPageBoundaries<'a> {
     /// It is typically cropped out when viewing the document on-screen.
     #[inline]
     pub fn bleed(&self) -> Result<PdfPageBoundaryBox, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.get_bounding_box_rect(|page, left, bottom, right, top| unsafe {
             self.bindings()
                 .FPDFPage_GetBleedBox(page, left, bottom, right, top)
@@ -174,6 +189,9 @@ impl<'a> PdfPageBoundaries<'a> {
 
     /// Sets the Bleed boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_bleed(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDFPage_SetBleedBox(
                 self.page_handle,
@@ -192,6 +210,9 @@ impl<'a> PdfPageBoundaries<'a> {
     /// It is typically cropped out when viewing the document on-screen.
     #[inline]
     pub fn trim(&self) -> Result<PdfPageBoundaryBox, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.get_bounding_box_rect(|page, left, bottom, right, top| unsafe {
             self.bindings()
                 .FPDFPage_GetTrimBox(page, left, bottom, right, top)
@@ -201,6 +222,9 @@ impl<'a> PdfPageBoundaries<'a> {
 
     /// Sets the Trim boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_trim(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDFPage_SetTrimBox(
                 self.page_handle,
@@ -218,6 +242,9 @@ impl<'a> PdfPageBoundaries<'a> {
     /// The Crop box is the maximum extent of user-visible content when viewing the document on-screen.
     #[inline]
     pub fn crop(&self) -> Result<PdfPageBoundaryBox, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         self.get_bounding_box_rect(|page, left, bottom, right, top| unsafe {
             self.bindings()
                 .FPDFPage_GetCropBox(page, left, bottom, right, top)
@@ -227,6 +254,9 @@ impl<'a> PdfPageBoundaries<'a> {
 
     /// Sets the Crop boundary box for the containing [PdfPage] to the given [PdfRect].
     pub fn set_crop(&mut self, rect: PdfRect) -> Result<(), PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         unsafe {
             self.bindings().FPDFPage_SetCropBox(
                 self.page_handle,
@@ -246,6 +276,9 @@ impl<'a> PdfPageBoundaries<'a> {
     /// be set explicitly.
     #[inline]
     pub fn bounding(&self) -> Result<PdfPageBoundaryBox, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut rect = FS_RECTF {
             left: 0.0,
             top: 0.0,

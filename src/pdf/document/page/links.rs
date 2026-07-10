@@ -113,6 +113,9 @@ impl<'a> PdfPageLinks<'a> {
 
     /// Returns a single [PdfLink] from this [PdfPageLinks] collection.
     pub fn get(&'a self, index: PdfPageLinkIndex) -> Result<PdfLink<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut start_pos = index as c_int;
 
         let mut handle = null_mut();
@@ -144,6 +147,9 @@ impl<'a> PdfPageLinks<'a> {
 
     /// Returns the [PdfLink] object at the given position on the containing page, if any.
     pub fn link_at_point(&self, x: PdfPoints, y: PdfPoints) -> Option<PdfLink<'_>> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings().FPDFLink_GetLinkAtPoint(
                 self.page_handle,

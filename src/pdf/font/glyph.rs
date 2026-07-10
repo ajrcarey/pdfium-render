@@ -31,6 +31,9 @@ impl<'a> PdfFontGlyph<'a> {
 
     /// Returns the width of this [PdfFontGlyph] when rendered at the given font size.
     pub fn width_at_font_size(&self, size: PdfPoints) -> PdfPoints {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let mut width = 0.0;
 
         if self.bindings().is_true(unsafe {
@@ -52,6 +55,9 @@ impl<'a> PdfFontGlyph<'a> {
         &self,
         size: PdfPoints,
     ) -> Result<PdfFontGlyphPath<'_>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings().FPDFFont_GetGlyphPath(
                 self.handle,
@@ -96,6 +102,9 @@ impl<'a> PdfFontGlyphPath<'a> {
 impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         (unsafe {
             self.bindings()
                 .FPDFGlyphPath_CountGlyphSegments(self.handle)
@@ -105,6 +114,9 @@ impl<'a> PdfPathSegments<'a> for PdfFontGlyphPath<'a> {
     }
 
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
+        #[cfg(feature = "thread_safe")]
+        let _ffi = crate::pdfium::FfiLock::acquire();
+
         let handle = unsafe {
             self.bindings()
                 .FPDFGlyphPath_GetGlyphPathSegment(self.handle, index as c_int)
