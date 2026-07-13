@@ -419,6 +419,13 @@ impl<'a> Drop for PdfDocument<'a> {
         // avoiding a segmentation fault when using Pdfium builds compiled with V8/XFA support.
 
         self.form = None;
+
+        // Close all fonts loaded into this document's font registry _before_ closing the
+        // document itself. Struct fields are dropped only _after_ this Drop impl runs, so
+        // without this, each font's FPDFFont_Close() would execute against an already-closed
+        // document, reading freed memory inside Pdfium and corrupting the process heap.
+        self.fonts.clear();
+
         unsafe {
             self.bindings().FPDF_CloseDocument(self.handle);
         }

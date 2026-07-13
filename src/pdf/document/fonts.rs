@@ -573,6 +573,16 @@ impl<'a> PdfFonts<'a> {
     pub fn get(&self, token: PdfFontToken) -> Option<&PdfFont<'_>> {
         self.fonts.get(&token)
     }
+
+    /// Drops every font in this registry, releasing each font's `FPDF_FONT` handle.
+    ///
+    /// This MUST be called before `FPDF_CloseDocument()`: calling `FPDFFont_Close()`
+    /// on a font whose owning document has already been closed reads freed memory
+    /// inside Pdfium, corrupting the heap. See `PdfDocument::drop()`.
+    #[inline]
+    pub(crate) fn clear(&mut self) {
+        self.fonts.clear();
+    }
 }
 
 impl<'a> PdfiumLibraryBindingsAccessor<'a> for PdfFonts<'a> {}
