@@ -1293,21 +1293,12 @@ impl<'a> Drop for PdfPageObject<'a> {
     /// Closes this [PdfPageObject], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        // The documentation for FPDFPageObj_Destroy() states that we only need
-        // call the function for page objects created by FPDFPageObj_CreateNew*() or
-        // FPDFPageObj_New*Obj() _and_ where the newly-created object was _not_ subsequently
-        // added to a PdfPage or PdfPageAnnotation via a call to FPDFPage_InsertObject() or
-        // FPDFAnnot_AppendObject().
-
-        // In other words, retrieving a page object that already exists in a document evidently
-        // does not allocate any additional resources, so we don't need to free anything.
-        // (Indeed, if we try to, Pdfium segfaults.)
-
-        if !self.ownership().is_owned() {
-            unsafe {
-                self.bindings().FPDFPageObj_Destroy(self.object_handle());
-            }
-        }
+        // Deliberately empty: every enum variant wraps a concrete page object type
+        // (PdfPageTextObject, PdfPagePathObject, ...) and each of those types already
+        // calls FPDFPageObj_Destroy() in its own Drop impl (via drop_impl()) when the
+        // object is unowned. Calling FPDFPageObj_Destroy() here as well destroyed the
+        // same handle twice - a double-free that corrupted Pdfium's heap whenever an
+        // unowned object (e.g. one returned by FPDFPage_RemoveObject) was dropped.
     }
 }
 
