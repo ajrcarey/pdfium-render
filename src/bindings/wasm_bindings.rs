@@ -506,16 +506,7 @@ impl PdfiumRenderWasmState {
             "pdfium-render::PdfiumRenderWasmState::copy_bytes_to_pdfium_address(): entering"
         );
 
-        let mut source = unsafe { Uint8Array::view(bytes) };
-
-        if source.buffer().detached() {
-            // When the WASM linear memory heap grows, the existing ArrayBuffer that backs
-            // the WASM memory is detached and a new, larger ArrayBuffer is created. Avoid
-            // referencing a detached buffer. See: https://github.com/ajrcarey/pdfium-render/pull/261
-
-            source = Uint8Array::new_with_length(bytes.len() as u32);
-            source.copy_from(bytes);
-        }
+        let source = unsafe { Uint8Array::view(bytes) };
 
         self.heap_u8().set(&source, remote_ptr as u32);
 
