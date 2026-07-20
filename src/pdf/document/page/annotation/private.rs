@@ -249,7 +249,7 @@ pub(crate) mod internal {
 
             let result = unsafe { self.bindings().FPDFAnnot_GetRect(self.handle(), &mut rect) };
 
-            PdfRect::from_pdfium_as_result(result, rect, self.bindings())
+            PdfRect::from_pdfium_as_result(result, rect, &*self.bindings())
         }
 
         /// Internal implementation of [PdfPageAnnotationCommon::set_bounds()].

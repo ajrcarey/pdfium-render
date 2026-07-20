@@ -229,7 +229,7 @@ impl<'a> PdfPageGroupObject<'a> {
         if content_regeneration_strategy
             == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
         {
-            PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle(), &*self.bindings())?;
         }
 
         Ok(())
@@ -314,7 +314,7 @@ impl<'a> PdfPageGroupObject<'a> {
         if content_regeneration_strategy
             == PdfPageContentRegenerationStrategy::AutomaticOnEveryChange
         {
-            PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
+            PdfPage::regenerate_content_immut_for_handle(self.page_handle(), &*self.bindings())?;
         }
 
         Ok(())
@@ -474,8 +474,8 @@ impl<'a> PdfPageGroupObject<'a> {
 
             Ok(())
         })?;
-        PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
-        PdfPage::regenerate_content_immut_for_handle(tmp_page, self.bindings())?;
+        PdfPage::regenerate_content_immut_for_handle(self.page_handle(), &*self.bindings())?;
+        PdfPage::regenerate_content_immut_for_handle(tmp_page, &*self.bindings())?;
 
         // ... create the form object from the temporary page...
 
@@ -522,8 +522,8 @@ impl<'a> PdfPageGroupObject<'a> {
 
             Ok(())
         })?;
-        PdfPage::regenerate_content_immut_for_handle(tmp_page, self.bindings())?;
-        PdfPage::regenerate_content_immut_for_handle(self.page_handle(), self.bindings())?;
+        PdfPage::regenerate_content_immut_for_handle(tmp_page, &*self.bindings())?;
+        PdfPage::regenerate_content_immut_for_handle(self.page_handle(), &*self.bindings())?;
 
         PdfPageIndexCache::remove_index_for_page(src_doc_handle, tmp_page);
 
@@ -565,7 +565,7 @@ impl<'a> PdfPageGroupObject<'a> {
     #[inline]
     pub fn has_transparency(&self) -> bool {
         self.object_handles.iter().any(|object_handle| {
-            PdfPageObject::from_pdfium(*object_handle, *self.ownership(), self.bindings())
+            PdfPageObject::from_pdfium(*object_handle, *self.ownership(), &*self.bindings())
                 .has_transparency()
         })
     }
@@ -581,7 +581,7 @@ impl<'a> PdfPageGroupObject<'a> {
 
         self.object_handles.iter().for_each(|object_handle| {
             if let Ok(object_bounds) =
-                PdfPageObject::from_pdfium(*object_handle, *self.ownership(), self.bindings())
+                PdfPageObject::from_pdfium(*object_handle, *self.ownership(), &*self.bindings())
                     .bounds()
             {
                 empty = false;

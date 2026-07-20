@@ -13,6 +13,9 @@ use once_cell::sync::OnceCell;
 use std::fmt::{Debug, Formatter};
 use std::pin::Pin;
 
+#[cfg(feature = "thread_safe")]
+use crate::bindings::thread_safe::ThreadSafePdfiumBindings;
+
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "static")))]
 use {
     crate::bindings::dynamic_bindings::DynamicPdfiumBindings, libloading::Library,
@@ -52,6 +55,31 @@ struct Blob;
 // implements the PdfiumLibraryBindingsAccessor trait.
 static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 
+// Pdfium exposes a non-reentrant C API: concurrent calls into the same library
+// instance corrupt Pdfium's internal state. When the `thread_safe` feature is
+// enabled a `Pdfium` may be shared across threads (it is marked Send + Sync), so
+// every call that reaches into the bindings must be serialized process-wide.
+//
+// Serialization is compartmentalized inside the bindings layer. Under the
+// `thread_safe` feature the concrete `PdfiumLibraryBindings` implementation is
+// wrapped in a `ThreadSafePdfiumBindings` (see `crate::bindings::thread_safe`)
+// before it is promoted into `BINDINGS`. That wrapper acquires a single
+// process-wide mutex at the start of every FFI method and releases it as soon as
+// the call returns, so no two calls into Pdfium can ever run concurrently. The
+// wrapper stores no lock guard of its own, which is what keeps `Pdfium` — and the
+// objects derived from it — soundly `Send + Sync`. High-level methods therefore
+// hold no lock themselves: they simply call through `bindings()`, and each
+// individual FFI call is serialized for them by the wrapper.
+
+/// A trait implemented by every high-level type, giving lifetime-free access to
+/// the process-wide [PdfiumLibraryBindings] promoted into a global on the first
+/// [Pdfium] instantiation.
+///
+/// When the `thread_safe` feature is enabled the promoted bindings are a
+/// [ThreadSafePdfiumBindings](crate::bindings::thread_safe::ThreadSafePdfiumBindings)
+/// wrapper, so every FFI call made through the reference returned by
+/// [PdfiumLibraryBindingsAccessor::bindings] is serialized process-wide
+/// automatically; callers never have to take a lock themselves.
 #[cfg(feature = "thread_safe")]
 pub trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
     fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
@@ -65,6 +93,23 @@ pub trait PdfiumLibraryBindingsAccessor<'a> {
         BINDINGS.get().unwrap().as_ref()
     }
 }
+
+/// The trait bound for a reader passed to [Pdfium::load_pdf_from_reader].
+///
+/// Under the `thread_safe` feature the resulting [PdfDocument] is `Send` and
+/// Pdfium may invoke the reader's callback from whichever thread later triggers a
+/// lazy read, so the reader must also be `Send`. Without `thread_safe`, only
+/// [Read] and [Seek] are required. This is a blanket trait implemented for every
+/// type that satisfies the underlying bounds; you never name it directly.
+#[cfg(all(not(target_arch = "wasm32"), feature = "thread_safe"))]
+pub trait PdfiumReader: Read + Seek + Send {}
+#[cfg(all(not(target_arch = "wasm32"), feature = "thread_safe"))]
+impl<R: Read + Seek + Send> PdfiumReader for R {}
+
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+pub trait PdfiumReader: Read + Seek {}
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+impl<R: Read + Seek> PdfiumReader for R {}
 
 /// A high-level idiomatic Rust wrapper around Pdfium, the C++ PDF library used by
 /// the Google Chromium project.
@@ -90,6 +135,9 @@ impl Pdfium {
         if BINDINGS.get().is_none() {
             let bindings = StaticPdfiumBindings::new();
 
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
+
             Ok(Box::new(bindings))
         } else {
             Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
@@ -108,6 +156,9 @@ impl Pdfium {
                 unsafe { Library::new(Self::pdfium_platform_library_name()) }
                     .map_err(PdfiumError::LoadLibraryError)?,
             )?;
+
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
 
             Ok(Box::new(bindings))
         } else {
@@ -128,6 +179,9 @@ impl Pdfium {
         if BINDINGS.get().is_none() {
             if PdfiumRenderWasmState::lock().is_ready() {
                 let bindings = WasmPdfiumBindings::new();
+
+                #[cfg(feature = "thread_safe")]
+                let bindings = ThreadSafePdfiumBindings::new(bindings);
 
                 Ok(Box::new(bindings))
             } else {
@@ -152,6 +206,9 @@ impl Pdfium {
                 unsafe { Library::new(path.as_ref().as_os_str()) }
                     .map_err(PdfiumError::LoadLibraryError)?,
             )?;
+
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
 
             Ok(Box::new(bindings))
         } else {
@@ -181,11 +238,20 @@ impl Pdfium {
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
     #[inline]
     pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
-        assert!(BINDINGS.get().is_none());
-        unsafe {
-            bindings.FPDF_InitLibrary();
-        }
-        assert!(BINDINGS.set(bindings).is_ok());
+        // Initialize the library and promote the bindings into the process-global
+        // BINDINGS exactly once, even if several threads construct a Pdfium
+        // concurrently. get_or_init runs its closure on the first caller and blocks
+        // the rest until it completes; a losing thread reuses the installed
+        // bindings and its own box is dropped without effect (the bindings Drop no
+        // longer calls FPDF_DestroyLibrary, so it cannot tear down the shared
+        // library the winner just initialized).
+        BINDINGS.get_or_init(move || {
+            unsafe {
+                bindings.FPDF_InitLibrary();
+            }
+
+            bindings
+        });
 
         Self {
             custom_font_provider: None,
@@ -202,11 +268,15 @@ impl Pdfium {
         bindings: Box<dyn PdfiumLibraryBindings>,
         config: PdfiumLibraryConfig,
     ) -> Self {
-        assert!(BINDINGS.get().is_none());
-        unsafe {
-            bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
-        }
-        assert!(BINDINGS.set(bindings).is_ok());
+        // See Pdfium::new for why this initializes exactly once and why a losing
+        // thread's bindings box is safe to drop.
+        BINDINGS.get_or_init(move || {
+            unsafe {
+                bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
+            }
+
+            bindings
+        });
 
         Self {
             custom_font_provider: None,
@@ -355,6 +425,14 @@ impl Pdfium {
     /// If the document is password protected, the given password will be used
     /// to unlock it.
     ///
+    /// Pdfium reads from the given reader lazily, calling back into it while the
+    /// process-wide Pdfium lock is held. When the `thread_safe` feature is enabled,
+    /// the reader's `Read`/`Seek` methods must therefore not block on another thread
+    /// that also uses Pdfium, or the two threads will deadlock; and the reader must
+    /// be `Send`, because Pdfium may invoke it from whichever thread later triggers
+    /// a lazy read. For a reader that cannot meet these constraints, read the whole
+    /// document into memory first and use [Pdfium::load_pdf_from_byte_vec] instead.
+    ///
     /// This function is not available when compiling to WASM. You have several options for
     /// loading your PDF document data in WASM:
     /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
@@ -368,7 +446,7 @@ impl Pdfium {
     ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     ///   using the `include_bytes!` macro.
-    pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
+    pub fn load_pdf_from_reader<'a, R: PdfiumReader + 'a>(
         &'a self,
         reader: R,
         password: Option<&str>,
@@ -476,7 +554,10 @@ impl Pdfium {
         bindings: &dyn PdfiumLibraryBindings,
     ) -> Result<PdfDocument<'_>, PdfiumError> {
         if handle.is_null() {
-            // Retrieve the error code of the last error recorded by Pdfium.
+            // Retrieve the error code of the last error recorded by Pdfium. Under
+            // the `thread_safe` feature the bindings reference is a
+            // ThreadSafePdfiumBindings wrapper, so this FFI call is serialized
+            // process-wide like every other.
 
             if let Some(error) = match unsafe { bindings.FPDF_GetLastError() } as u32 {
                 FPDF_ERR_SUCCESS => None,
@@ -581,6 +662,11 @@ impl Drop for Pdfium {
 
 impl PdfiumLibraryBindingsAccessor<'_> for Pdfium {}
 
+// Sharing a `Pdfium` across threads is sound under the `thread_safe` feature: the
+// promoted bindings are a `ThreadSafePdfiumBindings` wrapper that serializes every
+// call into Pdfium's non-reentrant C API behind a process-wide mutex, so no two
+// threads can ever be inside Pdfium at the same time. `Pdfium` itself holds no
+// interior mutable state that these impls would expose unsynchronized.
 #[cfg(feature = "thread_safe")]
 unsafe impl Sync for Pdfium {}
 
