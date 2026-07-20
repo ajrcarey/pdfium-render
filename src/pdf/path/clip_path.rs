@@ -41,9 +41,6 @@ impl<'a> PdfClipPath<'a> {
     /// Returns the number of path objects inside this [PdfClipPath] instance.
     #[inline]
     pub fn len(&self) -> PdfClipPathSegmentIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let path_count = unsafe { self.bindings().FPDFClipPath_CountPaths(self.handle()) };
 
         if path_count < 0 {
@@ -100,9 +97,6 @@ impl<'a> Drop for PdfClipPath<'a> {
     /// Closes this [PdfClipPath], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if !self.ownership.is_owned() {
             // Responsibility for de-allocation lies with us, not Pdfium, since
             // the clip path is not attached to a page, a page object, or an annotation.
@@ -171,9 +165,6 @@ impl<'a> PdfClipPathSegments<'a> {
 impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe {
             self.bindings()
                 .FPDFClipPath_CountPathSegments(self.handle, self.index as i32)
@@ -183,9 +174,6 @@ impl<'a> PdfPathSegments<'a> for PdfClipPathSegments<'a> {
     }
 
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe {
             self.bindings().FPDFClipPath_GetPathSegment(
                 self.handle,

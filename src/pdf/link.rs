@@ -49,9 +49,6 @@ impl<'a> PdfLink<'a> {
     /// of type [PdfActionType::GoToDestinationInSameDocument], but the PDF file format supports
     /// a variety of other actions.
     pub fn action(&self) -> Option<PdfAction<'a>> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe { self.bindings().FPDFLink_GetAction(self.handle()) };
 
         if handle.is_null() {
@@ -70,9 +67,6 @@ impl<'a> PdfLink<'a> {
     /// The destination specifies the page and region, if any, that will be the target
     /// of any behaviour that will occur when the user interacts with the link in a PDF viewer.
     pub fn destination(&self) -> Option<PdfDestination<'a>> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe {
             self.bindings()
                 .FPDFLink_GetDest(self.document, self.handle())
@@ -88,9 +82,6 @@ impl<'a> PdfLink<'a> {
     /// Returns the area on the page that the user can use to interact with this [PdfLink]
     /// in a PDF viewer, if any.
     pub fn rect(&self) -> Result<PdfRect, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut rect = FS_RECTF {
             left: 0.0,
             top: 0.0,

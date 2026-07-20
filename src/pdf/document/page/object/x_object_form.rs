@@ -159,17 +159,11 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe { self.bindings().FPDFFormObj_CountObjects(self.object_handle) })
             as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let object_handle = unsafe {
             self.bindings()
                 .FPDFFormObj_GetObject(self.object_handle, index as c_ulong)
@@ -217,9 +211,6 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageXObjectFormObject<'a> {
         &mut self,
         mut object: PdfPageObject<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings()
                 .FPDFFormObj_RemoveObject(self.object_handle, object.object_handle())

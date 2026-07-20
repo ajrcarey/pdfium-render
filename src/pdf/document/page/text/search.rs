@@ -118,9 +118,6 @@ impl<'a> PdfPageTextSearch<'a> {
         &self,
         direction: PdfSearchDirection,
     ) -> Option<PdfPageTextSegments<'_>> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let has_next = if direction == PdfSearchDirection::SearchForward {
             (unsafe { self.bindings().FPDFText_FindNext(self.search_handle()) }) != 0
         } else {
@@ -155,9 +152,6 @@ impl<'a> Drop for PdfPageTextSearch<'a> {
     /// Closes this [PdfPageTextSearch] object, releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe {
             self.bindings().FPDFText_FindClose(self.search_handle());
         }

@@ -168,9 +168,6 @@ impl<'a> PdfPageImageObject<'a> {
         document: &PdfDocument<'a>,
         reader: R,
     ) -> Result<Self, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let object = Self::new_from_handle(document.handle(), document.bindings())?;
 
         let mut reader = get_pdfium_file_accessor_from_reader(reader);
@@ -199,9 +196,6 @@ impl<'a> PdfPageImageObject<'a> {
         document: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe { bindings.FPDFPageObj_NewImageObj(document) };
 
         if handle.is_null() {
@@ -279,9 +273,6 @@ impl<'a> PdfPageImageObject<'a> {
     /// this [PdfPageImageObject], ignoring any image filters, image mask, or object
     /// transforms applied to this page object.
     pub fn get_raw_bitmap(&self) -> Result<PdfBitmap<'_>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         Ok(PdfBitmap::from_pdfium(unsafe {
             self.bindings().FPDFImageObj_GetBitmap(self.object_handle())
         }))
@@ -438,9 +429,6 @@ impl<'a> PdfPageImageObject<'a> {
         width: Pixels,
         height: Pixels,
     ) -> Result<PdfBitmap<'_>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // We attempt to work around two separate problems in Pdfium's
         // FPDFImageObj_GetRenderedBitmap() function.
 
@@ -584,8 +572,6 @@ impl<'a> PdfPageImageObject<'a> {
         // Hold the FFI lock for the whole conversion: the buffer obtained below
         // borrows Pdfium's internal bitmap memory, and it must not be mutated by
         // another thread while we read from it.
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
 
         let handle = bitmap.handle();
         let width = unsafe { self.bindings().FPDFBitmap_GetWidth(handle) };
@@ -631,9 +617,6 @@ impl<'a> PdfPageImageObject<'a> {
     ///
     /// The returned byte buffer may be empty if the image object does not contain any data.
     pub fn get_raw_image_data(&self) -> Result<Vec<u8>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let buffer_length = unsafe {
             self.bindings().FPDFImageObj_GetImageDataRaw(
                 self.object_handle(),
@@ -705,9 +688,6 @@ impl<'a> PdfPageImageObject<'a> {
     /// This function is only available when this crate's `image` feature is enabled.
     #[cfg(feature = "image_api")]
     pub fn set_image(&mut self, image: &DynamicImage) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let width: Pixels = image
             .width()
             .try_into()
@@ -746,9 +726,6 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Applies the byte data in the given [PdfBitmap] to this [PdfPageImageObject].
     pub fn set_bitmap(&mut self, bitmap: &PdfBitmap) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFImageObj_SetBitmap(
                 std::ptr::null_mut::<FPDF_PAGE>(),
@@ -767,9 +744,6 @@ impl<'a> PdfPageImageObject<'a> {
 
     /// Returns all internal metadata for this [PdfPageImageObject].
     pub(crate) fn get_raw_metadata(&self) -> Result<FPDF_IMAGEOBJ_METADATA, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut metadata = FPDF_IMAGEOBJ_METADATA {
             width: 0,
             height: 0,
@@ -918,9 +892,6 @@ impl<'a> PdfPageImageObjectFilters<'a> {
 
     /// Returns the number of image filters applied to the parent [PdfPageImageObject].
     pub fn len(&self) -> usize {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe {
             self.object
                 .bindings()
@@ -955,9 +926,6 @@ impl<'a> PdfPageImageObjectFilters<'a> {
         &self,
         index: PdfPageImageObjectFilterIndex,
     ) -> Result<PdfPageImageObjectFilter, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if index >= self.len() {
             return Err(PdfiumError::ImageObjectFilterIndexOutOfBounds);
         }

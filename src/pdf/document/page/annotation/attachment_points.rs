@@ -31,9 +31,6 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
 
     /// Returns the number of attachment points in this [PdfPageAnnotationAttachmentPoints] collection.
     pub fn len(&self) -> PdfPageAnnotationAttachmentPointIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings()
                 .FPDFAnnot_HasAttachmentPoints(self.annotation_handle)
@@ -79,9 +76,6 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         &self,
         index: PdfPageAnnotationAttachmentPointIndex,
     ) -> Result<PdfQuadPoints, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if index >= self.len() {
             return Err(PdfiumError::PageAnnotationAttachmentPointIndexOutOfBounds);
         }
@@ -132,9 +126,6 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         &mut self,
         attachment_point: PdfQuadPoints,
     ) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFAnnot_AppendAttachmentPoints(
                 self.annotation_handle,
@@ -156,9 +147,6 @@ impl<'a> PdfPageAnnotationAttachmentPoints<'a> {
         index: PdfPageAnnotationAttachmentPointIndex,
         attachment_point: PdfQuadPoints,
     ) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFAnnot_SetAttachmentPoints(
                 self.annotation_handle,

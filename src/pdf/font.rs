@@ -188,9 +188,6 @@ impl<'a> PdfFont<'a> {
     ))]
     /// Returns the name of this [PdfFont].
     pub fn name(&self) -> String {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the font name from Pdfium is a two-step operation. First, we call
         // FPDFFont_GetBaseFontName() with a null buffer; this will retrieve the length of
         // the font name in bytes. If the length is zero, then there is no font name.
@@ -232,9 +229,6 @@ impl<'a> PdfFont<'a> {
 
     /// Returns the family of this [PdfFont].
     pub fn family(&self) -> String {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the family name from Pdfium is a two-step operation. First, we call
         // FPDFFont_GetFamilyName() with a null buffer; this will retrieve the length of
         // the font name in bytes. If the length is zero, then there is no font name.
@@ -349,9 +343,6 @@ impl<'a> PdfFont<'a> {
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn weight(&self) -> Result<PdfFontWeight, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         PdfFontWeight::from_pdfium(unsafe { self.bindings().FPDFFont_GetWeight(self.handle) })
             .ok_or(PdfiumError::PdfiumLibraryInternalError(
                 PdfiumInternalError::Unknown,
@@ -365,9 +356,6 @@ impl<'a> PdfFont<'a> {
     ///
     /// Pdfium may not reliably return the correct value of this property for built-in fonts.
     pub fn italic_angle(&self) -> Result<i32, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut angle = 0;
 
         if self.bindings().is_true(unsafe {
@@ -386,9 +374,6 @@ impl<'a> PdfFont<'a> {
     /// height above the baseline reached by glyphs in this font, excluding the height of glyphs
     /// for accented characters.
     pub fn ascent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut ascent = 0.0;
 
         if self.bindings().is_true(unsafe {
@@ -407,9 +392,6 @@ impl<'a> PdfFont<'a> {
     /// maximum distance below the baseline reached by glyphs in this font, expressed as a
     /// negative points value.
     pub fn descent(&self, font_size: PdfPoints) -> Result<PdfPoints, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut descent = 0.0;
 
         if self.bindings().is_true(unsafe {
@@ -427,9 +409,6 @@ impl<'a> PdfFont<'a> {
     /// Returns the raw font descriptor bitflags for the containing [PdfFont].
     #[inline]
     fn get_flags_bits(&self) -> FpdfFontDescriptorFlags {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         FpdfFontDescriptorFlags::from_bits_truncate(unsafe {
             self.bindings().FPDFFont_GetFlags(self.handle)
         } as u32)
@@ -569,9 +548,6 @@ impl<'a> PdfFont<'a> {
 
     /// Returns `true` if the data for this [PdfFont] is embedded in the containing [PdfDocument].
     pub fn is_embedded(&self) -> Result<bool, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let result = unsafe { self.bindings().FPDFFont_GetIsEmbedded(self.handle) };
 
         match result {
@@ -588,9 +564,6 @@ impl<'a> PdfFont<'a> {
     /// If this [PdfFont] is not embedded in the containing [PdfDocument], then the data
     /// returned will be for the substitution font instead.
     pub fn data(&self) -> Result<Vec<u8>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the font data from Pdfium is a two-step operation. First, we call
         // FPDFFont_GetFontData() with a null buffer; this will retrieve the length of
         // the data in bytes. If the length is zero, then there is no data associated
@@ -653,9 +626,6 @@ impl<'a> Drop for PdfFont<'a> {
     /// Closes this [PdfFont], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // The documentation for FPDFText_LoadFont() and FPDFText_LoadStandardFont() both state
         // that the font loaded by the function can be closed by calling FPDFFont_Close().
         // I had taken this to mean that _any_ FPDF_Font handle returned from a Pdfium function

@@ -29,9 +29,6 @@ impl<'a> PdfSignatures<'a> {
 
     /// Returns the number of signatures in this [PdfSignatures] collection.
     pub fn len(&self) -> PdfSignatureIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe { self.bindings().FPDF_GetSignatureCount(self.document_handle) })
             as PdfSignatureIndex
     }
@@ -61,9 +58,6 @@ impl<'a> PdfSignatures<'a> {
 
     /// Returns a single [PdfSignature] from this [PdfSignatures] collection.
     pub fn get(&self, index: PdfSignatureIndex) -> Result<PdfSignature<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if index >= self.len() {
             return Err(PdfiumError::SignatureIndexOutOfBounds);
         }

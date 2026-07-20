@@ -132,9 +132,6 @@ impl<'a> PdfMetadata<'a> {
 
     #[inline]
     fn get_raw_metadata_tag(&self, tag: &str) -> Option<String> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the tag text from Pdfium is a two-step operation. First, we call
         // FPDF_GetMetaText() with a null buffer; this will retrieve the length of
         // the metadata text in bytes. If the length is zero, then there is no such tag.

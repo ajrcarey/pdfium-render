@@ -47,9 +47,6 @@ impl<'a> PdfAttachment<'a> {
 
     /// Returns the name of this [PdfAttachment].
     pub fn name(&self) -> String {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the attachment name from Pdfium is a two-step operation. First, we call
         // FPDFAttachment_GetName() with a null buffer; this will retrieve the length of
         // the name in bytes. If the length is zero, then there is no name associated
@@ -87,9 +84,6 @@ impl<'a> PdfAttachment<'a> {
 
     /// Returns the size of this [PdfAttachment] in bytes.
     pub fn len(&self) -> usize {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Calling FPDFAttachment_GetFile() with a null buffer will retrieve the length of the
         // data in bytes without allocating any additional memory.
 
@@ -117,9 +111,6 @@ impl<'a> PdfAttachment<'a> {
 
     /// Writes this [PdfAttachment] to a new byte buffer, returning the byte buffer.
     pub fn save_to_bytes(&self) -> Result<Vec<u8>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the attachment data from Pdfium is a two-step operation. First, we call
         // FPDFAttachment_GetFile() with a null buffer; this will retrieve the length of
         // the data in bytes. If the length is zero, then there is no data associated

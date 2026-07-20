@@ -51,9 +51,6 @@ impl<'a> PdfAttachments<'a> {
 
     /// Returns the number of attachments in this [PdfAttachments] collection.
     pub fn len(&self) -> PdfAttachmentIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe {
             self.bindings()
                 .FPDFDoc_GetAttachmentCount(self.document_handle)
@@ -85,9 +82,6 @@ impl<'a> PdfAttachments<'a> {
 
     /// Returns a single [PdfAttachment] from this [PdfAttachments] collection.
     pub fn get(&self, index: PdfAttachmentIndex) -> Result<PdfAttachment<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if index >= self.len() {
             return Err(PdfiumError::AttachmentIndexOutOfBounds);
         }
@@ -114,9 +108,6 @@ impl<'a> PdfAttachments<'a> {
         name: &str,
         bytes: &[u8],
     ) -> Result<PdfAttachment<'_>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Creating the attachment is a two step operation. First, we create the FPDF_ATTACHMENT
         // handle using the given name. Then, we add the given byte data to the FPDF_ATTACHMENT.
 
@@ -269,9 +260,6 @@ impl<'a> PdfAttachments<'a> {
     /// so that the attachment no longer appears in the list of attachments.
     /// This behavior may change in the future.
     pub fn delete_at_index(&mut self, index: PdfAttachmentIndex) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if index >= self.len() {
             return Err(PdfiumError::AttachmentIndexOutOfBounds);
         }

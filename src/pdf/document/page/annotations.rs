@@ -72,9 +72,6 @@ impl<'a> PdfPageAnnotations<'a> {
     /// Returns the total number of annotations that have been added to the containing `PdfPage`.
     #[inline]
     pub fn len(&self) -> PdfPageAnnotationIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe { self.bindings().FPDFPage_GetAnnotCount(self.page_handle) })
             as PdfPageAnnotationIndex
     }
@@ -93,9 +90,6 @@ impl<'a> PdfPageAnnotations<'a> {
 
     /// Returns a single [PdfPageAnnotation] from this [PdfPageAnnotations] collection.
     pub fn get(&self, index: PdfPageAnnotationIndex) -> Result<PdfPageAnnotation<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if index >= self.len() {
             return Err(PdfiumError::PageAnnotationIndexOutOfBounds);
         }
@@ -157,9 +151,6 @@ impl<'a> PdfPageAnnotations<'a> {
         annotation_type: PdfPageAnnotationType,
         constructor: fn(FPDF_DOCUMENT, FPDF_PAGE, FPDF_ANNOTATION) -> T,
     ) -> Result<T, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe {
             self.bindings()
                 .FPDFPage_CreateAnnot(self.page_handle(), annotation_type.as_pdfium())
@@ -561,9 +552,6 @@ impl<'a> PdfPageAnnotations<'a> {
         &mut self,
         annotation: PdfPageAnnotation<'a>,
     ) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let index = unsafe {
             self.bindings()
                 .FPDFPage_GetAnnotIndex(self.page_handle(), annotation.handle())

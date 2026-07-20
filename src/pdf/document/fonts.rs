@@ -149,9 +149,6 @@ impl<'a> PdfFonts<'a> {
     /// Returns a reusable [PdfFontToken] for the given built-in font.
     #[inline]
     pub fn new_built_in(&mut self, font: PdfFontBuiltin) -> PdfFontToken {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let font = PdfFont::from_pdfium(
             unsafe {
                 self.bindings()
@@ -546,9 +543,6 @@ impl<'a> PdfFonts<'a> {
         font_type: c_uint,
         is_cid_font: bool,
     ) -> Result<PdfFontToken, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe {
             self.bindings().FPDFText_LoadFont(
                 self.document_handle,

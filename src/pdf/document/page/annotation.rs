@@ -233,9 +233,6 @@ impl<'a> PdfPageAnnotation<'a> {
         form_handle: Option<FPDF_FORMHANDLE>,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let annotation_type = PdfPageAnnotationType::from_pdfium(unsafe {
             bindings.FPDFAnnot_GetSubtype(annotation_handle)
         })
@@ -1341,9 +1338,6 @@ impl<'a> Drop for PdfPageAnnotation<'a> {
     /// Closes this [PdfPageAnnotation], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe {
             self.bindings().FPDFPage_CloseAnnot(self.handle());
         }

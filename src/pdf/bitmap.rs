@@ -134,9 +134,6 @@ impl<'a> PdfBitmap<'a> {
         height: Pixels,
         format: PdfBitmapFormat,
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe {
             Self::from_pdfium(0 as FPDF_BITMAP)
                 .bindings()
@@ -170,9 +167,6 @@ impl<'a> PdfBitmap<'a> {
         format: PdfBitmapFormat,
         buffer: &'a mut [u8],
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // We compute the stride explicitly, because it may be greater than width * bytes_per_pixel.
 
         let stride =
@@ -231,9 +225,6 @@ impl<'a> PdfBitmap<'a> {
         format: PdfBitmapFormat,
         buffer: &'a mut [u8],
     ) -> Result<PdfBitmap<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = Self::from_pdfium(0 as FPDF_BITMAP)
             .bindings()
             .FPDFBitmap_CreateEx(
@@ -271,27 +262,18 @@ impl<'a> PdfBitmap<'a> {
     /// Returns the width of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn width(&self) -> Pixels {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe { self.bindings().FPDFBitmap_GetWidth(self.handle()) }) as Pixels
     }
 
     /// Returns the height of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn height(&self) -> Pixels {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe { self.bindings().FPDFBitmap_GetHeight(self.handle()) }) as Pixels
     }
 
     /// Returns the pixel format of the image in the bitmap buffer backing this [PdfBitmap].
     #[inline]
     pub fn format(&self) -> Result<PdfBitmapFormat, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         PdfBitmapFormat::from_pdfium(
             unsafe { self.bindings().FPDFBitmap_GetFormat(self.handle()) } as u32,
         )
@@ -304,9 +286,6 @@ impl<'a> PdfBitmap<'a> {
     /// [PdfiumLibraryBindings::bgra_to_rgba], [PdfiumLibraryBindings::rgb_to_bgra],
     /// and [PdfiumLibraryBindings::rgba_to_bgra] functions.
     pub fn as_raw_bytes(&self) -> Vec<u8> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe { self.bindings().FPDFBitmap_GetBuffer_as_vec(self.handle) }
     }
 
@@ -385,9 +364,6 @@ impl<'a> PdfBitmap<'a> {
     #[cfg(any(doc, target_arch = "wasm32"))]
     #[inline]
     pub fn as_array(&self) -> Uint8Array {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe { self.bindings().FPDFBitmap_GetBuffer_as_array(self.handle()) }
     }
 
@@ -456,9 +432,6 @@ impl<'a> Drop for PdfBitmap<'a> {
     /// Closes this [PdfBitmap], releasing the memory held by the bitmap buffer.
     #[inline]
     fn drop(&mut self) {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe {
             self.bindings().FPDFBitmap_Destroy(self.handle());
         }

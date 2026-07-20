@@ -57,9 +57,6 @@ impl<'a> PdfPageTextSegments<'a> {
     /// the page may be much larger than the number of text segments.
     #[inline]
     pub fn len(&self) -> PdfPageTextSegmentIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe {
             self.bindings.FPDFText_CountRects(
                 self.text.text_page_handle(),
@@ -106,9 +103,6 @@ impl<'a> PdfPageTextSegments<'a> {
         let mut bottom = 0.0;
         let mut right = 0.0;
         let mut top = 0.0;
-
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
 
         let result = unsafe {
             self.bindings.FPDFText_GetRect(

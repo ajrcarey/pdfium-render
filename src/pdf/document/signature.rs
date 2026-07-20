@@ -67,9 +67,6 @@ impl<'a> PdfSignature<'a> {
     /// For public key signatures, the byte data is either a DER-encoded PKCS#1 binary or
     /// a DER-encoded PKCS#7 binary.
     pub fn bytes(&self) -> Vec<u8> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the byte data from Pdfium is a two-step operation. First, we call
         // FPDFSignatureObj_GetContents() with a null buffer; this will retrieve the length of
         // the reason text in bytes. If the length is zero, then there is no reason associated
@@ -108,9 +105,6 @@ impl<'a> PdfSignature<'a> {
     /// Returns the reason for the signing, if any, as a plain text description provided by the
     /// creator of this [PdfSignature].
     pub fn reason(&self) -> Option<String> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the reason from Pdfium is a two-step operation. First, we call
         // FPDFSignatureObj_GetReason() with a null buffer; this will retrieve the length of
         // the reason text in bytes. If the length is zero, then there is no reason associated
@@ -153,9 +147,6 @@ impl<'a> PdfSignature<'a> {
     /// This value should only be used if the date of signing is not available in the
     /// PKCS#7 digital signature.
     pub fn signing_date(&self) -> Option<String> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the signing date from Pdfium is a two-step operation. First, we call
         // FPDFSignatureObj_GetTime() with a null buffer; this will retrieve the length of
         // the timestamp in bytes. If the length is zero, then there is no timestamp associated
@@ -203,9 +194,6 @@ impl<'a> PdfSignature<'a> {
     pub fn modification_detection_permission(
         &self,
     ) -> Result<PdfSignatureModificationDetectionPermission, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         PdfSignatureModificationDetectionPermission::from_pdfium(unsafe {
             self.bindings()
                 .FPDFSignatureObj_GetDocMDPPermission(self.handle)

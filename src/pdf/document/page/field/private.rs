@@ -186,9 +186,6 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfFormFieldCommon::name()].
         fn name_impl(&self) -> Option<String> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             // Retrieving the field name from Pdfium is a two-step operation. First, we call
             // FPDFAnnot_GetFormFieldName() with a null buffer; this will retrieve the length of
             // the field name text in bytes. If the length is zero, then the field name is not set.
@@ -231,9 +228,6 @@ pub(crate) mod internal {
         /// Internal implementation of `value()` function shared by value-carrying form field widgets
         /// such as text fields. Not exposed directly by [PdfFormFieldCommon].
         fn value_impl(&self) -> Option<String> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             // Retrieving the field value from Pdfium is a two-step operation. First, we call
             // FPDFAnnot_GetFormFieldValue() with a null buffer; this will retrieve the length of
             // the form value text in bytes. If the length is zero, then the form value is not set.
@@ -277,9 +271,6 @@ pub(crate) mod internal {
         /// field widgets such as text fields. Not exposed directly by [PdfFormFieldCommon].
         #[inline]
         fn set_value_impl(&mut self, value: &str) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             self.bindings()
                 .to_result(unsafe {
                     self.bindings().FPDFAnnot_SetStringValue_str(
@@ -303,9 +294,6 @@ pub(crate) mod internal {
         /// such as checkbox and radio button fields. Not exposed directly by [PdfFormFieldCommon].
         #[allow(dead_code)] // TODO: AJRC - 30/3/26 - will be removed if not required by PdfFormRadioButtonField
         fn export_value_impl(&self) -> Option<String> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             // Retrieving the export value from Pdfium is a two-step operation. First, we call
             // FPDFAnnot_GetFormFieldExportValue() with a null buffer; this will retrieve the length of
             // the export value text in bytes. If the length is zero, then the export value is not set.
@@ -352,9 +340,6 @@ pub(crate) mod internal {
         /// field is currently selected. As a result, this function may not return the expected
         /// result for fields with custom appearance streams.
         fn is_checked_impl(&self) -> Result<bool, PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             Ok(self.bindings().is_true(unsafe {
                 self.bindings()
                     .FPDFAnnot_IsChecked(self.form_handle(), self.annotation_handle())
@@ -364,9 +349,6 @@ pub(crate) mod internal {
         /// Internal implementation of `index_in_group()` function shared by checkable form field
         /// widgets such as radio buttons and checkboxes. Not exposed directly by [PdfFormFieldCommon].
         fn index_in_group_impl(&self) -> u32 {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             let result = unsafe {
                 self.bindings()
                     .FPDFAnnot_GetFormControlIndex(self.form_handle(), self.annotation_handle())
@@ -384,9 +366,6 @@ pub(crate) mod internal {
         /// Returns the string value associated with the given key in the annotation dictionary
         /// of the [PdfPageAnnotation] containing this [PdfFormField], if any.
         fn get_string_value(&self, key: &str) -> Option<String> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             if !self.bindings().is_true(unsafe {
                 self.bindings()
                     .FPDFAnnot_HasKey(self.annotation_handle(), key)
@@ -452,9 +431,6 @@ pub(crate) mod internal {
         /// Sets the string value associated with the given key in the annotation dictionary
         /// of the [PdfPageAnnotation] containing this [PdfFormField].
         fn set_string_value(&mut self, key: &str, value: &str) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             // Attempt to update the modification date first, before we apply the given value update.
             // That way, if updating the date fails, we can fail early.
 
@@ -483,9 +459,6 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfFormFieldCommon::appearance_mode_value()].
         fn appearance_mode_value_impl(&self, appearance_mode: PdfAppearanceMode) -> Option<String> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             // Retrieving the appearance mode value from Pdfium is a two-step operation.
             // First, we call FPDFAnnot_GetAP() with a null buffer; this will retrieve the length of
             // the appearance mode value text in bytes. If the length is zero, then the
@@ -534,9 +507,6 @@ pub(crate) mod internal {
         /// Returns all the flags currently set on this form field.
         #[inline]
         fn get_flags_impl(&self) -> PdfFormFieldFlags {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             PdfFormFieldFlags::from_bits_truncate(unsafe {
                 self.bindings()
                     .FPDFAnnot_GetFormFieldFlags(self.form_handle(), self.annotation_handle())
@@ -553,9 +523,6 @@ pub(crate) mod internal {
         /// Sets all the flags on this form field.
         #[inline]
         fn set_flags_impl(&self, flags: PdfFormFieldFlags) -> bool {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             unsafe {
                 self.bindings()
                     .is_true(self.bindings().FPDFAnnot_SetFormFieldFlags(

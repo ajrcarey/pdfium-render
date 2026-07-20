@@ -90,9 +90,6 @@ impl<'a> PdfForm<'a> {
     /// document handle.
     #[inline]
     pub(crate) fn from_pdfium(document_handle: FPDF_DOCUMENT) -> Option<Self> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Pdfium does not load form field data or widgets (and therefore will not
         // render them) until a call has been made to the FPDFDOC_InitFormFillEnvironment()
         // function. This function takes a large struct, FPDF_FORMFILLINFO, which Pdfium
@@ -188,9 +185,6 @@ impl<'a> PdfForm<'a> {
     /// Returns the [PdfFormType] of this [PdfForm].
     #[inline]
     pub fn form_type(&self) -> PdfFormType {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         PdfFormType::from_pdfium(
             unsafe { self.bindings().FPDF_GetFormType(self.document_handle) } as u32,
         )
@@ -279,9 +273,6 @@ impl<'a> Drop for PdfForm<'a> {
     /// Closes this [PdfForm], releasing held memory.
     #[inline]
     fn drop(&mut self) {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe {
             self.bindings()
                 .FPDFDOC_ExitFormFillEnvironment(self.form_handle);

@@ -99,9 +99,6 @@ where
     T: PdfPageAnnotationPrivate<'a>,
 {
     fn font_size(&self, form: &PdfForm) -> Result<PdfPoints, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut value: c_float = 0.0;
 
         if self.bindings().is_true(unsafe {
@@ -140,9 +137,6 @@ where
         feature = "pdfium_6555",
     ))]
     fn font_color(&self, form: &PdfForm) -> Result<PdfColor, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut red: c_uint = 0;
         let mut green: c_uint = 0;
         let mut blue: c_uint = 0;
@@ -171,9 +165,6 @@ where
         feature = "pdfium_7350"
     ))]
     fn set_font_color(&mut self, form: &PdfForm, color: PdfColor) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFAnnot_SetFontColor(
                 form.handle(),
@@ -192,9 +183,6 @@ where
     }
 
     fn justification(&self) -> Result<PdfPageAnnotationVariableTextJustification, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut value: c_float = 0.0;
 
         if self.bindings().is_true(unsafe {

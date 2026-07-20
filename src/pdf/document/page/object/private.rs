@@ -66,9 +66,6 @@ pub(crate) mod internal {
             document_handle: FPDF_DOCUMENT,
             page_handle: FPDF_PAGE,
         ) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             unsafe {
                 self.bindings()
                     .FPDFPage_InsertObject(page_handle, self.object_handle());
@@ -127,9 +124,6 @@ pub(crate) mod internal {
             page_handle: FPDF_PAGE,
             index: PdfPageObjectIndex,
         ) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             if unsafe {
                 self.bindings()
                     .is_true(self.bindings().FPDFPage_InsertObjectAtIndex(
@@ -153,9 +147,6 @@ pub(crate) mod internal {
 
         /// Removes this [PdfPageObject] from the [PdfPageObjects] collection that contains it.
         fn remove_object_from_page(&mut self) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             match self.ownership() {
                 PdfPageObjectOwnership::Page(ownership) => {
                     if self.bindings().is_true(unsafe {
@@ -193,9 +184,6 @@ pub(crate) mod internal {
             &mut self,
             annotation_objects: &PdfPageAnnotationObjects,
         ) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             match annotation_objects.ownership() {
                 PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
                     if self.bindings().is_true(unsafe {
@@ -242,9 +230,6 @@ pub(crate) mod internal {
         // We use inversion of control here so that PdfPageAnnotationsObjects doesn't need to care
         // whether the page object being removed is a single object or a group.
         fn remove_object_from_annotation(&mut self) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             match self.ownership() {
                 PdfPageObjectOwnership::AttachedAnnotation(ownership) => {
                     if let Some(index) =
@@ -310,9 +295,6 @@ pub(crate) mod internal {
         // when removing objects from annotations; Pdfium only allows removing objects
         // from annotations by index.
         fn get_index_for_annotation(&self, annotation_handle: FPDF_ANNOTATION) -> Option<i32> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             let mut result = None;
 
             for i in 0..(unsafe { self.bindings().FPDFAnnot_GetObjectCount(annotation_handle) }) {
@@ -330,9 +312,6 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageObjectCommon::has_transparency()].
         fn has_transparency_impl(&self) -> bool {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             let bindings = self.bindings();
 
             bindings.is_true(unsafe { bindings.FPDFPageObj_HasTransparency(self.object_handle()) })
@@ -340,9 +319,6 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageObjectCommon::bounds()].
         fn bounds_impl(&self) -> Result<PdfQuadPoints, PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             match PdfPageObjectType::from_pdfium(unsafe {
                 self.bindings().FPDFPageObj_GetType(self.object_handle())
             } as u32)
@@ -404,9 +380,6 @@ pub(crate) mod internal {
             e: PdfMatrixValue,
             f: PdfMatrixValue,
         ) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             unsafe {
                 self.bindings().FPDFPageObj_Transform(
                     self.object_handle(),
@@ -424,9 +397,6 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageObjectCommon::matrix()].
         fn get_matrix_impl(&self) -> Result<PdfMatrix, PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             let mut matrix = FS_MATRIX {
                 a: 0.0,
                 b: 0.0,
@@ -451,9 +421,6 @@ pub(crate) mod internal {
         /// Resets the raw transformation matrix for this page object, overwriting
         /// the existing transformation matrix.
         fn reset_matrix_impl(&self, matrix: PdfMatrix) -> Result<(), PdfiumError> {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             if self.bindings().is_true(unsafe {
                 self.bindings()
                     .FPDFPageObj_SetMatrix(self.object_handle(), &matrix.as_pdfium())
@@ -545,9 +512,6 @@ pub(crate) mod internal {
         /// deallocation of the object's memory automatically.
         #[inline]
         fn drop_impl(&self) {
-            #[cfg(feature = "thread_safe")]
-            let _ffi = crate::pdfium::FfiLock::acquire();
-
             if !self.ownership().is_owned() {
                 // Responsibility for de-allocation lies with us, not Pdfium, since
                 // the object is not attached to a page or an annotation.

@@ -216,9 +216,6 @@ impl<'a> PdfPagePathObject<'a> {
         stroke_width: Option<PdfPoints>,
         fill_color: Option<PdfColor>,
     ) -> Result<Self, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe { bindings.FPDFPageObj_CreateNewPath(x.value, y.value) };
 
         if handle.is_null() {
@@ -629,9 +626,6 @@ impl<'a> PdfPagePathObject<'a> {
     /// Begins a new sub-path in this [PdfPagePathObject] by moving the current point to the
     /// given coordinates, omitting any connecting line segment.
     pub fn move_to(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings()
                 .FPDFPath_MoveTo(self.object_handle(), x.value, y.value)
@@ -650,9 +644,6 @@ impl<'a> PdfPagePathObject<'a> {
     /// Appends a straight line segment to this [PdfPagePathObject] from the current point to the
     /// given coordinates. The new current point is set to the given coordinates.
     pub fn line_to(&mut self, x: PdfPoints, y: PdfPoints) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings()
                 .FPDFPath_LineTo(self.object_handle(), x.value, y.value)
@@ -680,9 +671,6 @@ impl<'a> PdfPagePathObject<'a> {
         control2_x: PdfPoints,
         control2_y: PdfPoints,
     ) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFPath_BezierTo(
                 self.object_handle(),
@@ -805,9 +793,6 @@ impl<'a> PdfPagePathObject<'a> {
     /// Closes the current sub-path in this [PdfPagePathObject] by appending a straight line segment
     /// from the current point to the starting point of the sub-path.
     pub fn close_path(&mut self) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self
             .bindings()
             .is_true(unsafe { self.bindings().FPDFPath_Close(self.object_handle) })
@@ -823,9 +808,6 @@ impl<'a> PdfPagePathObject<'a> {
     /// Returns the method used to determine which sub-paths of any path in this [PdfPagePathObject]
     /// should be filled.
     pub fn fill_mode(&self) -> Result<PdfPathFillMode, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut raw_fill_mode: c_int = 0;
 
         let mut _raw_stroke: FPDF_BOOL = self.bindings().FALSE();
@@ -851,9 +833,6 @@ impl<'a> PdfPagePathObject<'a> {
     /// Even if this path is set to be stroked, the stroke must be configured with a visible color
     /// and a non-zero width in order to actually be visible.
     pub fn is_stroked(&self) -> Result<bool, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut _raw_fill_mode: c_int = 0;
 
         let mut raw_stroke: FPDF_BOOL = self.bindings().FALSE();
@@ -883,9 +862,6 @@ impl<'a> PdfPagePathObject<'a> {
         fill_mode: PdfPathFillMode,
         do_stroke: bool,
     ) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFPath_SetDrawMode(
                 self.object_handle(),
@@ -1008,9 +984,6 @@ impl<'a> PdfPagePathObjectSegments<'a> {
 impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
     #[inline]
     fn len(&self) -> PdfPathSegmentIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         unsafe {
             self.bindings()
                 .FPDFPath_CountSegments(self.handle)
@@ -1020,9 +993,6 @@ impl<'a> PdfPathSegments<'a> for PdfPagePathObjectSegments<'a> {
     }
 
     fn get(&self, index: PdfPathSegmentIndex) -> Result<PdfPathSegment<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe {
             self.bindings()
                 .FPDFPath_GetPathSegment(self.handle, index as c_int)

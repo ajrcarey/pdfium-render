@@ -246,9 +246,6 @@ impl<'a> PdfPageGroupObject<'a> {
     /// `PdfPageContentRegenerationStrategy::AutomaticOnEveryChange` then content regeneration
     /// will be triggered on the page.
     pub fn remove_objects_from_page(mut self) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Hold off regenerating page content until all objects have been processed.
 
         let content_regeneration_strategy =
@@ -421,9 +418,6 @@ impl<'a> PdfPageGroupObject<'a> {
         &mut self,
         destination: &mut PdfDocument<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         self.copy_into_x_object_form_object_from_handles(
             destination.handle(),
             PdfPoints::new(unsafe { self.bindings().FPDF_GetPageWidthF(self.page_handle()) }),
@@ -437,9 +431,6 @@ impl<'a> PdfPageGroupObject<'a> {
         destination_page_width: PdfPoints,
         destination_page_height: PdfPoints,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Since the PdfPageXObjectForm can only create a form from an entire page, we first
         // prepare a temporary page containing just the items in this group. Once we have
         // prepared that page, then we can create the form object.

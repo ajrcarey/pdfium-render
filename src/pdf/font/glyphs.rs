@@ -55,9 +55,6 @@ impl<'a> PdfFontGlyphs<'a> {
 
     /// Returns the highest index position of an extant glyph within the given index range.
     fn find_maximum_valid_glyph_index(&self, min: u16, max: u16) -> Option<u16> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Exit immediately if the maximum valid glyph index lies outside the given index boundaries.
 
         if !(unsafe {

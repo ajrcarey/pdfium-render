@@ -95,9 +95,6 @@ impl<'a> PdfPageObjects<'a> {
         &self,
         destination: &mut PdfDocument<'a>,
     ) -> Result<PdfPageObject<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let page_index =
             PdfPageIndexCache::get_index_for_page(self.document_handle(), self.page_handle());
 
@@ -167,16 +164,10 @@ impl<'a> PdfPageObjectsPrivate<'a> for PdfPageObjects<'a> {
 
     #[inline]
     fn len_impl(&self) -> PdfPageObjectIndex {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         (unsafe { self.bindings().FPDFPage_CountObjects(self.page_handle) }) as PdfPageObjectIndex
     }
 
     fn get_impl(&self, index: PdfPageObjectIndex) -> Result<PdfPageObject<'a>, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let object_handle = unsafe {
             self.bindings()
                 .FPDFPage_GetObject(self.page_handle, index as c_int)

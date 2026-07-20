@@ -65,9 +65,6 @@ impl<'a> PdfAction<'a> {
         document: FPDF_DOCUMENT,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Self {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         match PdfActionType::from_pdfium(unsafe { bindings.FPDFAction_GetType(handle) } as u32)
             .unwrap_or(PdfActionType::Unsupported)
         {

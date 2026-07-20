@@ -218,9 +218,6 @@ impl<'a> PdfPageTextObject<'a> {
         font_size: PdfPoints,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Result<Self, PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let handle = unsafe { bindings.FPDFPageObj_CreateTextObj(document, font, font_size.value) };
 
         if handle.is_null() {
@@ -242,9 +239,6 @@ impl<'a> PdfPageTextObject<'a> {
 
     /// Returns the text rendering mode for the text contained within this [PdfPageTextObject].
     pub fn render_mode(&self) -> PdfPageTextRenderMode {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         PdfPageTextRenderMode::from_pdfium(unsafe {
             self.bindings()
                 .FPDFTextObj_GetTextRenderMode(self.object_handle)
@@ -281,9 +275,6 @@ impl<'a> PdfPageTextObject<'a> {
     /// To retrieve the effective font size, taking vertical scaling into account, use the
     /// [PdfPageTextObject::scaled_font_size()] function.
     pub fn unscaled_font_size(&self) -> PdfPoints {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let mut result = 0.0;
 
         if self.bindings().is_true(unsafe {
@@ -302,9 +293,6 @@ impl<'a> PdfPageTextObject<'a> {
     /// Note that the effective size of the text when rendered may differ from the font size
     /// if a scaling factor has been applied to this text object's transformation matrix.
     pub fn set_unscaled_font_size(&self, points: PdfPoints) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings()
                 .FPDFTextObj_SetFontSize(self.object_handle(), points.value)
@@ -318,9 +306,6 @@ impl<'a> PdfPageTextObject<'a> {
     /// Returns the [PdfFont] used to render the text contained within this [PdfPageTextObject].
     #[inline]
     pub fn font(&self) -> PdfFont<'_> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         PdfFont::from_pdfium(
             unsafe { self.bindings().FPDFTextObj_GetFont(self.object_handle) },
             None,
@@ -349,9 +334,6 @@ impl<'a> PdfPageTextObject<'a> {
     /// The [PdfPageText] object will be closed when the binding to it (`text_page` in the example above)
     /// falls out of scope.
     pub fn text(&self) -> String {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         // Retrieving the text from Pdfium is a two-step operation. First, we call
         // FPDFTextObj_GetText() with a null buffer; this will retrieve the length of
         // the text in bytes. If the length is zero, then there is no text associated
@@ -422,9 +404,6 @@ impl<'a> PdfPageTextObject<'a> {
     /// A single space will be used if the given text is empty, in order to avoid
     /// unexpected behaviour from Pdfium when dealing with an empty string.
     pub fn set_text(&mut self, text: impl ToString) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let text = text.to_string();
 
         let text = if text.is_empty() { " " } else { text.as_str() };
@@ -446,9 +425,6 @@ impl<'a> PdfPageTextObject<'a> {
         &mut self,
         render_mode: PdfPageTextRenderMode,
     ) -> Result<(), PdfiumError> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         if self.bindings().is_true(unsafe {
             self.bindings()
                 .FPDFTextObj_SetTextRenderMode(self.object_handle(), render_mode.as_pdfium())

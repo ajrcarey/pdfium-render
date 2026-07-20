@@ -105,9 +105,6 @@ impl<'a> PdfFormField<'a> {
         annotation_handle: FPDF_ANNOTATION,
         bindings: &'a dyn PdfiumLibraryBindings,
     ) -> Option<Self> {
-        #[cfg(feature = "thread_safe")]
-        let _ffi = crate::pdfium::FfiLock::acquire();
-
         let result = unsafe { bindings.FPDFAnnot_GetFormFieldType(form_handle, annotation_handle) };
 
         if result == -1 {
