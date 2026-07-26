@@ -1195,37 +1195,34 @@ mod tests {
 
         use std::thread;
 
-        let handles: Vec<_> = (0..8)
-            .map(|_| {
-                thread::spawn(|| -> Result<(), PdfiumError> {
-                    let pdfium = test_bind_to_pdfium();
+        for _ in 0..8 {
+            let handle = thread::spawn(|| -> Result<(), PdfiumError> {
+                let pdfium = test_bind_to_pdfium();
 
-                    let mut document = pdfium.create_new_pdf()?;
+                let mut document = pdfium.create_new_pdf()?;
 
-                    let _page = document
-                        .pages_mut()
-                        .create_page_at_start(PdfPagePaperSize::a4())?;
+                document
+                    .pages_mut()
+                    .create_page_at_start(PdfPagePaperSize::a4())?;
 
-                    // Take a live reference so this thread contributes an entry to the shared cache.
+                // Take a live reference so this thread contributes an entry to the shared cache.
 
-                    let _page_ref = document.pages().get(0)?;
+                let page = document.pages().get(0)?;
 
-                    // Document-scoped assertion: this thread only ever sees its own entry, so it
-                    // is stable under concurrency. The accessor is guard-free, so even a regression
-                    // here could not poison the cache mutex.
+                // Document-scoped assertion: this thread only ever sees its own entry, so it
+                // is stable under concurrency. The accessor is guard-free, so even a regression
+                // here could not poison the cache mutex.
 
-                    assert_eq!(PdfPageIndexCache::count_for_document(document.handle()), 1);
+                assert_eq!(PdfPageIndexCache::count_for_document(document.handle()), 1);
 
-                    Ok(())
-                })
-            })
-            .collect();
+                drop(page);
 
-        for handle in handles {
-            handle
-                .join()
-                .expect("worker thread panicked, indicating the cache assertions are not isolated")
-                .expect("worker thread returned a pdfium error");
+                assert_eq!(PdfPageIndexCache::count_for_document(document.handle()), 0);
+
+                Ok(())
+            });
+
+            handle.join().unwrap().unwrap();
         }
     }
 
