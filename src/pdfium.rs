@@ -516,7 +516,7 @@ impl Default for Pdfium {
     /// will panic if no statically linked Pdfium functions can be located.
     #[inline]
     fn default() -> Self {
-        Pdfium::new(Pdfium::bind_to_statically_linked_library().unwrap())
+        Pdfium::new(Pdfium::bind_to_statically_linked_library().expect("No Pdfium library found"))
     }
 
     #[cfg(not(feature = "static"))]
@@ -543,12 +543,14 @@ impl Default for Pdfium {
                         // current working directory does not exist or is corrupted, we attempt
                         // to fall back to a system-provided library.
 
-                        Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+                        Pdfium::new(
+                            Pdfium::bind_to_system_library().expect("No Pdfium library found"),
+                        )
                     }
-                    _ => Err(PdfiumError::LoadLibraryError(err)).unwrap(), // Explicitly re-throw the error
+                    _ => Err(PdfiumError::LoadLibraryError(err)).expect("No Pdfium library found"), // Explicitly re-throw the error
                 }
             }
-            Err(err) => Err(err).unwrap(), // Explicitly re-throw the error
+            Err(err) => Err(err).expect("No Pdfium library found"), // Explicitly re-throw the error
         }
     }
 
@@ -557,7 +559,7 @@ impl Default for Pdfium {
     ///
     /// This function will panic if no suitable Pdfium library can be loaded.
     fn default() -> Self {
-        Pdfium::new(Pdfium::bind_to_system_library().unwrap())
+        Pdfium::new(Pdfium::bind_to_system_library().expect("No Pdfium library found"))
     }
 }
 
