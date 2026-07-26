@@ -40,6 +40,9 @@ use {
     web_sys::{window, Blob, Response},
 };
 
+#[cfg(feature = "thread_safe")]
+use crate::bindings::thread_safe::ThreadSafePdfiumBindings;
+
 // The following dummy declaration is used only when running cargo doc.
 // It allows documentation of WASM-specific functionality to be included
 // in documentation generated on non-WASM targets.
@@ -90,6 +93,9 @@ impl Pdfium {
         if BINDINGS.get().is_none() {
             let bindings = StaticPdfiumBindings::new();
 
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
+
             Ok(Box::new(bindings))
         } else {
             Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
@@ -108,6 +114,9 @@ impl Pdfium {
                 unsafe { Library::new(Self::pdfium_platform_library_name()) }
                     .map_err(PdfiumError::LoadLibraryError)?,
             )?;
+
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
 
             Ok(Box::new(bindings))
         } else {
@@ -128,6 +137,9 @@ impl Pdfium {
         if BINDINGS.get().is_none() {
             if PdfiumRenderWasmState::lock().is_ready() {
                 let bindings = WasmPdfiumBindings::new();
+
+                #[cfg(feature = "thread_safe")]
+                let bindings = ThreadSafePdfiumBindings::new(bindings);
 
                 Ok(Box::new(bindings))
             } else {
@@ -152,6 +164,9 @@ impl Pdfium {
                 unsafe { Library::new(path.as_ref().as_os_str()) }
                     .map_err(PdfiumError::LoadLibraryError)?,
             )?;
+
+            #[cfg(feature = "thread_safe")]
+            let bindings = ThreadSafePdfiumBindings::new(bindings);
 
             Ok(Box::new(bindings))
         } else {
