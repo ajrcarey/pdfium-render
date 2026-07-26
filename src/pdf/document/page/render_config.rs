@@ -602,19 +602,13 @@ impl PdfRenderConfig {
         "the [PdfPage] during rendering.",
         "the [PdfPage] during rendering,",
         "Pdfium's rendering pipeline supports _either_ rendering with form data _or_ rendering with
-            a custom transformation matrix, but not both at the same time. Applying a transformation via
-            these setters automatically disables rendering of form data, with one exception... `reset_matrix()`
-            replaces the matrix directly and does _not_ disable it, so pair `reset_matrix()` with
-            `render_form_data(false)` when you want the matrix render path. If you must render form data while
-            simultaneously applying transformations, consider using the [PdfPage::flatten()] function to
-            flatten the form elements and form data into the containing page.
-
-            `FPDF_RenderPageBitmapWithMatrix` composes the supplied matrix on top of the page's standard
-            display transform, which already applies the page's intrinsic `/Rotate`, flips y-up PDF points to
-            y-down device pixels, and scales into the destination rect. The matrix therefore operates in
-            display-oriented device space, so a rotated page needs no special caller-side handling, and strip
-            or tile rendering is a device-space matrix `[scale, 0, 0, scale, 0, -y_offset]` combined with
-            `set_fixed_size()`, with no per-`/Rotate` derivation."
+        a custom transformation matrix, but not both at the same time. Applying a transformation via
+        these setters automatically disables rendering of form data. If you must render form data while
+        simultaneously applying transformations, consider using the [PdfPage::flatten()] function to
+        flatten the form elements and form data into the containing page. Note that matrix-based
+        transformations will be applied _in addition to_ any intrinsic page rotation previously set
+        using the [PdfRenderConfig::rotate()], [PdfRenderConfig::rotate_if_portrait()], or
+        [PdfRenderConfig::rotate_if_landscape()] functions."
     );
 
     // The internal implementation of the transform() function used by the create_transform_setters!() macro.
