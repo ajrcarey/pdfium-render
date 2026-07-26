@@ -1289,19 +1289,6 @@ impl<'a> From<PdfPageUnsupportedObject<'a>> for PdfPageObject<'a> {
     }
 }
 
-impl<'a> Drop for PdfPageObject<'a> {
-    /// Closes this [PdfPageObject], releasing held memory.
-    #[inline]
-    fn drop(&mut self) {
-        // Deliberately empty: every enum variant wraps a concrete page object type
-        // (PdfPageTextObject, PdfPagePathObject, ...) and each of those types already
-        // calls FPDFPageObj_Destroy() in its own Drop impl (via drop_impl()) when the
-        // object is unowned. Calling FPDFPageObj_Destroy() here as well destroyed the
-        // same handle twice - a double-free that corrupted Pdfium's heap whenever an
-        // unowned object (e.g. one returned by FPDFPage_RemoveObject) was dropped.
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
