@@ -347,8 +347,6 @@ pub(crate) mod files {
         /// Returns an `FPDF_FILEACCESS` pointer suitable for passing to `FPDF_LoadCustomDocument()`.
         #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
         // This function is never used when compiling to WASM.
-        #[cfg_attr(feature = "thread_safe", allow(dead_code))]
-        // This function is never used when compiling with the thread_safe feature enabled.
         #[inline]
         pub(crate) fn as_fpdf_file_access_mut_ptr(&mut self) -> &mut FPDF_FILEACCESS {
             unsafe { &mut *(self as *mut FpdfFileAccessExt as *mut FPDF_FILEACCESS) }

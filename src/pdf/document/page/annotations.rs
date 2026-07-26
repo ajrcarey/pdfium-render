@@ -177,7 +177,7 @@ impl<'a> PdfPageAnnotations<'a> {
                         {
                             PdfPage::regenerate_content_immut_for_handle(
                                 self.page_handle(),
-                                self.bindings(),
+                                &*self.bindings(),
                             )
                         } else {
                             Ok(())
@@ -576,7 +576,7 @@ impl<'a> PdfPageAnnotations<'a> {
                 {
                     PdfPage::regenerate_content_immut_for_handle(
                         self.page_handle(),
-                        self.bindings(),
+                        &*self.bindings(),
                     )
                 } else {
                     Ok(())

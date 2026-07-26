@@ -544,6 +544,9 @@ impl<'a> PdfPage<'a> {
         height: Pixels,
         rotation: Option<PdfPageRenderRotation>,
     ) -> Result<PdfBitmap<'_>, PdfiumError> {
+        // Hold the lock across the whole render so the bitmap allocation and the
+        // render run as one atomic operation rather than several separate holds.
+
         let mut bitmap = PdfBitmap::empty(width, height, PdfBitmapFormat::default())?;
 
         let mut config = PdfRenderConfig::new()
@@ -570,6 +573,11 @@ impl<'a> PdfPage<'a> {
         &self,
         config: &PdfRenderConfig,
     ) -> Result<PdfBitmap<'_>, PdfiumError> {
+        // Hold the lock across the whole render so reading the page dimensions
+        // (via apply_to_page), allocating the bitmap, and rendering run as one
+        // atomic operation. Without this, another thread could, for example,
+        // rotate the page between the size calculation and the render.
+
         let settings = config.apply_to_page(self);
 
         let mut bitmap = PdfBitmap::empty(
@@ -622,6 +630,9 @@ impl<'a> PdfPage<'a> {
         bitmap: &mut PdfBitmap,
         config: &PdfRenderConfig,
     ) -> Result<(), PdfiumError> {
+        // Hold the lock across reading the page dimensions (apply_to_page) and the
+        // render so they form one atomic operation.
+
         self.render_into_bitmap_with_settings(bitmap, config.apply_to_page(self))
     }
 
@@ -949,7 +960,7 @@ impl<'a> PdfPage<'a> {
     /// Commits any staged but unsaved changes to this [PdfPage] to the underlying [PdfDocument].
     #[inline]
     pub(crate) fn regenerate_content_immut(&self) -> Result<(), PdfiumError> {
-        Self::regenerate_content_immut_for_handle(self.page_handle, self.bindings())
+        Self::regenerate_content_immut_for_handle(self.page_handle, &*self.bindings())
     }
 
     /// Commits any staged but unsaved changes to the page identified by the given internal

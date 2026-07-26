@@ -9520,9 +9520,13 @@ impl PdfiumLibraryBindings for DynamicPdfiumBindings {
 }
 
 impl Drop for DynamicPdfiumBindings {
-    fn drop(&mut self) {
-        unsafe {
-            self.FPDF_DestroyLibrary();
-        }
-    }
+    // The bindings that back a live Pdfium are promoted into the process-global
+    // BINDINGS static and never dropped, so this only runs for a bindings box
+    // that was never installed: the loser of a construction race, or a
+    // bind_to_*() result dropped without being passed to Pdfium::new. Calling
+    // FPDF_DestroyLibrary here would tear down the shared, still-in-use library
+    // (both boxes hold refcounted handles to the same library), so it is
+    // deliberately not called. The library lives for the lifetime of the process.
+    #[allow(clippy::empty_drop)]
+    fn drop(&mut self) {}
 }

@@ -569,6 +569,10 @@ impl<'a> PdfPageImageObject<'a> {
         &self,
         bitmap: &PdfBitmap,
     ) -> Result<DynamicImage, PdfiumError> {
+        // Hold the FFI lock for the whole conversion: the buffer obtained below
+        // borrows Pdfium's internal bitmap memory, and it must not be mutated by
+        // another thread while we read from it.
+
         let handle = bitmap.handle();
         let width = unsafe { self.bindings().FPDFBitmap_GetWidth(handle) };
         let height = unsafe { self.bindings().FPDFBitmap_GetHeight(handle) };

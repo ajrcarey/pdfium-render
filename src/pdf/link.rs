@@ -95,7 +95,7 @@ impl<'a> PdfLink<'a> {
                     .FPDFLink_GetAnnotRect(self.handle(), &mut rect)
             },
             rect,
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 }

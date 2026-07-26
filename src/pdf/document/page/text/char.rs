@@ -534,7 +534,7 @@ impl<'a> PdfPageTextChar<'a> {
                 right: right as f32,
                 bottom: bottom as f32,
             },
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 
@@ -558,7 +558,7 @@ impl<'a> PdfPageTextChar<'a> {
             )
         };
 
-        PdfRect::from_pdfium_as_result(result, bounds, self.bindings())
+        PdfRect::from_pdfium_as_result(result, bounds, &*self.bindings())
     }
 
     /// Returns the current raw transformation matrix for this character.

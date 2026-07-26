@@ -290,7 +290,7 @@ impl<'a> PdfPages<'a> {
             pages,
             self.document_handle,
             destination_page_index,
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 
@@ -343,7 +343,7 @@ impl<'a> PdfPages<'a> {
             source_page_range,
             self.document_handle,
             destination_page_index,
-            self.bindings(),
+            &*self.bindings(),
         )
     }
 

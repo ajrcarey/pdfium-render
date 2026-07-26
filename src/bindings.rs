@@ -29,6 +29,12 @@ pub(crate) mod static_bindings;
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod wasm_bindings;
 
+// Wraps any concrete PdfiumLibraryBindings implementation in a per-call mutex
+// marshaller so that a single Pdfium instance can be shared soundly across
+// threads. Only compiled when the `thread_safe` feature is enabled.
+#[cfg(feature = "thread_safe")]
+pub(crate) mod thread_safe;
+
 // The following dummy declarations are used only when running cargo doc.
 // They allow documentation of any target-specific functionality to be included
 // in documentation generated on a different target.
