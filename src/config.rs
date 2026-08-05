@@ -209,18 +209,23 @@ impl PdfiumLibraryConfig {
 
     /// Returns a `FPDF_LIBRARY_CONFIG` instance from this [PdfiumLibraryConfig] instance
     /// that can be passed to Pdfium's `FPDF_FPDF_InitLibraryWithConfig()` function.
-    pub(crate) fn as_pdfium(&self) -> FPDF_LIBRARY_CONFIG {
-        FPDF_LIBRARY_CONFIG {
+    pub(crate) fn as_pdfium(&self) -> (FPDF_LIBRARY_CONFIG, Vec<*const c_char>) {
+        let mut user_font_paths = self
+            .user_font_paths
+            .iter()
+            .map(|path| path.as_ptr())
+            .collect::<Vec<_>>();
+
+        if !user_font_paths.is_empty() {
+            user_font_paths.push(std::ptr::null());
+        }
+
+        let config = FPDF_LIBRARY_CONFIG {
             version: 2,
-            m_pUserFontPaths: if self.user_font_paths.is_empty() {
+            m_pUserFontPaths: if user_font_paths.is_empty() {
                 std::ptr::null_mut()
             } else {
-                self.user_font_paths
-                    .iter()
-                    .map(|path| path.as_ptr())
-                    .collect::<Vec<*const c_char>>()
-                    .as_mut_slice()
-                    .as_mut_ptr()
+                user_font_paths.as_mut_ptr()
             },
 
             #[cfg(not(target_arch = "wasm32"))]
@@ -245,7 +250,9 @@ impl PdfiumLibraryConfig {
                 feature = "pdfium_7763",
             ))]
             m_FontLibraryType: self.font_library_type,
-        }
+        };
+
+        (config, user_font_paths)
     }
 }
 
@@ -254,3 +261,42 @@ unsafe impl Sync for PdfiumLibraryConfig {}
 
 #[cfg(feature = "thread_safe")]
 unsafe impl Send for PdfiumLibraryConfig {}
+
+#[cfg(test)]
+mod tests {
+    use super::PdfiumLibraryConfig;
+    use std::ffi::CStr;
+
+    #[test]
+    fn user_font_paths_are_kept_alive_and_null_terminated() {
+        let config = PdfiumLibraryConfig::new()
+            .set_user_font_paths(&["/first/font/path", "/second/font/path"])
+            .unwrap();
+
+        let (native, user_font_paths) = config.as_pdfium();
+
+        assert_eq!(native.m_pUserFontPaths, user_font_paths.as_ptr().cast_mut());
+        assert_eq!(user_font_paths.len(), 3);
+        assert_eq!(
+            unsafe { CStr::from_ptr(user_font_paths[0]) }
+                .to_str()
+                .unwrap(),
+            "/first/font/path"
+        );
+        assert_eq!(
+            unsafe { CStr::from_ptr(user_font_paths[1]) }
+                .to_str()
+                .unwrap(),
+            "/second/font/path"
+        );
+        assert!(user_font_paths[2].is_null());
+    }
+
+    #[test]
+    fn empty_user_font_paths_use_a_null_pointer() {
+        let (native, user_font_paths) = PdfiumLibraryConfig::new().as_pdfium();
+
+        assert!(native.m_pUserFontPaths.is_null());
+        assert!(user_font_paths.is_empty());
+    }
+}
