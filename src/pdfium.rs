@@ -218,8 +218,9 @@ impl Pdfium {
         config: PdfiumLibraryConfig,
     ) -> Self {
         assert!(BINDINGS.get().is_none());
+        let (config, _user_font_paths) = config.as_pdfium();
         unsafe {
-            bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
+            bindings.FPDF_InitLibraryWithConfig(&config);
         }
         assert!(BINDINGS.set(bindings).is_ok());
 
