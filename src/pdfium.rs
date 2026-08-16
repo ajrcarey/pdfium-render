@@ -232,6 +232,9 @@ impl Pdfium {
     }
 
     /// Applies the given custom font provider to this [Pdfium] instance.
+    ///
+    /// If the given custom font provider implementation itself calls Pdfium functions,
+    /// then it will block when used in conjunction with this crate's `thread_safe` feature.
     pub fn set_custom_font_provider(&mut self, provider: Box<dyn PdfiumCustomFontProvider>) {
         let mut wrapper = Box::pin(PdfiumCustomFontProviderExt::new(provider));
 
@@ -366,6 +369,9 @@ impl Pdfium {
     /// Because Pdfium must know the total content length in advance prior to loading
     /// any portion of it, the given reader must implement the [Seek] trait as well as
     /// the [Read] trait.
+    ///
+    /// If the given reader implementation itself calls Pdfium functions, then it will block
+    /// when used in conjunction with this crate's `thread_safe` feature.
     ///
     /// If the document is password protected, the given password will be used
     /// to unlock it.

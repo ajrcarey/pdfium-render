@@ -322,6 +322,9 @@ impl<'a> PdfDocument<'a> {
     }
 
     /// Writes this [PdfDocument] to the given writer.
+    ///
+    /// If the given writer implementation itself calls Pdfium functions, then it will block
+    /// when used in conjunction with this crate's `thread_safe` feature.
     pub fn save_to_writer<W: Write + 'static>(&self, writer: &mut W) -> Result<(), PdfiumError> {
         // TODO: AJRC - 25/5/22 - investigate supporting the FPDF_INCREMENTAL, FPDF_NO_INCREMENTAL,
         // and FPDF_REMOVE_SECURITY flags defined in fpdf_save.h. There's not a lot of information

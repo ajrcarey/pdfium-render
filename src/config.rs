@@ -273,7 +273,10 @@ mod tests {
             .set_user_font_paths(&["/first/font/path", "/second/font/path"])
             .unwrap();
 
-        assert_eq!(config.as_pdfium().m_pUserFontPaths, config.user_font_paths_ptrs.as_ptr().cast_mut());
+        assert_eq!(
+            config.as_pdfium().m_pUserFontPaths,
+            config.user_font_paths_ptrs.as_ptr().cast_mut()
+        );
         assert_eq!(config.user_font_paths.len(), 2); // The number of paths submitted by the user
         assert_eq!(config.user_font_paths_ptrs.len(), 3); // Always one extra for the trailing null entry
         assert_eq!(
@@ -294,7 +297,7 @@ mod tests {
     #[test]
     fn empty_user_font_paths_use_a_null_pointer() {
         let mut config = PdfiumLibraryConfig::new();
-        
+
         assert!(config.as_pdfium().m_pUserFontPaths.is_null());
         assert!(config.user_font_paths_ptrs.is_empty());
     }
