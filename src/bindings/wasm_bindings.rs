@@ -506,8 +506,8 @@ impl PdfiumRenderWasmState {
             "pdfium-render::PdfiumRenderWasmState::copy_bytes_to_pdfium_address(): entering"
         );
 
-        let source = unsafe { Uint8Array::view(bytes) };
-
+        let source = Uint8Array::new_with_length(bytes.len() as u32);
+        source.copy_from(bytes); // Avoid memory invalidation caused by WASM page growth triggered outside of Rust code.
         self.heap_u8().set(&source, remote_ptr as u32);
 
         log::debug!(
