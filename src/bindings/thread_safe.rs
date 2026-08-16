@@ -5999,12 +5999,3 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFCatalog_SetLanguage(document, language)
     }
 }
-
-impl<T: PdfiumLibraryBindings> Drop for ThreadSafePdfiumBindings<T> {
-    fn drop(&mut self) {
-        // The PdfiumLibraryBindings trait requires all trait implementions to
-        // also implement the Drop trait. In this case, however, since the wrapped
-        // implementation's Drop trait will be called when it is disposed, we do not
-        // need to take any special action.
-    }
-}

@@ -157,7 +157,7 @@ use std::ffi::CString;
 ///   to WASM. Use the globally-available [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_vec]
 ///   or the WASM-specific [PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_array] functions instead.
 #[allow(drop_bounds)] // We want every bindings implementation to also provide a Drop implementation.
-pub trait PdfiumLibraryBindings: Send + Sync + Drop {
+pub trait PdfiumLibraryBindings: Send + Sync {
     /// Returns the canonical C-style boolean integer value 1, indicating `true`.
     #[inline]
     #[allow(non_snake_case)]

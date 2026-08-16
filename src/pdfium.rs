@@ -49,6 +49,20 @@ use crate::bindings::thread_safe::ThreadSafePdfiumBindings;
 #[cfg(doc)]
 struct Blob;
 
+#[cfg(all(not(target_arch = "wasm32"), feature = "thread_safe"))]
+/// The trait bound for a thread-safe reader passed to [Pdfium::load_pdf_from_reader].
+pub trait PdfiumReader: Read + Seek + Send {}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "thread_safe"))]
+impl<R: Read + Seek + Send> PdfiumReader for R {}
+
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+/// The trait bound for a non-thread-safe reader passed to [Pdfium::load_pdf_from_reader].
+pub trait PdfiumReader: Read + Seek {}
+
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+impl<R: Read + Seek> PdfiumReader for R {}
+
 // The first instantiation of a Pdfium object will promote a concrete PdfiumLibraryBindings
 // trait implementation into a global static OnceCell. This allows for thread-safe,
 // lifetime-free access to that PdfiumLibraryBindings instance from any object that
@@ -56,14 +70,14 @@ struct Blob;
 static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 
 #[cfg(feature = "thread_safe")]
-pub trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
+pub(crate) trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
     fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.wait().as_ref()
     }
 }
 
 #[cfg(not(feature = "thread_safe"))]
-pub trait PdfiumLibraryBindingsAccessor<'a> {
+pub(crate) trait PdfiumLibraryBindingsAccessor<'a> {
     fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.get().unwrap().as_ref()
     }
@@ -196,11 +210,13 @@ impl Pdfium {
     /// Creates a new [Pdfium] instance from the given external Pdfium library bindings.
     #[inline]
     pub fn new(bindings: Box<dyn PdfiumLibraryBindings>) -> Self {
-        assert!(BINDINGS.get().is_none());
-        unsafe {
-            bindings.FPDF_InitLibrary();
-        }
-        assert!(BINDINGS.set(bindings).is_ok());
+        BINDINGS.get_or_init(move || {
+            unsafe {
+                bindings.FPDF_InitLibrary();
+            }
+
+            bindings
+        });
 
         Self {
             custom_font_provider: None,
@@ -217,11 +233,13 @@ impl Pdfium {
         bindings: Box<dyn PdfiumLibraryBindings>,
         mut config: PdfiumLibraryConfig,
     ) -> Self {
-        assert!(BINDINGS.get().is_none());
-        unsafe {
-            bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
-        }
-        assert!(BINDINGS.set(bindings).is_ok());
+        BINDINGS.get_or_init(move || {
+            unsafe {
+                bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
+            }
+
+            bindings
+        });
 
         Self {
             custom_font_provider: None,
@@ -389,7 +407,7 @@ impl Pdfium {
     ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
     /// * Embed the bytes of the target document directly into the compiled WASM module
     ///   using the `include_bytes!` macro.
-    pub fn load_pdf_from_reader<'a, R: Read + Seek + 'a>(
+    pub fn load_pdf_from_reader<'a, R: PdfiumReader + 'a>(
         &'a self,
         reader: R,
         password: Option<&str>,

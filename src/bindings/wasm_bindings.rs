@@ -18664,11 +18664,3 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 }
-
-impl Drop for WasmPdfiumBindings {
-    fn drop(&mut self) {
-        unsafe {
-            self.FPDF_DestroyLibrary();
-        }
-    }
-}
