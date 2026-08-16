@@ -215,12 +215,11 @@ impl Pdfium {
     #[inline]
     pub fn new_with_config(
         bindings: Box<dyn PdfiumLibraryBindings>,
-        config: PdfiumLibraryConfig,
+        mut config: PdfiumLibraryConfig,
     ) -> Self {
         assert!(BINDINGS.get().is_none());
-        let (config, _user_font_paths) = config.as_pdfium();
         unsafe {
-            bindings.FPDF_InitLibraryWithConfig(&config);
+            bindings.FPDF_InitLibraryWithConfig(&config.as_pdfium());
         }
         assert!(BINDINGS.set(bindings).is_ok());
 

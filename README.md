@@ -66,7 +66,8 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 ## What's new
 
-Release 0.9.4 fixes two double-free errors in font handling and page object handling thanks to an excellent contribution from <https://github.com/arelove>, and improves memory safety when using the `thread_safe` crate feature thanks to excellent analysis and proof of concepts from <https://github.com/spdrman>.
+Release 0.9.4 fixes two double-free errors in font handling and page object handling thanks to an excellent contribution from <https://github.com/arelove>, improves memory safety when using the `thread_safe` crate feature thanks to excellent analysis and proof of concepts from <https://github.com/spdrman>,
+and fixes a string handling problem when working with custom font path configurations thanks to an excellent contribution from <https://github.com/cyoung96>.
 
 Release 0.9.3 increments the `pdfium_latest` feature to `pdfium_7881` to match new Pdfium release 7881 at <https://github.com/bblanchon/pdfium-binaries>, fixes a bug where `pdfium-render` would fail to compile on targets where `c_char` is unsigned thanks to an excellent contribution from <https://github.com/virtuallynathan>, adds the new `PdfRenderConfig::set_origin()` function for supporting partial page rendering thanks to an excellent contribution from <https://github.com/spdrman>, adds the new `PdfDocument::catalog()` and `PdfDocument::catalog_mut()` functions together with the new `PdfCatalog` struct for interacting with a document's catalog, and adds a new `PdfPageTextObject::set_unscaled_font_size()` function that allows directly setting the font size of an existing text object.
 
