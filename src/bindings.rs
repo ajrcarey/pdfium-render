@@ -131,6 +131,20 @@ use std::ffi::{
 ))]
 use std::ffi::CString;
 
+/// Length in bytes of a bitmap buffer with the given stride and height.
+///
+/// Pdfium reports both as `c_int`, so `stride * height` is an `i32` product and a bitmap over
+/// `i32::MAX` bytes wraps before anything widens the result. Multiplying in `usize` avoids that;
+/// a non-positive stride or height is Pdfium's error or empty-bitmap signal and yields zero.
+#[cfg(not(target_arch = "wasm32"))]
+fn bitmap_buffer_len(stride: std::os::raw::c_int, height: std::os::raw::c_int) -> usize {
+    if stride <= 0 || height <= 0 {
+        return 0;
+    }
+
+    (stride as usize).saturating_mul(height as usize)
+}
+
 /// Platform-independent function bindings to an external Pdfium library.
 /// On most platforms this will be an external shared library loaded dynamically
 /// at runtime, either bundled alongside your compiled Rust application or provided as a system
@@ -3185,8 +3199,10 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// will be unchanged and a value of `false` will be returned.
     #[allow(non_snake_case)]
     unsafe fn FPDFBitmap_SetBuffer(&self, bitmap: FPDF_BITMAP, buffer: &[u8]) -> bool {
-        let buffer_length =
-            (self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap)) as usize;
+        let buffer_length = bitmap_buffer_len(
+            self.FPDFBitmap_GetStride(bitmap),
+            self.FPDFBitmap_GetHeight(bitmap),
+        );
 
         if buffer.len() != buffer_length {
             return false;
@@ -3229,9 +3245,16 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     unsafe fn FPDFBitmap_GetBuffer_as_slice(&self, bitmap: FPDF_BITMAP) -> &[u8] {
         let buffer = self.FPDFBitmap_GetBuffer(bitmap);
 
-        let len = self.FPDFBitmap_GetStride(bitmap) * self.FPDFBitmap_GetHeight(bitmap);
+        let len = bitmap_buffer_len(
+            self.FPDFBitmap_GetStride(bitmap),
+            self.FPDFBitmap_GetHeight(bitmap),
+        );
 
-        unsafe { std::slice::from_raw_parts(buffer as *const u8, len as usize) }
+        if len == 0 || buffer.is_null() {
+            return &[];
+        }
+
+        unsafe { std::slice::from_raw_parts(buffer as *const u8, len) }
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -10278,5 +10301,30 @@ mod tests {
         assert!(pdfium.bindings().is_true(-1));
 
         Ok(())
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn bitmap_buffer_len_does_not_overflow_c_int() {
+        use super::bitmap_buffer_len;
+        use std::ffi::c_int;
+
+        // 48" x 36" at 600 DPI, 4 bytes per pixel: stride 115200, height 21600. The first
+        // assertion is the positive control: the shape really does overflow c_int.
+        let (stride, height): (c_int, c_int) = (115_200, 21_600);
+
+        assert!(stride.checked_mul(height).is_none());
+        assert_eq!(bitmap_buffer_len(stride, height), 2_488_320_000);
+
+        // A product that wraps to a small value is the quiet half of the same bug.
+        assert!(65_536i32.checked_mul(32_768).is_none());
+        assert_eq!(bitmap_buffer_len(65_536, 32_768), 2_147_483_648);
+
+        // Non-positive stride or height is Pdfium's error or empty signal, so zero.
+        assert_eq!(bitmap_buffer_len(0, 100), 0);
+        assert_eq!(bitmap_buffer_len(100, -1), 0);
+        assert_eq!(bitmap_buffer_len(c_int::MIN, c_int::MIN), 0);
+
+        assert_eq!(bitmap_buffer_len(400, 300), 120_000);
     }
 }
