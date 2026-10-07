@@ -122,9 +122,8 @@ impl<'a> PdfMetadata<'a> {
             PdfDocumentMetadataTagType::Creator => self.get_raw_metadata_tag("Creator"),
             PdfDocumentMetadataTagType::Producer => self.get_raw_metadata_tag("Producer"),
             PdfDocumentMetadataTagType::CreationDate => self.get_raw_metadata_tag("CreationDate"),
-            PdfDocumentMetadataTagType::ModificationDate => {
-                self.get_raw_metadata_tag("ModificationDate")
-            }
+            // The PDF Info dictionary key is "ModDate" (PDF 1.7 reference, section 10.2.1).
+            PdfDocumentMetadataTagType::ModificationDate => self.get_raw_metadata_tag("ModDate"),
         };
 
         result.map(|value| PdfDocumentMetadataTag::new(tag, value))
@@ -181,3 +180,28 @@ unsafe impl<'a> Send for PdfMetadata<'a> {}
 
 #[cfg(feature = "thread_safe")]
 unsafe impl<'a> Sync for PdfMetadata<'a> {}
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+    use crate::utils::test::test_bind_to_pdfium;
+
+    #[test]
+    fn test_modification_date() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let document = pdfium.load_pdf_from_file("./test/dimensions-test.pdf", None)?;
+
+        let modification_date = document
+            .metadata()
+            .get(PdfDocumentMetadataTagType::ModificationDate)
+            .map(|tag| tag.value().to_owned());
+
+        assert_eq!(
+            modification_date.as_deref(),
+            Some("D:20230524100131+02'00'")
+        );
+
+        Ok(())
+    }
+}
