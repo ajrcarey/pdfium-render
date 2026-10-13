@@ -858,6 +858,10 @@ pub trait PdfPageAnnotationCommon {
     /// this annotation among all the annotations attached to the containing page.
     fn name(&self) -> Option<String>;
 
+    /// Sets the name of this [PdfPageAnnotation] (its `NM` entry). The name should uniquely
+    /// identify this annotation among all the annotations attached to the containing page.
+    fn set_name(&mut self, name: &str) -> Result<(), PdfiumError>;
+
     /// Returns `true` if this [PdfPageAnnotation] supports applying text markup to the page
     /// by setting the annotation contents using the [PdfPageAnnotationCommon::set_contents()]
     /// function.
@@ -1108,6 +1112,11 @@ where
     #[inline]
     fn name(&self) -> Option<String> {
         self.name_impl()
+    }
+
+    #[inline]
+    fn set_name(&mut self, name: &str) -> Result<(), PdfiumError> {
+        self.set_string_value("NM", name)
     }
 
     #[inline]
