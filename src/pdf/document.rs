@@ -202,8 +202,12 @@ impl<'a> PdfDocument<'a> {
     }
 
     /// Returns the internal `FPDF_DOCUMENT` handle for this [PdfDocument].
+    ///
+    /// This is an escape hatch for Pdfium functions this crate does not wrap, such as saving with
+    /// `FPDF_INCREMENTAL`. The handle stays owned by this [PdfDocument]: do not close it, and do not
+    /// use it after this [PdfDocument] is dropped.
     #[inline]
-    pub(crate) fn handle(&self) -> FPDF_DOCUMENT {
+    pub fn handle(&self) -> FPDF_DOCUMENT {
         self.handle
     }
 
