@@ -292,8 +292,6 @@ pub(crate) mod files {
     /// Because Pdfium must know the total content length in advance prior to loading
     /// any portion of it, the given reader must implement the `Seek` trait as well as
     /// the `Read` trait.
-    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
-    // This function is never used when compiling to WASM.
     pub(crate) fn get_pdfium_file_accessor_from_reader<'a, R: Read + Seek + 'a>(
         mut reader: R,
     ) -> Box<FpdfFileAccessExt<'a>> {
@@ -345,8 +343,6 @@ pub(crate) mod files {
 
     impl<'a> FpdfFileAccessExt<'a> {
         /// Returns an `FPDF_FILEACCESS` pointer suitable for passing to `FPDF_LoadCustomDocument()`.
-        #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
-        // This function is never used when compiling to WASM.
         #[cfg_attr(feature = "thread_safe", allow(dead_code))]
         // This function is never used when compiling with the thread_safe feature enabled.
         #[inline]

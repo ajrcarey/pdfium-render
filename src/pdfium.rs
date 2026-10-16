@@ -23,13 +23,10 @@ use {
 use crate::bindings::static_bindings::StaticPdfiumBindings;
 
 #[cfg(not(target_arch = "wasm32"))]
-use {
-    crate::bindgen::FPDF_SYSFONTINFO,
-    crate::utils::files::get_pdfium_file_accessor_from_reader,
-    std::fs::File,
-    std::io::{Read, Seek},
-    std::path::Path,
-};
+use {crate::bindgen::FPDF_SYSFONTINFO, std::fs::File, std::path::Path};
+
+use crate::utils::files::get_pdfium_file_accessor_from_reader;
+use std::io::{Read, Seek};
 
 #[cfg(target_arch = "wasm32")]
 use {
@@ -61,6 +58,13 @@ impl<R: Read + Seek + Send> PdfiumReader for R {}
 pub trait PdfiumReader: Read + Seek {}
 
 #[cfg(all(not(target_arch = "wasm32"), not(feature = "thread_safe")))]
+impl<R: Read + Seek> PdfiumReader for R {}
+
+#[cfg(target_arch = "wasm32")]
+/// The trait bound for a reader passed to [Pdfium::load_pdf_from_reader].
+pub trait PdfiumReader: Read + Seek {}
+
+#[cfg(target_arch = "wasm32")]
 impl<R: Read + Seek> PdfiumReader for R {}
 
 // The first instantiation of a Pdfium object will promote a concrete PdfiumLibraryBindings
@@ -376,7 +380,6 @@ impl Pdfium {
         self.load_pdf_from_reader(File::open(path).map_err(PdfiumError::IoError)?, password)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     /// Attempts to open a [PdfDocument] from the given reader.
     ///
     /// Pdfium will only load the portions of the document it actually needs into memory.
@@ -394,19 +397,12 @@ impl Pdfium {
     /// If the document is password protected, the given password will be used
     /// to unlock it.
     ///
-    /// This function is not available when compiling to WASM. You have several options for
-    /// loading your PDF document data in WASM:
-    /// * Use the [Pdfium::load_pdf_from_fetch()] function to download document data from a
-    ///   URL using the browser's built-in `fetch` API. This function is only available when
-    ///   compiling to WASM.
-    /// * Use the [Pdfium::load_pdf_from_blob()] function to load document data from a
-    ///   Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
-    ///   `<input type="file">` element). This function is only available when compiling to WASM.
-    /// * Use another method to retrieve the bytes of the target document over the network,
-    ///   then load those bytes into Pdfium using either the [Pdfium::load_pdf_from_byte_slice()]
-    ///   function or the [Pdfium::load_pdf_from_byte_vec()] function.
-    /// * Embed the bytes of the target document directly into the compiled WASM module
-    ///   using the `include_bytes!` macro.
+    /// When compiling to WASM, each block Pdfium reads is copied from this crate's WASM heap
+    /// into Pdfium's WASM heap. The reader's callback is installed into Pdfium's function table
+    /// on first use and stays installed, since Pdfium may read from any open document. If Pdfium's
+    /// function table can grow (Emscripten's `-sALLOW_TABLE_GROWTH`), the callback occupies a new
+    /// table entry; otherwise it replaces an existing entry with the same signature, as
+    /// [PdfDocument::save_to_bytes()] does temporarily.
     pub fn load_pdf_from_reader<'a, R: PdfiumReader + 'a>(
         &'a self,
         reader: R,
