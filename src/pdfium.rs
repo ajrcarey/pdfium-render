@@ -70,14 +70,14 @@ impl<R: Read + Seek> PdfiumReader for R {}
 static BINDINGS: OnceCell<Box<dyn PdfiumLibraryBindings>> = OnceCell::new();
 
 #[cfg(feature = "thread_safe")]
-pub(crate) trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
+pub trait PdfiumLibraryBindingsAccessor<'a>: Send + Sync {
     fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.wait().as_ref()
     }
 }
 
 #[cfg(not(feature = "thread_safe"))]
-pub(crate) trait PdfiumLibraryBindingsAccessor<'a> {
+pub trait PdfiumLibraryBindingsAccessor<'a> {
     fn bindings(&self) -> &'a dyn PdfiumLibraryBindings {
         BINDINGS.get().unwrap().as_ref()
     }
