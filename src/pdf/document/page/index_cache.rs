@@ -78,24 +78,22 @@ impl PdfPageIndexCache {
                 // This page had the maximum page index for this document. Now that it's been removed
                 // from the cache, we need to find the new maximum page index for this document.
 
-                let keys = self.indices_by_page.keys();
+                let maximum = self
+                    .indices_by_page
+                    .keys()
+                    .filter(|(cached_document, _)| *cached_document == document)
+                    .map(|(_, index)| *index)
+                    .max();
 
-                if keys.len() == 0 {
-                    // There's no longer any page indices cached for this document.
-
-                    self.documents_by_maximum_index.remove(&document);
-                } else {
-                    let mut maximum = 0;
-
-                    for (key, index) in keys {
-                        if *key == document {
-                            let index = *index;
-
-                            maximum = index.max(maximum);
-                        }
+                match maximum {
+                    Some(maximum) => {
+                        self.documents_by_maximum_index.insert(document, maximum);
                     }
+                    None => {
+                        // There's no longer any page indices cached for this document.
 
-                    self.documents_by_maximum_index.insert(document, maximum);
+                        self.documents_by_maximum_index.remove(&document);
+                    }
                 }
             }
         }
@@ -1299,5 +1297,43 @@ mod tests {
         }
 
         assert_eq!(PdfPageIndexCache::count_for_document(document), 0);
+    }
+
+    #[test]
+    fn removing_a_documents_last_page_clears_its_maximum_index() {
+        // Synthetic handles, so no native library is needed. Document B keeps an entry in the
+        // shared cache while document A loses its only page; before the fix, A was left behind in
+        // documents_by_maximum_index with a maximum index of 0.
+
+        use crate::bindgen::{FPDF_DOCUMENT, FPDF_PAGE};
+        use crate::pdf::document::page::PdfPageContentRegenerationStrategy;
+
+        let document_a = 0xD000_0000usize as FPDF_DOCUMENT;
+        let document_b = 0xE000_0000usize as FPDF_DOCUMENT;
+
+        let a_page_0 = 0xD000_0001usize as FPDF_PAGE;
+        let b_page_0 = 0xE000_0001usize as FPDF_PAGE;
+
+        for (document, page) in [(document_a, a_page_0), (document_b, b_page_0)] {
+            PdfPageIndexCache::cache_props_for_page(
+                document,
+                page,
+                0,
+                PdfPageContentRegenerationStrategy::AutomaticOnEveryChange,
+            );
+        }
+
+        PdfPageIndexCache::remove_index_for_page(document_a, a_page_0);
+
+        assert_eq!(
+            PdfPageIndexCache::maximum_index_for_document(document_a),
+            None
+        );
+        assert_eq!(
+            PdfPageIndexCache::maximum_index_for_document(document_b),
+            Some(0)
+        );
+
+        PdfPageIndexCache::remove_index_for_page(document_b, b_page_0);
     }
 }
