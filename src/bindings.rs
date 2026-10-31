@@ -103,6 +103,7 @@ use crate::bindings::version::PdfiumApiVersion;
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::bitmap::PdfBitmap;
 use crate::pdf::color::PdfColor;
+use crate::pdf::document::form::PdfForm;
 use crate::pdf::document::page::object::private::internal::PdfPageObjectPrivate;
 use crate::pdf::document::page::object::PdfPageObject;
 use crate::pdf::document::page::PdfPage;
@@ -258,6 +259,12 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     #[inline]
     fn get_handle_from_page(&self, page: &PdfPage) -> FPDF_PAGE {
         page.page_handle()
+    }
+
+    /// Returns Pdfium's internal `FPDF_FORMHANDLE` handle for the given [PdfForm].
+    #[inline]
+    fn get_handle_from_form(&self, form: &PdfForm) -> FPDF_FORMHANDLE {
+        form.handle()
     }
 
     /// Returns Pdfium's internal `FPDF_PAGEOBJECT` handle for the given [PdfPageObject].
@@ -10276,6 +10283,19 @@ mod tests {
         assert!(!pdfium.bindings().is_true(0));
         assert!(pdfium.bindings().is_true(1));
         assert!(pdfium.bindings().is_true(-1));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_handle_from_form() -> Result<(), PdfiumError> {
+        let pdfium = test_bind_to_pdfium();
+
+        let document = pdfium.load_pdf_from_file("./test/form-test.pdf", None)?;
+
+        let form = document.form().unwrap();
+
+        assert!(!pdfium.bindings().get_handle_from_form(form).is_null());
 
         Ok(())
     }
