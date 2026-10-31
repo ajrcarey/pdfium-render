@@ -14,23 +14,22 @@ use crate::pdf::document::page::PdfPage;
 /// More information on the structure tree can be found in The PDF Reference, Sixth Edition,
 /// in Section 10.6.1, beginning on page 856.
 pub struct PdfPageStructureTree<'a> {
-    handle: FPDF_STRUCTTREE,
+    page_handle: FPDF_PAGE,
+    tree_handle: FPDF_STRUCTTREE,
+    is_open: bool,
     lifetime: PhantomData<&'a FPDF_STRUCTTREE>,
 }
 
 impl<'a> PdfPageStructureTree<'a> {
     pub(crate) fn from_pdfium(page_handle: FPDF_PAGE) -> Self {
-        let handle = unsafe {
-            PdfPageStructureTree {
-                handle: 0 as FPDF_STRUCTTREE,
-                lifetime: PhantomData,
-            }
-            .bindings()
-            .FPDF_StructTree_GetForPage(page_handle)
-        };
+        // Avoid opening the structure tree immediately; there is a performance cost
+        // to doing so, which we only want to incur if the user actually wants to
+        // walk the tree. See: https://github.com/ajrcarey/pdfium-render/issues/280
 
         PdfPageStructureTree {
-            handle,
+            page_handle,
+            tree_handle: 0 as FPDF_STRUCTTREE,
+            is_open: false,
             lifetime: PhantomData,
         }
     }
@@ -38,15 +37,17 @@ impl<'a> PdfPageStructureTree<'a> {
     /// Returns the internal `FPDF_STRUCTTREE` handle for this [PdfStructureTree].
     #[inline]
     pub(crate) fn handle(&self) -> FPDF_STRUCTTREE {
-        self.handle
+        self.tree_handle
     }
 }
 
 impl<'a> Drop for PdfPageStructureTree<'a> {
     #[inline]
     fn drop(&mut self) {
-        unsafe {
-            self.bindings().FPDF_StructTree_Close(self.handle());
+        if self.is_open {
+            unsafe {
+                self.bindings().FPDF_StructTree_Close(self.handle());
+            }
         }
     }
 }
