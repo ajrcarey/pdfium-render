@@ -68,8 +68,8 @@ over the network are provided instead.
 
 ### Interface changes in the `Pdfium` struct
 
-The `Pdfium::load_pdf_from_file()` and `Pdfium::load_pdf_from_reader()` functions are not available
-when running in the browser. The `Pdfium::load_pdf_from_byte_slice()` and `Pdfium::load_pdf_from_byte_vec()`
+The `Pdfium::load_pdf_from_file()` function is not available when running in the browser.
+The `Pdfium::load_pdf_from_byte_slice()`, `Pdfium::load_pdf_from_byte_vec()` and `Pdfium::load_pdf_from_reader()`
 functions are available, and the following additional functions are provided:
 
 * The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API

@@ -84,6 +84,7 @@ pub(crate) struct PdfiumRenderWasmState {
     debug: bool,
     file_access_callback_function_table_entry: usize,
     file_write_callback_function_table_entry: usize,
+    file_access_callback_installed: bool,
     state: HashMap<String, JsValue>,
 }
 
@@ -229,6 +230,22 @@ impl PdfiumRenderWasmState {
                     .map_err(|_| "Module['wasmExports'] not defined when looking for wasmTable")
             })
             .or_else(|_| {
+                // Emscripten minifies the names of a module's exports at -O2 and above, so the
+                // function table may be exported under a short generated name. Look for the
+                // export whose value is a WebAssembly.Table instead.
+
+                log::debug!("pdfium_render::PdfiumRenderWasmState::bind_to_pdfium(): Module['wasmExports'].__indirect_function_table not defined, falling back to the first WebAssembly.Table in Module['wasmExports']");
+
+                self.get_value_from_pdfium_wasm_module("wasmExports")
+                    .ok()
+                    .and_then(|wasm_exports| {
+                        Object::values(&Object::from(wasm_exports))
+                            .iter()
+                            .find(|value| value.is_instance_of::<WebAssembly::Table>())
+                    })
+                    .ok_or("Module['wasmExports'] holds no WebAssembly.Table")
+            })
+            .or_else(|_| {
                 // The wasmTable global variable is not defined. Try the
                 // asm.__indirect_function_table property in the Pdfium WASM module instead.
                 // For more information, see: https://github.com/ajrcarey/pdfium-render/issues/128
@@ -240,16 +257,23 @@ impl PdfiumRenderWasmState {
                     .map_err(|_| "Module['asm'] not defined when looking for wasmTable")
             })?.into();
 
-        // Once we have the function table, we scan it for function signatures that take 4 arguments.
+        // If Pdfium's function table can grow (Emscripten's -sALLOW_TABLE_GROWTH), we append two
+        // empty entries to host our callbacks, so no existing Pdfium function is ever replaced.
+        // Otherwise, we scan the table for function signatures that take 4 arguments.
 
-        for index in 1..table.length() {
-            if let Ok(function) = table.get(index) {
-                if function.length() == 4 {
-                    // We've found a viable patch function candidate.
+        if let Ok(first) = table.grow(2) {
+            self.file_access_callback_function_table_entry = first as usize;
+            self.file_write_callback_function_table_entry = first as usize + 1;
+        } else {
+            for index in 1..table.length() {
+                if let Ok(function) = table.get(index) {
+                    if function.length() == 4 {
+                        // We've found a viable patch function candidate.
 
-                    self.file_access_callback_function_table_entry =
-                        self.file_write_callback_function_table_entry;
-                    self.file_write_callback_function_table_entry = index as usize;
+                        self.file_access_callback_function_table_entry =
+                            self.file_write_callback_function_table_entry;
+                        self.file_write_callback_function_table_entry = index as usize;
+                    }
                 }
             }
         }
@@ -1060,6 +1084,7 @@ impl Default for PdfiumRenderWasmState {
             debug: false,
             file_access_callback_function_table_entry: 0, // These sentinel values will be replaced with actual values...
             file_write_callback_function_table_entry: 0, // ... during the first call to PdfiumRenderWasmState::bind_to_pdfium().
+            file_access_callback_installed: false,
             state: HashMap::new(),
         }
     }
@@ -1648,16 +1673,24 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_InitLibrary()");
 
         // Different Pdfium WASM builds have different ways of initializing the library.
+        // Module.ccall() calls the function exported with a leading underscore, so we look for
+        // the wrappers some packaged builds provide before falling back to Pdfium's own
+        // FPDF_InitLibrary(), which plain Emscripten builds of Pdfium's public API export.
 
         let state = PdfiumRenderWasmState::lock();
 
         let init = if state
-            .get_value_from_pdfium_wasm_module("FPDF_InitLibrary")
+            .get_value_from_pdfium_wasm_module("_PDFium_Init")
+            .is_ok()
+        {
+            "PDFium_Init"
+        } else if state
+            .get_value_from_pdfium_wasm_module("_PDF_InitLibrary")
             .is_ok()
         {
             "PDF_InitLibrary"
         } else {
-            "PDFium_Init"
+            "FPDF_InitLibrary"
         };
 
         state.call(init, JsFunctionArgumentType::Void, None, None);
@@ -1767,6 +1800,35 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         password: Option<&str>,
     ) -> FPDF_DOCUMENT {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_LoadCustomDocument()");
+
+        {
+            // Patch in the callback function we want Pdfium to invoke into Pdfium's function table.
+            // Pdfium reads from the document on demand for as long as the document stays open,
+            // so the callback stays installed once it is patched in.
+
+            let mut state = PdfiumRenderWasmState::lock_mut();
+
+            if !state.file_access_callback_installed {
+                let entry = state.file_access_callback_function_table_entry;
+
+                if let Err(err) =
+                    state.patch_pdfium_function_table(entry, "read_block_from_callback_wasm")
+                {
+                    log::error!(
+                        "pdfium-render::PdfiumLibraryBindings::FPDF_LoadCustomDocument(): aborting with error {:#?}",
+                        err,
+                    );
+
+                    return std::ptr::null_mut();
+                }
+
+                state.file_access_callback_installed = true;
+            }
+
+            // Mutable lock on state will be dropped at the end of this scope...
+        }
+
+        // ... meaning we can now have multiple shared immutable locks.
 
         let state = PdfiumRenderWasmState::lock();
 
