@@ -44,6 +44,7 @@ use std::os::raw::{c_int, c_uint};
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -53,6 +54,7 @@ use crate::pdf::document::page::objects::common::PdfPageObjectIndex;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -546,6 +548,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -571,6 +574,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -597,6 +601,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -622,6 +627,7 @@ impl<'a> PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1204,6 +1210,7 @@ impl<'a> PdfPageObjectPrivate<'a> for PdfPageObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",

@@ -98,13 +98,15 @@ image_api = [] # A feature shared by all image versions, indicating that image-b
 # To explicitly bind against an older version, select one of the feature flags below when
 # taking pdfium-render as a dependency in your project's Cargo.toml.
 
-pdfium_latest = ["pdfium_7881"]
+pdfium_latest = ["pdfium_8125"]
 pdfium_future = [
     # For testing changes in Pdfium source control that are yet to be released.
     "pdfium_use_skia",
     "pdfium_enable_xfa",
     "pdfium_enable_v8",
+    "pdfium_enable_brotli",
 ]
+pdfium_8125 = []
 pdfium_7881 = []
 pdfium_7763 = []
 pdfium_7543 = []
@@ -133,9 +135,10 @@ pdfium_5961 = []
 # Certain Pdfium API functions are only made available when compile time flags are set
 # when the Pdfium binary is compiled. The features below make these functions available
 # in PdfiumLibraryBindings. They correspond to the Pdfium compile time flags
-# _WIN32, PDF_USE_SKIA, PDF_ENABLE_XFA, and PDF_ENABLE_V8.
+# _WIN32, PDF_USE_SKIA, PDF_ENABLE_XFA,PDF_ENABLE_V8, and PDF_ENABLE_BROTLI.
 
 pdfium_use_win32 = ["dep:windows"]
 pdfium_use_skia = []
 pdfium_enable_xfa = []
 pdfium_enable_v8 = []
+pdfium_enable_brotli = []

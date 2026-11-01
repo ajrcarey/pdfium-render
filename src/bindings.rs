@@ -65,6 +65,7 @@ pub use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -91,6 +92,9 @@ pub use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
     feature = "pdfium_6666"
 ))]
 use crate::bindgen::FPDF_BYTESTRING;
+
+#[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+use crate::bindgen::FPDF_TEXT_DIRECTION;
 
 #[cfg(feature = "pdfium_use_skia")]
 pub use crate::bindgen::FPDF_SKIA_CANVAS;
@@ -366,7 +370,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `policy` -   The specified policy for setting, for example `FPDF_POLICY_MACHINETIME_ACCESS`.
     ///
-    ///    `enable` -   `true` to enable, `false` to disable the policy.
+    ///    `enable` -   `TRUE` to enable, `FALSE` to disable the policy.
     #[allow(non_snake_case)]
     unsafe fn FPDF_SetSandBoxPolicy(&self, policy: FPDF_DWORD, enable: FPDF_BOOL);
 
@@ -564,7 +568,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `flags`           -   The creating flags.
     ///
-    /// Returns `true` on success, `false` on failure.
+    /// Returns `TRUE` on success, `FALSE` on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDF_SaveAsCopy(
         &self,
@@ -585,7 +589,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `fileVersion`     -   The PDF file version. File version: 14 for 1.4,
     ///                          15 for 1.5, etc.
     ///
-    /// Returns `true` on success, `false` on failure.
+    /// Returns `TRUE` on success, `FALSE` on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDF_SaveWithVersion(
         &self,
@@ -854,7 +858,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `device_y`    -   A pointer to an integer receiving the result Y value in device coordinates.
     ///
-    /// Returns `true` if the conversion succeeds, and `device_x` and `device_y`
+    /// Returns `TRUE` if the conversion succeeds, and `device_x` and `device_y`
     /// successfully receives the converted coordinates.
     ///
     /// Refer to [PdfiumLibraryBindings::FPDF_DeviceToPage] for comments on coordinate systems.
@@ -934,6 +938,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1143,7 +1148,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `index`        - The page index at which to insert the first imported page
     ///                     into `dest_doc`. The first page index is zero.
     ///
-    /// Returns `true` on success. Returns `false` if any pages in `page_indices` are invalid.
+    /// Returns `TRUE` on success. Returns `FALSE` if any pages in `page_indices` are invalid.
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDF_ImportPagesByIndex_vec(
@@ -1174,7 +1179,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `index`     - The page index at which to insert the first imported page into
     ///                  `dest_doc`. The first page index is zero.
     ///
-    /// Returns `true` on success. Returns `false` if any pages in `pagerange` is invalid
+    /// Returns `TRUE` on success. Returns `FALSE` if any pages in `pagerange` is invalid
     /// or if `pagerange` cannot be read.
     #[allow(non_snake_case)]
     unsafe fn FPDF_ImportPages(
@@ -1240,7 +1245,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `src_doc`  - Document to read the viewer preferences from.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDF_CopyViewerPreferences(
         &self,
@@ -1577,6 +1582,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763"
     ))]
@@ -1689,6 +1695,29 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         struct_element: FPDF_STRUCTELEMENT,
     ) -> c_int;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets the raw value of the `/S` entry for a given element.
+    ///
+    ///    `struct_element` -   Handle to the struct element.
+    ///
+    ///    `buffer`         -   A `FPDF_WCHAR` buffer for output text. May be `NULL`.
+    ///
+    ///    `buflen`         -   The length of the buffer. May be `0`.
+    ///
+    /// Returns the number of bytes in the text, including the terminating `NUL` character.
+    /// The number of bytes is returned regardless of the `buffer` and `buflen` parameters.
+    ///
+    /// Regardless of the platform, the `buffer` is always in UTF-16LE encoding. The string is
+    /// terminated by a UTF16 `NUL` character. If `buflen` is less than the required length,
+    /// or if `buffer` is `NULL`, `buffer` will not be modified.
+    #[allow(non_snake_case)]
+    unsafe fn FPDF_StructElement_GetRawType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: usize,
+    ) -> c_ulong;
+
     /// Gets the type (/S) for a given element.
     ///
     ///   `struct_element` - Handle to the struct element.
@@ -1787,6 +1816,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1904,7 +1934,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                          minimum buffer size to contain the key. Not
     ///                          filled if `FALSE` is returned.
     ///
-    /// Returns `true` if the operation was successful.
+    /// Returns `TRUE` if the operation was successful.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetName(
         &self,
@@ -1917,6 +1947,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1977,6 +2008,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2027,7 +2059,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `out_value`          - A pointer to variable that will receive the
     ///                          value. Not filled if `FALSE` is returned.
     ///
-    /// Returns `true` if the name maps to a boolean value.
+    /// Returns `TRUE` if the name maps to a boolean value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
@@ -2038,6 +2070,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2061,7 +2094,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `out_value` - A pointer to variable that will receive the value. Not
     ///                 filled if false is returned.
     ///
-    /// Returns `true` if the attribute maps to a boolean value.
+    /// Returns `TRUE` if the attribute maps to a boolean value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetBooleanValue(
         &self,
@@ -2093,7 +2126,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `out_value`          - A pointer to variable that will receive the
     ///                          value. Not filled if `FALSE` is returned.
     ///
-    /// Returns `true` if the name maps to a number value.
+    /// Returns `TRUE` if the name maps to a number value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
@@ -2104,6 +2137,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2127,7 +2161,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `out_value` - A pointer to variable that will receive the value. Not
     ///                 filled if false is returned.
     ///
-    /// Returns `true` if the attribute maps to a number value.
+    /// Returns `TRUE` if the attribute maps to a number value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetNumberValue(
         &self,
@@ -2168,7 +2202,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                          minimum buffer size to contain the key. Not
     ///                          filled if `false` is returned.
     ///
-    /// Returns `true` if the name maps to a string value.
+    /// Returns `TRUE` if the name maps to a string value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetStringValue(
         &self,
@@ -2181,6 +2215,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2212,7 +2247,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                  buffer size to contain the key. Not filled if `false` is
     ///                  returned.
     ///
-    /// Returns `true` if the attribute maps to a string value.
+    /// Returns `TRUE` if the attribute maps to a string value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetStringValue(
         &self,
@@ -2266,6 +2301,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2294,7 +2330,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `out_buflen` - A pointer to variable that will receive the minimum buffer size
     ///                  to contain the key. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the attribute maps to a string value.
+    /// Returns `TRUE` if the attribute maps to a string value.
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_Attr_GetBlobValue(
         &self,
@@ -2306,6 +2342,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2333,6 +2370,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2429,6 +2467,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -3119,6 +3158,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -3593,7 +3633,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `subtype`   - the subtype to be checked.
     ///
-    /// Returns `true` if this subtype supported.
+    /// Returns `TRUE` if this subtype supported.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_IsSupportedSubtype(&self, subtype: FPDF_ANNOTATION_SUBTYPE) -> FPDF_BOOL;
 
@@ -3658,7 +3698,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `index` - the index of the annotation.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFPage_RemoveAnnot(&self, page: FPDF_PAGE, index: c_int) -> FPDF_BOOL;
 
@@ -3677,7 +3717,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `subtype`   - the subtype to be checked.
     ///
-    /// Returns `true` if this subtype supported.
+    /// Returns `TRUE` if this subtype supported.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_IsObjectSupportedSubtype(
         &self,
@@ -3694,7 +3734,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `obj`    - handle to the object that `annot` needs to update.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_UpdateObject(
         &self,
@@ -3731,7 +3771,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `annot`  - handle to an annotation.
     ///
     /// Return true on successful removal of `/InkList` entry from context of the
-    /// non-null ink `annot`. Returns `false` on failure.
+    /// non-null ink `annot`. Returns `FALSE` on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_RemoveInkList(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
@@ -3746,7 +3786,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `obj`    - handle to the object that is to be added to `annot`.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_AppendObject(
         &self,
@@ -3779,7 +3819,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `index`  - the index of the object to be removed.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_RemoveObject(&self, annot: FPDF_ANNOTATION, index: c_int) -> FPDF_BOOL;
 
@@ -3795,7 +3835,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `A`            - buffers to hold the opacity. Ranges from 0 to 255.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetColor(
         &self,
@@ -3820,7 +3860,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `A`            - buffer to hold the opacity. Ranges from 0 to 255.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetColor(
         &self,
@@ -3841,7 +3881,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `annot`  - handle to an annotation.
     ///
-    /// Returns `true` if the annotation is of a type that has quadpoints.
+    /// Returns `TRUE` if the annotation is of a type that has quadpoints.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_HasAttachmentPoints(&self, annot: FPDF_ANNOTATION) -> FPDF_BOOL;
 
@@ -3859,7 +3899,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `quad_points` - the quadpoints to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetAttachmentPoints(
         &self,
@@ -3877,7 +3917,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `quad_points` - the quadpoints to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_AppendAttachmentPoints(
         &self,
@@ -3901,7 +3941,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `quad_points` - receives the quadpoints; must not be `NULL`.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetAttachmentPoints(
         &self,
@@ -3919,7 +3959,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `rect`   - the annotation rectangle to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetRect(&self, annot: FPDF_ANNOTATION, rect: *const FS_RECTF) -> FPDF_BOOL;
 
@@ -3929,7 +3969,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `rect`   - receives the rectangle; must not be `NULL`.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetRect(&self, annot: FPDF_ANNOTATION, rect: *mut FS_RECTF) -> FPDF_BOOL;
 
@@ -3993,7 +4033,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `end` - ending point
     ///
-    /// Returns `true` if the annotation is of type line and `start` and `end` are not `NULL`.
+    /// Returns `TRUE` if the annotation is of type line and `start` and `end` are not `NULL`.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetLine(
         &self,
@@ -4012,7 +4052,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `border_width`       - border width, in default user space units.
     ///
-    /// Returns `true` if setting the border for `annot` succeeds.
+    /// Returns `TRUE` if setting the border for `annot` succeeds.
     ///
     /// If `annot` contains an appearance stream that overrides the border values,
     /// then the appearance stream will be removed on success.
@@ -4035,7 +4075,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `border_width`       - border width, in default user space units.
     ///
-    /// Returns `true` if `horizontal_radius`, `vertical_radius` and `border_width` are not `NULL`.
+    /// Returns `TRUE` if `horizontal_radius`, `vertical_radius` and `border_width` are not `NULL`.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetBorder(
         &self,
@@ -4108,7 +4148,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `key`    - the key to look for, encoded in UTF-8.
     ///
-    /// Returns `true` if `key` exists.
+    /// Returns `TRUE` if `key` exists.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_HasKey(&self, annot: FPDF_ANNOTATION, key: &str) -> FPDF_BOOL;
 
@@ -4132,7 +4172,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `value`  - the string value to be set, encoded in UTF-16LE.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_SetStringValue_str].
@@ -4156,7 +4196,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `value`  - the string value to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetStringValue_str(
@@ -4209,7 +4249,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `value`  - receives the value, must not be `NULL`.
     ///
-    /// Returns `true` if value found.
+    /// Returns `TRUE` if value found.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetNumberValue(
         &self,
@@ -4230,7 +4270,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                      `nullptr` is passed, the AP is cleared for that mode. If the
     ///                      mode is Normal, APs for all modes are cleared.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAnnot_SetAP_str].
@@ -4254,7 +4294,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `value`          - the string value to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     ///
     /// Note that this helper function cannot clear appearance strings, since it cannot pass
     /// a null pointer for `value`. To clear an appearance string, use [PdfiumLibraryBindings::FPDFAnnot_SetAP].
@@ -4305,7 +4345,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ) -> c_ulong;
 
     /// Gets the annotation corresponding to `key` in `annot`'s dictionary. Common
-    /// keys for linking annotations include "IRT" and "Popup". Must call
+    /// keys for linking annotations include `IRT` and `Popup`. Must call
     /// [PdfiumLibraryBindings::FPDFPage_CloseAnnot] when the annotation returned by this function
     /// is no longer needed.
     ///
@@ -4332,7 +4372,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `flags`      - the flag values to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetFlags(&self, annot: FPDF_ANNOTATION, flags: c_int) -> FPDF_BOOL;
 
@@ -4353,6 +4393,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4367,7 +4408,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `flags`        -   the form field flags to be set.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetFormFieldFlags(
         &self,
@@ -4461,7 +4502,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Gets the number of options in the `annot`'s "Opt" dictionary. Intended for
+    /// Gets the number of options in the `annot`'s `Opt` dictionary. Intended for
     /// use with listbox and combobox widget annotations.
     ///
     ///   `form`    - handle to the form fill module, returned by
@@ -4469,8 +4510,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    /// Returns the number of options in "Opt" dictionary on success. Return value
-    /// will be -1 if annotation does not have an "Opt" dictionary or other error.
+    /// Returns the number of options in `Opt` dictionary on success. Return value
+    /// will be -1 if annotation does not have an `Opt` dictionary or other error.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetOptionCount(
         &self,
@@ -4479,7 +4520,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ) -> c_int;
 
     /// Gets the string value for the label of the option at `index` in `annot`'s
-    /// "Opt" dictionary. Intended for use with listbox and combobox widget
+    /// `Opt` dictionary. Intended for use with listbox and combobox widget
     /// annotations. `buffer` is only modified if `buflen` is longer than the length
     /// of contents. If index is out of range or in case of other error, nothing
     /// will be added to `buffer` and the return value will be 0. Note that
@@ -4490,14 +4531,14 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    ///   `index`   - numeric index of the option in the "Opt" array.
+    ///   `index`   - numeric index of the option in the `Opt` array.
     ///
     ///   `buffer`  - buffer for holding the value string, encoded in UTF-16LE.
     ///
     ///   `buflen`  - length of the buffer in bytes.
     ///
     /// Returns the length of the string value in bytes.
-    /// If `annot` does not have an "Opt" array, `index` is out of range or if any
+    /// If `annot` does not have an `Opt` array, `index` is out of range or if any
     /// other error occurs, returns 0.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetOptionLabel(
@@ -4509,7 +4550,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Determines whether or not the option at `index` in `annot`'s "Opt" dictionary
+    /// Determines whether or not the option at `index` in `annot`'s `Opt` dictionary
     /// is selected. Intended for use with listbox and combobox widget annotations.
     ///
     ///   `form`    - handle to the form fill module, returned by
@@ -4517,9 +4558,9 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    ///   `index`   - numeric index of the option in the "Opt" array.
+    ///   `index`   - numeric index of the option in the `Opt` array.
     ///
-    /// Returns `true` if the option at `index` in `annot`'s "Opt" dictionary is selected.
+    /// Returns `TRUE` if the option at `index` in `annot`'s `Opt` dictionary is selected.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_IsOptionSelected(
         &self,
@@ -4539,7 +4580,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `value`   - Required. Float which will be set to font size on success.
     ///
-    /// Returns `true` if the font size was set in `value`, `false` on error or if
+    /// Returns `TRUE` if the font size was set in `value`, `FALSE` on error or if
     /// `value` not provided.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetFontSize(
@@ -4551,6 +4592,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4586,6 +4628,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4608,7 +4651,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `R`, `G`, `B`  - buffer to hold the RGB value of the color. Ranges from 0 to 255.
     ///
-    /// Returns `true` if the font color was set, `false` on error or if the font color
+    /// Returns `TRUE` if the font color was set, `FALSE` on error or if the font color
     /// was not provided.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_GetFontColor(
@@ -4628,7 +4671,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `annot`   - handle to an annotation.
     ///
-    /// Returns `true` if `annot` is a form widget and is checked.
+    /// Returns `TRUE` if `annot` is a form widget and is checked.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_IsChecked(
         &self,
@@ -4647,7 +4690,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `count`    - total number of annotation subtype in list.
     ///
-    /// Returns `true` if list of annotation subtype is set successfully.
+    /// Returns `TRUE` if list of annotation subtype is set successfully.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetFocusableSubtypes(
         &self,
@@ -4771,7 +4814,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `uri`    - the URI to be set, encoded in 7-bit ASCII.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFAnnot_SetURI(&self, annot: FPDF_ANNOTATION, uri: &str) -> FPDF_BOOL;
 
@@ -4782,6 +4825,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Returns the handle to the attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4813,6 +4857,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// See [PdfiumLibraryBindings::FPDFAnnot_AddFileAttachment_str].
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4847,6 +4892,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Returns a handle to the new attachment object, or `NULL` on failure.
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5005,7 +5051,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` on  success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnMouseMove(
         &self,
@@ -5066,7 +5112,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` if there is an annotation at the given point and it has focus.
+    /// Returns `TRUE` if there is an annotation at the given point and it has focus.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnFocus(
         &self,
@@ -5090,7 +5136,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page_y`     -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnLButtonDown(
         &self,
@@ -5128,7 +5174,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in device coordinates.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnLButtonUp(
         &self,
@@ -5166,7 +5212,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page_y`      -   Specifies the y-coordinate of the cursor in PDF user space.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnLButtonDoubleClick(
         &self,
@@ -5189,7 +5235,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnKeyDown(
         &self,
@@ -5211,9 +5257,9 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
-    /// Note: currently unimplemented, always returns `false`. PDFium reserves this API
+    /// Note: currently unimplemented, always returns `FALSE`. PDFium reserves this API
     /// and may implement it in the future on an as-needed basis.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnKeyUp(
@@ -5235,7 +5281,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `modifier`    -   Mask of key flags (see `fpdf_fwlevent.h` for key flag values).
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_OnChar(
         &self,
@@ -5340,7 +5386,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FORM_SelectAllText(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
@@ -5352,7 +5398,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    /// Returns `true` if it is possible to undo.
+    /// Returns `TRUE` if it is possible to undo.
     #[allow(non_snake_case)]
     unsafe fn FORM_CanUndo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
@@ -5364,7 +5410,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    /// Returns `true` if it is possible to redo.
+    /// Returns `TRUE` if it is possible to redo.
     #[allow(non_snake_case)]
     unsafe fn FORM_CanRedo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
@@ -5375,7 +5421,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    /// Returns `true` if the undo operation succeeded.
+    /// Returns `TRUE` if the undo operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FORM_Undo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
@@ -5386,7 +5432,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page`        -   Handle to the page, as returned by [PdfiumLibraryBindings::FPDF_LoadPage].
     ///
-    /// Returns `true` if the redo operation succeeded.
+    /// Returns `TRUE` if the redo operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FORM_Redo(&self, form: FPDF_FORMHANDLE, page: FPDF_PAGE) -> FPDF_BOOL;
 
@@ -5397,7 +5443,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `form`        -   Handle to the form fill module, as returned by
     ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FORM_ForceToKillFocus(&self, form: FPDF_FORMHANDLE) -> FPDF_BOOL;
 
@@ -5434,7 +5480,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `annot`       -   Handle to an annotation.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// Note: `annot` must not be `NULL`. To kill focus, use
     /// [PdfiumLibraryBindings::FORM_ForceToKillFocus] instead.
@@ -5648,14 +5694,14 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `index`       -   `0`-based index of value to be set as selected or unselected.
     ///
-    ///    `selected`    -   `true` to select, `false` to deselect.
+    ///    `selected`    -   `TRUE` to select, `FALSE` to deselect.
     ///
-    /// Returns `true` if the operation succeeded, `false` if the operation failed or
+    /// Returns `TRUE` if the operation succeeded, `FALSE` if the operation failed or
     /// the widget is not a supported type.
     ///
     /// Intended for use with listbox or combo-box widget types. Default implementation is
-    /// a no-op that will return `false` for widget other types. Not currently supported for
-    /// XFA forms - will return `false`. Combo-boxes have at most a single value selected at
+    /// a no-op that will return `FALSE` for widget other types. Not currently supported for
+    /// XFA forms - will return `FALSE`. Combo-boxes have at most a single value selected at
     /// a time which cannot be deselected. Deselect on a combo-box is a no-op that returns `false`.
     #[allow(non_snake_case)]
     unsafe fn FORM_SetIndexSelected(
@@ -5675,12 +5721,12 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `index`       -   `0`-based index of value to check.
     ///
-    /// Returns `true`if value at `index` is currently selected, `false` if value at `index`
+    /// Returns `TRUE` if value at `index` is currently selected, `FALSE` if value at `index`
     /// is not selected or widget is not a supported type.
     ///
     /// Intended for use with listbox or combo-box widget types. Default implementation is
-    /// a no-op that will return `false` for other types. Not currently supported for
-    /// XFA forms - will return `false`.
+    /// a no-op that will return `FALSE` for other types. Not currently supported for
+    /// XFA forms - will return `FALSE`.
     #[allow(non_snake_case)]
     unsafe fn FORM_IsIndexSelected(
         &self,
@@ -5689,12 +5735,51 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         index: c_int,
     ) -> FPDF_BOOL;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Returns the text direction of the given form field annotation.
+    ///
+    ///    `handle`      -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `annot`       -   Handle to the form field annotation.
+    ///
+    /// Returns the in-memory text direction of the given form field annotation. If the operation
+    /// fails (e.g., invalid handle), returns `FPDF_TEXTDIR_UNKNOWN`.
+    #[allow(non_snake_case)]
+    unsafe fn FORM_GetTextDirection(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_TEXT_DIRECTION;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Sets the text direction of the given form field annotation.
+    ///
+    ///    `handle`      -   Handle to the form fill module. Returned by
+    ///                      [PdfiumLibraryBindings::FPDFDOC_InitFormFillEnvironment].
+    ///
+    ///    `annot`       -   Handle to the form field annotation.
+    ///
+    ///    `direction`   -   The new text direction. Passing `FPDF_TEXTDIR_UNKNOWN` will fail
+    ///                      and return `FALSE`.
+    ///
+    /// This only alters the in-memory state of the form field and does not modify the PDF document.
+    ///
+    /// Returns `TRUE` on success, `FALSE` otherwise.
+    #[allow(non_snake_case)]
+    unsafe fn FORM_SetTextDirection(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        direction: FPDF_TEXT_DIRECTION,
+    ) -> FPDF_BOOL;
+
     /// If the document consists of XFA fields, call this method to attempt to load XFA fields.
     ///
     ///    `document`     -   Handle to document from [PdfiumLibraryBindings::FPDF_LoadDocument].
     ///
-    /// Returns `true` upon success. If XFA support is not built into
-    /// PDFium, performs no action and always returns `false`.
+    /// Returns `TRUE` upon success. If XFA support is not built into
+    /// PDFium, performs no action and always returns `FALSE`.
     #[allow(non_snake_case)]
     unsafe fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
@@ -5767,8 +5852,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         buflen: c_ulong,
     ) -> c_ulong;
 
-    /// Returns a pointer to the default character set to TT Font name map. The map is an array of
-    /// FPDF_CharsetFontMap structs, with its end indicated by a { -1, NULL } entry.
+    /// Returns a pointer to the default character set to TT Font name map. The map is an
+    /// array of `FPDF_CharsetFontMap` structs, with its end indicated by a { -1, NULL } entry.
     /// Returns a pointer to the Charset Font Map. Note: once [PdfiumLibraryBindings::FPDF_GetDefaultTTFMapCount]
     /// and [PdfiumLibraryBindings::FPDF_GetDefaultTTFMapEntry] are no longer experimental,
     /// this API will be marked as deprecated. See: <https://crbug.com/348468114>
@@ -5777,6 +5862,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5795,6 +5881,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5998,10 +6085,47 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// If this function returns a valid handle, it is valid as long as `bookmark` is
     /// valid.
     ///
-    /// If this function returns `NULL`, `FPDFBookmark_GetDest()` should be called to get
-    /// the `bookmark` destination data.
+    /// If this function returns `NULL`, [PdfiumLibraryBindings::FPDFBookmark_GetDest] should
+    /// be called to get the `bookmark` destination data.
     #[allow(non_snake_case)]
     unsafe fn FPDFBookmark_GetAction(&self, bookmark: FPDF_BOOKMARK) -> FPDF_ACTION;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets the color of a bookmark.
+    ///
+    ///    `bookmark` - handle to a bookmark.
+    ///
+    ///    `R`        - pointer to a float to receive the red component [0.0 - 1.0].
+    ///
+    ///    `G`        - pointer to a float to receive the green component [0.0 - 1.0].
+    ///
+    ///    `B`        - pointer to a float to receive the blue component [0.0 - 1.0].
+    ///
+    /// Returns `true` on success, in which case `R`, `G`, and `B` are updated.
+    /// Returns `false` on failure, if the bookmark is invalid, output for `R`, `G` and `B`
+    /// aren't in the range, or if the bookmark does not specify a color.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFBookmark_GetColor(
+        &self,
+        bookmark: FPDF_BOOKMARK,
+        R: *mut c_float,
+        G: *mut c_float,
+        B: *mut c_float,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets the text style of a bookmark.
+    ///
+    ///    `bookmark` - handle to a bookmark.
+    ///
+    /// Returns the style as an integer, in line with ISO 32000-1:2008 Table 154.
+    /// The first bit is used to indicate whether the text is italic. The second bit is used
+    /// to indicate whether the text is bold.
+    ///
+    /// Returns `0` if the bookmark doesn't have styling or if the handle is invalid.
+    /// Parsing this value to apply styles remains the responsibility of the embedder.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFBookmark_GetStyle(&self, bookmark: FPDF_BOOKMARK) -> c_int;
 
     /// Gets the type of `action`.
     ///
@@ -6027,7 +6151,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// because the arguments were bad or the action was of the wrong type.
     ///
     /// In the case of `PDFACTION_REMOTEGOTO`, you must first call
-    /// `FPDFAction_GetFilePath()`, then load the document at that path, then pass
+    /// [PdfiumLibraryBindings::FPDFAction_GetFilePath], then load the document at that path, then pass
     /// the document handle from that document as `document` to `FPDFAction_GetDest()`.
     #[allow(non_snake_case)]
     unsafe fn FPDFAction_GetDest(&self, document: FPDF_DOCUMENT, action: FPDF_ACTION) -> FPDF_DEST;
@@ -6165,7 +6289,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Returns a handle to the link, or `NULL` if no link found at the given point.
     ///
     /// You can convert coordinates from screen coordinates to page coordinates using
-    /// `FPDF_DeviceToPage()`.
+    /// [PdfiumLibraryBindings::FPDF_DeviceToPage].
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_GetLinkAtPoint(
         &self,
@@ -6186,7 +6310,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Larger Z-order numbers are closer to the front.
     ///
     /// You can convert coordinates from screen coordinates to page coordinates using
-    /// `FPDF_DeviceToPage()`.
+    /// [PdfiumLibraryBindings::FPDF_DeviceToPage].
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_GetLinkZOrderAtPoint(
         &self,
@@ -6202,7 +6326,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `link`     - handle to the link.
     ///
     /// Returns a handle to the destination, or `NULL` if there is no destination
-    /// associated with the link. In this case, you should call `FPDFLink_GetAction()`
+    /// associated with the link. In this case, you should call [PdfiumLibraryBindings::FPDFLink_GetAction]
     /// to retrieve the action associated with `link`.
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_GetDest(&self, document: FPDF_DOCUMENT, link: FPDF_LINK) -> FPDF_DEST;
@@ -6226,7 +6350,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `link_annot` - the link handle for `startPos`.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_Enumerate(
         &self,
@@ -6252,7 +6376,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `rect`       - the annotation rectangle.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_GetAnnotRect(&self, link_annot: FPDF_LINK, rect: *mut FS_RECTF)
         -> FPDF_BOOL;
@@ -6273,7 +6397,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `quad_points` - receives the quadrilateral points.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_GetQuadPoints(
         &self,
@@ -6428,7 +6552,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_buflen` - pointer to the variable that will receive the minimum
     ///                   buffer size needed to contain the content of the XFA packet.
     ///
-    /// Returns `true` if the operation succeeded, `false` if not.
+    /// Returns `TRUE` if the operation succeeded, `FALSE` if not.
     ///
     /// `document` must be valid and `index` must be in the range `[0, N)`, where `N` is
     /// the value returned by [PdfiumLibraryBindings::FPDF_GetXFAPacketCount].
@@ -6537,6 +6661,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -6579,6 +6704,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -6808,8 +6934,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `top`         -   Pointer to a double number receiving top position of
     ///                      the character box.
     ///
-    /// On success, returns `true` and fills in `left`, `right`, `bottom`, and `top`.
-    /// If `text_page` is invalid, or if `index` is out of bounds, then returns `false`,
+    /// On success, returns `FALSE` and fills in `left`, `right`, `bottom`, and `top`.
+    /// If `text_page` is invalid, or if `index` is out of bounds, then returns `FALSE`,
     /// and the out parameters remain unmodified.
     ///
     /// All positions are measured in PDF user space.
@@ -6834,8 +6960,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `rect`        -   Pointer to a `FS_RECTF` receiving the character box.
     ///
-    /// On success, returns `true` and fills in `rect`. If `text_page` is invalid, or if
-    /// `index` is out of bounds, then returns `false`, and the `rect` out parameter
+    /// On success, returns `TRUE` and fills in `rect`. If `text_page` is invalid, or if
+    /// `index` is out of bounds, then returns `FALSE`, and the `rect` out parameter
     /// remains unmodified.
     ///
     /// All positions are measured in PDF "user space".
@@ -6856,8 +6982,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `matrix`      -   Pointer to a `FS_MATRIX` receiving the transformation matrix.
     ///
-    /// On success, returns `true` and fills in `matrix`. If `text_page` is invalid, or if
-    /// `index` is out of bounds, or if `matrix` is `NULL`, then returns `false`, and
+    /// On success, returns `TRUE` and fills in `matrix`. If `text_page` is invalid, or if
+    /// `index` is out of bounds, or if `matrix` is `NULL`, then returns `FALSE`, and
     /// `matrix` remains unmodified.
     #[allow(non_snake_case)]
     unsafe fn FPDFText_GetMatrix(
@@ -6989,9 +7115,9 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `bottom`      -   Pointer to a double value receiving the rectangle bottom boundary.
     ///
-    /// On success, returns `true` and fills in `left`, `top`, `right`, and `bottom`.
-    /// If `text_page` is invalid then returns `false`, and the out parameters remain unmodified.
-    /// If `text_page` is valid but `rect_index` is out of bounds, then returns `false`
+    /// On success, returns `TRUE` and fills in `left`, `top`, `right`, and `bottom`.
+    /// If `text_page` is invalid then returns `FALSE`, and the out parameters remain unmodified.
+    /// If `text_page` is valid but `rect_index` is out of bounds, then returns `FALSE`
     ///  and sets the out parameters to `0`.
     #[allow(non_snake_case)]
     unsafe fn FPDFText_GetRect(
@@ -7222,9 +7348,9 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `bottom`      -   Pointer to a double value receiving the rectangle bottom boundary.
     ///
-    /// On success, returns `true` and fills in `left`, `top`, `right`, and `bottom`.
+    /// On success, returns `TRUE` and fills in `left`, `top`, `right`, and `bottom`.
     /// If `link_page` is invalid or if `link_index` does not correspond to a valid link,
-    /// then returns `false`, and the out parameters remain unmodified.
+    /// then returns `FALSE`, and the out parameters remain unmodified.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     unsafe fn FPDFLink_GetRect(
@@ -7248,9 +7374,9 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `char_count`        -   pointer to int receiving the char count
     ///
-    /// On success, returns `true` and fills in `start_char_index` and `char_count`.
+    /// On success, returns `TRUE` and fills in `start_char_index` and `char_count`.
     /// If `link_page` is invalid or if `link_index` does not correspond to a valid link,
-    /// then returns `false` and the out parameters remain unmodified.
+    /// then returns `FALSE` and the out parameters remain unmodified.
     #[allow(non_snake_case)]
     unsafe fn FPDFLink_GetTextRange(
         &self,
@@ -7336,6 +7462,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -7348,7 +7475,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `page_object` - handle to a page object to be removed from the form.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// Ownership of the removed `page_object` is transferred to the caller.
     /// Call [PdfiumLibraryBindings::FPDFPageObj_Destroy]` on the removed page_object to free it.
@@ -7392,7 +7519,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `render_mode`  - the `FPDF_TEXT_RENDERMODE` enum value to be set (cannot set to
     ///                     `FPDF_TEXTRENDERMODE_UNKNOWN`).
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFTextObj_SetTextRenderMode(
         &self,
@@ -7462,7 +7589,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `size` - pointer to the font size of the text object, measured in points
     ///             (about 1/72 inch).
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFTextObj_GetFontSize(
         &self,
@@ -7470,7 +7597,11 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         size: *mut c_float,
     ) -> FPDF_BOOL;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     /// Sets the font size of a text object.
     ///
     ///    `text` - handle to a text page object.
@@ -7479,7 +7610,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///             non-negative; zero is permitted to mirror
     ///             `FPDFPageObj_NewTextObj()` with size 0.
     ///
-    /// Returns `true` on success. Returns `false` when `text` is not a text page object,
+    /// Returns `TRUE` on success. Returns `FALSE` when `text` is not a text page object,
     /// or when `size` is negative.
     #[allow(non_snake_case)]
     unsafe fn FPDFTextObj_SetFontSize(&self, text: FPDF_PAGEOBJECT, size: c_float) -> FPDF_BOOL;
@@ -7499,7 +7630,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `y`      - the vertical position of the new current point.
     ///
     /// Note that no line will be created between the previous current point and the
-    /// new one. Returns `true` on success.
+    /// new one. Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPath_MoveTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
@@ -7511,8 +7642,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `y`      - the vertical position of the new point.
     ///
-    /// The path's current point is changed to `(x, y)`. Returns `true` on success,
-    /// `false` otherwise.
+    /// The path's current point is changed to `(x, y)`. Returns `TRUE` on success,
+    /// `FALSE` otherwise.
     #[allow(non_snake_case)]
     unsafe fn FPDFPath_LineTo(&self, path: FPDF_PAGEOBJECT, x: c_float, y: c_float) -> FPDF_BOOL;
 
@@ -7532,7 +7663,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `y3`     - the vertical position of the ending point of the Bezier curve.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     unsafe fn FPDFPath_BezierTo(
@@ -7546,12 +7677,36 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         y3: c_float,
     ) -> FPDF_BOOL;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets the two control points of a cubic Bezier segment in `path` at `index`.
+    ///
+    ///    `path`                 - handle to a path.
+    ///
+    ///    `index`                - the index of the endpoint of a cubic Bezier segment.
+    ///
+    ///    `first_control_point`  - the first control point.
+    ///
+    ///    `second_control_point` - the second control point.
+    ///
+    /// Returns `TRUE` on success. Returns `FALSE` when `path` is not a valid path,
+    /// `index` is out of bounds, the indexed segment is not the endpoint of a cubic Bezier
+    /// segment, or either output pointer is `NULL`. On failure, the output parameters
+    /// are not modified.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPath_GetBezierControlPoints(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        index: usize,
+        first_control_point: *mut FS_POINTF,
+        second_control_point: *mut FS_POINTF,
+    ) -> FPDF_BOOL;
+
     /// Closes the current subpath of a given path.
     ///
     ///    `path`   - the handle to the path object.
     ///
     /// This will add a line between the current point and the initial point of the subpath,
-    /// thus terminating the current subpath. Returns `true` on success.
+    /// thus terminating the current subpath. Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPath_Close(&self, path: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
@@ -7563,7 +7718,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `stroke`   - a boolean specifying if the path should be stroked or not.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPath_SetDrawMode(
         &self,
@@ -7580,7 +7735,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `stroke`   - a boolean specifying if the path is stroked or not.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPath_GetDrawMode(
         &self,
@@ -7612,7 +7767,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `text`         - the UTF-16LE encoded string containing the text to be added.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFText_SetText_str].
@@ -7631,7 +7786,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `text`         - the string containing the text to be added.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFText_SetText_str(&self, text_object: FPDF_PAGEOBJECT, text: &str) -> FPDF_BOOL {
@@ -7649,7 +7804,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `count`        - number of elements in |charcodes|.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFText_SetCharcodes(
         &self,
@@ -7658,7 +7813,11 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         count: size_t,
     ) -> FPDF_BOOL;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     /// Sets the character positions for a text object.
     ///
     ///    `text_object`  - handle to the text object.
@@ -7675,7 +7834,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// For a text object with `N` characters, `count` must be `N - 1`. Therefore this
     /// function fails when `N <= 1`.
     ///
-    /// Returns `true` on success, `false` otherwise."]
+    /// Returns `TRUE` on success, `FALSE` otherwise."]
     #[allow(non_snake_case)]
     unsafe fn FPDFText_SetPositions(
         &self,
@@ -7725,6 +7884,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -7773,7 +7933,11 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         cid_to_gid_map_data_size: u32,
     ) -> FPDF_FONT;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     /// Inserts `page_object` into `page`.
     ///
     ///    `page`        - handle to a page
@@ -7783,7 +7947,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                    success. `page_object` is freed on failure. Null `page_object`
     ///                    causes a failure.
     ///
-    /// Returns `true` if successful, `false` otherwise.
+    /// Returns `TRUE` if successful, `FALSE` otherwise.
     #[allow(non_snake_case)]
     unsafe fn FPDFPage_InsertObject(&self, page: FPDF_PAGE, page_obj: FPDF_PAGEOBJECT)
         -> FPDF_BOOL;
@@ -7824,6 +7988,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -7845,7 +8010,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                    end. If index is greater than the object count, the function
     ///                    will fail and return false.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPage_InsertObjectAtIndex(
         &self,
@@ -7903,7 +8068,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page` - handle to a page.
     ///
-    /// Returns `true` if `page` contains transparency.
+    /// Returns `TRUE` if `page` contains transparency.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_HasTransparency(&self, page_object: FPDF_PAGEOBJECT) -> FPDF_BOOL;
 
@@ -7917,6 +8082,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -7929,15 +8095,15 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `page_object` - handle to a page object.
     ///
-    ///    `active`      - pointer to variable that will receive `true` if the page object
+    ///    `active`      - pointer to variable that will receive `TRUE` if the page object
     ///                    is active. This is a required parameter. Not filled if this
-    ///                    function returns `false`.
+    ///                    function returns `FALSE`.
     ///
-    /// For page objects where `active` is filled with `false`, the `page_object` is
+    /// For page objects where `active` is filled with `FALSE`, the `page_object` is
     /// treated as if it wasn't in the document even though it is still held
     /// internally.
     ///
-    /// Returns `true` if the operation succeeded, `false` if it failed.
+    /// Returns `TRUE` if the operation succeeded, `FALSE` if it failed.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetIsActive(
         &self,
@@ -7947,6 +8113,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -7961,7 +8128,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `active`      - a boolean specifying if the object is active.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// Page objects all start in the active state by default, and remain in that
     /// state unless this function is called.
@@ -8013,6 +8180,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8030,7 +8198,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///   `matrix`      - the transform matrix.
     ///
-    /// Returns `true on success.
+    /// Returns `TRUE` on success.
     ///
     /// This can be used to scale, rotate, shear and translate the `page_object`.
     /// It is an improved version of [PdfiumLibraryBindings::FPDFPageObj_Transform]
@@ -8060,7 +8228,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// For page objects inside form objects, the matrix values are relative to the form
     /// that contains it.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetMatrix(
         &self,
@@ -8082,7 +8250,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     /// and can be used to scale, rotate, shear and translate the page object.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetMatrix(
         &self,
@@ -8100,6 +8268,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8161,7 +8330,11 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         name: &str,
     ) -> FPDF_PAGEOBJECTMARK;
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     /// Adds an existing content mark to a `page_object`. If consecutive page objects
     /// have the same `mark`, the generated PDF will contain a single mark that spans
     /// all of them. If the page objects are not consecutive, multiple copies of the
@@ -8187,7 +8360,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `mark`        - handle to a content mark in that object to remove.
     ///
-    /// Returns `true` if the operation succeeded, `false` if it failed.
+    /// Returns `TRUE` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_RemoveMark(
         &self,
@@ -8197,6 +8370,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8220,7 +8394,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the operation succeeded, `false` if it failed.
+    /// Returns `TRUE` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetName(
         &self,
@@ -8262,7 +8436,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the name. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the operation succeeded, `false` if it failed.
+    /// Returns `TRUE` if the operation succeeded, `false` if it failed.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetName(
         &self,
@@ -8282,6 +8456,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8306,7 +8481,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the operation was successful.
+    /// Returns `TRUE` if the operation was successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamKey(
         &self,
@@ -8351,7 +8526,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the key. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the operation was successful.
+    /// Returns `TRUE` if the operation was successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamKey(
         &self,
@@ -8387,7 +8562,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_value` - pointer to variable that will receive the value. Not filled if
     ///                  `false` is returned.
     ///
-    /// Returns `true` if the key maps to a number value.
+    /// Returns `TRUE` if the key maps to a number value.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamIntValue(
         &self,
@@ -8398,6 +8573,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543"
@@ -8413,7 +8589,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_value` - pointer to variable that will receive the value. Not filled if
     ///                  `false` is returned.
     ///
-    /// Returns `true` if the key maps to a number value.
+    /// Returns `TRUE` if the key maps to a number value.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamFloatValue(
         &self,
@@ -8424,6 +8600,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8448,7 +8625,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value.
+    /// Returns `TRUE` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamStringValue(
         &self,
@@ -8493,7 +8670,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the value. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value.
+    /// Returns `TRUE` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamStringValue(
         &self,
@@ -8506,6 +8683,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8530,7 +8708,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                   in bytes to contain the name. This is a required parameter.
     ///                   Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value.
+    /// Returns `TRUE` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamBlobValue(
         &self,
@@ -8575,7 +8753,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_buflen` - pointer to variable that will receive the minimum buffer size
     ///                   to contain the value. Not filled if `false` is returned.
     ///
-    /// Returns `true` if the key maps to a string/blob value.
+    /// Returns `TRUE` if the key maps to a string/blob value.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_GetParamBlobValue(
         &self,
@@ -8600,7 +8778,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value`       - int value to set.
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_SetIntParam(
         &self,
@@ -8613,6 +8791,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543"
@@ -8631,7 +8810,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value`       - float value to set.
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_SetFloatParam(
         &self,
@@ -8656,7 +8835,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value`       - string value to set.
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_SetStringParam(
         &self,
@@ -8669,6 +8848,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8693,7 +8873,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value_len`   - size in bytes of `value`.
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_SetBlobParam(
         &self,
@@ -8740,7 +8920,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value_len`   - size in bytes of `value`.
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_SetBlobParam(
         &self,
@@ -8760,7 +8940,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `key`         - string key of the property.
     ///
-    /// Returns `true` if the operation succeeded.
+    /// Returns `TRUE` if the operation succeeded.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObjMark_RemoveParam(
         &self,
@@ -8779,7 +8959,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `file_access`  - file access handler which specifies the JPEG image file.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// The image object might already have an associated image, which is shared and
     /// cached by the loaded pages. In that case, we need to clear the cached image
@@ -8805,7 +8985,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `file_access`  - file access handler which specifies the JPEG image file.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// The image object might already have an associated image, which is shared and
     /// cached by the loaded pages. In that case, we need to clear the cached image
@@ -8847,7 +9027,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     /// and can be used to scale, rotate, shear and translate the `image_object`.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     #[allow(clippy::too_many_arguments)]
     #[deprecated(
@@ -8874,7 +9054,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `bitmap`       - handle of the bitmap.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFImageObj_SetBitmap(
         &self,
@@ -9000,7 +9180,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `metadata`     - receives the image metadata; must not be `NULL`.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFImageObj_GetImageMetadata(
         &self,
@@ -9017,7 +9197,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `height`       - receives the image height in pixels; must not be `NULL`.
     ///
-    /// Returns `true` if successful.
+    /// Returns `TRUE` if successful.
     #[allow(non_snake_case)]
     unsafe fn FPDFImageObj_GetImagePixelSize(
         &self,
@@ -9028,6 +9208,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -9058,7 +9239,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///   `out_buflen`   - Pointer to receive the ICC profile data size in bytes; must
     ///                    not be `NULL`. Will be set if this function returns `true`.
     ///
-    /// Returns `true` if `out_buflen` is not `NULL` and an ICC profile exists for the
+    /// Returns `TRUE` if `out_buflen` is not `NULL` and an ICC profile exists for the
     /// given `image_object`.
     #[allow(non_snake_case)]
     unsafe fn FPDFImageObj_GetIccProfileDataDecoded(
@@ -9112,7 +9293,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `top`          - pointer where the top coordinate will be stored.
     ///
-    /// On success, returns `true` and fills in the four coordinates.
+    /// On success, returns `TRUE` and fills in the four coordinates.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetBounds(
         &self,
@@ -9168,7 +9349,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `A`            - the stroke alpha for the object.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetStrokeColor(
         &self,
@@ -9191,7 +9372,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `A`            - the stroke alpha of the object.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetStrokeColor(
         &self,
@@ -9208,7 +9389,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `width`  - the width of the stroke.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetStrokeWidth(
         &self,
@@ -9222,7 +9403,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `width`  - the width of the stroke.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetStrokeWidth(
         &self,
@@ -9294,7 +9475,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `A`            - the fill alpha for the object.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetFillColor(
         &self,
@@ -9317,7 +9498,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `A`            - the fill alpha of the object.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetFillColor(
         &self,
@@ -9334,7 +9515,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `phase`       - pointer where the dashing phase will be stored.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetDashPhase(
         &self,
@@ -9348,7 +9529,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `phase`       - line dash phase.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetDashPhase(
         &self,
@@ -9372,7 +9553,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `dash_count`  - number of elements in `dash_array`.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_GetDashArray(
         &self,
@@ -9391,7 +9572,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `phase`       - the line dash phase.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetDashArray(
         &self,
@@ -9400,6 +9581,42 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         dash_count: size_t,
         phase: c_float,
     ) -> FPDF_BOOL;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets a bitmap rasterization of the stroke pattern of `page_object`.
+    /// To render correctly, the caller must provide the `document` associated with `page_object`.
+    /// The returned bitmap will be owned by the caller, and [PdfiumLibraryBindings::FPDFBitmap_Destroy]
+    /// must be called on the returned bitmap when it is no longer needed.
+    ///
+    ///    `document`    - handle to the document containing `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    /// Returns the bitmap, or `NULL` if the stroke is not a tiling pattern or on failure.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_GetRenderedStrokePattern(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets a bitmap rasterization of the fill pattern of `page_object`.
+    /// To render correctly, the caller must provide the `document` associated with `page_object`.
+    /// The returned bitmap will be owned by the caller, and [PdfiumLibraryBindings::FPDFBitmap_Destroy]
+    /// must be called on the returned bitmap when it is no longer needed.
+    ///
+    ///    `document`    - handle to the document containing `page_object`.
+    ///
+    ///    `page_object` - handle to a page object.
+    ///
+    /// Returns the bitmap, or `NULL` if the fill is not a tiling pattern or on failure.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_GetRenderedFillPattern(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP;
 
     /// Gets the number of segments inside `path`.
     ///
@@ -9462,6 +9679,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -9497,6 +9715,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -9602,8 +9821,8 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///                   to contain the font data. Not filled if the return value is
     ///                   `false`. (Required)
     ///
-    /// Returns `true` on success. In which case, `out_buflen` will be filled, and
-    /// `buffer` will be filled if it is large enough. Returns `false` if any of the
+    /// Returns `TRUE` on success. In which case, `out_buflen` will be filled, and
+    /// `buffer` will be filled if it is large enough. Returns `FALSE` if any of the
     /// required parameters are `NULL`.
     ///
     /// The decoded data is the uncompressed font data. i.e. the raw font data after
@@ -9654,7 +9873,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// The italic angle of a `font` is defined as degrees counterclockwise
     /// from vertical. For a font that slopes to the right, this will be negative.
     ///
-    /// Returns `true` on success; `angle` unmodified on failure.
+    /// Returns `TRUE` on success; `angle` unmodified on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDFFont_GetItalicAngle(&self, font: FPDF_FONT, angle: *mut c_int) -> FPDF_BOOL;
 
@@ -9669,7 +9888,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Ascent is the maximum distance in points above the baseline reached by the
     /// glyphs of the `font`. One point is 1/72 inch (around 0.3528 mm).
     ///
-    /// Returns `true` on success; `ascent` unmodified on failure.
+    /// Returns `TRUE` on success; `ascent` unmodified on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDFFont_GetAscent(
         &self,
@@ -9689,7 +9908,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Descent is the maximum distance in points below the baseline reached by the
     /// glyphs of the `font`. One point is 1/72 inch (around 0.3528 mm).
     ///
-    /// Returns `true` on success; `descent` unmodified on failure.
+    /// Returns `TRUE` on success; `descent` unmodified on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDFFont_GetDescent(
         &self,
@@ -9711,7 +9930,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     /// Glyph width is the distance from the end of the prior glyph to the next
     /// glyph. This will be the vertical distance for vertical writing.
     ///
-    /// Returns `true` on success; `width` unmodified on failure.
+    /// Returns `TRUE` on success; `width` unmodified on failure.
     #[allow(non_snake_case)]
     unsafe fn FPDFFont_GetGlyphWidth(
         &self,
@@ -9963,7 +10182,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `index`    - the index of the embedded file to be deleted.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFDoc_DeleteAttachment(&self, document: FPDF_DOCUMENT, index: c_int) -> FPDF_BOOL;
 
@@ -10021,7 +10240,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value`      - the string value to be set, encoded in UTF-16LE.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     ///
     /// A [&str]-friendly helper function is available for this function.
     /// See [PdfiumLibraryBindings::FPDFAttachment_SetStringValue_str].
@@ -10045,7 +10264,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `value`      - the string value to be set.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFAttachment_SetStringValue_str(
@@ -10088,6 +10307,68 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Sets the string value corresponding to `/Desc` in the file specification dictionary
+    /// (ISO 32000-1:2008 section 7.11.3) of the embedded file `attachment` to the given value.
+    ///
+    ///    `attachment` - handle to an attachment.
+    ///
+    ///    `value`      - the string value to be set as `/Desc`, encoded in UTF-16LE.
+    ///
+    /// Returns `TRUE` if successful.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_SetDescription(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL;
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// A [&str]-friendly helper function for [PdfiumLibraryBindings::FPDFAttachment_SetDescription].
+    ///
+    /// Sets the string value corresponding to `/Desc` in the file specification dictionary
+    /// (ISO 32000-1:2008 section 7.11.3) of the embedded file `attachment` to the given value.
+    ///
+    ///    `attachment` - handle to an attachment.
+    ///
+    ///    `value`      - the string value to be set as `/Desc`.
+    ///
+    /// Returns `TRUE` if successful.
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_SetDescription_str(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        value: &str,
+    ) -> FPDF_BOOL {
+        self.FPDFAttachment_SetDescription(
+            attachment,
+            get_pdfium_utf16le_bytes_from_str(value).as_ptr() as FPDF_WIDESTRING,
+        )
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets the string value corresponding to `/Desc` in the file specification dictionary
+    /// (ISO 32000-1:2008 section 7.11.3) of the embedded file `attachment`.
+    /// `buffer` is only modified if `buflen` is longer than the length of the string's value.
+    ///
+    ///    `attachment` - handle to an attachment.
+    ///
+    ///    `buffer`     - buffer for holding the string value encoded in UTF-16LE.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    /// Returns the length of the description string in bytes.
+    /// If the key doesn't exist, or is not a string, then `2` is returned, alongisde an
+    /// empty string. Other errors return `0`.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_GetDescription(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
     /// Sets the file data of `attachment`, overwriting the existing file data if any.
     /// The creation date and checksum will be updated, while all other dictionary
     /// entries will be deleted. Note that only contents with `len` smaller than
@@ -10099,7 +10380,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `len`        - length of file data in bytes.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFAttachment_SetFile(
         &self,
@@ -10129,7 +10410,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///    `out_buflen` - pointer to the variable that will receive the minimum buffer
     ///                   size to contain the file data of `attachment`.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFAttachment_GetFile(
         &self,
@@ -10141,6 +10422,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -10167,18 +10449,44 @@ pub trait PdfiumLibraryBindings: Send + Sync {
         buflen: c_ulong,
     ) -> c_ulong;
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Gets the associated file relationship string (the `/AFRelationship` entry in
+    /// the file specification dictionary of the embedded file `attachment`; PDF 2.0,
+    /// ISO 32000-2:2020, Table 43), e.g. `Source`, `Data`, `Alternative`, `Supplement`,
+    /// or `Unspecified`. `buffer` is only modified if `buflen` is longer than the length
+    /// of the relationship name.
+    ///
+    ///    `attachment` - handle to an attachment.
+    ///
+    ///    `buffer`     - buffer for holding the relationship name encoded in UTF-16LE.
+    ///
+    ///    `buflen`     - length of the buffer in bytes.
+    ///
+    /// Returns the length of the relationship name in bytes. If the `/AFRelationship`
+    /// entry is absent or is not a name, an empty string is copied to `buffer` and the
+    /// return value is `2`. On other errors, `buffer` is not modified and the return value
+    /// is `0`.
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_GetAFRelationship(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong;
+
     /// Determines if `document` represents a tagged PDF.
     ///
     /// For the definition of tagged PDF, see 10.7 "Tagged PDF" in PDF Reference 1.7.
     ///
     ///    `document` - handle to a document.
     ///
-    /// Returns `true` if `document` is a tagged PDF.
+    /// Returns `TRUE` if `document` is a tagged PDF.
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL;
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763"
     ))]
@@ -10209,6 +10517,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
     ))]
@@ -10218,7 +10527,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `language` - the language to set to.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_SetLanguage(
         &self,
@@ -10241,7 +10550,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `language` - the language to set to.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_SetLanguage(
         &self,
@@ -10251,6 +10560,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
     ))]
@@ -10281,7 +10591,7 @@ pub trait PdfiumLibraryBindings: Send + Sync {
     ///
     ///    `language` - the language to set to.
     ///
-    /// Returns `true` on success.
+    /// Returns `TRUE` on success.
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_SetLanguage_str(
         &self,

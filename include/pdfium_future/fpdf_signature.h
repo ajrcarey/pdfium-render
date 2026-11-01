@@ -1,13 +1,17 @@
 // Copyright 2020 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef PUBLIC_FPDF_SIGNATURE_H_
 #define PUBLIC_FPDF_SIGNATURE_H_
+
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
 // Experimental API.
 // Function: FPDF_GetSignatureCount
 //          Get total number of signatures in the document.
@@ -16,6 +20,7 @@ extern "C" {
 // Return value:
 //          Total number of signatures in the document on success, -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV FPDF_GetSignatureCount(FPDF_DOCUMENT document);
+
 // Experimental API.
 // Function: FPDF_GetSignatureObject
 //          Get the Nth signature of the document.
@@ -28,6 +33,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_GetSignatureCount(FPDF_DOCUMENT document);
 //          remains valid until FPDF_CloseDocument() is called for the document.
 FPDF_EXPORT FPDF_SIGNATURE FPDF_CALLCONV
 FPDF_GetSignatureObject(FPDF_DOCUMENT document, int index);
+
 // Experimental API.
 // Function: FPDFSignatureObj_GetContents
 //          Get the contents of a signature object.
@@ -46,6 +52,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFSignatureObj_GetContents(FPDF_SIGNATURE signature,
                              void* buffer,
                              unsigned long length);
+
 // Experimental API.
 // Function: FPDFSignatureObj_GetByteRange
 //          Get the byte range of a signature object.
@@ -67,6 +74,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFSignatureObj_GetByteRange(FPDF_SIGNATURE signature,
                               int* buffer,
                               unsigned long length);
+
 // Experimental API.
 // Function: FPDFSignatureObj_GetSubFilter
 //          Get the encoding of the value of a signature object.
@@ -85,6 +93,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFSignatureObj_GetSubFilter(FPDF_SIGNATURE signature,
                               char* buffer,
                               unsigned long length);
+
 // Experimental API.
 // Function: FPDFSignatureObj_GetReason
 //          Get the reason (comment) of the signature object.
@@ -103,6 +112,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFSignatureObj_GetReason(FPDF_SIGNATURE signature,
                            void* buffer,
                            unsigned long length);
+
 // Experimental API.
 // Function: FPDFSignatureObj_GetTime
 //          Get the time of signing of a signature object.
@@ -126,6 +136,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFSignatureObj_GetTime(FPDF_SIGNATURE signature,
                          char* buffer,
                          unsigned long length);
+
 // Experimental API.
 // Function: FPDFSignatureObj_GetDocMDPPermission
 //          Get the DocMDP permission of a signature object.
@@ -136,7 +147,9 @@ FPDFSignatureObj_GetTime(FPDF_SIGNATURE signature,
 //          Returns the permission (1, 2 or 3) on success, 0 on error.
 FPDF_EXPORT unsigned int FPDF_CALLCONV
 FPDFSignatureObj_GetDocMDPPermission(FPDF_SIGNATURE signature);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
+
 #endif  // PUBLIC_FPDF_SIGNATURE_H_

@@ -6,6 +6,7 @@ use std::os::raw::c_float;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -59,6 +60,7 @@ pub trait PdfPageAnnotationVariableText<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -77,6 +79,7 @@ pub trait PdfPageAnnotationVariableText<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7350"
@@ -123,6 +126,7 @@ where
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -160,6 +164,7 @@ where
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7350"

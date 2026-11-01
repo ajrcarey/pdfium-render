@@ -1,13 +1,17 @@
 // Copyright 2017 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef PUBLIC_FPDF_CATALOG_H_
 #define PUBLIC_FPDF_CATALOG_H_
+
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
 // Experimental API.
 //
 // Determine if |document| represents a tagged PDF.
@@ -20,6 +24,7 @@ extern "C" {
 // Returns |true| iff |document| is a tagged PDF.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFCatalog_IsTagged(FPDF_DOCUMENT document);
+
 // Experimental API.
 // Gets the language of |document| from the catalog's /Lang entry.
 //
@@ -42,6 +47,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFCatalog_GetLanguage(FPDF_DOCUMENT document,
                         FPDF_WCHAR* buffer,
                         unsigned long buflen);
+
 // Experimental API.
 // Sets the language of |document| to |language|.
 //
@@ -51,7 +57,9 @@ FPDFCatalog_GetLanguage(FPDF_DOCUMENT document,
 // Returns TRUE on success.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFCatalog_SetLanguage(FPDF_DOCUMENT document, FPDF_WIDESTRING language);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
+
 #endif  // PUBLIC_FPDF_CATALOG_H_

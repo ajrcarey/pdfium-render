@@ -7,7 +7,7 @@ use crate::bindgen::{
 };
 use crate::error::PdfiumError;
 use std::ffi::{CString, NulError};
-use std::os::raw::{c_char, c_uint};
+use std::os::raw::{c_char, c_int, c_uint};
 use std::pin::Pin;
 use std::ptr::null_mut;
 use std::str::FromStr;
@@ -17,6 +17,7 @@ use std::os::raw::c_void;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
 ))]
@@ -41,10 +42,13 @@ pub struct PdfiumLibraryConfig {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
     ))]
     font_library_type: c_uint,
+
+    v8_isolate_per_document: c_int,
 }
 
 impl PdfiumLibraryConfig {
@@ -66,10 +70,13 @@ impl PdfiumLibraryConfig {
 
             #[cfg(any(
                 feature = "pdfium_future",
+                feature = "pdfium_8125",
                 feature = "pdfium_7881",
                 feature = "pdfium_7763",
             ))]
             font_library_type: FPDF_FONT_BACKEND_TYPE_FPDF_FONTBACKENDTYPE_FREETYPE,
+
+            v8_isolate_per_document: 0,
         }
     }
 
@@ -158,6 +165,7 @@ impl PdfiumLibraryConfig {
     #[inline]
     pub unsafe fn set_v8_isolate_ptr(mut self, ptr: *mut c_void) -> Self {
         self.v8_isolate_ptr = ptr;
+        self.v8_isolate_per_document = 0;
         self
     }
 
@@ -195,6 +203,7 @@ impl PdfiumLibraryConfig {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
     ))]
@@ -207,6 +216,7 @@ impl PdfiumLibraryConfig {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
     ))]
@@ -217,9 +227,23 @@ impl PdfiumLibraryConfig {
         self
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    /// Instructs Pdfium to use a separate isolate for each loaded document.
+    #[inline]
+    pub unsafe fn set_v8_isolate_per_document(mut self) -> Self {
+        self.v8_isolate_per_document = 1;
+        self
+    }
+
     /// Returns a `FPDF_LIBRARY_CONFIG` instance from this [PdfiumLibraryConfig] instance
     /// that can be passed to Pdfium's `FPDF_FPDF_InitLibraryWithConfig()` function.
     pub(crate) fn as_pdfium(&mut self) -> FPDF_LIBRARY_CONFIG {
+        #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+        let enable_brotli = 0;
+
+        #[cfg(feature = "pdfium_enable_brotli")]
+        let enable_brotli = 1;
+
         let config = FPDF_LIBRARY_CONFIG {
             version: 2,
             m_pUserFontPaths: if self.user_font_paths_ptrs.is_empty() {
@@ -246,10 +270,17 @@ impl PdfiumLibraryConfig {
 
             #[cfg(any(
                 feature = "pdfium_future",
+                feature = "pdfium_8125",
                 feature = "pdfium_7881",
                 feature = "pdfium_7763",
             ))]
             m_FontLibraryType: self.font_library_type,
+
+            #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+            m_BrotliEnabled: enable_brotli,
+
+            #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+            m_IsolatePerDocument: self.v8_isolate_per_document,
         };
 
         config

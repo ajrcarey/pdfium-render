@@ -12,7 +12,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  PDFIUM_RELEASE_TAG: 7881 # June 2026, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F7881
+  PDFIUM_RELEASE_TAG: 8125 # October 2026, https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F8125
 
 jobs:
   build:
@@ -95,6 +95,8 @@ jobs:
       run: cargo check --no-default-features --features="image_latest, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7763"
     - name: Check backward compatibility with pdfium_7881 and dynamic bindings
       run: cargo check --no-default-features --features="image_latest, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7881"
+    - name: Check backward compatibility with pdfium_8125 and dynamic bindings
+      run: cargo check --no-default-features --features="image_latest, thread_safe, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_8125"
 
     # Compatibility checks for static bindings
 
@@ -148,6 +150,8 @@ jobs:
       run: cargo check --no-default-features --features="image_latest, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7763"
     - name: Check backward compatibility with pdfium_7881 and static bindings
       run: cargo check --no-default-features --features="image_latest, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_7881"
+    - name: Check backward compatibility with pdfium_8125 and static bindings
+      run: cargo check --no-default-features --features="image_latest, static, pdfium_use_skia, pdfium_enable_xfa, pdfium_enable_v8, pdfium_8125"
 
     # Compatibility checks for WASM bindings
 
@@ -201,3 +205,5 @@ jobs:
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7763
     - name: Check backward compatibility with pdfium_7881 and WASM bindings
       run: bash .github/scripts/wasm_api_compat_test.sh pdfium_7881
+    - name: Check backward compatibility with pdfium_8125 and WASM bindings
+      run: bash .github/scripts/wasm_api_compat_test.sh pdfium_8125

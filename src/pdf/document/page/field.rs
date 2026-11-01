@@ -305,6 +305,7 @@ pub trait PdfFormFieldCommon {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -322,6 +323,7 @@ pub trait PdfFormFieldCommon {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -343,6 +345,7 @@ pub trait PdfFormFieldCommon {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -384,6 +387,7 @@ where
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -401,6 +405,7 @@ where
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -418,6 +423,7 @@ where
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",

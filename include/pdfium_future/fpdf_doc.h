@@ -1,14 +1,19 @@
 // Copyright 2014 The PDFium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
+
 #ifndef PUBLIC_FPDF_DOC_H_
 #define PUBLIC_FPDF_DOC_H_
+
 // NOLINTNEXTLINE(build/include)
 #include "fpdfview.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
 // Unsupported action type.
 #define PDFACTION_UNSUPPORTED 0
 // Go to a destination within current document.
@@ -21,6 +26,7 @@ extern "C" {
 #define PDFACTION_LAUNCH 4
 // Go to a destination in an embedded file.
 #define PDFACTION_EMBEDDEDGOTO 5
+
 // View destination fit types. See pdfmark reference v9, page 48.
 #define PDFDEST_VIEW_UNKNOWN_MODE 0
 #define PDFDEST_VIEW_XYZ 1
@@ -31,12 +37,14 @@ extern "C" {
 #define PDFDEST_VIEW_FITB 6
 #define PDFDEST_VIEW_FITBH 7
 #define PDFDEST_VIEW_FITBV 8
+
 // The file identifier entry type. See section 14.4 "File Identifiers" of the
 // ISO 32000-1:2008 spec.
 typedef enum {
   FILEIDTYPE_PERMANENT = 0,
   FILEIDTYPE_CHANGING = 1
 } FPDF_FILEIDTYPE;
+
 // Get the first child of |bookmark|, or the first top-level bookmark item.
 //
 //   document - handle to the document.
@@ -49,6 +57,7 @@ typedef enum {
 // described in ISO 32000-1:2008, section 12.3.3.
 FPDF_EXPORT FPDF_BOOKMARK FPDF_CALLCONV
 FPDFBookmark_GetFirstChild(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark);
+
 // Get the next sibling of |bookmark|.
 //
 //   document - handle to the document.
@@ -61,6 +70,7 @@ FPDFBookmark_GetFirstChild(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark);
 // references, as may arise from malformed documents.
 FPDF_EXPORT FPDF_BOOKMARK FPDF_CALLCONV
 FPDFBookmark_GetNextSibling(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark);
+
 // Get the title of |bookmark|.
 //
 //   bookmark - handle to the bookmark.
@@ -78,6 +88,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFBookmark_GetTitle(FPDF_BOOKMARK bookmark,
                       void* buffer,
                       unsigned long buflen);
+
 // Experimental API.
 // Get the number of chlidren of |bookmark|.
 //
@@ -89,6 +100,7 @@ FPDFBookmark_GetTitle(FPDF_BOOKMARK bookmark,
 // default (closed state). Please refer to PDF 32000-1:2008, Table 153.
 // Returns 0 if the bookmark has no children or is invalid.
 FPDF_EXPORT int FPDF_CALLCONV FPDFBookmark_GetCount(FPDF_BOOKMARK bookmark);
+
 // Find the bookmark with |title| in |document|.
 //
 //   document - handle to the document.
@@ -100,6 +112,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFBookmark_GetCount(FPDF_BOOKMARK bookmark);
 // multiple bookmarks have the same |title|.
 FPDF_EXPORT FPDF_BOOKMARK FPDF_CALLCONV
 FPDFBookmark_Find(FPDF_DOCUMENT document, FPDF_WIDESTRING title);
+
 // Get the destination associated with |bookmark|.
 //
 //   document - handle to the document.
@@ -109,6 +122,7 @@ FPDFBookmark_Find(FPDF_DOCUMENT document, FPDF_WIDESTRING title);
 // associated with |bookmark|.
 FPDF_EXPORT FPDF_DEST FPDF_CALLCONV
 FPDFBookmark_GetDest(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark);
+
 // Get the action associated with |bookmark|.
 //
 //   bookmark - handle to the bookmark.
@@ -121,6 +135,33 @@ FPDFBookmark_GetDest(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark);
 // the |bookmark| destination data.
 FPDF_EXPORT FPDF_ACTION FPDF_CALLCONV
 FPDFBookmark_GetAction(FPDF_BOOKMARK bookmark);
+
+// Experimental API.
+// Get the color of a bookmark.
+//
+// bookmark - handle to a bookmark.
+// R        - pointer to a float to receive the red component [0.0 - 1.0].
+// G        - pointer to a float to receive the green component [0.0 - 1.0].
+// B        - pointer to a float to receive the blue component [0.0 - 1.0].
+//
+// Returns TRUE on success, in which case |R|, |G|, and |B| are updated.
+// Returns FALSE on failure, if the bookmark is invalid, output for R, G and B
+// aren't in the range or if the bookmark does not specify a color.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFBookmark_GetColor(FPDF_BOOKMARK bookmark, float* R, float* G, float* B);
+
+// Experimental API.
+// Get the text style of a bookmark.
+//
+// bookmark - handle to a bookmark.
+//
+// Returns the style as an integer, in line with ISO 32000-1:2008 Table 154.
+// The first bit is used to represent if the text is italic and the second
+// bit is used to represent if the text is bold. Returns 0 if the bookmark
+// doesn't have styling or if the handle is invalid. Parsing this value to
+// apply styles remains the responsibility of the embedder.
+FPDF_EXPORT int FPDF_CALLCONV FPDFBookmark_GetStyle(FPDF_BOOKMARK bookmark);
+
 // Get the type of |action|.
 //
 //   action - handle to the action.
@@ -132,6 +173,7 @@ FPDFBookmark_GetAction(FPDF_BOOKMARK bookmark);
 //   PDFACTION_URI
 //   PDFACTION_LAUNCH
 FPDF_EXPORT unsigned long FPDF_CALLCONV FPDFAction_GetType(FPDF_ACTION action);
+
 // Get the destination of |action|.
 //
 //   document - handle to the document.
@@ -146,6 +188,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV FPDFAction_GetType(FPDF_ACTION action);
 // the document handle from that document as |document| to FPDFAction_GetDest().
 FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDFAction_GetDest(FPDF_DOCUMENT document,
                                                        FPDF_ACTION action);
+
 // Get the file path of |action|.
 //
 //   action - handle to the action. |action| must be a |PDFACTION_LAUNCH| or
@@ -162,6 +205,7 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDFAction_GetDest(FPDF_DOCUMENT document,
 // will not be modified.
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAction_GetFilePath(FPDF_ACTION action, void* buffer, unsigned long buflen);
+
 // Get the URI path of |action|.
 //
 //   document - handle to the document.
@@ -190,6 +234,7 @@ FPDFAction_GetURIPath(FPDF_DOCUMENT document,
                       FPDF_ACTION action,
                       void* buffer,
                       unsigned long buflen);
+
 // Get the page index of |dest|.
 //
 //   document - handle to the document.
@@ -198,6 +243,7 @@ FPDFAction_GetURIPath(FPDF_DOCUMENT document,
 // Returns the 0-based page index containing |dest|. Returns -1 on error.
 FPDF_EXPORT int FPDF_CALLCONV FPDFDest_GetDestPageIndex(FPDF_DOCUMENT document,
                                                         FPDF_DEST dest);
+
 // Experimental API.
 // Get the view (fit type) specified by |dest|.
 //
@@ -209,6 +255,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFDest_GetDestPageIndex(FPDF_DOCUMENT document,
 // |dest| does not specify a view.
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFDest_GetView(FPDF_DEST dest, unsigned long* pNumParams, FS_FLOAT* pParams);
+
 // Get the (x, y, zoom) location of |dest| in the destination page, if the
 // destination is in [page /XYZ x y zoom] syntax.
 //
@@ -231,6 +278,7 @@ FPDFDest_GetLocationInPage(FPDF_DEST dest,
                            FS_FLOAT* x,
                            FS_FLOAT* y,
                            FS_FLOAT* zoom);
+
 // Find a link at point (|x|,|y|) on |page|.
 //
 //   page - handle to the document page.
@@ -244,6 +292,7 @@ FPDFDest_GetLocationInPage(FPDF_DEST dest,
 FPDF_EXPORT FPDF_LINK FPDF_CALLCONV FPDFLink_GetLinkAtPoint(FPDF_PAGE page,
                                                             double x,
                                                             double y);
+
 // Find the Z-order of link at point (|x|,|y|) on |page|.
 //
 //   page - handle to the document page.
@@ -258,6 +307,7 @@ FPDF_EXPORT FPDF_LINK FPDF_CALLCONV FPDFLink_GetLinkAtPoint(FPDF_PAGE page,
 FPDF_EXPORT int FPDF_CALLCONV FPDFLink_GetLinkZOrderAtPoint(FPDF_PAGE page,
                                                             double x,
                                                             double y);
+
 // Get destination info for |link|.
 //
 //   document - handle to the document.
@@ -268,6 +318,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFLink_GetLinkZOrderAtPoint(FPDF_PAGE page,
 // to retrieve the action associated with |link|.
 FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDFLink_GetDest(FPDF_DOCUMENT document,
                                                      FPDF_LINK link);
+
 // Get action info for |link|.
 //
 //   link - handle to the link.
@@ -276,6 +327,7 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDFLink_GetDest(FPDF_DOCUMENT document,
 // If this function returns a valid handle, it is valid as long as |link| is
 // valid.
 FPDF_EXPORT FPDF_ACTION FPDF_CALLCONV FPDFLink_GetAction(FPDF_LINK link);
+
 // Enumerates all the link annotations in |page|.
 //
 //   page       - handle to the page.
@@ -287,6 +339,7 @@ FPDF_EXPORT FPDF_ACTION FPDF_CALLCONV FPDFLink_GetAction(FPDF_LINK link);
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFLink_Enumerate(FPDF_PAGE page,
                                                        int* start_pos,
                                                        FPDF_LINK* link_annot);
+
 // Experimental API.
 // Gets FPDF_ANNOTATION object for |link_annot|.
 //
@@ -297,6 +350,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFLink_Enumerate(FPDF_PAGE page,
 // if the input link annot or page is NULL.
 FPDF_EXPORT FPDF_ANNOTATION FPDF_CALLCONV
 FPDFLink_GetAnnot(FPDF_PAGE page, FPDF_LINK link_annot);
+
 // Get the rectangle for |link_annot|.
 //
 //   link_annot - handle to the link annotation.
@@ -305,12 +359,14 @@ FPDFLink_GetAnnot(FPDF_PAGE page, FPDF_LINK link_annot);
 // Returns true on success.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFLink_GetAnnotRect(FPDF_LINK link_annot,
                                                           FS_RECTF* rect);
+
 // Get the count of quadrilateral points to the |link_annot|.
 //
 //   link_annot - handle to the link annotation.
 //
 // Returns the count of quadrilateral points.
 FPDF_EXPORT int FPDF_CALLCONV FPDFLink_CountQuadPoints(FPDF_LINK link_annot);
+
 // Get the quadrilateral points for the specified |quad_index| in |link_annot|.
 //
 //   link_annot  - handle to the link annotation.
@@ -322,6 +378,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFLink_GetQuadPoints(FPDF_LINK link_annot,
                        int quad_index,
                        FS_QUADPOINTSF* quad_points);
+
 // Experimental API
 // Gets an additional-action from |page|.
 //
@@ -335,6 +392,7 @@ FPDFLink_GetQuadPoints(FPDF_LINK link_annot,
 //   valid.
 FPDF_EXPORT FPDF_ACTION FPDF_CALLCONV FPDF_GetPageAAction(FPDF_PAGE page,
                                                           int aa_type);
+
 // Experimental API.
 // Get the file identifer defined in the trailer of |document|.
 //
@@ -354,6 +412,7 @@ FPDF_GetFileIdentifier(FPDF_DOCUMENT document,
                        FPDF_FILEIDTYPE id_type,
                        void* buffer,
                        unsigned long buflen);
+
 // Get meta-data |tag| content from |document|.
 //
 //   document - handle to the document.
@@ -366,7 +425,10 @@ FPDF_GetFileIdentifier(FPDF_DOCUMENT document,
 //   buffer   - a buffer for the tag. May be NULL.
 //   buflen   - the length of the buffer, in bytes. May be 0.
 //
-// Returns the number of bytes in the tag, including trailing zeros.
+// Returns the number of bytes in the tag, including trailing zeros, on success.
+// Returns 0 if |document| or |tag| is NULL. Returns 0 if |document| does not
+// have an /Info dictionary. Returns 2 for an empty string if |tag| is not in
+// the /Info dictionary,
 //
 // The |buffer| is always encoded in UTF-16LE. The |buffer| is followed by two
 // bytes of zeros indicating the end of the string.  If |buflen| is less than
@@ -379,6 +441,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV FPDF_GetMetaText(FPDF_DOCUMENT document,
                                                          FPDF_BYTESTRING tag,
                                                          void* buffer,
                                                          unsigned long buflen);
+
 // Get the page label for |page_index| from |document|.
 //
 //   document    - handle to the document.
@@ -396,7 +459,9 @@ FPDF_GetPageLabel(FPDF_DOCUMENT document,
                   int page_index,
                   void* buffer,
                   unsigned long buflen);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
+
 #endif  // PUBLIC_FPDF_DOC_H_

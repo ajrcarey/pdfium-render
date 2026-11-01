@@ -29,6 +29,7 @@ use std::marker::PhantomData;
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -287,7 +288,11 @@ impl<'a> PdfPageTextObject<'a> {
         }
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     /// Sets the font size of the text specified in this [PdfPageTextObject].
     ///
     /// Note that the effective size of the text when rendered may differ from the font size
@@ -439,6 +444,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -459,6 +465,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -482,6 +489,7 @@ impl<'a> PdfPageTextObject<'a> {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",

@@ -21,6 +21,7 @@ use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -47,6 +48,9 @@ pub use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
     feature = "pdfium_6666"
 ))]
 use crate::bindgen::FPDF_BYTESTRING;
+
+#[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+use crate::bindgen::FPDF_TEXT_DIRECTION;
 
 #[cfg(feature = "pdfium_use_skia")]
 pub use crate::bindgen::FPDF_SKIA_CANVAS;
@@ -214,6 +218,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         flags: FPDF_DWORD,
         fileVersion: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_SaveWithVersion(document, pFileWrite, flags, fileVersion)
     }
@@ -273,6 +278,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_index: c_int,
         hints: *mut FX_DOWNLOADHINTS,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAvail_IsPageAvail(avail, page_index, hints)
     }
@@ -357,6 +363,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         &self,
         document: FPDF_DOCUMENT,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_DocumentHasValidCrossReferenceTable(document)
     }
@@ -382,6 +389,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -509,6 +517,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         length: c_ulong,
         index: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_ImportPagesByIndex(dest_doc, src_doc, page_indices, length, index)
     }
@@ -522,6 +531,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         pagerange: &str,
         index: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_ImportPages(dest_doc, src_doc, pagerange, index)
     }
@@ -552,6 +562,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         src_doc: FPDF_DOCUMENT,
         src_page_index: c_int,
     ) -> FPDF_XOBJECT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_NewXObjectFromPage(dest_doc, src_doc, src_page_index)
     }
@@ -616,6 +627,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         text_page: FPDF_TEXTPAGE,
         nTextIndex: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetCharIndexFromTextIndex(text_page, nTextIndex)
     }
@@ -627,6 +639,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         text_page: FPDF_TEXTPAGE,
         nCharIndex: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetTextIndexFromCharIndex(text_page, nCharIndex)
     }
@@ -657,6 +670,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFSignatureObj_GetContents(signature, buffer, length)
     }
@@ -669,6 +683,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_int,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFSignatureObj_GetByteRange(signature, buffer, length)
     }
@@ -681,6 +696,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_char,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFSignatureObj_GetSubFilter(signature, buffer, length)
     }
@@ -693,6 +709,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFSignatureObj_GetReason(signature, buffer, length)
     }
@@ -705,6 +722,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_char,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFSignatureObj_GetTime(signature, buffer, length)
     }
@@ -712,6 +730,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFSignatureObj_GetDocMDPPermission(signature)
     }
@@ -744,6 +763,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_tree: FPDF_STRUCTTREE,
         index: c_int,
     ) -> FPDF_STRUCTELEMENT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructTree_GetChildAtIndex(struct_tree, index)
     }
@@ -756,6 +776,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetAltText(struct_element, buffer, buflen)
     }
@@ -768,12 +789,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetActualText(struct_element, buffer, buflen)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763"
     ))]
@@ -784,6 +807,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetExpansion(struct_element, buffer, buflen)
     }
@@ -796,6 +820,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetID(struct_element, buffer, buflen)
     }
@@ -808,6 +833,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetLang(struct_element, buffer, buflen)
     }
@@ -836,8 +862,23 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetMarkedContentID(struct_element)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDF_StructElement_GetRawType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: usize,
+    ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FPDF_StructElement_GetRawType(struct_element, buffer, buflen)
     }
 
     #[inline]
@@ -848,6 +889,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetType(struct_element, buffer, buflen)
     }
@@ -860,6 +902,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetObjType(struct_element, buffer, buflen)
     }
@@ -872,6 +915,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetTitle(struct_element, buffer, buflen)
     }
@@ -879,6 +923,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_CountChildren(struct_element)
     }
@@ -890,12 +935,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
     ) -> FPDF_STRUCTELEMENT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetChildAtIndex(struct_element, index)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -925,6 +972,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetChildMarkedContentID(struct_element, index)
     }
@@ -945,6 +993,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetAttributeCount(struct_element)
     }
@@ -956,6 +1005,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
     ) -> FPDF_STRUCTELEMENT_ATTR {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetAttributeAtIndex(struct_element, index)
     }
@@ -966,6 +1016,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         &self,
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetCount(struct_attribute)
     }
@@ -992,6 +1043,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1013,6 +1065,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
     ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetValue(struct_attribute, name)
     }
@@ -1035,12 +1088,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
         name: &str,
     ) -> FPDF_OBJECT_TYPE {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetType(struct_attribute, name)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1084,12 +1139,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         name: &str,
         out_value: *mut FPDF_BOOL,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetBooleanValue(struct_attribute, name, out_value)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1111,6 +1168,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut FPDF_BOOL,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetBooleanValue(value, out_value)
     }
@@ -1134,12 +1192,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         name: &str,
         out_value: *mut f32,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetNumberValue(struct_attribute, name, out_value)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1161,6 +1221,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         out_value: *mut f32,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetNumberValue(value, out_value)
     }
@@ -1198,6 +1259,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1221,6 +1283,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetStringValue(value, buffer, buflen, out_buflen)
     }
@@ -1260,6 +1323,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1283,12 +1347,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetBlobValue(value, buffer, buflen, out_buflen)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1315,6 +1381,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1336,6 +1403,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
         index: c_int,
     ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_Attr_GetChildAtIndex(value, index)
     }
@@ -1346,6 +1414,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         &self,
         struct_element: FPDF_STRUCTELEMENT,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetMarkedContentIdCount(struct_element)
     }
@@ -1357,6 +1426,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         struct_element: FPDF_STRUCTELEMENT,
         index: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_StructElement_GetMarkedContentIdAtIndex(struct_element, index)
     }
@@ -1370,6 +1440,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         width: c_double,
         height: c_double,
     ) -> FPDF_PAGE {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_New(document, page_index, width, height)
     }
@@ -1383,6 +1454,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1415,6 +1487,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_indices_len: c_ulong,
         dest_page_index: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_MovePages(document, page_indices, page_indices_len, dest_page_index)
     }
@@ -1448,6 +1521,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_index: c_int,
         size: *mut FS_SIZEF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetPageSizeByIndexF(document, page_index, size)
     }
@@ -1461,6 +1535,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         width: *mut f64,
         height: *mut f64,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetPageSizeByIndex(document, page_index, width, height)
     }
@@ -1475,6 +1550,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_float,
         top: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetMediaBox(page, left, bottom, right, top)
     }
@@ -1489,6 +1565,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_float,
         top: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetCropBox(page, left, bottom, right, top)
     }
@@ -1503,6 +1580,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_float,
         top: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetBleedBox(page, left, bottom, right, top)
     }
@@ -1517,6 +1595,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_float,
         top: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetTrimBox(page, left, bottom, right, top)
     }
@@ -1531,6 +1610,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_float,
         top: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetArtBox(page, left, bottom, right, top)
     }
@@ -1545,6 +1625,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: c_float,
         top: c_float,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_SetMediaBox(page, left, bottom, right, top)
     }
@@ -1559,6 +1640,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: c_float,
         top: c_float,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_SetCropBox(page, left, bottom, right, top)
     }
@@ -1573,6 +1655,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: c_float,
         top: c_float,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_SetBleedBox(page, left, bottom, right, top)
     }
@@ -1587,6 +1670,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: c_float,
         top: c_float,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_SetTrimBox(page, left, bottom, right, top)
     }
@@ -1601,6 +1685,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: c_float,
         top: c_float,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_SetArtBox(page, left, bottom, right, top)
     }
@@ -1613,6 +1698,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         matrix: *const FS_MATRIX,
         clipRect: *const FS_RECTF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_TransFormWithClip(page, matrix, clipRect)
     }
@@ -1629,6 +1715,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         e: f64,
         f: f64,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_TransformClipPath(page_object, a, b, c, d, e, f)
     }
@@ -1654,6 +1741,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         clip_path: FPDF_CLIPPATH,
         path_index: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFClipPath_CountPathSegments(clip_path, path_index)
     }
@@ -1666,6 +1754,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         path_index: c_int,
         segment_index: c_int,
     ) -> FPDF_PATHSEGMENT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFClipPath_GetPathSegment(clip_path, path_index, segment_index)
     }
@@ -1722,6 +1811,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         e: f64,
         f: f64,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_TransformAnnots(page, a, b, c, d, e, f)
     }
@@ -1743,6 +1833,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         first_scan: *mut c_void,
         stride: c_int,
     ) -> FPDF_BITMAP {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFBitmap_CreateEx(width, height, format, first_scan, stride)
     }
@@ -1768,6 +1859,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         rotate: c_int,
         flags: c_int,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_RenderPage(dc, page, start_x, start_y, size_x, size_y, rotate, flags);
     }
@@ -1807,12 +1899,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         height: c_int,
         color: FPDF_DWORD,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFBitmap_FillRect(bitmap, left, top, width, height, color);
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -1834,6 +1928,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         height: c_int,
         color: FPDF_DWORD,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFBitmap_FillRect(bitmap, left, top, width, height, color)
     }
@@ -1911,6 +2006,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         clipping: *const FS_RECTF,
         flags: c_int,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_RenderPageBitmapWithMatrix(bitmap, page, matrix, clipping, flags)
     }
@@ -1925,6 +2021,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         size_x: c_int,
         size_y: c_int,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_RenderPageSkia(canvas, page, size_x, size_y);
     }
@@ -2018,6 +2115,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         points: *const FS_POINTF,
         point_count: size_t,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_AddInkStroke(annot, points, point_count)
     }
@@ -2072,6 +2170,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: c_uint,
         A: c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_SetColor(annot, color_type, R, G, B, A)
     }
@@ -2087,6 +2186,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: *mut c_uint,
         A: *mut c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetColor(annot, color_type, R, G, B, A)
     }
@@ -2106,6 +2206,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         quad_index: size_t,
         quad_points: *const FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_SetAttachmentPoints(annot, quad_index, quad_points)
     }
@@ -2117,6 +2218,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         annot: FPDF_ANNOTATION,
         quad_points: *const FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_AppendAttachmentPoints(annot, quad_points)
     }
@@ -2136,6 +2238,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         quad_index: size_t,
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetAttachmentPoints(annot, quad_index, quad_points)
     }
@@ -2182,6 +2285,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FS_POINTF,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetInkListPath(annot, path_index, buffer, length)
     }
@@ -2207,6 +2311,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         vertical_radius: c_float,
         border_width: c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_SetBorder(annot, horizontal_radius, vertical_radius, border_width)
     }
@@ -2220,6 +2325,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         vertical_radius: *mut c_float,
         border_width: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetBorder(annot, horizontal_radius, vertical_radius, border_width)
     }
@@ -2234,6 +2340,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFormAdditionalActionJavaScript(form, annot, event, buffer, buflen)
     }
@@ -2247,6 +2354,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFormFieldAlternateName(form, annot, buffer, buflen)
     }
@@ -2286,6 +2394,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetStringValue(annot, key, buffer, buflen)
     }
@@ -2323,6 +2432,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetAP(annot, appearanceMode, buffer, buflen)
     }
@@ -2365,6 +2475,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2378,6 +2489,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         annot: FPDF_ANNOTATION,
         flags: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_SetFormFieldFlags(form, annot, flags)
     }
@@ -2390,6 +2502,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page: FPDF_PAGE,
         point: *const FS_POINTF,
     ) -> FPDF_ANNOTATION {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFormFieldAtPoint(form, page, point)
     }
@@ -2403,6 +2516,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFormFieldName(form, annot, buffer, buflen)
     }
@@ -2427,6 +2541,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFormFieldValue(form, annot, buffer, buflen)
     }
@@ -2452,6 +2567,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetOptionLabel(form, annot, index, buffer, buflen)
     }
@@ -2480,7 +2596,11 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFAnnot_GetFontSize(form, annot, value)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFTextObj_SetFontSize(&self, text: FPDF_PAGEOBJECT, size: c_float) -> FPDF_BOOL {
         let _lock = PdfiumThreadMarshall::lock();
@@ -2489,6 +2609,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2510,6 +2631,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2556,6 +2678,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_SetFocusableSubtypes(form, subtypes, count)
     }
@@ -2575,6 +2698,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
         count: size_t,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFocusableSubtypes(form, subtypes, count)
     }
@@ -2617,6 +2741,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAnnot_GetFormFieldExportValue(form, annot, buffer, buflen)
     }
@@ -2630,6 +2755,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2655,6 +2781,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2689,6 +2816,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         document: FPDF_DOCUMENT,
         form_info: *mut FPDF_FORMFILLINFO,
     ) -> FPDF_FORMHANDLE {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFDOC_InitFormFillEnvironment(document, form_info)
     }
@@ -2764,6 +2892,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnMouseMove(form, page, modifier, page_x, page_y)
     }
@@ -2779,6 +2908,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         delta_x: c_int,
         delta_y: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnMouseWheel(form, page, modifier, page_coord, delta_x, delta_y)
     }
@@ -2793,6 +2923,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnFocus(form, page, modifier, page_x, page_y)
     }
@@ -2807,6 +2938,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnLButtonDown(form, page, modifier, page_x, page_y)
     }
@@ -2821,6 +2953,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnRButtonDown(form, page, modifier, page_x, page_y)
     }
@@ -2835,6 +2968,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnLButtonUp(form, page, modifier, page_x, page_y)
     }
@@ -2849,6 +2983,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnRButtonUp(form, page, modifier, page_x, page_y)
     }
@@ -2863,6 +2998,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_OnLButtonDoubleClick(form, page, modifier, page_x, page_y)
     }
@@ -2915,6 +3051,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_GetFocusedText(form, page, buffer, buflen)
     }
@@ -2928,6 +3065,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_GetSelectedText(form, page, buffer, buflen)
     }
@@ -2940,6 +3078,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page: FPDF_PAGE,
         wsText: FPDF_WIDESTRING,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_ReplaceAndKeepSelection(form, page, wsText)
     }
@@ -3030,6 +3169,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_HasFormFieldAtPoint(form, page, page_x, page_y)
     }
@@ -3043,6 +3183,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_x: f64,
         page_y: f64,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_FormFieldZOrderAtPoint(form, page, page_x, page_y)
     }
@@ -3055,6 +3196,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         field_type: c_int,
         color: FPDF_DWORD,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_SetFormFieldHighlightColor(form, field_type, color)
     }
@@ -3130,6 +3272,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         index: c_int,
         selected: FPDF_BOOL,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FORM_SetIndexSelected(form, page, index, selected)
     }
@@ -3144,6 +3287,32 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     ) -> FPDF_BOOL {
         let _lock = PdfiumThreadMarshall::lock();
         self.bindings.FORM_IsIndexSelected(form, page, index)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FORM_GetTextDirection(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_TEXT_DIRECTION {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings.FORM_GetTextDirection(handle, annot)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FORM_SetTextDirection(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        direction: FPDF_TEXT_DIRECTION,
+    ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FORM_SetTextDirection(handle, annot, direction)
     }
 
     #[inline]
@@ -3186,6 +3355,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFJavaScriptAction_GetName(javascript, buffer, buflen)
     }
@@ -3198,6 +3368,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFJavaScriptAction_GetScript(javascript, buffer, buflen)
     }
@@ -3211,6 +3382,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -3232,6 +3404,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -3297,6 +3470,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         document: FPDF_DOCUMENT,
         bookmark: FPDF_BOOKMARK,
     ) -> FPDF_BOOKMARK {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFBookmark_GetNextSibling(document, bookmark)
     }
@@ -3309,6 +3483,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFBookmark_GetTitle(bookmark, buffer, buflen)
     }
@@ -3349,6 +3524,28 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFBookmark_GetAction(bookmark)
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFBookmark_GetColor(
+        &self,
+        bookmark: FPDF_BOOKMARK,
+        R: *mut c_float,
+        G: *mut c_float,
+        B: *mut c_float,
+    ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings.FPDFBookmark_GetColor(bookmark, R, G, B)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFBookmark_GetStyle(&self, bookmark: FPDF_BOOKMARK) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings.FPDFBookmark_GetStyle(bookmark)
+    }
+
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFAction_GetType(&self, action: FPDF_ACTION) -> c_ulong {
@@ -3384,6 +3581,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAction_GetURIPath(document, action, buffer, buflen)
     }
@@ -3419,6 +3617,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         y: *mut FS_FLOAT,
         zoom: *mut FS_FLOAT,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFDest_GetLocationInPage(dest, hasXVal, hasYVal, hasZoomVal, x, y, zoom)
     }
@@ -3469,6 +3668,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         start_pos: *mut c_int,
         link_annot: *mut FPDF_LINK,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFLink_Enumerate(page, start_pos, link_annot)
     }
@@ -3506,6 +3706,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         quad_index: c_int,
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFLink_GetQuadPoints(link_annot, quad_index, quad_points)
     }
@@ -3526,6 +3727,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetFileIdentifier(document, id_type, buffer, buflen)
     }
@@ -3539,6 +3741,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetMetaText(document, tag, buffer, buflen)
     }
@@ -3552,6 +3755,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetPageLabel(document, page_index, buffer, buflen)
     }
@@ -3574,6 +3778,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetXFAPacketName(document, index, buffer, buflen)
     }
@@ -3589,6 +3794,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetXFAPacketContent(document, index, buffer, buflen, out_buflen)
     }
@@ -3668,6 +3874,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -3699,6 +3906,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -3754,6 +3962,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         flags: *mut c_int,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetFontInfo(text_page, index, buffer, buflen, flags)
     }
@@ -3803,6 +4012,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: *mut c_uint,
         A: *mut c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetFillColor(text_page, index, R, G, B, A)
     }
@@ -3818,6 +4028,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: *mut c_uint,
         A: *mut c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetStrokeColor(text_page, index, R, G, B, A)
     }
@@ -3840,6 +4051,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         bottom: *mut c_double,
         top: *mut c_double,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetCharBox(text_page, index, left, right, bottom, top)
     }
@@ -3852,6 +4064,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         index: c_int,
         rect: *mut FS_RECTF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetLooseCharBox(text_page, index, rect)
     }
@@ -3891,6 +4104,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         xTolerance: c_double,
         yTolerance: c_double,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetCharIndexAtPos(text_page, x, y, xTolerance, yTolerance)
     }
@@ -3904,6 +4118,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         count: c_int,
         result: *mut c_ushort,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetText(text_page, start_index, count, result)
     }
@@ -3916,6 +4131,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         start_index: c_int,
         count: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_CountRects(text_page, start_index, count)
     }
@@ -3931,6 +4147,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_double,
         bottom: *mut c_double,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetRect(text_page, rect_index, left, top, right, bottom)
     }
@@ -3947,6 +4164,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_ushort,
         buflen: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_GetBoundedText(text_page, left, top, right, bottom, buffer, buflen)
     }
@@ -3960,6 +4178,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         flags: c_ulong,
         start_index: c_int,
     ) -> FPDF_SCHHANDLE {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_FindStart(text_page, findwhat, flags, start_index)
     }
@@ -4022,6 +4241,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_ushort,
         buflen: c_int,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFLink_GetURL(link_page, link_index, buffer, buflen)
     }
@@ -4045,6 +4265,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_double,
         bottom: *mut c_double,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFLink_GetRect(link_page, link_index, rect_index, left, top, right, bottom)
     }
@@ -4058,6 +4279,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         start_char_index: *mut c_int,
         char_count: *mut c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFLink_GetTextRange(link_page, link_index, start_char_index, char_count)
     }
@@ -4077,6 +4299,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetDecodedThumbnailData(page, buffer, buflen)
     }
@@ -4089,6 +4312,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_GetRawThumbnailData(page, buffer, buflen)
     }
@@ -4120,6 +4344,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4133,6 +4358,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         form_object: FPDF_PAGEOBJECT,
         page_object: FPDF_PAGEOBJECT,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFFormObj_RemoveObject(form_object, page_object)
     }
@@ -4145,6 +4371,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         font: FPDF_FONT,
         font_size: c_float,
     ) -> FPDF_PAGEOBJECT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_CreateTextObj(document, font, font_size)
     }
@@ -4163,6 +4390,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         text: FPDF_PAGEOBJECT,
         render_mode: FPDF_TEXT_RENDERMODE,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFTextObj_SetTextRenderMode(text, render_mode)
     }
@@ -4176,6 +4404,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFTextObj_GetText(text_object, text_page, buffer, length)
     }
@@ -4189,6 +4418,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         text_object: FPDF_PAGEOBJECT,
         scale: f32,
     ) -> FPDF_BITMAP {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFTextObj_GetRenderedBitmap(document, page, text_object, scale)
     }
@@ -4244,8 +4474,28 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         x3: c_float,
         y3: c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPath_BezierTo(path, x1, y1, x2, y2, x3, y3)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPath_GetBezierControlPoints(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        index: usize,
+        first_control_point: *mut FS_POINTF,
+        second_control_point: *mut FS_POINTF,
+    ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings.FPDFPath_GetBezierControlPoints(
+            path,
+            index,
+            first_control_point,
+            second_control_point,
+        )
     }
 
     #[inline]
@@ -4287,6 +4537,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         font: &str,
         font_size: c_float,
     ) -> FPDF_PAGEOBJECT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_NewTextObj(document, font, font_size)
     }
@@ -4310,11 +4561,16 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         charcodes: *const c_uint,
         count: size_t,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_SetCharcodes(text_object, charcodes, count)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFText_SetPositions(
         &self,
@@ -4322,6 +4578,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         positions: *const c_float,
         count: usize,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_SetPositions(text_object, positions, count)
     }
@@ -4336,6 +4593,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         font_type: c_int,
         cid: FPDF_BOOL,
     ) -> FPDF_FONT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFText_LoadFont(document, data, size, font_type, cid)
     }
@@ -4349,6 +4607,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4388,7 +4647,11 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         )
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFPage_InsertObject(
         &self,
@@ -4432,6 +4695,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4445,6 +4709,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_object: FPDF_PAGEOBJECT,
         index: usize,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPage_InsertObjectAtIndex(page, page_object, index)
     }
@@ -4497,6 +4762,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4518,6 +4784,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4549,12 +4816,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         e: c_double,
         f: c_double,
     ) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_Transform(page_object, a, b, c, d, e, f)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4608,6 +4877,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4655,7 +4925,11 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         self.bindings.FPDFPageObj_AddMark(page_object, name)
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_AddExistingMark(
         &self,
@@ -4679,6 +4953,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4696,6 +4971,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetName(mark, buffer, buflen, out_buflen)
     }
@@ -4728,6 +5004,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetName(mark, buffer, buflen, out_buflen)
     }
@@ -4741,6 +5018,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4759,6 +5037,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamKey(mark, index, buffer, buflen, out_buflen)
     }
@@ -4792,6 +5071,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamKey(mark, index, buffer, buflen, out_buflen)
     }
@@ -4815,12 +5095,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         key: &str,
         out_value: *mut c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamIntValue(mark, key, out_value)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4834,12 +5116,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         key: &str,
         out_value: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamFloatValue(mark, key, out_value)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4858,6 +5142,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamStringValue(mark, key, buffer, buflen, out_buflen)
     }
@@ -4891,12 +5176,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamStringValue(mark, key, buffer, buflen, out_buflen)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4915,6 +5202,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamBlobValue(mark, key, buffer, buflen, out_buflen)
     }
@@ -4948,6 +5236,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_GetParamBlobValue(mark, key, buffer, buflen, out_buflen)
     }
@@ -4962,12 +5251,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         key: &str,
         value: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_SetIntParam(document, page_object, mark, key, value)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4983,6 +5274,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         key: &str,
         value: f32,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_SetFloatParam(document, page_object, mark, key, value)
     }
@@ -4997,12 +5289,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         key: &str,
         value: &str,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_SetStringParam(document, page_object, mark, key, value)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5082,6 +5376,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         mark: FPDF_PAGEOBJECTMARK,
         key: &str,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObjMark_RemoveParam(page_object, mark, key)
     }
@@ -5095,6 +5390,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         image_object: FPDF_PAGEOBJECT,
         file_access: *mut FPDF_FILEACCESS,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_LoadJpegFile(pages, count, image_object, file_access)
     }
@@ -5108,6 +5404,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         image_object: FPDF_PAGEOBJECT,
         file_access: *mut FPDF_FILEACCESS,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_LoadJpegFileInline(pages, count, image_object, file_access)
     }
@@ -5124,6 +5421,8 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         e: c_double,
         f: c_double,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
+
         #[allow(deprecated)]
         self.bindings
             .FPDFImageObj_SetMatrix(image_object, a, b, c, d, e, f)
@@ -5138,6 +5437,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         image_object: FPDF_PAGEOBJECT,
         bitmap: FPDF_BITMAP,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_SetBitmap(pages, count, image_object, bitmap)
     }
@@ -5157,6 +5457,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page: FPDF_PAGE,
         image_object: FPDF_PAGEOBJECT,
     ) -> FPDF_BITMAP {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_GetRenderedBitmap(document, page, image_object)
     }
@@ -5169,6 +5470,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_GetImageDataDecoded(image_object, buffer, buflen)
     }
@@ -5181,6 +5483,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_GetImageDataRaw(image_object, buffer, buflen)
     }
@@ -5201,6 +5504,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_GetImageFilter(image_object, index, buffer, buflen)
     }
@@ -5213,6 +5517,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page: FPDF_PAGE,
         metadata: *mut FPDF_IMAGEOBJ_METADATA,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_GetImageMetadata(image_object, page, metadata)
     }
@@ -5225,12 +5530,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         width: *mut c_uint,
         height: *mut c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFImageObj_GetImagePixelSize(image_object, width, height)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5289,6 +5596,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         right: *mut c_float,
         top: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_GetBounds(page_object, left, bottom, right, top)
     }
@@ -5300,6 +5608,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_object: FPDF_PAGEOBJECT,
         quad_points: *mut FS_QUADPOINTSF,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_GetRotatedBounds(page_object, quad_points)
     }
@@ -5307,6 +5616,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str) {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_SetBlendMode(page_object, blend_mode)
     }
@@ -5321,6 +5631,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: c_uint,
         A: c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_SetStrokeColor(page_object, R, G, B, A)
     }
@@ -5335,6 +5646,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: *mut c_uint,
         A: *mut c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_GetStrokeColor(page_object, R, G, B, A)
     }
@@ -5375,6 +5687,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         page_object: FPDF_PAGEOBJECT,
         line_join: c_int,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_SetLineJoin(page_object, line_join)
     }
@@ -5407,6 +5720,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: c_uint,
         A: c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_SetFillColor(page_object, R, G, B, A)
     }
@@ -5421,6 +5735,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         B: *mut c_uint,
         A: *mut c_uint,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_GetFillColor(page_object, R, G, B, A)
     }
@@ -5462,6 +5777,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         dash_array: *mut c_float,
         dash_count: size_t,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_GetDashArray(page_object, dash_array, dash_count)
     }
@@ -5475,8 +5791,35 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         dash_count: size_t,
         phase: c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFPageObj_SetDashArray(page_object, dash_array, dash_count, phase)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_GetRenderedStrokePattern(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FPDFPageObj_GetRenderedStrokePattern(document, page_object)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_GetRenderedFillPattern(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FPDFPageObj_GetRenderedFillPattern(document, page_object)
     }
 
     #[inline]
@@ -5525,6 +5868,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5549,6 +5893,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5621,6 +5966,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: usize,
         out_buflen: *mut usize,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFFont_GetFontData(font, buffer, buflen, out_buflen)
     }
@@ -5686,6 +6032,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         font_size: c_float,
         width: *mut c_float,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFFont_GetGlyphWidth(font, glyph, font_size, width)
     }
@@ -5716,6 +6063,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         glyphpath: FPDF_GLYPHPATH,
         index: c_int,
     ) -> FPDF_PATHSEGMENT {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFGlyphPath_GetGlyphPathSegment(glyphpath, index)
     }
@@ -5744,6 +6092,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_VIEWERREF_GetPrintPageRangeCount(pagerange)
     }
@@ -5755,6 +6104,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         pagerange: FPDF_PAGERANGE,
         index: size_t,
     ) -> c_int {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_VIEWERREF_GetPrintPageRangeElement(pagerange, index)
     }
@@ -5775,6 +6125,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_char,
         length: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_VIEWERREF_GetName(document, key, buffer, length)
     }
@@ -5802,6 +6153,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut c_void,
         buflen: *mut c_long,
     ) -> FPDF_DEST {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDF_GetNamedDest(document, index, buffer, buflen)
     }
@@ -5850,6 +6202,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAttachment_GetName(attachment, buffer, buflen)
     }
@@ -5880,6 +6233,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         key: &str,
         value: FPDF_WIDESTRING,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAttachment_SetStringValue(attachment, key, value)
     }
@@ -5893,8 +6247,36 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAttachment_GetStringValue(attachment, key, buffer, buflen)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_SetDescription(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FPDFAttachment_SetDescription(attachment, value)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_GetDescription(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FPDFAttachment_GetDescription(attachment, buffer, buflen)
     }
 
     #[inline]
@@ -5906,6 +6288,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         contents: *const c_void,
         len: c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAttachment_SetFile(attachment, document, contents, len)
     }
@@ -5919,12 +6302,14 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buflen: c_ulong,
         out_buflen: *mut c_ulong,
     ) -> FPDF_BOOL {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAttachment_GetFile(attachment, buffer, buflen, out_buflen)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5938,8 +6323,23 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFAttachment_GetSubtype(attachment, buffer, buflen)
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[inline]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_GetAFRelationship(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
+        self.bindings
+            .FPDFAttachment_GetAFRelationship(attachment, buffer, buflen)
     }
 
     #[inline]
@@ -5951,9 +6351,11 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763"
     ))]
+    #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_GetLanguage(
         &self,
@@ -5961,15 +6363,18 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         buffer: *mut FPDF_WCHAR,
         buflen: c_ulong,
     ) -> c_ulong {
+        let _lock = PdfiumThreadMarshall::lock();
         self.bindings
             .FPDFCatalog_GetLanguage(document, buffer, buflen)
     }
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
     ))]
+    #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_SetLanguage(
         &self,
@@ -5989,6 +6394,7 @@ impl<T: PdfiumLibraryBindings> PdfiumLibraryBindings for ThreadSafePdfiumBinding
         feature = "pdfium_6721",
         feature = "pdfium_6666"
     ))]
+    #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_SetLanguage(
         &self,

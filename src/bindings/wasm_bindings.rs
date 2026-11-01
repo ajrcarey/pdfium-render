@@ -14,6 +14,7 @@ use crate::bindgen::{
 
 #[cfg(any(
     feature = "pdfium_future",
+    feature = "pdfium_8125",
     feature = "pdfium_7881",
     feature = "pdfium_7763",
     feature = "pdfium_7543",
@@ -29,6 +30,9 @@ use crate::bindgen::{
     feature = "pdfium_6490",
 ))]
 use crate::bindgen::FPDF_STRUCTELEMENT_ATTR_VALUE;
+
+#[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+use crate::bindgen::FPDF_TEXT_DIRECTION;
 
 #[cfg(feature = "pdfium_use_skia")]
 use crate::bindgen::FPDF_SKIA_CANVAS;
@@ -1359,6 +1363,7 @@ impl WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -2611,6 +2616,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4089,6 +4095,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763"
     ))]
@@ -4356,6 +4363,68 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as c_int
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDF_StructElement_GetRawType(
+        &self,
+        struct_element: FPDF_STRUCTELEMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: usize,
+    ) -> c_ulong {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetRawType(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!(
+                "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetRawType(): allocating buffer of {} bytes in Pdfium's WASM heap",
+                buffer_length,
+            );
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetRawType(): calling FPDFAnnot_GetFormAdditionalActionJavaScript()"
+        );
+
+        let result = state
+            .call(
+                "FPDF_StructElement_GetRawType",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_struct_element(struct_element),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDF_StructElement_GetRawType(): leaving"
+        );
+
+        result as c_ulong
+    }
+
     #[allow(non_snake_case)]
     unsafe fn FPDF_StructElement_GetType(
         &self,
@@ -4577,6 +4646,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4787,6 +4857,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4886,6 +4957,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -4990,6 +5062,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5121,6 +5194,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5276,6 +5350,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5453,6 +5528,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5538,6 +5614,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5574,6 +5651,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -5715,6 +5793,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -6526,6 +6605,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8262,6 +8342,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8644,6 +8725,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -8685,6 +8767,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -9070,6 +9153,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -9105,6 +9189,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -10245,6 +10330,61 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             .unwrap() as FPDF_BOOL
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FORM_GetTextDirection(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+    ) -> FPDF_TEXT_DIRECTION {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_GetTextDirection()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_GetTextDirection",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_form(handle),
+                    &Self::js_value_from_annotation(annot),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_TEXT_DIRECTION
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FORM_SetTextDirection(
+        &self,
+        handle: FPDF_FORMHANDLE,
+        annot: FPDF_ANNOTATION,
+        direction: FPDF_TEXT_DIRECTION,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FORM_SetTextDirection()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FORM_SetTextDirection",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_form(handle),
+                    &Self::js_value_from_annotation(annot),
+                    &JsValue::from_f64(direction as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL
+    }
+
     #[allow(non_snake_case)]
     unsafe fn FPDF_LoadXFA(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDF_LoadXFA()");
@@ -10464,6 +10604,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -10493,6 +10634,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -10828,6 +10970,94 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as usize as FPDF_ACTION
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFBookmark_GetColor(
+        &self,
+        bookmark: FPDF_BOOKMARK,
+        R: *mut c_float,
+        G: *mut c_float,
+        B: *mut c_float,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_GetColor()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len = size_of::<c_uint>();
+
+        let ptr_r = state.malloc(len);
+
+        let ptr_g = state.malloc(len);
+
+        let ptr_b = state.malloc(len);
+
+        let result = state
+            .call(
+                "FPDFBookmark_GetColor",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_bookmark(bookmark),
+                    &Self::js_value_from_offset(ptr_r),
+                    &Self::js_value_from_offset(ptr_g),
+                    &Self::js_value_from_offset(ptr_b),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            unsafe {
+                *R = state
+                    .copy_bytes_from_pdfium(ptr_r, len)
+                    .try_into()
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
+
+                *G = state
+                    .copy_bytes_from_pdfium(ptr_g, len)
+                    .try_into()
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
+
+                *B = state
+                    .copy_bytes_from_pdfium(ptr_b, len)
+                    .try_into()
+                    .map(c_float::from_le_bytes)
+                    .unwrap_or(0.0);
+            }
+        }
+
+        state.free(ptr_r);
+        state.free(ptr_g);
+        state.free(ptr_b);
+
+        result
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFBookmark_GetStyle(&self, bookmark: FPDF_BOOKMARK) -> c_int {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFBookmark_GetStyle()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFBookmark_GetStyle",
+                JsFunctionArgumentType::Number,
+                Some(vec![JsFunctionArgumentType::Pointer]),
+                Some(&JsValue::from(Array::of1(&Self::js_value_from_bookmark(
+                    bookmark,
+                )))),
+            )
+            .as_f64()
+            .unwrap() as c_int
     }
 
     #[allow(non_snake_case)]
@@ -11535,6 +11765,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -12988,6 +13219,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -13220,6 +13452,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -13331,7 +13564,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFTextObj_SetFontSize(&self, text: FPDF_PAGEOBJECT, size: c_float) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFTextObj_SetFontSize()");
@@ -13449,6 +13686,56 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
             )
             .as_f64()
             .unwrap() as FPDF_BOOL
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPath_GetBezierControlPoints(
+        &self,
+        path: FPDF_PAGEOBJECT,
+        index: usize,
+        first_control_point: *mut FS_POINTF,
+        second_control_point: *mut FS_POINTF,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPath_GetBezierControlPoints()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let len = size_of::<FS_POINTF>();
+
+        let ptr_first_control_point = state.malloc(len);
+
+        let ptr_second_control_point = state.malloc(len);
+
+        let result = state
+            .call(
+                "FPDFPath_GetBezierControlPoints",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of4(
+                    &Self::js_value_from_object(path),
+                    &JsValue::from_f64(index as f64),
+                    &Self::js_value_from_offset(ptr_first_control_point),
+                    &Self::js_value_from_offset(ptr_second_control_point),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        if self.is_true(result) {
+            state.copy_struct_from_pdfium(ptr_first_control_point, len, first_control_point);
+            state.copy_struct_from_pdfium(ptr_second_control_point, len, second_control_point);
+        }
+
+        state.free(ptr_first_control_point);
+        state.free(ptr_second_control_point);
+
+        result
     }
 
     #[allow(non_snake_case)]
@@ -13660,7 +13947,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFText_SetPositions(
         &self,
@@ -13764,6 +14055,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -13836,7 +14128,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[allow(non_snake_case)]
     unsafe fn FPDFPage_InsertObject(
         &self,
@@ -13907,6 +14203,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14051,6 +14348,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14106,6 +14404,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14178,6 +14477,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14313,6 +14613,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14418,7 +14719,11 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
-    #[cfg(any(feature = "pdfium_future", feature = "pdfium_7881"))]
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
     #[inline]
     #[allow(non_snake_case)]
     unsafe fn FPDFPageObj_AddExistingMark(
@@ -14472,6 +14777,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14652,6 +14958,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -14910,6 +15217,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543"
@@ -14967,6 +15275,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -15150,6 +15459,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -15377,6 +15687,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543"
@@ -15477,6 +15788,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -16109,6 +16421,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -16941,6 +17254,58 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_GetRenderedStrokePattern(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetRenderedStrokePattern()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPageObj_GetRenderedStrokePattern",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_document(document),
+                    &Self::js_value_from_object(page_object),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_BITMAP
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFPageObj_GetRenderedFillPattern(
+        &self,
+        document: FPDF_DOCUMENT,
+        page_object: FPDF_PAGEOBJECT,
+    ) -> FPDF_BITMAP {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPageObj_GetRenderedFillPattern()");
+
+        PdfiumRenderWasmState::lock()
+            .call(
+                "FPDFPageObj_GetRenderedFillPattern",
+                JsFunctionArgumentType::Pointer,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_document(document),
+                    &Self::js_value_from_object(page_object),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize as FPDF_BITMAP
+    }
+
     #[allow(non_snake_case)]
     unsafe fn FPDFPath_CountSegments(&self, path: FPDF_PAGEOBJECT) -> c_int {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFPath_CountSegments()");
@@ -17076,6 +17441,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -17143,6 +17509,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -18336,6 +18703,102 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_SetDescription(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        value: FPDF_WIDESTRING,
+    ) -> FPDF_BOOL {
+        log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFAttachment_SetDescription()");
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let value_ptr = state.copy_wide_string_to_pdfium(value);
+
+        let result = state
+            .call(
+                "FPDFAttachment_SetDescription",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                ]),
+                Some(&JsValue::from(Array::of2(
+                    &Self::js_value_from_attachment(attachment),
+                    &Self::js_value_from_offset(value_ptr),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as FPDF_BOOL;
+
+        state.free(value_ptr);
+
+        result
+    }
+
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_GetDescription(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetDescription(): entering",
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!(
+                "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetDescription(): allocating buffer of {} bytes in Pdfium's WASM heap",
+                buffer_length,
+            );
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetDescription(): calling FPDFAttachment_GetStringValue()"
+        );
+
+        let result = state
+            .call(
+                "FPDFAttachment_GetDescription",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_attachment(attachment),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetDescription(): leaving"
+        );
+
+        result as c_ulong
+    }
+
     #[allow(non_snake_case)]
     unsafe fn FPDFAttachment_SetFile(
         &self,
@@ -18446,6 +18909,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -18508,6 +18972,68 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         result as c_ulong
     }
 
+    #[cfg(any(feature = "pdfium_future", feature = "pdfium_8125"))]
+    #[allow(non_snake_case)]
+    unsafe fn FPDFAttachment_GetAFRelationship(
+        &self,
+        attachment: FPDF_ATTACHMENT,
+        buffer: *mut FPDF_WCHAR,
+        buflen: c_ulong,
+    ) -> c_ulong {
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetAFRelationship(): entering"
+        );
+
+        let state = PdfiumRenderWasmState::lock();
+
+        let buffer_length = buflen as usize;
+
+        let buffer_ptr = if buffer_length > 0 {
+            log::debug!(
+                "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetAFRelationship(): allocating buffer of {} bytes in Pdfium's WASM heap",
+                buffer_length,
+            );
+
+            state.malloc(buffer_length)
+        } else {
+            0
+        };
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetAFRelationship(): calling FPDFAttachment_GetSubtype()"
+        );
+
+        let result = state
+            .call(
+                "FPDFAttachment_GetAFRelationship",
+                JsFunctionArgumentType::Number,
+                Some(vec![
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Pointer,
+                    JsFunctionArgumentType::Number,
+                ]),
+                Some(&JsValue::from(Array::of3(
+                    &Self::js_value_from_attachment(attachment),
+                    &Self::js_value_from_offset(buffer_ptr),
+                    &JsValue::from_f64(buffer_length as f64),
+                ))),
+            )
+            .as_f64()
+            .unwrap() as usize;
+
+        if result > 0 && result <= buffer_length {
+            state.copy_struct_from_pdfium(buffer_ptr, result, buffer);
+        }
+
+        state.free(buffer_ptr);
+
+        log::debug!(
+            "pdfium-render::PdfiumLibraryBindings::FPDFAttachment_GetAFRelationship(): leaving"
+        );
+
+        result as c_ulong
+    }
+
     #[allow(non_snake_case)]
     unsafe fn FPDFCatalog_IsTagged(&self, document: FPDF_DOCUMENT) -> FPDF_BOOL {
         log::debug!("pdfium-render::PdfiumLibraryBindings::FPDFCatalog_IsTagged()");
@@ -18527,6 +19053,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763"
     ))]
@@ -18590,6 +19117,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
     #[cfg(any(
         feature = "pdfium_future",
+        feature = "pdfium_8125",
         feature = "pdfium_7881",
         feature = "pdfium_7763",
         feature = "pdfium_7543",
@@ -18606,6 +19134,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
         document: FPDF_DOCUMENT,
         #[cfg(any(
             feature = "pdfium_future",
+            feature = "pdfium_8125",
             feature = "pdfium_7881",
             feature = "pdfium_7763",
         ))]
@@ -18627,6 +19156,7 @@ impl PdfiumLibraryBindings for WasmPdfiumBindings {
 
         #[cfg(any(
             feature = "pdfium_future",
+            feature = "pdfium_8125",
             feature = "pdfium_7881",
             feature = "pdfium_7763",
         ))]
