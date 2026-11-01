@@ -106,6 +106,8 @@ impl<'a> PdfPageTextChar<'a> {
     /// To return the raw Unicode literal value for this character,
     /// use the [PdfPageTextChar::unicode_value] function. To return the string representation of
     /// this `char`, use the [PdfPageTextChar::unicode_string] function.
+    /// If an error occurred during mapping of this character to Unicode,
+    /// [PdfPageTextChar::has_unicode_map_error] will indicate an error state.
     #[inline]
     pub fn unicode_char(&self) -> Option<char> {
         char::from_u32(self.unicode_value())
@@ -120,6 +122,23 @@ impl<'a> PdfPageTextChar<'a> {
     #[inline]
     pub fn unicode_string(&self) -> Option<String> {
         self.unicode_char().map(|char| char.to_string())
+    }
+
+    /// Returns `true` if Pdfium could not map this character to Unicode, in which case
+    /// [PdfPageTextChar::unicode_value] holds the font's raw character code rather than real text.
+    pub fn has_unicode_map_error(&self) -> Result<bool, PdfiumError> {
+        unsafe {
+            match self
+                .bindings()
+                .FPDFText_HasUnicodeMapError(self.text_page_handle, self.index)
+            {
+                1 => Ok(false), // Character has an invalid Unicode mapping
+                0 => Ok(true),  // Character has no known Unicode mapping issue
+                _ => Err(PdfiumError::PdfiumLibraryInternalError(
+                    PdfiumInternalError::Unknown,
+                )),
+            }
+        }
     }
 
     /// Returns the effective size of this character when rendered, taking into account both the
