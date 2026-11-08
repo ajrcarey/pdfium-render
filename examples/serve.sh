@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This support script can be used to run the example for WASM. See:
+# https://github.com/ajrcarey/pdfium-render/tree/master/examples
+
 # Serve the application locally using basic-http-server.
 
 cargo install basic-http-server

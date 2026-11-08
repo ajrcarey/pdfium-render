@@ -1,7 +1,7 @@
 #[cfg(target_arch = "wasm32")]
 use {
     once_cell::sync::OnceCell, pdfium_render::prelude::*, wasm_bindgen::prelude::*,
-    web_sys::ImageData,
+    web_sys::ImageData, std::io::Cursor
 };
 
 // See https://github.com/ajrcarey/pdfium-render/tree/master/examples for information
@@ -110,17 +110,16 @@ pub async fn log_page_metrics_to_console(url: String) {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-/// Downloads the given URL, opens it as a PDF document, then returns the ImageData for
-/// the given page index using the given bitmap dimensions.#[wasm_bindgen]
+/// Opens the given bytes as a PDF document using a random access reader, then returns
+/// the ImageData for the given page index using the given bitmap dimensions.
 pub async fn get_image_data_for_page(
-    url: String,
+    bytes: Vec<u8>,
     index: PdfPageIndex,
     width: Pixels,
     height: Pixels,
 ) -> ImageData {
     get_pdfium()
-        .load_pdf_from_fetch(url, None)
-        .await
+        .load_pdf_from_reader(Cursor::new(bytes), None)
         .unwrap()
         .pages()
         .get(index)
@@ -137,19 +136,19 @@ pub async fn get_image_data_for_page(
         .unwrap()
 }
 
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
-/// Opens the given document bytes through a reader, so Pdfium copies only the blocks it reads
-/// into its own WASM heap, then returns the width in points of each page.
-pub fn get_page_widths_from_reader(bytes: Vec<u8>) -> Vec<f32> {
-    get_pdfium()
-        .load_pdf_from_reader(std::io::Cursor::new(bytes), None)
-        .unwrap()
-        .pages()
-        .iter()
-        .map(|page| page.width().value)
-        .collect()
-}
+// #[cfg(target_arch = "wasm32")]
+// #[wasm_bindgen]
+// /// Opens the given document bytes through a reader, so Pdfium copies only the blocks it reads
+// /// into its own WASM heap, then returns the width in points of each page.
+// pub fn get_page_widths_from_reader(bytes: Vec<u8>) -> Vec<f32> {
+//     get_pdfium()
+//         .load_pdf_from_reader(std::io::Cursor::new(bytes), None)
+//         .unwrap()
+//         .pages()
+//         .iter()
+//         .map(|page| page.width().value)
+//         .collect()
+// }
 
 #[cfg(target_arch = "wasm32")]
 // A shared Pdfium instance used by all exported functions.

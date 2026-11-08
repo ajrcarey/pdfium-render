@@ -394,15 +394,14 @@ impl Pdfium {
     /// If the given reader implementation itself calls Pdfium functions, then it will block
     /// when used in conjunction with this crate's `thread_safe` feature.
     ///
-    /// If the document is password protected, the given password will be used
-    /// to unlock it.
+    /// If the document is password protected, the given password will be used to unlock it.
     ///
     /// When compiling to WASM, each block Pdfium reads is copied from this crate's WASM heap
     /// into Pdfium's WASM heap. The reader's callback is installed into Pdfium's function table
-    /// on first use and stays installed, since Pdfium may read from any open document. If Pdfium's
-    /// function table can grow (Emscripten's `-sALLOW_TABLE_GROWTH`), the callback occupies a new
-    /// table entry; otherwise it replaces an existing entry with the same signature, as
-    /// [PdfDocument::save_to_bytes()] does temporarily.
+    /// on first use and stays installed, since Pdfium may read from any open document.
+    /// If Pdfium's function table can grow (i.e. Pdfium was compiled to WASM using Emscripten's
+    /// `-sALLOW_TABLE_GROWTH` flag), the callback occupies a new table entry; otherwise
+    /// it replaces an existing entry with the same signature.
     pub fn load_pdf_from_reader<'a, R: PdfiumReader + 'a>(
         &'a self,
         reader: R,

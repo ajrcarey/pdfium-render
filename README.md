@@ -66,7 +66,7 @@ Short, commented examples that demonstrate all the major Pdfium document handlin
 
 ## What's new
 
-Release 0.9.6 adds the new `PdfPageTextChar::has_unicode_map_error()` function for retrieving the status of a Unicode character lookup, thanks to an excellent contribution from <https://github.com/GitPusher99>.
+Release 0.9.6 adds support for the `Pdfium::load_pdf_from_reader()` function to the WASM bindings implementation thanks to an excellent contribution from <https://github.com/rriski>, and adds the new `PdfPageTextChar::has_unicode_map_error()` function for retrieving the status of a Unicode character lookup thanks to an excellent contribution from <https://github.com/GitPusher99>.
 
 Release 0.9.5 increments the `pdfium_latest` feature to `pdfium_8125` to match new Pdfium release 8125 at <https://github.com/bblanchon/pdfium-binaries>, updates the handling of page metadata so that the document modification date is read from the `ModDate` key thanks to an excellent contribution from <https://github.com/AbdullahHouso>, corrects a potential overflow bug in `PdfiumLibraryBindings::FPDFBitmap_GetBuffer_as_slice()` thanks to an excellent investigation by <https://github.com/spdrman>, adds a new `PdfiumLibraryBindings::get_handle_from_form()` function to allow retrieving a low-level handle to a document form thanks to an excellent contribution from <https://github.com/AbdullahHouso>, corrects an edge case in the page index cache thanks to an excellent contribution from <https://github.com/spdrman>, and avoids eager loading of page structure trees in response to an excellent performance analysis by <https://github.com/sanjay920>.
 

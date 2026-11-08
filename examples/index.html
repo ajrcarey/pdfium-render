@@ -81,6 +81,16 @@
 
                 // The second function generates the ImageData object for a single page in
                 // our target PDF file. We can render this ImageData directly to an HTML canvas.
+                // In this example, we fetch the target from Javascript, then pass the byte
+                // content to the function for random access using an on-demand reader.
+                // This avoids the need to copy the entire document into the linear memory
+                // of the Pdfium WASM module.
+
+                const targetBytes = new Uint8Array(
+                    await fetch(targetDocument).then(
+                        response => response.arrayBuffer()
+                    )
+                );
 
                 const pageIndex = 0; // Zero-based index of the page we wish to render.
                 const width = 1414;
@@ -93,7 +103,7 @@
 
                 const context = canvas.getContext("2d");
 
-                const imageData = await get_image_data_for_page(targetDocument, pageIndex, width, height);
+                const imageData = await get_image_data_for_page(targetBytes, pageIndex, width, height);
 
                 context.putImageData(imageData, 0, 0);
 

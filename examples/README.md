@@ -62,74 +62,48 @@ The `console_log` crate feature instructs `pdfium-render` to initialize logging 
 
 ## Interface changes when compiling to WASM
 
-Certain `pdfium-render` functions that access the filesystem are not available when compiling to WASM,
-due to the security model present in modern web browsers. Alternative functions for accessing files
-over the network are provided instead.
+Certain `pdfium-render` functions that access the filesystem are not available when compiling to WASM, due to the security model present in modern web browsers. Alternative functions for accessing files over the network are provided instead.
 
 ### Interface changes in the `Pdfium` struct
 
-The `Pdfium::load_pdf_from_file()` function is not available when running in the browser.
-The `Pdfium::load_pdf_from_byte_slice()`, `Pdfium::load_pdf_from_byte_vec()` and `Pdfium::load_pdf_from_reader()`
-functions are available, and the following additional functions are provided:
+The `Pdfium::load_pdf_from_file()` function is not available when running in the browser. The `Pdfium::load_pdf_from_byte_slice()`, `Pdfium::load_pdf_from_byte_vec()` and `Pdfium::load_pdf_from_reader()` functions are available, and the following additional functions are provided:
 
-* The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API
-  to download a URL over the network and open it as a PDF document.
-* The `Pdfium::load_pdf_from_blob()` function opens a PDF document from the byte data in a Javascript
-  `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element.
+* The `Pdfium::load_pdf_from_fetch()` function uses the browser's built-in `fetch()` API to download a URL over the network and open it as a PDF document.
+* The `Pdfium::load_pdf_from_blob()` function opens a PDF document from the byte data in a Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element.
 
 ### Interface changes in the `PdfDocument` struct
 
-The `PdfDocument::save_to_file()` function is not available when running in the browser.
-The `PdfDocument::save_to_bytes()` and `PdfDocument::save_to_writer()` functions are
-available, and the following additional function is provided:
+The `PdfDocument::save_to_file()` function is not available when running in the browser. The `PdfDocument::save_to_bytes()` and `PdfDocument::save_to_writer()` functions are available, and the following additional function is provided:
 
-* The `PdfDocument::save_to_blob()` function returns the byte data for the document as a
-  Javascript `Blob` object.
+* The `PdfDocument::save_to_blob()` function returns the byte data for the document as a Javascript `Blob` object.
 
 ### Interface changes in the `PdfBitmap` struct
 
 The following additional functions are provided during rendering:
 
-* The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object,
-  ready to display in an HTML `<canvas>` element.
-* The `PdfBitmap::as_array()` function renders directly to a Javascript `Uint8Array` object.
-  This function avoids a memory allocation and copy required by both `PdfBitmap::as_bytes()`
-  and `PdfBitmap::as_image_data()`, making it preferable for situations where performance is paramount.
+* The `PdfBitmap::as_image_data()` function renders directly to a Javascript `ImageData` object, ready to display in an HTML `<canvas>` element.
+* The `PdfBitmap::as_array()` function renders directly to a Javascript `Uint8Array` object. This function avoids a memory allocation and copy required by both `PdfBitmap::as_bytes()` and `PdfBitmap::as_image_data()`, making it preferable in high performance applications.
 
 ### Interface changes in the `PdfFonts` struct
 
-The `PdfFonts::load_type1_from_file()` and `PdfFonts::load_true_type_from_file()` functions are
-not available when running in the browser. The following additional functions are provided:
+The `PdfFonts::load_type1_from_file()` and `PdfFonts::load_true_type_from_file()` functions are not available when running in the browser. The following additional functions are provided:
 
-* The `PdfFonts::load_type1_from_fetch()` function uses the browser's built-in `fetch()` API
-  to download a URL over the network and load it as a Type 1 font.
-* The `PdfFonts::load_true_type_from_fetch()` function uses the browser's built-in `fetch()` API
-  to download a URL over the network and load it as a TrueType font.
-* The `PdfFonts::load_type1_from_blob()` function loads a Type 1 font from the byte data in a
-  Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
-  element.
-* The `PdfFonts::load_true_type_from_blob()` function loads a TrueType font from the byte data in a
-  Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">`
-  element.
+* The `PdfFonts::load_type1_from_fetch()` function uses the browser's built-in `fetch()` API to download a URL over the network and load it as a Type 1 font.
+* The `PdfFonts::load_true_type_from_fetch()` function uses the browser's built-in `fetch()` API to download a URL over the network and load it as a TrueType font.
+* The `PdfFonts::load_type1_from_blob()` function loads a Type 1 font from the byte data in a Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element.
+* The `PdfFonts::load_true_type_from_blob()` function loads a TrueType font from the byte data in a Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element.
 
 ### Interface changes in the `PdfAttachments` struct
 
-The `PdfAttachments::create_attachment_from_file()` function is not available when running in
-the browser. The `PdfAttachments::create_attachment_from_bytes()` and
+The `PdfAttachments::create_attachment_from_file()` function is not available when running in the browser. The `PdfAttachments::create_attachment_from_bytes()` and
 `PdfAttachments::create_attachment_from_reader()` functions are available, and
 the following additional functions are provided:
 
-* The `PdfAttachments::create_attachment_from_fetch()` function uses the brower's built-in `fetch()` API
-  to download a URL over the network and use it as an embedded attachment.
-* The `PdfAttachments::create_attachment_from_blob()` function creates an embedded attachment
-  from the byte data in a Javascript `Blob` or `File` object, including `File` objects returned from
-  an `<input type="file">` element.
+* The `PdfAttachments::create_attachment_from_fetch()` function uses the brower's built-in `fetch()` API to download a URL over the network and use it as an embedded attachment.
+* The `PdfAttachments::create_attachment_from_blob()` function creates an embedded attachment from the byte data in a Javascript `Blob` or `File` object, including `File` objects returned from an `<input type="file">` element.
 
 ### Interface changes in the `PdfAttachment` struct
 
-The `PdfAttachment::save_to_file()` function is not available when running in the browser.
-The `PdfAttachment::save_to_bytes()` and `PdfAttachment::save_to_writer()` functions are
-available, and the following additional function is provided:
+The `PdfAttachment::save_to_file()` function is not available when running in the browser. The `PdfAttachment::save_to_bytes()` and `PdfAttachment::save_to_writer()` functions are available, and the following additional function is provided:
 
-* The `PdfAttachment::save_to_blob()` function returns the byte data for the attachment as a
-  Javascript `Blob` object.
+* The `PdfAttachment::save_to_blob()` function returns the byte data for the attachment as a Javascript `Blob` object.
