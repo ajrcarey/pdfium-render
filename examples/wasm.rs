@@ -138,6 +138,20 @@ pub async fn get_image_data_for_page(
 }
 
 #[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+/// Opens the given document bytes through a reader, so Pdfium copies only the blocks it reads
+/// into its own WASM heap, then returns the width in points of each page.
+pub fn get_page_widths_from_reader(bytes: Vec<u8>) -> Vec<f32> {
+    get_pdfium()
+        .load_pdf_from_reader(std::io::Cursor::new(bytes), None)
+        .unwrap()
+        .pages()
+        .iter()
+        .map(|page| page.width().value)
+        .collect()
+}
+
+#[cfg(target_arch = "wasm32")]
 // A shared Pdfium instance used by all exported functions.
 static PDFIUM: OnceCell<Pdfium> = OnceCell::new();
 
