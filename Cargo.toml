@@ -65,6 +65,7 @@ rayon = "1"                                    # Used by examples/thread_safe.rs
 axum = "0"                                     # Used by examples/axum_once_cell.rs
 tokio = { version = "1", features = ["full"] } # Used by examples/axum_once_cell.rs
 tower = "0"                                    # Used by examples/axum_once_cell.rs
+ttf-parser = "0"                               # Used by examples/shaped_text.rs
 pdfium-render = { path = "./", default-features = false, features = ["thread_safe"] } # thread_safe feature required by examples/axum_once_cell.rs
 
 [features]
