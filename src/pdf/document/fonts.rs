@@ -575,7 +575,8 @@ impl<'a> PdfFonts<'a> {
     /// reach (contextual forms in complex scripts). Neither can be expressed by
     /// [PdfPageTextObject::set_text](crate::prelude::PdfPageTextObject::set_text), which
     /// looks each character up in the font's own character map. Write the CIDs into a text
-    /// object with `FPDFText_SetCharcodes()`.
+    /// object with
+    /// [PdfPageTextObject::set_charcodes](crate::prelude::PdfPageTextObject::set_charcodes).
     pub fn load_cid_type2_from_bytes(
         &mut self,
         font_data: &[u8],

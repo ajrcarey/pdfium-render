@@ -404,6 +404,63 @@ impl<'a> PdfPageTextObject<'a> {
         }
     }
 
+    /// Replaces the text contained within this [PdfPageTextObject] with the given character
+    /// codes, which are written into the content stream as-is.
+    ///
+    /// The meaning of each code depends on the font of this text object. For a font loaded
+    /// with [PdfFonts::load_cid_type2_from_bytes](crate::prelude::PdfFonts::load_cid_type2_from_bytes)
+    /// each code is a character ID (CID); the font's `CIDToGIDMap` selects the glyph and its
+    /// `ToUnicode` CMap supplies the text that extraction returns.
+    ///
+    /// Use this function instead of [PdfPageTextObject::set_text] when the glyphs to draw
+    /// have already been chosen, for example by a text shaper.
+    pub fn set_charcodes(&mut self, charcodes: &[u32]) -> Result<(), PdfiumError> {
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFText_SetCharcodes(
+                self.object_handle(),
+                charcodes.as_ptr(),
+                charcodes.len(),
+            )
+        }) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881"
+    ))]
+    /// Places every character of this [PdfPageTextObject] except the first at an explicit
+    /// position, instead of advancing by the widths the font specifies.
+    ///
+    /// `positions[i]` is the offset, in points, of character `i + 1` from the origin of this
+    /// text object, along the direction of the text. The first character is always at the
+    /// origin, so a text object with `N` characters takes exactly `N - 1` positions, and
+    /// this function fails if the text object contains fewer than two characters.
+    ///
+    /// This allows a run of shaped text, including kerning and other layout adjustments,
+    /// to be written as a single text object rather than as one object per character.
+    pub fn set_positions(&mut self, positions: &[f32]) -> Result<(), PdfiumError> {
+        if self.bindings().is_true(unsafe {
+            self.bindings().FPDFText_SetPositions(
+                self.object_handle(),
+                positions.as_ptr(),
+                positions.len(),
+            )
+        }) {
+            Ok(())
+        } else {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        }
+    }
+
     /// Sets the text contained within this [PdfPageTextObject], replacing any existing text.
     ///
     /// A single space will be used if the given text is empty, in order to avoid
