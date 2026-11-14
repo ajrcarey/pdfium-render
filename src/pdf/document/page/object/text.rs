@@ -48,7 +48,7 @@ use {
 
 #[cfg(doc)]
 use {
-    crate::pdf::document::page::object::PdfPageObject,
+    crate::pdf::document::fonts::PdfFonts, crate::pdf::document::page::object::PdfPageObject,
     crate::pdf::document::page::object::PdfPageObjectType,
     crate::pdf::document::page::objects::common::PdfPageObjectsCommon,
     crate::pdf::document::page::PdfPage,
@@ -408,12 +408,12 @@ impl<'a> PdfPageTextObject<'a> {
     /// codes, which are written into the content stream as-is.
     ///
     /// The meaning of each code depends on the font of this text object. For a font loaded
-    /// with [PdfFonts::load_cid_type2_from_bytes](crate::prelude::PdfFonts::load_cid_type2_from_bytes)
-    /// each code is a character ID (CID); the font's `CIDToGIDMap` selects the glyph and its
-    /// `ToUnicode` CMap supplies the text that extraction returns.
+    /// with [PdfFonts::load_cid_type2_from_bytes], each code is a character ID (CID);
+    /// the font's `CIDToGIDMap` selects the glyph and its `ToUnicode` CMap supplies the text
+    /// that extraction returns.
     ///
     /// Use this function instead of [PdfPageTextObject::set_text] when the glyphs to draw
-    /// have already been chosen, for example by a text shaper.
+    /// have already been chosen by an external text shaper.
     pub fn set_charcodes(&mut self, charcodes: &[u32]) -> Result<(), PdfiumError> {
         if self.bindings().is_true(unsafe {
             self.bindings().FPDFText_SetCharcodes(

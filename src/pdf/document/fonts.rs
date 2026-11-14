@@ -36,7 +36,9 @@ use web_sys::{window, Blob, Response};
 struct Blob;
 
 #[cfg(doc)]
-use crate::pdf::document::PdfDocument;
+use {
+    crate::pdf::document::page::object::text::PdfPageTextObject, crate::pdf::document::PdfDocument,
+};
 
 /// The 14 built-in fonts provided as part of the PDF specification.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -391,6 +393,335 @@ impl<'a> PdfFonts<'a> {
         self.new_font_from_bytes(font_data, FPDF_FONT_TYPE1, is_cid_font)
     }
 
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+    ))]
+    #[cfg(not(target_arch = "wasm32"))]
+    /// Attempts to load a Type 2 font file from the given reader whose glyphs are
+    /// addressed by caller-chosen 16-bit character IDs (CIDs), returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
+    /// The font is embedded as a `Type0` font with a `CIDFontType2` descendant and
+    /// `Identity-H` encoding. Unlike [PdfFonts::load_true_type_from_bytes], Pdfium does not
+    /// derive the font's mappings from the font program; the caller supplies them:
+    ///
+    /// * `to_unicode_cmap` is the `ToUnicode` CMap program that maps each CID to the
+    ///   Unicode text it represents. Text extraction, search, and copy-and-paste in
+    ///   PDF viewers read this mapping.
+    /// * `cid_to_gid_map` is the `CIDToGIDMap` stream data: one big-endian 16-bit glyph
+    ///   index per CID, starting at CID 0.
+    ///
+    /// This allows text shaped outside Pdfium to be written as real text. Shaping can map
+    /// several characters to one glyph (ligatures) or select glyphs a character map cannot
+    /// reach (contextual forms in complex scripts). Neither can be expressed by
+    /// [PdfPageTextObject::set_text], which looks each character up in the font's own
+    /// character map. Write the CIDs into a text object with [PdfPageTextObject::set_charcodes].
+    ///
+    /// This function is not available when compiling to WASM. You have several options for
+    /// loading font data in WASM:
+    /// * Use the [PdfFonts::load_cid_type2_from_fetch()] function to download font data from a
+    ///   URL using the browser's built-in `fetch()` API. This function is only available when
+    ///   compiling to WASM.
+    /// * Use the [PdfFonts::load_cid_type2_from_blob()] function to load font data from a
+    ///   Javascript `File` or `Blob` object (such as a `File` object returned from an HTML
+    ///   `<input type="file">` element). This function is only available when compiling to WASM.
+    /// * Use the [PdfFonts::load_cid_type2_from_reader()] function to load font data from any
+    ///   valid Rust reader.
+    /// * Use another method to retrieve the bytes of the target font over the network,
+    ///   then load those bytes into Pdfium using the [PdfFonts::load_cid_type2_from_bytes()] function.
+    /// * Embed the bytes of the desired font directly into the compiled WASM module
+    ///   using the `include_bytes!()` macro.
+    pub fn load_cid_type2_from_file(
+        &mut self,
+        path: &(impl AsRef<Path> + ?Sized),
+        to_unicode_cmap: &str,
+        cid_to_gid_map: &[u8],
+    ) -> Result<PdfFontToken, PdfiumError> {
+        self.load_cid_type2_from_reader(
+            File::open(path).map_err(PdfiumError::IoError)?,
+            to_unicode_cmap,
+            cid_to_gid_map,
+        )
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+    ))]
+    /// Attempts to load a Type 2 font file from the given reader whose glyphs are
+    /// addressed by caller-chosen 16-bit character IDs (CIDs), returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
+    /// The font is embedded as a `Type0` font with a `CIDFontType2` descendant and
+    /// `Identity-H` encoding. Unlike [PdfFonts::load_true_type_from_bytes], Pdfium does not
+    /// derive the font's mappings from the font program; the caller supplies them:
+    ///
+    /// * `to_unicode_cmap` is the `ToUnicode` CMap program that maps each CID to the
+    ///   Unicode text it represents. Text extraction, search, and copy-and-paste in
+    ///   PDF viewers read this mapping.
+    /// * `cid_to_gid_map` is the `CIDToGIDMap` stream data: one big-endian 16-bit glyph
+    ///   index per CID, starting at CID 0.
+    ///
+    /// This allows text shaped outside Pdfium to be written as real text. Shaping can map
+    /// several characters to one glyph (ligatures) or select glyphs a character map cannot
+    /// reach (contextual forms in complex scripts). Neither can be expressed by
+    /// [PdfPageTextObject::set_text], which looks each character up in the font's own
+    /// character map. Write the CIDs into a text object with [PdfPageTextObject::set_charcodes].
+    pub fn load_cid_type2_from_reader(
+        &mut self,
+        mut reader: impl Read,
+        to_unicode_cmap: &str,
+        cid_to_gid_map: &[u8],
+    ) -> Result<PdfFontToken, PdfiumError> {
+        let mut bytes = Vec::new();
+
+        reader
+            .read_to_end(&mut bytes)
+            .map_err(PdfiumError::IoError)?;
+
+        self.load_cid_type2_from_bytes(bytes.as_slice(), to_unicode_cmap, cid_to_gid_map)
+    }
+
+    /// Attempts to load a Type 2 font file from the given URL whose glyphs are
+    /// addressed by caller-chosen 16-bit character IDs (CIDs), returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
+    /// The font is embedded as a `Type0` font with a `CIDFontType2` descendant and
+    /// `Identity-H` encoding. Unlike [PdfFonts::load_true_type_from_bytes], Pdfium does not
+    /// derive the font's mappings from the font program; the caller supplies them:
+    ///
+    /// * `to_unicode_cmap` is the `ToUnicode` CMap program that maps each CID to the
+    ///   Unicode text it represents. Text extraction, search, and copy-and-paste in
+    ///   PDF viewers read this mapping.
+    /// * `cid_to_gid_map` is the `CIDToGIDMap` stream data: one big-endian 16-bit glyph
+    ///   index per CID, starting at CID 0.
+    ///
+    /// This allows text shaped outside Pdfium to be written as real text. Shaping can map
+    /// several characters to one glyph (ligatures) or select glyphs a character map cannot
+    /// reach (contextual forms in complex scripts). Neither can be expressed by
+    /// [PdfPageTextObject::set_text], which looks each character up in the font's own
+    /// character map. Write the CIDs into a text object with [PdfPageTextObject::set_charcodes].
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(all(
+        any(doc, target_arch = "wasm32"),
+        any(
+            feature = "pdfium_future",
+            feature = "pdfium_8125",
+            feature = "pdfium_7881",
+            feature = "pdfium_7763",
+            feature = "pdfium_7543",
+            feature = "pdfium_7350",
+            feature = "pdfium_7215",
+            feature = "pdfium_7123",
+            feature = "pdfium_6996",
+            feature = "pdfium_6721",
+            feature = "pdfium_6666",
+            feature = "pdfium_6611",
+            feature = "pdfium_6569",
+            feature = "pdfium_6555",
+            feature = "pdfium_6490",
+            feature = "pdfium_6406",
+            feature = "pdfium_6337",
+            feature = "pdfium_6295",
+        )
+    ))]
+    pub async fn load_cid_type2_from_fetch(
+        &mut self,
+        url: impl ToString,
+        to_unicode_cmap: &str,
+        cid_to_gid_map: &[u8],
+    ) -> Result<PdfFontToken, PdfiumError> {
+        if let Some(window) = window() {
+            let fetch_result = JsFuture::from(window.fetch_with_str(url.to_string().as_str()))
+                .await
+                .map_err(PdfiumError::WebSysFetchError)?;
+
+            debug_assert!(fetch_result.is_instance_of::<Response>());
+
+            let response: Response = fetch_result
+                .dyn_into()
+                .map_err(|_| PdfiumError::WebSysInvalidResponseError)?;
+
+            let blob: Blob =
+                JsFuture::from(response.blob().map_err(PdfiumError::WebSysFetchError)?)
+                    .await
+                    .map_err(PdfiumError::WebSysFetchError)?
+                    .into();
+
+            self.load_cid_type2_from_blob(blob, to_unicode_cmap, cid_to_gid_map)
+                .await
+        } else {
+            Err(PdfiumError::WebSysWindowObjectNotAvailable)
+        }
+    }
+
+    /// Attempts to load the given byte data as a Type 2 font file whose glyphs are
+    /// addressed by caller-chosen 16-bit character IDs (CIDs), returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
+    /// The font is embedded as a `Type0` font with a `CIDFontType2` descendant and
+    /// `Identity-H` encoding. Unlike [PdfFonts::load_true_type_from_bytes], Pdfium does not
+    /// derive the font's mappings from the font program; the caller supplies them:
+    ///
+    /// * `to_unicode_cmap` is the `ToUnicode` CMap program that maps each CID to the
+    ///   Unicode text it represents. Text extraction, search, and copy-and-paste in
+    ///   PDF viewers read this mapping.
+    /// * `cid_to_gid_map` is the `CIDToGIDMap` stream data: one big-endian 16-bit glyph
+    ///   index per CID, starting at CID 0.
+    ///
+    /// This allows text shaped outside Pdfium to be written as real text. Shaping can map
+    /// several characters to one glyph (ligatures) or select glyphs a character map cannot
+    /// reach (contextual forms in complex scripts). Neither can be expressed by
+    /// [PdfPageTextObject::set_text], which looks each character up in the font's own
+    /// character map. Write the CIDs into a text object with [PdfPageTextObject::set_charcodes].
+    ///
+    /// This function is only available when compiling to WASM.
+    #[cfg(all(
+        any(doc, target_arch = "wasm32"),
+        any(
+            feature = "pdfium_future",
+            feature = "pdfium_8125",
+            feature = "pdfium_7881",
+            feature = "pdfium_7763",
+            feature = "pdfium_7543",
+            feature = "pdfium_7350",
+            feature = "pdfium_7215",
+            feature = "pdfium_7123",
+            feature = "pdfium_6996",
+            feature = "pdfium_6721",
+            feature = "pdfium_6666",
+            feature = "pdfium_6611",
+            feature = "pdfium_6569",
+            feature = "pdfium_6555",
+            feature = "pdfium_6490",
+            feature = "pdfium_6406",
+            feature = "pdfium_6337",
+            feature = "pdfium_6295",
+        )
+    ))]
+    pub async fn load_cid_type2_from_blob(
+        &mut self,
+        blob: Blob,
+        to_unicode_cmap: &str,
+        cid_to_gid_map: &[u8],
+    ) -> Result<PdfFontToken, PdfiumError> {
+        let array_buffer: ArrayBuffer = JsFuture::from(blob.array_buffer())
+            .await
+            .map_err(PdfiumError::WebSysFetchError)?
+            .into();
+
+        let u8_array: Uint8Array = Uint8Array::new(&array_buffer);
+
+        let bytes: Vec<u8> = u8_array.to_vec();
+
+        self.load_cid_type2_from_bytes(bytes.as_slice(), to_unicode_cmap, cid_to_gid_map)
+    }
+
+    #[cfg(any(
+        feature = "pdfium_future",
+        feature = "pdfium_8125",
+        feature = "pdfium_7881",
+        feature = "pdfium_7763",
+        feature = "pdfium_7543",
+        feature = "pdfium_7350",
+        feature = "pdfium_7215",
+        feature = "pdfium_7123",
+        feature = "pdfium_6996",
+        feature = "pdfium_6721",
+        feature = "pdfium_6666",
+        feature = "pdfium_6611",
+        feature = "pdfium_6569",
+        feature = "pdfium_6555",
+        feature = "pdfium_6490",
+        feature = "pdfium_6406",
+        feature = "pdfium_6337",
+        feature = "pdfium_6295",
+    ))]
+    /// Attempts to load the given byte data as a Type 2 font file whose glyphs are
+    /// addressed by caller-chosen 16-bit character IDs (CIDs), returning a reusable
+    /// [PdfFontToken] if the font was successfully loaded.
+    ///
+    /// The font is embedded as a `Type0` font with a `CIDFontType2` descendant and
+    /// `Identity-H` encoding. Unlike [PdfFonts::load_true_type_from_bytes], Pdfium does not
+    /// derive the font's mappings from the font program; the caller supplies them:
+    ///
+    /// * `to_unicode_cmap` is the `ToUnicode` CMap program that maps each CID to the
+    ///   Unicode text it represents. Text extraction, search, and copy-and-paste in
+    ///   PDF viewers read this mapping.
+    /// * `cid_to_gid_map` is the `CIDToGIDMap` stream data: one big-endian 16-bit glyph
+    ///   index per CID, starting at CID 0.
+    ///
+    /// This allows text shaped outside Pdfium to be written as real text. Shaping can map
+    /// several characters to one glyph (ligatures) or select glyphs a character map cannot
+    /// reach (contextual forms in complex scripts). Neither can be expressed by
+    /// [PdfPageTextObject::set_text], which looks each character up in the font's own
+    /// character map. Write the CIDs into a text object with [PdfPageTextObject::set_charcodes].
+    pub fn load_cid_type2_from_bytes(
+        &mut self,
+        font_data: &[u8],
+        to_unicode_cmap: &str,
+        cid_to_gid_map: &[u8],
+    ) -> Result<PdfFontToken, PdfiumError> {
+        let handle = unsafe {
+            self.bindings().FPDFText_LoadCidType2Font(
+                self.document_handle,
+                font_data.as_ptr(),
+                font_data.len() as u32,
+                to_unicode_cmap,
+                cid_to_gid_map.as_ptr(),
+                cid_to_gid_map.len() as u32,
+            )
+        };
+
+        if handle.is_null() {
+            Err(PdfiumError::PdfiumLibraryInternalError(
+                PdfiumInternalError::Unknown,
+            ))
+        } else {
+            let font = PdfFont::from_pdfium(handle, None, true);
+
+            let token = PdfFontToken::from_font(&font);
+
+            self.fonts.insert(token, font);
+
+            Ok(token)
+        }
+    }
+
     /// Attempts to load a TrueType font file from the given file path, returning a reusable
     /// [PdfFontToken] if the font was successfully loaded.
     ///
@@ -536,81 +867,8 @@ impl<'a> PdfFonts<'a> {
         self.new_font_from_bytes(font_data, FPDF_FONT_TRUETYPE, is_cid_font)
     }
 
-    #[cfg(any(
-        feature = "pdfium_future",
-        feature = "pdfium_8125",
-        feature = "pdfium_7881",
-        feature = "pdfium_7763",
-        feature = "pdfium_7543",
-        feature = "pdfium_7350",
-        feature = "pdfium_7215",
-        feature = "pdfium_7123",
-        feature = "pdfium_6996",
-        feature = "pdfium_6721",
-        feature = "pdfium_6666",
-        feature = "pdfium_6611",
-        feature = "pdfium_6569",
-        feature = "pdfium_6555",
-        feature = "pdfium_6490",
-        feature = "pdfium_6406",
-        feature = "pdfium_6337",
-        feature = "pdfium_6295",
-    ))]
-    /// Attempts to load the given byte data as a TrueType font file whose glyphs are
-    /// addressed by caller-chosen 16-bit character IDs (CIDs), returning a reusable
-    /// [PdfFontToken] if the font was successfully loaded.
-    ///
-    /// The font is embedded as a `Type0` font with a `CIDFontType2` descendant and
-    /// `Identity-H` encoding. Unlike [PdfFonts::load_true_type_from_bytes], Pdfium does not
-    /// derive the font's mappings from the font program; the caller supplies them:
-    ///
-    /// * `to_unicode_cmap` is the `ToUnicode` CMap program that maps each CID to the
-    ///   Unicode text it represents. Text extraction, search, and copy-and-paste in
-    ///   PDF viewers read this mapping.
-    /// * `cid_to_gid_map` is the `CIDToGIDMap` stream data: one big-endian 16-bit glyph
-    ///   index per CID, starting at CID 0.
-    ///
-    /// This allows text shaped outside Pdfium to be written as real text. Shaping can map
-    /// several characters to one glyph (ligatures) or select glyphs a character map cannot
-    /// reach (contextual forms in complex scripts). Neither can be expressed by
-    /// [PdfPageTextObject::set_text](crate::prelude::PdfPageTextObject::set_text), which
-    /// looks each character up in the font's own character map. Write the CIDs into a text
-    /// object with
-    /// [PdfPageTextObject::set_charcodes](crate::prelude::PdfPageTextObject::set_charcodes).
-    pub fn load_cid_type2_from_bytes(
-        &mut self,
-        font_data: &[u8],
-        to_unicode_cmap: &str,
-        cid_to_gid_map: &[u8],
-    ) -> Result<PdfFontToken, PdfiumError> {
-        let handle = unsafe {
-            self.bindings().FPDFText_LoadCidType2Font(
-                self.document_handle,
-                font_data.as_ptr(),
-                font_data.len() as u32,
-                to_unicode_cmap,
-                cid_to_gid_map.as_ptr(),
-                cid_to_gid_map.len() as u32,
-            )
-        };
-
-        if handle.is_null() {
-            Err(PdfiumError::PdfiumLibraryInternalError(
-                PdfiumInternalError::Unknown,
-            ))
-        } else {
-            let font = PdfFont::from_pdfium(handle, None, true);
-
-            let token = PdfFontToken::from_font(&font);
-
-            self.fonts.insert(token, font);
-
-            Ok(token)
-        }
-    }
-
     #[inline]
-    pub(crate) fn new_font_from_bytes(
+    fn new_font_from_bytes(
         &mut self,
         font_data: &[u8],
         font_type: c_uint,

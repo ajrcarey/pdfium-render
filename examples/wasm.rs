@@ -1,7 +1,7 @@
 #[cfg(target_arch = "wasm32")]
 use {
-    once_cell::sync::OnceCell, pdfium_render::prelude::*, wasm_bindgen::prelude::*,
-    web_sys::ImageData, std::io::Cursor
+    once_cell::sync::OnceCell, pdfium_render::prelude::*, std::io::Cursor,
+    wasm_bindgen::prelude::*, web_sys::ImageData,
 };
 
 // See https://github.com/ajrcarey/pdfium-render/tree/master/examples for information
