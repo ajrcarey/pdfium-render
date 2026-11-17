@@ -4,6 +4,7 @@
 use crate::bindgen::{FPDF_ANNOTATION, FPDF_DOCUMENT, FPDF_FORMHANDLE, FPDF_PAGE};
 use crate::error::{PdfiumError, PdfiumInternalError};
 use crate::pdf::color::PdfColor;
+use crate::pdf::date::PdfDate;
 use crate::pdf::document::page::annotation::free_text::PdfPageFreeTextAnnotation;
 use crate::pdf::document::page::annotation::highlight::PdfPageHighlightAnnotation;
 use crate::pdf::document::page::annotation::ink::PdfPageInkAnnotation;
@@ -23,7 +24,6 @@ use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPageIndexCache};
 use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
-use chrono::prelude::*;
 use std::marker::PhantomData;
 use std::ops::Range;
 use std::os::raw::c_int;
@@ -164,7 +164,7 @@ impl<'a> PdfPageAnnotations<'a> {
             let mut annotation = constructor(self.document_handle(), self.page_handle(), handle);
 
             annotation
-                .set_creation_date(Utc::now())
+                .set_creation_date(PdfDate::now())
                 .and_then(|()| {
                     if let Some(content_regeneration_strategy) =
                         PdfPageIndexCache::get_content_regeneration_strategy_for_page(

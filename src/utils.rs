@@ -154,24 +154,36 @@ pub(crate) mod pixels {
 }
 
 pub(crate) mod dates {
-    use chrono::prelude::*;
-    use std::fmt::Display;
+    use crate::pdf::date::PdfDate;
+    use jiff::Timestamp;
+    use std::time::UNIX_EPOCH;
 
-    /// Converts a [DateTime] to a formatted PDF date string, as defined in The PDF Reference
-    /// Manual, sixth edition, section 3.8.3, on page 160.
+    // The PDF date format allows a four-digit year only. This is 0000-01-01T00:00:00Z; the upper
+    // bound is the latest instant a jiff::Timestamp can hold, which is in year 9999.
+    const MIN_SECONDS: i64 = -62_167_219_200;
+
+    /// Converts a [PdfDate] to a formatted PDF date string in UTC, as defined in The PDF
+    /// Reference Manual, sixth edition, section 3.8.3, on page 160. Dates outside the years
+    /// 0000 to 9999 are clamped to the nearest supported date.
+    pub(crate) fn date_time_to_pdf_string(date: PdfDate) -> String {
+        let earliest = Timestamp::from_second(MIN_SECONDS).unwrap();
+
+        // A time too far from the epoch for a Timestamp is clamped to the nearest end.
+        let timestamp = Timestamp::try_from(date.0).unwrap_or(if date.0 < UNIX_EPOCH {
+            earliest
+        } else {
+            Timestamp::MAX
+        });
+
+        let timestamp = timestamp.max(earliest);
+
+        timestamp.strftime("D:%Y%m%d%H%M%SZ00'00'").to_string()
+    }
+
+    /// Returns the current date and time as a formatted PDF date string in UTC.
     #[inline]
-    pub(crate) fn date_time_to_pdf_string<T, O>(date: DateTime<T>) -> String
-    where
-        T: TimeZone<Offset = O>,
-        O: Display,
-    {
-        let date_part = date.format("%Y%m%d%H%M%S");
-
-        let timezone_part = format!("{}'", date.format("%:z"))
-            .replace("+00:00'", "Z00'00'")
-            .replace(':', "'");
-
-        format!("D:{date_part}{timezone_part}")
+    pub(crate) fn now_to_pdf_string() -> String {
+        date_time_to_pdf_string(PdfDate::now())
     }
 }
 
@@ -482,10 +494,11 @@ pub(crate) mod test {
 
 #[cfg(test)]
 mod tests {
+    use crate::pdf::date::PdfDate;
     use crate::utils::dates::*;
     use crate::utils::pixels::*;
     use crate::utils::utf16le::*;
-    use chrono::prelude::*;
+    use std::time::{Duration, UNIX_EPOCH};
 
     // Tests of color conversion functions.
 
@@ -609,25 +622,45 @@ mod tests {
 
     #[test]
     fn test_date_time_to_pdf_date_string() {
+        let at = |seconds: u64| PdfDate::from(UNIX_EPOCH + Duration::from_secs(seconds));
+
+        // 1998-12-23T19:52:00Z.
         assert_eq!(
-            date_time_to_pdf_string(Utc.with_ymd_and_hms(1998, 12, 23, 19, 52, 00).unwrap()),
+            date_time_to_pdf_string(at(914_442_720)),
             "D:19981223195200Z00'00'"
         );
 
+        // The Unix epoch, a leap day, and the 32-bit time_t rollover.
+        assert_eq!(date_time_to_pdf_string(at(0)), "D:19700101000000Z00'00'");
         assert_eq!(
-            date_time_to_pdf_string(
-                FixedOffset::west_opt(8 * 3600)
-                    .unwrap()
-                    .from_local_datetime(
-                        &NaiveDate::from_ymd_opt(1998, 12, 23)
-                            .unwrap()
-                            .and_hms_opt(19, 52, 00)
-                            .unwrap()
-                    )
-                    .unwrap()
-            ),
-            "D:19981223195200-08'00'"
-        )
+            date_time_to_pdf_string(at(951_782_400)),
+            "D:20000229000000Z00'00'"
+        );
+        assert_eq!(
+            date_time_to_pdf_string(at(2_147_483_648)),
+            "D:20380119031408Z00'00'"
+        );
+
+        // One second before the epoch.
+        assert_eq!(
+            date_time_to_pdf_string(PdfDate::from(UNIX_EPOCH - Duration::from_secs(1))),
+            "D:19691231235959Z00'00'"
+        );
+    }
+
+    #[test]
+    fn test_date_time_to_pdf_date_string_clamps_out_of_range_dates() {
+        // About 31,000 years after the epoch, and about 31,000 years before it.
+        let far = Duration::from_secs(1_000_000_000_000);
+
+        assert_eq!(
+            date_time_to_pdf_string(PdfDate::from(UNIX_EPOCH + far)),
+            "D:99991230220000Z00'00'"
+        );
+        assert_eq!(
+            date_time_to_pdf_string(PdfDate::from(UNIX_EPOCH - far)),
+            "D:00000101000000Z00'00'"
+        );
     }
 
     #[test]

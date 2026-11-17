@@ -3,6 +3,7 @@ pub mod appearance_mode;
 pub mod bitmap;
 pub mod color;
 pub mod color_space;
+pub mod date;
 pub mod destination;
 pub mod document;
 pub mod font;

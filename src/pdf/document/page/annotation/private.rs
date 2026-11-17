@@ -17,6 +17,7 @@ pub(crate) mod internal {
     };
     use crate::error::{PdfiumError, PdfiumInternalError};
     use crate::pdf::color::PdfColor;
+    use crate::pdf::date::PdfDate;
     use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
     use crate::pdf::document::page::annotation::objects::PdfPageAnnotationObjects;
     use crate::pdf::document::page::annotation::{PdfPageAnnotationCommon, PdfPageAnnotationType};
@@ -24,11 +25,10 @@ pub(crate) mod internal {
     use crate::pdf::points::PdfPoints;
     use crate::pdf::rect::PdfRect;
     use crate::pdfium::PdfiumLibraryBindingsAccessor;
-    use crate::utils::dates::date_time_to_pdf_string;
+    use crate::utils::dates::{date_time_to_pdf_string, now_to_pdf_string};
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
     use bitflags::bitflags;
-    use chrono::{DateTime, Utc};
     use std::os::raw::{c_int, c_uint};
 
     bitflags! {
@@ -213,7 +213,7 @@ pub(crate) mod internal {
             // Don't update the modification date if the key we have been given to update
             // is itself the modification date!
             {
-                self.set_string_value("M", &date_time_to_pdf_string(Utc::now()))?;
+                self.set_string_value("M", &now_to_pdf_string())?;
             }
 
             // With the modification date updated, we can now update the key and value
@@ -259,7 +259,7 @@ pub(crate) mod internal {
                 self.bindings()
                     .FPDFAnnot_SetRect(self.handle(), &bounds.as_pdfium())
             }) {
-                self.set_string_value("M", &date_time_to_pdf_string(Utc::now()))
+                self.set_string_value("M", &now_to_pdf_string())
             } else {
                 Err(PdfiumError::PdfiumLibraryInternalError(
                     PdfiumInternalError::Unknown,
@@ -344,7 +344,7 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageAnnotationCommon::set_creation_date()].
         #[inline]
-        fn set_creation_date_impl(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
+        fn set_creation_date_impl(&mut self, date: PdfDate) -> Result<(), PdfiumError> {
             self.set_string_value("CreationDate", &date_time_to_pdf_string(date))
         }
 
@@ -356,7 +356,7 @@ pub(crate) mod internal {
 
         /// Internal implementation of [PdfPageAnnotationCommon::set_modification_date()].
         #[inline]
-        fn set_modification_date_impl(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
+        fn set_modification_date_impl(&mut self, date: PdfDate) -> Result<(), PdfiumError> {
             self.set_string_value("M", &date_time_to_pdf_string(date))
         }
 

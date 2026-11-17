@@ -18,11 +18,10 @@ pub(crate) mod internal {
     use crate::pdf::appearance_mode::PdfAppearanceMode;
     use crate::pdf::document::page::field::PdfFormFieldCommon;
     use crate::pdfium::PdfiumLibraryBindingsAccessor;
-    use crate::utils::dates::date_time_to_pdf_string;
+    use crate::utils::dates::now_to_pdf_string;
     use crate::utils::mem::create_byte_buffer;
     use crate::utils::utf16le::get_string_from_pdfium_utf16le_bytes;
     use bitflags::bitflags;
-    use chrono::Utc;
 
     #[cfg(any(
         feature = "pdfium_future",
@@ -277,7 +276,7 @@ pub(crate) mod internal {
                     self.bindings().FPDFAnnot_SetStringValue_str(
                         self.annotation_handle(),
                         "M",
-                        &date_time_to_pdf_string(Utc::now()),
+                        &now_to_pdf_string(),
                     )
                 })
                 .and_then(|_| {
@@ -440,7 +439,7 @@ pub(crate) mod internal {
             // Don't update the modification date if the key we have been given to update
             // is itself the modification date!
             {
-                self.set_string_value("M", &date_time_to_pdf_string(Utc::now()))?;
+                self.set_string_value("M", &now_to_pdf_string())?;
             }
 
             // With the modification date updated, we can now update the key and value

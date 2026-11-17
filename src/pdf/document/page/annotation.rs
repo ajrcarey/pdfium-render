@@ -34,6 +34,7 @@ use crate::bindgen::{
 use crate::bindings::PdfiumLibraryBindings;
 use crate::error::PdfiumError;
 use crate::pdf::color::PdfColor;
+use crate::pdf::date::PdfDate;
 use crate::pdf::document::page::annotation::attachment_points::PdfPageAnnotationAttachmentPoints;
 use crate::pdf::document::page::annotation::circle::PdfPageCircleAnnotation;
 use crate::pdf::document::page::annotation::free_text::PdfPageFreeTextAnnotation;
@@ -60,7 +61,6 @@ use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
-use chrono::prelude::*;
 
 #[cfg(doc)]
 use {crate::pdf::document::page::field::PdfFormFieldCommon, crate::pdf::document::page::PdfPage};
@@ -916,13 +916,17 @@ pub trait PdfPageAnnotationCommon {
     fn creation_date(&self) -> Option<String>;
 
     /// Sets the date and time when this [PdfPageAnnotation] was originally created.
-    fn set_creation_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
+    fn set_creation_date(&mut self, date: impl Into<PdfDate>) -> Result<(), PdfiumError>
+    where
+        Self: Sized;
 
     /// Returns the date and time when this [PdfPageAnnotation] was last modified, if any.
     fn modification_date(&self) -> Option<String>;
 
     /// Sets the date and time when this [PdfPageAnnotation] was last modified.
-    fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
+    fn set_modification_date(&mut self, date: impl Into<PdfDate>) -> Result<(), PdfiumError>
+    where
+        Self: Sized;
 
     /// Returns the color of any filled paths in this [PdfPageAnnotation].
     fn fill_color(&self) -> Result<PdfColor, PdfiumError>;
@@ -1171,8 +1175,11 @@ where
     }
 
     #[inline]
-    fn set_creation_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
-        self.set_creation_date_impl(date)
+    fn set_creation_date(&mut self, date: impl Into<PdfDate>) -> Result<(), PdfiumError>
+    where
+        Self: Sized,
+    {
+        self.set_creation_date_impl(date.into())
     }
 
     #[inline]
@@ -1181,8 +1188,11 @@ where
     }
 
     #[inline]
-    fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
-        self.set_modification_date_impl(date)
+    fn set_modification_date(&mut self, date: impl Into<PdfDate>) -> Result<(), PdfiumError>
+    where
+        Self: Sized,
+    {
+        self.set_modification_date_impl(date.into())
     }
 
     #[inline]
