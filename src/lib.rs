@@ -112,6 +112,7 @@ pub mod prelude {
         pdf::bitmap::*,
         pdf::color::*,
         pdf::color_space::*,
+        pdf::date::*,
         pdf::destination::*,
         pdf::document::attachment::*,
         pdf::document::attachments::*,
