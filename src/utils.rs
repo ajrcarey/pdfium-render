@@ -153,6 +153,7 @@ pub(crate) mod pixels {
     }
 }
 
+#[cfg(feature = "dates")]
 pub(crate) mod dates {
     use chrono::prelude::*;
     use std::fmt::Display;
@@ -482,9 +483,11 @@ pub(crate) mod test {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "dates")]
     use crate::utils::dates::*;
     use crate::utils::pixels::*;
     use crate::utils::utf16le::*;
+    #[cfg(feature = "dates")]
     use chrono::prelude::*;
 
     // Tests of color conversion functions.
@@ -607,6 +610,7 @@ mod tests {
 
     // Tests of date time conversion functions.
 
+    #[cfg(feature = "dates")]
     #[test]
     fn test_date_time_to_pdf_date_string() {
         assert_eq!(

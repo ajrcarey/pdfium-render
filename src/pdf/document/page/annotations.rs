@@ -23,6 +23,7 @@ use crate::pdf::document::page::object::{PdfPageObject, PdfPageObjectCommon};
 use crate::pdf::document::page::{PdfPage, PdfPageContentRegenerationStrategy, PdfPageIndexCache};
 use crate::pdf::quad_points::PdfQuadPoints;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
+#[cfg(feature = "dates")]
 use chrono::prelude::*;
 use std::marker::PhantomData;
 use std::ops::Range;
@@ -161,10 +162,16 @@ impl<'a> PdfPageAnnotations<'a> {
                 PdfiumInternalError::Unknown,
             ))
         } else {
+            #[cfg_attr(not(feature = "dates"), allow(unused_mut))]
             let mut annotation = constructor(self.document_handle(), self.page_handle(), handle);
 
-            annotation
-                .set_creation_date(Utc::now())
+            #[cfg(feature = "dates")]
+            let creation_date_result = annotation.set_creation_date(Utc::now());
+
+            #[cfg(not(feature = "dates"))]
+            let creation_date_result: Result<(), PdfiumError> = Ok(());
+
+            creation_date_result
                 .and_then(|()| {
                     if let Some(content_regeneration_strategy) =
                         PdfPageIndexCache::get_content_regeneration_strategy_for_page(

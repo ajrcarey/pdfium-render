@@ -23,7 +23,7 @@ doctest = false
 bitflags = "2"
 bytes = "1"
 bytemuck = "1"
-chrono = "0"
+chrono = { version = "0", optional = true }
 image_025 = { package = "image", version = "0.25", optional = true, default-features = false, features = ["jpeg"]}
 image_024 = { package = "image", version = "0.24", optional = true, default-features = false, features = ["jpeg"]}
 image_023 = { package = "image", version = "0.23", optional = true, default-features = false, features = ["jpeg"]}
@@ -78,6 +78,7 @@ thread_safe = []
 core_graphics = ["static"]
 paragraph = []
 flatten = []
+dates = ["dep:chrono"] # Enables annotation date-setting functions and automatic modification timestamps. Currently backed by the `chrono` crate; see README changelog for 0.9.7.
 console_log = [] # A WASM-specific feature that initializes console_log-based logging to the browser console.
 
 # By default, pdfium-render uses the latest version of the image crate. To explicitly use
