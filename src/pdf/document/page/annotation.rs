@@ -60,6 +60,7 @@ use crate::pdf::document::page::object::ownership::PdfPageObjectOwnership;
 use crate::pdf::points::PdfPoints;
 use crate::pdf::rect::PdfRect;
 use crate::pdfium::PdfiumLibraryBindingsAccessor;
+#[cfg(feature = "dates")]
 use chrono::prelude::*;
 
 #[cfg(doc)]
@@ -916,12 +917,14 @@ pub trait PdfPageAnnotationCommon {
     fn creation_date(&self) -> Option<String>;
 
     /// Sets the date and time when this [PdfPageAnnotation] was originally created.
+    #[cfg(feature = "dates")]
     fn set_creation_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
 
     /// Returns the date and time when this [PdfPageAnnotation] was last modified, if any.
     fn modification_date(&self) -> Option<String>;
 
     /// Sets the date and time when this [PdfPageAnnotation] was last modified.
+    #[cfg(feature = "dates")]
     fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError>;
 
     /// Returns the color of any filled paths in this [PdfPageAnnotation].
@@ -1170,6 +1173,7 @@ where
         self.creation_date_impl()
     }
 
+    #[cfg(feature = "dates")]
     #[inline]
     fn set_creation_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
         self.set_creation_date_impl(date)
@@ -1180,6 +1184,7 @@ where
         self.modification_date_impl()
     }
 
+    #[cfg(feature = "dates")]
     #[inline]
     fn set_modification_date(&mut self, date: DateTime<Utc>) -> Result<(), PdfiumError> {
         self.set_modification_date_impl(date)
